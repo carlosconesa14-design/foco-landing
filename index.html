@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOCO — La app que te paga por tus hábitos. Y te los cobra si fallas.</title>
+  <meta name="description" content="Crea hábitos diarios, gana coins por cumplirlos y piérdelos si fallas. Compite con tu tribu. La única app donde fallar tiene consecuencias reales." />
+  <meta property="og:title" content="FOCO — Failing costs. Winning pays." />
+  <meta property="og:description" content="La app de hábitos que te paga en coins por cumplir — y te los quita si fallas." />
+  <meta property="og:image" content="https://usefoco.app/og.png" />
+  <meta name="theme-color" content="#00E57A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green: #00E57A;
+      --green-dim: rgba(0,229,122,0.12);
+      --green-glow: rgba(0,229,122,0.25);
+      --amber: #D97706;
+      --amber-dim: rgba(217,119,6,0.12);
+      --red: #EF4444;
+      --bg: #000000;
+      --surface: #0D0D0D;
+      --surface2: #141414;
+      --border: #1E1E1E;
+      --text: #F2F2F2;
+      --text-dim: #888888;
+      --text-muted: #404040;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 20px; font-weight: 900; letter-spacing: 0.08em;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-logo span { color: var(--green); }
+    .nav-gem {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #00E57A, #00B85E);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 0 12px rgba(0,229,122,0.4);
+    }
+    .nav-cta {
+      background: var(--green);
+      color: #000;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 10px 20px;
+      border-radius: 50px;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: opacity 0.15s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,229,122,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(217,119,6,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green-dim);
+      border: 1px solid rgba(0,229,122,0.25);
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-size: 13px; font-weight: 600;
+      color: var(--green);
+      letter-spacing: 0.03em;
+      margin-bottom: 32px;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    .hero h1 {
+      font-size: clamp(42px, 8vw, 88px);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      max-width: 900px;
+    }
+    .hero h1 .accent { color: var(--green); }
+    .hero h1 .accent-amber { color: var(--amber); }
+    .hero-sub {
+      font-size: clamp(17px, 2.5vw, 22px);
+      color: var(--text-dim);
+      max-width: 540px;
+      line-height: 1.55;
+      margin-bottom: 48px;
+    }
+    .hero-ctas {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      justify-content: center;
+      margin-bottom: 72px;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--green);
+      color: #000;
+      font-weight: 800; font-size: 17px;
+      padding: 16px 32px;
+      border-radius: 50px;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: all 0.2s;
+      box-shadow: 0 0 40px rgba(0,229,122,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 60px rgba(0,229,122,0.5);
+    }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: transparent;
+      color: var(--text-dim);
+      font-weight: 600; font-size: 17px;
+      padding: 16px 32px;
+      border-radius: 50px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
+
+    /* Phone mockup */
+    .phone-mockup {
+      width: 260px;
+      background: var(--surface);
+      border-radius: 40px;
+      border: 1px solid var(--border);
+      padding: 20px 16px;
+      box-shadow: 0 0 80px rgba(0,229,122,0.12), 0 40px 80px rgba(0,0,0,0.6);
+      position: relative;
+    }
+    .phone-notch {
+      width: 80px; height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      margin: 0 auto 20px;
+    }
+    .phone-screen {
+      background: var(--bg);
+      border-radius: 24px;
+      padding: 20px 16px;
+      min-height: 400px;
+    }
+    .phone-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px;
+    }
+    .phone-greeting { font-size: 12px; color: var(--text-dim); }
+    .phone-greeting strong { display: block; font-size: 15px; color: var(--text); font-weight: 700; }
+    .phone-coins {
+      display: flex; align-items: center; gap: 5px;
+      background: var(--amber-dim);
+      border: 1px solid rgba(217,119,6,0.3);
+      border-radius: 50px;
+      padding: 5px 10px;
+      font-size: 13px; font-weight: 700;
+      color: var(--amber);
+    }
+    .phone-progress {
+      background: var(--surface2);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .phone-progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .phone-progress-bar {
+      height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+    }
+    .phone-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00E57A, #00B85E);
+      border-radius: 3px;
+      width: 67%;
+    }
+    .phone-habits { display: flex; flex-direction: column; gap: 8px; }
+    .phone-habit {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+    .phone-habit.done { border-color: rgba(0,229,122,0.2); }
+    .phone-habit-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .phone-habit-info { flex: 1; }
+    .phone-habit-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .phone-habit-streak { font-size: 10px; color: var(--text-dim); }
+    .phone-habit-check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+    }
+    .phone-habit.done .phone-habit-check {
+      background: var(--green);
+      border-color: var(--green);
+      color: #000;
+    }
+
+    /* ── STATS ── */
+    .stats {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 48px;
+      padding: 0 24px 80px;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-size: 42px; font-weight: 900;
+      color: var(--green);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .stat-label { font-size: 14px; color: var(--text-dim); margin-top: 4px; }
+
+    /* ── SECTIONS ── */
+    section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      display: inline-block;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+    .section-sub {
+      font-size: 18px; color: var(--text-dim);
+      max-width: 560px;
+      line-height: 1.55;
+      margin-bottom: 60px;
+    }
+
+    /* ── PROBLEM ── */
+    .problem-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .problem-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+    }
+    .problem-card .icon { font-size: 28px; margin-bottom: 14px; }
+    .problem-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .problem-card p { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+
+    /* ── HOW ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      position: relative;
+    }
+    .step-num {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--green-dim);
+      border: 1px solid rgba(0,229,122,0.25);
+      color: var(--green);
+      font-weight: 800; font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+
+    /* ── FEATURES ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:hover {
+      border-color: rgba(0,229,122,0.2);
+      box-shadow: 0 0 40px rgba(0,229,122,0.05);
+    }
+    .feature-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: var(--green-dim);
+      border: 1px solid rgba(0,229,122,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .feature-icon.amber {
+      background: var(--amber-dim);
+      border-color: rgba(217,119,6,0.2);
+    }
+    .feature-icon.red {
+      background: rgba(239,68,68,0.08);
+      border-color: rgba(239,68,68,0.2);
+    }
+    .feature-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .feature-card p { font-size: 14px; color: var(--text-dim); line-height: 1.65; }
+
+    /* ── COMPARISON ── */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .comparison-table th {
+      padding: 16px 20px;
+      font-size: 14px; font-weight: 700;
+      background: var(--surface);
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-table th:last-child { color: var(--green); }
+    .comparison-table td {
+      padding: 14px 20px;
+      font-size: 14px; color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .comparison-table td:first-child { color: var(--text); font-weight: 600; }
+    .comparison-table td:last-child { color: var(--text); font-weight: 600; }
+    .check { color: var(--green); font-size: 16px; }
+    .cross { color: var(--text-muted); font-size: 16px; }
+
+    /* ── TESTIMONIALS ── */
+    .quotes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .quote-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+    }
+    .quote-text {
+      font-size: 16px; font-style: italic;
+      color: var(--text-dim); line-height: 1.65;
+      margin-bottom: 20px;
+    }
+    .quote-author { display: flex; align-items: center; gap: 12px; }
+    .quote-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--green-dim);
+      border: 1px solid rgba(0,229,122,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+    .quote-name { font-size: 14px; font-weight: 600; }
+    .quote-meta { font-size: 12px; color: var(--text-muted); }
+
+    /* ── CTA FINAL ── */
+    .cta-section {
+      text-align: center;
+      padding: 120px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(0,229,122,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section h2 { margin-bottom: 16px; }
+    .cta-section p { font-size: 18px; color: var(--text-dim); margin-bottom: 48px; }
+    .cta-stores {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      justify-content: center;
+    }
+    .store-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 24px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.2s;
+      min-width: 180px;
+    }
+    .store-btn:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 20px rgba(0,229,122,0.1);
+    }
+    .store-btn-icon { font-size: 28px; }
+    .store-btn-text { text-align: left; }
+    .store-btn-sub { font-size: 11px; color: var(--text-dim); display: block; }
+    .store-btn-name { font-size: 16px; font-weight: 700; display: block; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      display: flex; flex-wrap: wrap;
+      align-items: center; justify-content: space-between;
+      gap: 20px;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .footer-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 18px;
+      letter-spacing: 0.06em;
+    }
+    .footer-brand .gem {
+      width: 24px; height: 24px;
+      background: linear-gradient(135deg, #00E57A, #00B85E);
+      border-radius: 5px;
+    }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a {
+      font-size: 14px; color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 13px; color: var(--text-muted); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      nav { padding: 14px 16px; }
+      .hero h1 { font-size: 38px; }
+      .hero-sub { font-size: 16px; }
+      .btn-primary, .btn-secondary { font-size: 15px; padding: 14px 24px; }
+      .phone-mockup { width: 220px; }
+      .phone-screen { min-height: 340px; }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      max-width: 1100px; margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-gem">💎</div>
+    F<span>O</span>CO
+  </a>
+  <a href="#download" class="nav-cta">Descargar gratis</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Próximamente en Google Play &amp; App Store
+  </div>
+
+  <h1>
+    Tus hábitos.<br/>
+    <span class="accent">Coins si cumples.</span><br/>
+    <span class="accent-amber">Coins si fallas.</span>
+  </h1>
+
+  <p class="hero-sub">
+    La única app donde fallar tiene consecuencias reales. Gana coins por mantener tus rachas, piérdelos si te saltas el día. Compite con tu tribu.
+  </p>
+
+  <div class="hero-ctas">
+    <a href="#download" class="btn-primary">
+      <span>▶</span> Descargar gratis
+    </a>
+    <a href="#como-funciona" class="btn-secondary">
+      Cómo funciona →
+    </a>
+  </div>
+
+  <!-- Phone mockup -->
+  <div class="phone-mockup">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="phone-header">
+        <div class="phone-greeting">
+          <span>Buenos días,</span>
+          <strong>Carlos 👋</strong>
+        </div>
+        <div class="phone-coins">◈ 340</div>
+      </div>
+      <div class="phone-progress">
+        <div class="phone-progress-label">
+          <span>Hábitos de hoy</span>
+          <span style="color:#00E57A;font-weight:700;">2/3</span>
+        </div>
+        <div class="phone-progress-bar">
+          <div class="phone-progress-fill"></div>
+        </div>
+      </div>
+      <div class="phone-habits">
+        <div class="phone-habit done">
+          <div class="phone-habit-icon">🏋️</div>
+          <div class="phone-habit-info">
+            <div class="phone-habit-name">Gym</div>
+            <div class="phone-habit-streak">🔥 21 días</div>
+          </div>
+          <div class="phone-habit-check">✓</div>
+        </div>
+        <div class="phone-habit done">
+          <div class="phone-habit-icon">📚</div>
+          <div class="phone-habit-info">
+            <div class="phone-habit-name">Leer 30 min</div>
+            <div class="phone-habit-streak">🔥 8 días</div>
+          </div>
+          <div class="phone-habit-check">✓</div>
+        </div>
+        <div class="phone-habit">
+          <div class="phone-habit-icon">🧘</div>
+          <div class="phone-habit-info">
+            <div class="phone-habit-name">Meditación</div>
+            <div class="phone-habit-streak" style="color:#D97706;">⚡ Pendiente</div>
+          </div>
+          <div class="phone-habit-check"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">80%</div>
+    <div class="stat-label">abandona sus hábitos antes de 3 meses</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">◈ 0</div>
+    <div class="stat-label">coins si fallas hoy</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">66d</div>
+    <div class="stat-label">para convertir algo en hábito real</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- PROBLEM -->
+<section>
+  <div class="section-tag">El problema</div>
+  <h2>Las apps de hábitos<br/>no duelen lo suficiente.</h2>
+  <p class="section-sub">
+    Si fallar no tiene consecuencias, el cerebro siempre elegirá el camino fácil. Lo sabemos. Por eso existe Foco.
+  </p>
+
+  <div class="problem-cards">
+    <div class="problem-card">
+      <div class="icon">😴</div>
+      <h3>"Empiezo el lunes"</h3>
+      <p>Lo dices cada semana. Las apps te dejan hacerlo porque no pierdes nada. En Foco, cada día que fallas te cuesta coins reales.</p>
+    </div>
+    <div class="problem-card">
+      <div class="icon">🏆</div>
+      <h3>Badges que no importan</h3>
+      <p>Otras apps te dan trofeos decorativos. Nadie se motiva con un PNG. Los coins de Foco desbloquean funciones reales y se apuestan contra tus amigos.</p>
+    </div>
+    <div class="problem-card">
+      <div class="icon">👻</div>
+      <h3>Sin accountability</h3>
+      <p>Tus grupos de WhatsApp de retos mueren en dos semanas. Las tribus de Foco tienen leaderboard, apuestas y verificación por cámara. No hay donde esconderse.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW -->
+<section id="como-funciona">
+  <div class="section-tag">Cómo funciona</div>
+  <h2>Simple. Directo.<br/>Con consecuencias.</h2>
+  <p class="section-sub">Cuatro pasos para que fallar te duela (de la mejor manera posible).</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Crea tus hábitos</h3>
+      <p>Elige qué quieres trabajar: gym, lectura, meditación, dormir a tiempo… Lo que sea. Algunos requieren foto como prueba.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Cumple y gana coins</h3>
+      <p>Cada día que completas un hábito ganas ◈ coins. Cuanto más larga tu racha, más ganas. Consistencia recompensada.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Falla y los pierdes</h3>
+      <p>Si te saltas el día sin joker, pierdes coins. El dolor de la pérdida es el mejor motivador que existe. Ciencia del comportamiento pura.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h3>Compite en tu tribu</h3>
+      <p>Únete a una tribu de hasta 8 personas. Leaderboard en tiempo real. Apuesta coins contra tus amigos. El que gana, se lleva el bote.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section>
+  <div class="section-tag">Funcionalidades</div>
+  <h2>Todo lo que necesitas<br/>para no volver a fallar.</h2>
+  <p class="section-sub">Diseñado para que las excusas no funcionen.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">◈</div>
+      <h3>Sistema de coins con pérdida real</h3>
+      <p>Los coins no son decorativos. Desbloquean jokers, recuperan rachas, dan acceso a funciones premium y se apuestan en tribus. Perderlos duele. Eso es exactamente el objetivo.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon amber">📸</div>
+      <h3>Verificación anti-trampas</h3>
+      <p>Los hábitos con foto exigen cámara en directo — no sirve subir fotos de la galería. Las rachas se calculan en servidor, no en el móvil. No hay forma de hacer trampas.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔥</div>
+      <h3>Rachas que importan</h3>
+      <p>Acumula días consecutivos para desbloquear multiplicadores de coins. 7 días, 21 días, 66 días. Cada hito es un salto en recompensas. Perder la racha duele el doble.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon amber">⚔️</div>
+      <h3>Tribus con apuestas reales</h3>
+      <p>Crea o únete a una tribu de hasta 8 personas. Apuesta un bote de coins que el ganador se lleva. El leaderboard en vivo crea la presión social que necesitas para no fallar.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🃏</div>
+      <h3>Jokers para días difíciles</h3>
+      <p>Todos tenemos días malos. Los jokers te permiten saltarte un día sin perder tu racha. Úsalos con cuidado: son limitados y cuestan coins conseguirlos.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon red">💎</div>
+      <h3>Foco Pro — sin límites</h3>
+      <p>Desbloquea multiplicadores de coins, hábitos ilimitados, análisis avanzado de rachas y el seguro de racha permanente. Desde 2,99€/mes.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- COMPARISON -->
+<section>
+  <div class="section-tag">Comparativa</div>
+  <h2>No es una app de hábitos más.</h2>
+  <p class="section-sub">Compara lo que pasa cuando fallas en cada app.</p>
+
+  <div style="overflow-x:auto; border-radius:16px; border:1px solid var(--border);">
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>¿Qué pasa si fallas?</th>
+          <th>Habitica</th>
+          <th>Streaks</th>
+          <th>Habitify</th>
+          <th style="color:var(--green)">FOCO ◈</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pierdes algo real</td>
+          <td><span class="cross">—</span></td>
+          <td><span class="cross">—</span></td>
+          <td><span class="cross">—</span></td>
+          <td><span class="check">✓ Coins</span></td>
+        </tr>
+        <tr>
+          <td>Tus amigos lo saben</td>
+          <td><span class="cross">—</span></td>
+          <td><span class="cross">—</span></td>
+          <td><span class="cross">—</span></td>
+          <td><span class="check">✓ Tribu</span></td>
+        </tr>
+        <tr>
+          <td>Verificación anti-trampas</td>
+          <td><span class="cross">—</span></td>
+          <td><span class="cross">—</span></td>
+          <td><span class="cross">—</span></td>
+          <td><span class="check">✓ Cámara</span></td>
+        </tr>
+        <tr>
+          <td>Apuestas entre amigos</td>
+          <td><span class="cross">—</span></td>
+          <td><span class="cross">—</span></td>
+          <td><span class="cross">—</span></td>
+          <td><span class="check">✓ Botes</span></td>
+        </tr>
+        <tr>
+          <td>Disponible en Android</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="cross">— solo iOS</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="section-tag">Lo que dicen</div>
+  <h2>Para los que ya lo intentaron<br/>y fallaron con otras apps.</h2>
+
+  <div class="quotes">
+    <div class="quote-card">
+      <p class="quote-text">"Siempre empiezo bien y a las dos semanas lo dejo. Foco es lo primero que me hace pensármelo dos veces antes de saltarme el gym."</p>
+      <div class="quote-author">
+        <div class="quote-avatar">A</div>
+        <div>
+          <div class="quote-name">Alejandro R.</div>
+          <div class="quote-meta">Racha de 34 días · Madrid</div>
+        </div>
+      </div>
+    </div>
+    <div class="quote-card">
+      <p class="quote-text">"El leaderboard de mi tribu me da vergüenza quedarme el último. Nunca pensé que eso me motivaría más que cualquier recordatorio."</p>
+      <div class="quote-author">
+        <div class="quote-avatar">S</div>
+        <div>
+          <div class="quote-name">Sara M.</div>
+          <div class="quote-meta">Tribu de 6 · Barcelona</div>
+        </div>
+      </div>
+    </div>
+    <div class="quote-card">
+      <p class="quote-text">"Es como Duolingo pero para todos mis hábitos. Ahora que pierdo coins si fallo, el dolor es real. Y funciona."</p>
+      <div class="quote-author">
+        <div class="quote-avatar">D</div>
+        <div>
+          <div class="quote-name">Daniel T.</div>
+          <div class="quote-meta">Elite 💎 · Valencia</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA FINAL -->
+<section class="cta-section" id="download">
+  <div class="section-tag">Descarga</div>
+  <h2>Deja de planear.<br/><span style="color:var(--green)">Empieza hoy.</span></h2>
+  <p>Gratis para siempre. Sin excusas.</p>
+
+  <div class="cta-stores">
+    <a href="#" class="store-btn">
+      <span class="store-btn-icon">▶</span>
+      <div class="store-btn-text">
+        <span class="store-btn-sub">Disponible en</span>
+        <span class="store-btn-name">Google Play</span>
+      </div>
+    </a>
+    <a href="#" class="store-btn" style="opacity:0.5;pointer-events:none;cursor:default;">
+      <span class="store-btn-icon">🍎</span>
+      <div class="store-btn-text">
+        <span class="store-btn-sub">Próximamente en</span>
+        <span class="store-btn-name">App Store</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="divider"></div>
+<footer>
+  <div class="footer-brand">
+    <div class="gem"></div>
+    FOCO
+  </div>
+  <div class="footer-links">
+    <a href="privacy.html">Política de privacidad</a>
+    <a href="mailto:carlosconesa14@gmail.com">Contacto</a>
+  </div>
+  <div class="footer-copy">© 2026 Foco. Todos los derechos reservados.</div>
+</footer>
+
+</body>
+</html>
