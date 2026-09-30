@@ -46,19 +46,36 @@ Cada negocio es un recinto isométrico vallado, con el edificio principal, camin
 - Cada 10/25/50/100… niveles, esa parte rinde el doble.
 - El mapa se arrastra y se acerca o aleja pellizcando la pantalla.
 
-### Gerentes
-- **Fase 1:** se contratan con dinero y automatizan su parte.
-- **Fase 2:** gerentes con rareza (común, raro, épico, legendario) que salen de cofres, con una habilidad activa que se recarga (por ejemplo, x2 de velocidad durante 5 min o -50 % en mejoras).
+### Gerentes y ejecutivos
+- **Gerentes:** se contratan con dinero y automatizan su parte de la cadena.
+- **Ejecutivos (fase 2 ✅):** salen de maletines, con 4 rarezas (común, raro, épico, legendario). Se asigna uno por negocio.
+  - Bonus permanente según su especialidad: producción, logística (capacidad de transporte y venta) o ventas (dinero por venta).
+  - Habilidad activa: ventas x2 a x5 durante 5–10 min, que se recarga en 2 h o al instante con un anuncio.
+- **Maletines:** uno gratis cada 4 h con anuncio, el normal por 50 💎 y el de oro por 150 💎.
 
 ### Progresión permanente
 - **Estilo de vida:** de "vives con tus padres" a "isla privada", según lo ganado en total. Nunca se pierde.
 - **Salida a bolsa (prestigio):** acciones con +2 % permanente cada una.
-- **Fase 2:** 💎 diamantes como moneda premium: se ganan con anuncios, misiones y logros, y se gastan en cofres de gerentes, acelerar y cosméticos.
+- **💎 Diamantes (fase 2 ✅):** se ganan con las misiones, el premio diario, los logros, el tutorial y los maletines. Se gastan en maletines y en paquetes de dinero. Nunca se pierden, tampoco al salir a bolsa.
 
-### Retención
-- **Fase 2:** 3 misiones diarias, recompensa por entrar cada día y logros.
-- **Fase 3:** eventos de temporada de 7 días con su propia ciudad y un ranking (Black Friday, Navidad, verano).
-- **Fase 3:** avatar y oficina personalizables.
+### Retención (fase 2 ✅)
+- **Tutorial guiado** de 6 pasos, con premio en diamantes al terminar.
+- **3 misiones diarias** elegidas al azar cada día, con un premio extra por completar las tres.
+- **Premio diario** con racha de 7 días (diamantes, dinero, maletines). Se puede duplicar viendo un anuncio. Si te saltas un día, la racha vuelve a empezar.
+- **13 logros** con diamantes.
+- **Más adelante:** eventos de temporada de 7 días con su propia ciudad (fase 3) y avatar u oficina personalizables.
+
+### Liga Millonario (diseñada, pendiente de servidor)
+Un concurso mensual gratuito basado en habilidad, pensado para atraer jugadores. Tiene que cumplir las políticas de AdMob y de las tiendas.
+- **Ranking mensual** por el crecimiento del imperio ese mes. **Los multiplicadores de anuncios no cuentan para la puntuación**: el premio nunca es a cambio de ver anuncios, porque AdMob prohíbe dar dinero, cripto o tarjetas regalo como recompensa de un anuncio.
+- **Premios fijos para pocos ganadores** (por ejemplo 50 €, 25 € y 10 €) y premios dentro del juego para el top 100.
+- **Bolsa de premios = un % de los ingresos por anuncios del mes anterior**, con un tope y un mínimo como gasto de marketing en el lanzamiento. Cada premio se queda por debajo de 300 €, para que en España no haga falta retener IRPF.
+- **Requisitos:**
+  - servidor con cuentas y puntuaciones validadas (plan: Supabase), con comprobaciones antitrampas;
+  - ganadores mayores de 18 y verificados;
+  - bases legales dentro de la app (Apple 5.3) con número de ganadores, fechas y método (Google Play);
+  - revisión de un abogado antes de activar los premios en dinero.
+- **Cuándo activarla:** con unos 1.000 jugadores activos al día, y mantenerla si sube la retención y el número de anuncios por jugador lo suficiente para pagar la bolsa.
 
 ## Monetización
 
@@ -71,9 +88,9 @@ Anuncios bonificados, siempre opcionales:
 | `viral` | Evento que aparece cada 2–4 min con dinero extra | 1 |
 | `rush` | Hora punta: un negocio x3 durante 30 min | 1 |
 | `ipo_x2` | Doble de acciones al salir a bolsa | 1 |
-| `free_chest` | Cofre de gerente gratis cada 4 h | 2 |
-| `ability_recharge` | Recargar la habilidad de un gerente | 2 |
-| `daily_double` | Doble recompensa diaria | 2 |
+| `free_chest` | Maletín de ejecutivo gratis cada 4 h | 2 ✅ |
+| `ability_recharge` | Recargar la habilidad de un ejecutivo | 2 ✅ |
+| `daily_double` | Doble premio diario | 2 ✅ |
 
 Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2 permanente").
 
@@ -82,6 +99,6 @@ Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2
 | Fase | Contenido |
 | --- | --- |
 | **1. Núcleo jugable** ✅ | Motor Phaser, ciudad isométrica con 4 negocios, recintos con puestos animados, gerentes básicos, mejoras, offline, anuncios, bolsa, guardado, arte sustituible |
-| **2. Retención** | 💎, gerentes con rareza y habilidades, cofres, misiones diarias, logros, tutorial guiado, sonido |
+| **2. Retención** | ✅ 💎, ejecutivos con rareza y habilidades, maletines, misiones diarias, premio diario, logros, tutorial guiado · Pendiente: sonido, Liga Millonario (servidor) |
 | **3. Contenido** | Más negocios, segunda ciudad, eventos de temporada, avatar |
 | **4. Lanzamiento** | Arte profesional (sprites), analítica, tiendas, compras dentro de la app, SSV de AdMob |

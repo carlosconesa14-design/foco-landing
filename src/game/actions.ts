@@ -9,7 +9,7 @@ import {
   upgradeQuote,
   type Station,
 } from "./economy";
-import { afterIpo, freshFloor, type GameState } from "./state";
+import { afterIpo, bump, freshFloor, type GameState } from "./state";
 
 /** Acciones del jugador. Devuelven un mensaje para mostrar ("" si no hace falta), o null si no se pudo. */
 
@@ -26,6 +26,7 @@ export function upgrade(s: GameState, id: string, st: Station): string | null {
   if (s.cash < cost) return null;
   const before = milestonesReached(stationLevel(b, st));
   s.cash -= cost;
+  bump(s, "upgrades", qty);
   if (st.kind === "floor") b.floors[st.index].level += qty;
   else if (st.kind === "transport") b.transport.level += qty;
   else b.sale.level += qty;
@@ -39,6 +40,7 @@ export function hireManager(s: GameState, id: string, st: Station): string | nul
   if (!b.owned || target.managed || s.cash < cost) return null;
   s.cash -= cost;
   target.managed = true;
+  bump(s, "hires");
   return `${stationName(id, st)} ya funciona solo`;
 }
 
@@ -50,7 +52,8 @@ export function unlockFloor(s: GameState, id: string): string | null {
   if (s.cash < cost) return null;
   s.cash -= cost;
   b.floors.push(freshFloor());
-  return `¡Nueva planta: ${bizDef(id).floorName} ${i + 1}!`;
+  bump(s, "floors");
+  return `¡Nuevo puesto: ${bizDef(id).floorName} ${i + 1}!`;
 }
 
 export function buyBusiness(s: GameState, id: string): string | null {
@@ -92,4 +95,5 @@ export function recordAd(s: GameState, placement: string, now: Date = new Date()
   s.ads.total++;
   s.ads.today++;
   s.ads.byPlacement[placement] = (s.ads.byPlacement[placement] ?? 0) + 1;
+  bump(s, "ads");
 }

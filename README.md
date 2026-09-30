@@ -15,6 +15,8 @@ Hecho con **TypeScript + Phaser 3 + Vite**, empaquetado para Android e iOS con *
 - **Gerentes:** automatizan su parte, que sigue ganando dinero con la app cerrada.
 - **Puestos nuevos:** se construyen en las parcelas del recinto y cada uno produce 6 veces más que el anterior (hasta 8 por negocio).
 - **Ciudad:** un mapa que puedes arrastrar, con parcelas "Se vende". Cada negocio produce cientos de veces más que el anterior.
+- **Diamantes, ejecutivos y maletines:** los ejecutivos se asignan uno por negocio, dan un bonus y tienen una habilidad activa.
+- **Misiones diarias, premio diario, logros y tutorial** en los botones laterales.
 - **Bolsa:** el prestigio. Vuelves a empezar con acciones que dan +2 % permanente cada una.
 - **Estilo de vida:** avanza según lo ganado en total, de "vives con tus padres" a "isla privada", y no se pierde nunca.
 
@@ -29,6 +31,9 @@ Todos son opcionales. `Placement` en `src/ads/types.ts`:
 | `viral` | Evento viral que aparece cada 2–4 min: dinero extra |
 | `rush` | Hora punta: un local de la ciudad x3 durante 30 min |
 | `ipo_x2` | Doble de acciones al salir a bolsa |
+| `free_chest` | Maletín de ejecutivo gratis cada 4 h |
+| `ability_recharge` | Recargar al instante la habilidad de un ejecutivo |
+| `daily_double` | Duplicar el premio diario |
 
 El panel de la Bolsa incluye un panel de desarrollo con los anuncios vistos por ubicación y un ingreso estimado. Hay que quitarlo antes de publicar.
 
@@ -50,7 +55,9 @@ src/
   game/data.ts        contenido y equilibrio (negocios, cadena, estilo de vida)
   game/state.ts       estado, partida nueva, migración de guardados
   game/economy.ts     fórmulas y simulación pura de la cadena (testeada)
-  game/actions.ts     acciones del jugador (mejorar, gerentes, plantas, bolsa…)
+  game/actions.ts     acciones del jugador (mejorar, gerentes, puestos, bolsa…)
+  game/meta.ts        diamantes, ejecutivos, maletines, misiones, diario, logros, tutorial
+  game/execs.ts       bonus de los ejecutivos en la economía
   scenes/             escenas de Phaser: ciudad y recinto de cada negocio
   ui/                 cabecera, barra inferior, paneles y modales en HTML
   ads/                AdMob en móvil, anuncio simulado en web

@@ -1,4 +1,4 @@
-import { BUSINESSES, CONFIG } from "./data";
+import { BUSINESSES, CONFIG, type ExecKind, type MissionId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
 
@@ -58,8 +58,41 @@ export interface AdStats {
   byPlacement: Record<string, number>;
 }
 
+export interface Exec {
+  id: string;
+  name: string;
+  face: string;
+  /** Índice en RARITIES. */
+  rarity: number;
+  kind: ExecKind;
+  /** Negocio al que está asignado (uno por negocio). */
+  assigned: string | null;
+  abilityEnd: number;
+  readyAt: number;
+}
+
+export interface Mission {
+  id: MissionId;
+  target: number;
+  claimed: boolean;
+}
+
+export interface MetaState {
+  gems: number;
+  execs: Exec[];
+  freeChestAt: number;
+  /** Contadores de toda la vida y del día en curso. */
+  stats: { life: Partial<Record<StatKey, number>>; day: Partial<Record<StatKey, number>>; dayKey: string };
+  missions: { day: string; list: Mission[]; bonusClaimed: boolean };
+  daily: { lastDay: string; streak: number };
+  achievements: string[];
+  /** Paso actual del tutorial; igual a TUTORIAL.length cuando se ha completado. */
+  tutorial: number;
+}
+
 export interface GameState {
   version: 2;
+  meta: MetaState;
   cash: number;
   /** Ganado desde la última salida a bolsa: decide cuántas acciones recibes. */
   runEarned: number;
@@ -91,9 +124,30 @@ export function freshBusiness(owned: boolean): BusinessState {
   };
 }
 
+export function freshMeta(now = Date.now()): MetaState {
+  return {
+    gems: 0,
+    execs: [],
+    freeChestAt: now,
+    stats: { life: {}, day: {}, dayKey: "" },
+    missions: { day: "", list: [], bonusClaimed: false },
+    daily: { lastDay: "", streak: 0 },
+    achievements: [],
+    tutorial: 0,
+  };
+}
+
+/** Suma a un contador de estadísticas (de por vida y del día). */
+export function bump(s: GameState, key: StatKey, n = 1): void {
+  const st = s.meta.stats;
+  st.life[key] = (st.life[key] ?? 0) + n;
+  st.day[key] = (st.day[key] ?? 0) + n;
+}
+
 export function freshState(now = Date.now()): GameState {
   return {
     version: 2,
+    meta: freshMeta(now),
     cash: 0,
     runEarned: 0,
     totalEarned: 0,
@@ -135,6 +189,46 @@ function migrateBusiness(raw: unknown, def: { price: number }): BusinessState {
   return b;
 }
 
+const numMap = (v: unknown): Partial<Record<StatKey, number>> =>
+  Object.fromEntries(Object.entries(obj(v)).filter(([, x]) => typeof x === "number" && Number.isFinite(x))) as Partial<Record<StatKey, number>>;
+
+function migrateMeta(raw: unknown, now: number): MetaState {
+  const m = freshMeta(now);
+  const r = obj(raw);
+  m.gems = Math.max(0, num(r.gems, 0));
+  m.freeChestAt = num(r.freeChestAt, now);
+  if (Array.isArray(r.execs)) {
+    m.execs = r.execs
+      .map(obj)
+      .filter((e) => typeof e.id === "string" && typeof e.name === "string")
+      .map((e) => ({
+        id: e.id as string,
+        name: e.name as string,
+        face: typeof e.face === "string" ? e.face : "🧑‍💼",
+        rarity: Math.min(3, Math.max(0, Math.floor(num(e.rarity, 0)))),
+        kind: e.kind === "prod" || e.kind === "log" || e.kind === "sale" ? e.kind : "sale",
+        assigned: typeof e.assigned === "string" && BUSINESSES.some((b) => b.id === e.assigned) ? (e.assigned as string) : null,
+        abilityEnd: num(e.abilityEnd, 0),
+        readyAt: num(e.readyAt, 0),
+      }));
+  }
+  const st = obj(r.stats);
+  m.stats = { life: numMap(st.life), day: numMap(st.day), dayKey: typeof st.dayKey === "string" ? st.dayKey : "" };
+  const ms = obj(r.missions);
+  if (typeof ms.day === "string" && Array.isArray(ms.list)) {
+    m.missions = {
+      day: ms.day,
+      list: ms.list.map(obj).map((x) => ({ id: x.id as MissionId, target: num(x.target, 1), claimed: !!x.claimed })),
+      bonusClaimed: !!ms.bonusClaimed,
+    };
+  }
+  const d = obj(r.daily);
+  m.daily = { lastDay: typeof d.lastDay === "string" ? d.lastDay : "", streak: Math.max(0, num(d.streak, 0)) };
+  m.achievements = Array.isArray(r.achievements) ? r.achievements.filter((x): x is string => typeof x === "string") : [];
+  m.tutorial = Math.max(0, num(r.tutorial, 0));
+  return m;
+}
+
 /** Convierte una partida guardada en un estado válido. Las partidas de la versión 1 empiezan de cero. */
 export function migrate(raw: unknown, now = Date.now()): GameState {
   const s = freshState(now);
@@ -155,6 +249,7 @@ export function migrate(raw: unknown, now = Date.now()): GameState {
   const v = obj(r.view);
   if (v.scene === "business" && typeof v.id === "string" && s.biz[v.id]?.owned) s.view = { scene: "business", id: v.id };
   else if (v.scene === "city") s.view = { scene: "city" };
+  s.meta = migrateMeta(r.meta, now);
   const ads = obj(r.ads);
   s.ads = {
     total: num(ads.total, 0),
@@ -175,6 +270,8 @@ export function afterIpo(s: GameState, gained: number, now = Date.now()): GameSt
   n.boostEnd = s.boostEnd;
   n.ads = s.ads;
   n.buyMode = s.buyMode;
+  // Diamantes, ejecutivos, misiones y logros no se pierden al salir a bolsa.
+  n.meta = s.meta;
   n.nextViral = now + CONFIG.viralMinSec * 1000;
   return n;
 }

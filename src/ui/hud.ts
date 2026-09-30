@@ -10,6 +10,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 export function updateHeader(s: GameState, now: number): void {
   $("cash").innerHTML = `<small>€</small>${fmt(s.cash)}`;
   $("rate").innerHTML = `+${fmt(passiveRate(s, now))} /s<span>ingresos pasivos</span>`;
+  $("gems").textContent = `💎 ${fmt(s.meta.gems)}`;
 
   const li = lifeIndex(s.totalEarned);
   const L = LIFE[li];

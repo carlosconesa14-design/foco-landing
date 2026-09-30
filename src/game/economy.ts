@@ -1,5 +1,6 @@
 import { BUSINESSES, CHAIN, CONFIG, LIFE, MILESTONES, type BusinessDef } from "./data";
-import type { BusinessState, BuyMode, GameState } from "./state";
+import { NO_MULTS, execMults, type Mults } from "./execs";
+import { bump, type BusinessState, type BuyMode, type GameState } from "./state";
 
 /* ---------- Utilidades ---------- */
 
@@ -37,7 +38,7 @@ export const rushActive = (b: BusinessState, now: number) => b.rushEnd > now;
 export function saleMult(s: GameState, id: string, now: number, live = true): number {
   const boost = live && boostActive(s, now) ? 2 : 1;
   const rush = live && rushActive(s.biz[id], now) ? CONFIG.rushMult : 1;
-  return boost * rush * (1 + CONFIG.shareBonus * s.shares);
+  return boost * rush * (1 + CONFIG.shareBonus * s.shares) * execMults(s, id, now, live).sale;
 }
 
 /* ---------- Plantas ---------- */
@@ -117,15 +118,14 @@ export interface ChainRates {
 }
 
 /** Ritmos de la cadena en €/s (antes de multiplicadores). Con `managedOnly` solo cuenta lo automatizado. */
-export function chainRates(def: BusinessDef, b: BusinessState, managedOnly: boolean): ChainRates {
-  const production = b.floors.reduce(
-    (a, f, i) => a + (!managedOnly || f.managed ? floorRate(def, i, f.level) : 0),
-    0,
-  );
-  const transport = !managedOnly || b.transport.managed
-    ? transportCap(def, b.transport.level) / transportRoundTrip(b.floors.length, b.transport.level)
-    : 0;
-  const sale = !managedOnly || b.sale.managed ? saleCap(def, b.sale.level) / (2 * saleWalk(b.sale.level)) : 0;
+export function chainRates(def: BusinessDef, b: BusinessState, managedOnly: boolean, m: Mults = NO_MULTS): ChainRates {
+  const production =
+    m.prod * b.floors.reduce((a, f, i) => a + (!managedOnly || f.managed ? floorRate(def, i, f.level) : 0), 0);
+  const transport =
+    !managedOnly || b.transport.managed
+      ? (m.log * transportCap(def, b.transport.level)) / transportRoundTrip(b.floors.length, b.transport.level)
+      : 0;
+  const sale = !managedOnly || b.sale.managed ? (m.log * saleCap(def, b.sale.level)) / (2 * saleWalk(b.sale.level)) : 0;
   const total = Math.min(production, transport, sale);
   const bottleneck = total === production ? "production" : total === transport ? "transport" : "sale";
   return { production, transport, sale, total, bottleneck };
@@ -134,7 +134,7 @@ export function chainRates(def: BusinessDef, b: BusinessState, managedOnly: bool
 export function businessRate(s: GameState, id: string, now: number, live = true): number {
   const b = s.biz[id];
   if (!b.owned) return 0;
-  return chainRates(bizDef(id), b, true).total * saleMult(s, id, now, live);
+  return chainRates(bizDef(id), b, true, execMults(s, id, now, live)).total * saleMult(s, id, now, live);
 }
 
 export function passiveRate(s: GameState, now: number, live = true): number {
@@ -157,6 +157,7 @@ export function earn(s: GameState, amount: number, bizId?: string): void {
   s.cash += amount;
   s.runEarned += amount;
   s.totalEarned += amount;
+  bump(s, "earned", amount);
   if (bizId) s.biz[bizId].earned += amount;
 }
 
@@ -170,6 +171,7 @@ export interface SaleEvent {
 function tickBusiness(s: GameState, id: string, dt: number, now: number, events: SaleEvent[]): void {
   const def = bizDef(id);
   const b = s.biz[id];
+  const m = execMults(s, id, now);
 
   // Plantas: cada trabajador completa ciclos y deja producto en su depósito.
   b.floors.forEach((f, i) => {
@@ -178,7 +180,7 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
     f.prog += dt;
     if (f.prog < CHAIN.floorCycle) return;
     const n = f.managed ? Math.floor(f.prog / CHAIN.floorCycle) : 1;
-    f.stock += floorLoad(def, i, f.level) * n;
+    f.stock += floorLoad(def, i, f.level) * m.prod * n;
     if (f.managed) f.prog -= n * CHAIN.floorCycle;
     else {
       f.prog = 0;
@@ -188,7 +190,7 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
 
   // Transporte: baja planta a planta, carga hasta llenarse y sube.
   const t = b.transport;
-  const cap = transportCap(def, t.level);
+  const cap = transportCap(def, t.level) * m.log;
   const speed = transportSpeed(t.level);
   let left = dt;
   let guard = 0;
@@ -247,7 +249,7 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
   while (left > 0 && guard++ < 64) {
     if (sl.phase === "idle") {
       if (!sl.managed || b.topStock <= 0) break;
-      startSale(def, b);
+      startSale(def, b, m.log);
     } else {
       const need = (1 - sl.prog) * walk;
       if (need > left) {
@@ -260,6 +262,7 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
           const amount = sl.carry * saleMult(s, id, now);
           sl.carry = 0;
           earn(s, amount, id);
+          bump(s, "sales");
           events.push({ biz: id, amount });
           sl.phase = "back";
         } else {
@@ -270,8 +273,8 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
   }
 }
 
-function startSale(def: BusinessDef, b: BusinessState): void {
-  const take = Math.min(b.topStock, saleCap(def, b.sale.level));
+function startSale(def: BusinessDef, b: BusinessState, logMult = 1): void {
+  const take = Math.min(b.topStock, saleCap(def, b.sale.level) * logMult);
   b.topStock -= take;
   b.sale.carry = take;
   b.sale.phase = "out";
@@ -292,19 +295,23 @@ export function tapStation(s: GameState, id: string, st: Station): string | null
   const b = s.biz[id];
   if (st.kind === "floor") {
     const f = b.floors[st.index];
-    if (!f.running) f.running = true;
+    if (!f.running) {
+      f.running = true;
+      bump(s, "tapFloor");
+    }
     return null;
   }
   if (st.kind === "transport") {
     if (b.transport.phase === "idle") {
       b.transport.phase = "down";
       b.transport.target = 0;
+      bump(s, "tapTransport");
     }
     return null;
   }
   if (b.sale.phase !== "idle") return null;
   if (b.topStock <= 0) return "Aún no hay nada que vender arriba";
-  startSale(bizDef(id), b);
+  startSale(bizDef(id), b, execMults(s, id, Date.now()).log);
   return null;
 }
 

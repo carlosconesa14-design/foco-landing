@@ -5,6 +5,7 @@ import * as act from "./game/actions";
 import { BUSINESSES, CONFIG, LIFE, VIRAL_TITLES } from "./game/data";
 import { earn, lifeIndex, offlineEarnings, passiveRate, tapStation, tick, type SaleEvent } from "./game/economy";
 import { fmt, fmtTime } from "./game/format";
+import * as meta from "./game/meta";
 import { freshState, migrate, type GameState, type View } from "./game/state";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
@@ -14,6 +15,7 @@ import { COLORS, DPR, type Bridge } from "./scenes/common";
 import { renderBar, updateBar, updateHeader } from "./ui/hud";
 import { modal, modalOpen, toast } from "./ui/overlays";
 import { openIpoSheet, openPlotSheet, openStationSheet, openUnlockSheet, type PanelCtx } from "./ui/panels";
+import { openAchievements, openDaily, openExecs, openMissions } from "./ui/metaPanels";
 import { activeSheet, closeSheet } from "./ui/sheet";
 import "./styles.css";
 
@@ -136,6 +138,44 @@ document.getElementById("bar")!.addEventListener("click", async (e) => {
   }
 });
 
+/* ---------- Botones laterales, diamantes y tutorial ---------- */
+
+document.getElementById("rail")!.addEventListener("click", (e) => {
+  const b = (e.target as HTMLElement).closest<HTMLElement>("[data-open]");
+  if (!b) return;
+  const which = b.dataset.open;
+  if (which === "missions") openMissions(ctx);
+  else if (which === "daily") openDaily(ctx);
+  else if (which === "execs") openExecs(ctx, S.meta.execs.length ? "execs" : "chests");
+  else if (which === "achievements") openAchievements(ctx);
+});
+document.getElementById("gems")!.addEventListener("click", () => openExecs(ctx, "chests"));
+
+function updateMeta(now: number): void {
+  meta.ensureDay(S, now);
+  const top = document.getElementById("hud")!.offsetHeight + 10;
+  const rail = document.getElementById("rail")!;
+  rail.style.top = `${top}px`;
+  const dots = rail.querySelectorAll<HTMLElement>(".dot");
+  dots[0].hidden = meta.missionsToClaim(S) === 0;
+  dots[1].hidden = !meta.dailyStatus(S, now).canClaim;
+  dots[2].hidden = !meta.freeChestReady(S, now);
+  dots[3].hidden = meta.achievementsToClaim(S) === 0;
+
+  const adv = meta.advanceTutorial(S);
+  if (adv?.done) say(`¡Tutorial completado! +${adv.gems} 💎`);
+  const step = meta.tutorialStep(S);
+  const tut = document.getElementById("tut")!;
+  // El tutorial transcurre en el almacén; en la ciudad se oculta.
+  const show = !!step && S.view.scene === "business" && S.view.id === BUSINESSES[0].id && !activeSheet();
+  tut.hidden = !show;
+  if (show && step) {
+    tut.style.top = `${top}px`;
+    document.getElementById("tutStep")!.textContent = `${S.meta.tutorial + 1}/${meta.TUTORIAL_LENGTH}`;
+    document.getElementById("tutText")!.textContent = step.text;
+  }
+}
+
 document.getElementById("boostBtn")!.addEventListener("click", async () => {
   if (await watchAd("boost_x2")) {
     act.addBoost(S, Date.now());
@@ -233,6 +273,7 @@ game.events.on("step", (time: number) => {
     updateHeader(S, now);
     updateBar(S, now);
     activeSheet()?.update?.();
+    updateMeta(now);
     const li = lifeIndex(S.totalEarned);
     if (li > S.lifeSeen) {
       S.lifeSeen = li;
