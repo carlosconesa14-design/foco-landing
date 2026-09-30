@@ -4,6 +4,8 @@ Idle tycoon para móvil: construyes un imperio de negocios modernos (dropshippin
 
 Hecho con **TypeScript + Phaser 3 + Vite**, empaquetado para Android e iOS con **Capacitor**. El diseño completo y la hoja de ruta están en [`docs/GDD.md`](docs/GDD.md).
 
+**Arte:** ciudad isométrica 2.5D e interiores en corte lateral. Todo se dibuja por código (`src/art/`), y cada pieza se puede sustituir por un PNG propio sin tocar código. Los tamaños y los prompts para generarlas con IA están en [`docs/ART.md`](docs/ART.md).
+
 ## Cómo se juega
 
 - **Interior de un negocio:** plantas de producción → transporte → venta.

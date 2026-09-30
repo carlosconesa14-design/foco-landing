@@ -1,202 +1,293 @@
 import Phaser from "phaser";
+import { ART, art, artScale } from "../art/catalog";
+import { mix } from "../art/pen";
 import { BUSINESSES } from "../game/data";
 import { businessRate } from "../game/economy";
 import { fmt } from "../game/format";
-import { COLORS, DragScroll, bridgeOf, emoji, floatText, label, setupCamera, type Bridge } from "./common";
+import { DragScroll, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
 
-const ROW_H = 262;
-const AVENUE_W = 48;
+/* Rejilla isométrica */
+const TW = 88;
+const TH = 44;
+const COLS = 10;
+const ROWS = 12;
+const ROAD_ROWS = [3, 7, 11];
+const ROAD_COL = 4;
 
-/** Parcelas extra que anuncian contenido futuro. */
-const COMING_SOON = [
-  { name: "Gimnasio", icon: "🏋️" },
-  { name: "Hotel", icon: "🏨" },
+type LotKind = { id: string } | { soon: string };
+const LOTS: { c: number; r: number; kind: LotKind }[] = [
+  { c: 1, r: 1, kind: { id: "dropship" } },
+  { c: 6, r: 1, kind: { id: "restaurant" } },
+  { c: 1, r: 5, kind: { id: "tiktok" } },
+  { c: 6, r: 5, kind: { id: "ai" } },
+  { c: 1, r: 9, kind: { soon: "🏋️ Gimnasio" } },
+  { c: 6, r: 9, kind: { soon: "🏨 Hotel" } },
 ];
 
-interface Plot {
-  id: string | null;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+interface PlotView {
+  id: string;
   owned: boolean;
   bubble?: Phaser.GameObjects.Container;
   bubbleText?: Phaser.GameObjects.Text;
-  sign?: Phaser.GameObjects.Container;
+  sign?: Phaser.GameObjects.Image;
 }
 
-interface Mover {
-  obj: Phaser.GameObjects.Text;
-  axis: "x" | "y";
+interface Walker {
+  obj: Phaser.GameObjects.Image;
+  role?: string;
+  c: number;
+  r: number;
+  dc: number;
+  dr: number;
   speed: number;
   min: number;
   max: number;
 }
 
-/** La ciudad: parcelas con tus negocios, calles con tráfico y gente paseando. */
+/** Semilla fija: la ciudad siempre tiene los mismos árboles. */
+function rng(seed: number) {
+  return () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+}
+
+/** La ciudad en isométrico: parcelas con tus negocios, tráfico, gente y nubes. */
 export class CityScene extends Phaser.Scene {
   private bridge!: Bridge;
-  private w = 0;
-  private top = 0;
-  private plots: Plot[] = [];
-  private movers: Mover[] = [];
+  private ox = 0;
+  private oy = 0;
+  private plots: PlotView[] = [];
+  private movers: Walker[] = [];
+  private clouds: { cloud: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; speed: number }[] = [];
   private drag!: DragScroll;
   private ownedKey = "";
+  private worldW = 0;
+  private walkClock = 0;
 
   constructor() {
     super("city");
+  }
+
+  /** Punto de la rejilla (esquinas de casilla) en pantalla. */
+  private iso(c: number, r: number): { x: number; y: number } {
+    return { x: this.ox + ((c - r) * TW) / 2, y: this.oy + ((c + r) * TH) / 2 };
   }
 
   create(): void {
     this.bridge = bridgeOf(this);
     this.plots = [];
     this.movers = [];
+    this.clouds = [];
     const { w, h } = setupCamera(this);
-    this.w = w;
     const insets = this.bridge.insets();
-    this.top = insets.top;
     const s = this.bridge.state();
     this.ownedKey = BUSINESSES.map((b) => (s.biz[b.id].owned ? 1 : 0)).join("");
 
-    const entries: ({ id: string } | { soon: (typeof COMING_SOON)[number] })[] = [
-      ...BUSINESSES.map((b) => ({ id: b.id })),
-      ...COMING_SOON.map((c) => ({ soon: c })),
-    ];
-    const rows = Math.ceil(entries.length / 2);
-    const worldH = this.top + 40 + rows * ROW_H + 60;
+    const margin = 40;
+    this.ox = (ROWS * TW) / 2 + margin;
+    this.oy = insets.top + 120;
+    this.worldW = ((COLS + ROWS) * TW) / 2 + margin * 2;
+    const worldH = this.oy + ((COLS + ROWS) * TH) / 2 + 60 + insets.bottom;
 
-    this.cameras.main.setBackgroundColor(COLORS.grass);
-    this.drawStreets(rows, worldH);
+    this.cameras.main.setBackgroundColor(0x4fb8d8);
+    this.drawWater(worldH);
+    this.drawGround();
+    this.placeDecor();
+    for (const lot of LOTS) this.drawLot(lot.c, lot.r, lot.kind);
+    this.spawnTraffic();
+    this.spawnClouds(worldH);
 
-    const plotW = w / 2 - AVENUE_W / 2 - 22;
-    entries.forEach((e, i) => {
-      const row = Math.floor(i / 2);
-      const left = i % 2 === 0;
-      const x = left ? 12 : w / 2 + AVENUE_W / 2 + 10;
-      const y = this.top + 40 + row * ROW_H;
-      if ("id" in e) this.drawBusinessPlot(e.id, x, y, plotW, 180);
-      else this.drawComingSoon(e.soon, x, y, plotW, 180);
-    });
-
-    this.spawnTraffic(rows, worldH);
-    this.drag = new DragScroll(this, 0, worldH + insets.bottom - h);
+    this.drag = new DragScroll(this, 0, worldH - h, 0, this.worldW - w);
+    // Empezar centrados en el primer negocio
+    const first = this.iso(LOTS[0].c + 1, LOTS[0].r + 1);
+    this.cameras.main.scrollX = Phaser.Math.Clamp(first.x - w / 2, 0, Math.max(0, this.worldW - w));
+    this.cameras.main.scrollY = Phaser.Math.Clamp(first.y - h / 2, 0, Math.max(0, worldH - h));
   }
 
-  /* ---------- Calles ---------- */
+  private drawWater(worldH: number): void {
+    const g = this.add.graphics().setDepth(-20);
+    const rand = rng(3);
+    for (let i = 0; i < 70; i++) {
+      const x = rand() * this.worldW;
+      const y = rand() * worldH;
+      g.lineStyle(2, 0xffffff, 0.25).lineBetween(x, y, x + 14 + rand() * 12, y);
+    }
+  }
 
-  private drawStreets(rows: number, worldH: number): void {
-    const g = this.add.graphics();
-    const cx = this.w / 2;
-    // Texturas de césped
-    for (let i = 0; i < 60; i++) {
-      g.fillStyle(COLORS.grassDark, 0.5).fillCircle(Phaser.Math.Between(0, this.w), Phaser.Math.Between(0, worldH), Phaser.Math.Between(2, 5));
-    }
-    // Avenida principal
-    g.fillStyle(COLORS.sidewalk, 1).fillRect(cx - AVENUE_W / 2 - 8, 0, AVENUE_W + 16, worldH);
-    g.fillStyle(COLORS.road, 1).fillRect(cx - AVENUE_W / 2, 0, AVENUE_W, worldH);
-    for (let y = 0; y < worldH; y += 36) g.fillStyle(COLORS.roadLine, 0.9).fillRect(cx - 2, y, 4, 18);
-    // Calles transversales bajo cada fila
-    for (let r = 0; r < rows; r++) {
-      const y = this.top + 40 + r * ROW_H + 214;
-      g.fillStyle(COLORS.sidewalk, 1).fillRect(0, y - 6, this.w, 44);
-      g.fillStyle(COLORS.road, 1).fillRect(0, y, this.w, 32);
-      for (let x = 0; x < this.w; x += 36) g.fillStyle(COLORS.roadLine, 0.9).fillRect(x, y + 14, 18, 4);
-    }
-    // Árboles de decoración en los bordes
-    for (let r = 0; r <= rows; r++) {
-      const y = this.top + 20 + r * ROW_H;
-      emoji(this, 10, y, "🌳", 26).setDepth(1);
-      emoji(this, this.w - 12, y + 10, "🌲", 24).setDepth(1);
-    }
+  /* ---------- Suelo ---------- */
+
+  private tileKind(c: number, r: number): "road_c" | "road_r" | "cross" | "lot" | "grass" {
+    const onRow = ROAD_ROWS.includes(r);
+    const onCol = c === ROAD_COL;
+    if (onRow && onCol) return "cross";
+    if (onRow) return "road_c";
+    if (onCol) return "road_r";
+    if (LOTS.some((l) => c >= l.c && c < l.c + 2 && r >= l.r && r < l.r + 2)) return "lot";
+    return "grass";
+  }
+
+  private drawGround(): void {
+    const g = this.add.graphics().setDepth(-10);
+    const diamond = (c: number, r: number, inset = 0): Phaser.Math.Vector2[] => {
+      const t = this.iso(c, r);
+      const hw = TW / 2 - inset;
+      const hh = TH / 2 - inset / 2;
+      const cx = t.x;
+      const cy = t.y + TH / 2;
+      return [
+        new Phaser.Math.Vector2(cx, cy - hh),
+        new Phaser.Math.Vector2(cx + hw, cy),
+        new Phaser.Math.Vector2(cx, cy + hh),
+        new Phaser.Math.Vector2(cx - hw, cy),
+      ];
+    };
+    const rand = rng(7);
+    // Borde de tierra bajo la isla
+    const L = this.iso(0, ROWS);
+    const B = this.iso(COLS, ROWS);
+    const R = this.iso(COLS, 0);
+    g.fillStyle(0x6b4a2f, 1).fillPoints([new Phaser.Math.Vector2(L.x, L.y), new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(B.x, B.y + 26), new Phaser.Math.Vector2(L.x, L.y + 26)], true);
+    g.fillStyle(0x8a6240, 1).fillPoints([new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(R.x, R.y), new Phaser.Math.Vector2(R.x, R.y + 26), new Phaser.Math.Vector2(B.x, B.y + 26)], true);
+
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++) {
+        const kind = this.tileKind(c, r);
+        const t = this.iso(c, r);
+        const cx = t.x;
+        const cy = t.y + TH / 2;
+        if (kind === "grass") {
+          const base = (c + r) % 2 ? 0x7cc96b : 0x76c265;
+          g.fillStyle(mix(base, 0x8fd67a, rand() * 0.3), 1).fillPoints(diamond(c, r), true);
+          if (rand() < 0.3) g.fillStyle(0xffffff, 0.8).fillCircle(cx + (rand() - 0.5) * 30, cy + (rand() - 0.5) * 12, 1.6);
+          if (rand() < 0.2) g.fillStyle(0xffd166, 0.9).fillCircle(cx + (rand() - 0.5) * 30, cy + (rand() - 0.5) * 12, 1.6);
+        } else if (kind === "lot") {
+          g.fillStyle(0xd5d8dc, 1).fillPoints(diamond(c, r), true);
+          g.fillStyle(0xc4c8ce, 1).fillPoints(diamond(c, r, 6), true);
+        } else {
+          g.fillStyle(0xbfc5cc, 1).fillPoints(diamond(c, r), true);
+          g.fillStyle(0x4a5160, 1).fillPoints(diamond(c, r, kind === "cross" ? 2 : 8), true);
+          g.lineStyle(2, 0xf5f5f5, 0.9);
+          if (kind === "road_c") g.lineBetween(cx - TW / 8, cy - TH / 8, cx + TW / 8, cy + TH / 8);
+          if (kind === "road_r") g.lineBetween(cx + TW / 8, cy - TH / 8, cx - TW / 8, cy + TH / 8);
+          if (kind === "cross") {
+            g.lineStyle(3, 0xffffff, 0.7);
+            for (let i = -2; i <= 2; i++) g.lineBetween(cx - 20 + i * 2, cy + i * 5, cx - 10 + i * 2, cy + i * 5 - 5);
+          }
+        }
+      }
+  }
+
+  private placeDecor(): void {
+    const rand = rng(42);
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++) {
+        if (this.tileKind(c, r) !== "grass") continue;
+        const p = this.iso(c + 0.5, r + 0.5);
+        const roll = rand();
+        if (roll < 0.34) {
+          const key = rand() < 0.5 ? "tree_0" : "tree_1";
+          const tree = art(this, p.x + (rand() - 0.5) * 14, p.y + 8, key).setOrigin(0.5, 0.92);
+          tree.setDepth(tree.y);
+        } else if (roll < 0.5) {
+          art(this, p.x, p.y + 4, "bush").setOrigin(0.5, 0.8).setDepth(p.y);
+        } else if (roll < 0.58 && (ROAD_ROWS.includes(r + 1) || ROAD_ROWS.includes(r - 1))) {
+          art(this, p.x, p.y, "lamp_post").setOrigin(0.5, 0.95).setDepth(p.y);
+        }
+      }
   }
 
   /* ---------- Parcelas ---------- */
 
-  private drawBusinessPlot(id: string, x: number, y: number, w: number, h: number): void {
+  private drawLot(c: number, r: number, kind: LotKind): void {
+    const bottom = this.iso(c + 2, r + 2);
+    const center = this.iso(c + 1, r + 1);
+    if ("soon" in kind) {
+      const img = art(this, bottom.x, bottom.y + 2, "bld_soon");
+      img.setOrigin(0.5, (ART.bld_soon.h - 6) / ART.bld_soon.h).setDepth(bottom.y);
+      label(this, bottom.x, bottom.y + 14, `${kind.soon} · Próximamente`, 12, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
+      return;
+    }
+    const id = kind.id;
     const def = BUSINESSES.find((b) => b.id === id)!;
     const owned = this.bridge.state().biz[id].owned;
-    const plot: Plot = { id, x, y, w, h, owned };
-    const g = this.add.graphics();
-    const baseY = y + h;
+    const view: PlotView = { id, owned };
+    let topY = bottom.y - 90;
     if (owned) {
-      const bw = w - 10;
-      const bh = 118;
-      const bx = x + 5;
-      const by = baseY - bh;
-      g.fillStyle(0x000000, 0.18).fillEllipse(x + w / 2, baseY + 2, w, 16);
-      g.fillStyle(def.wall, 1).fillRect(bx, by, bw, bh);
-      g.fillStyle(0x000000, 0.08).fillRect(bx + bw - 14, by, 14, bh);
-      g.fillStyle(def.roof, 1).fillRect(bx - 6, by - 14, bw + 12, 16);
-      // Ventanas
-      for (let r = 0; r < 2; r++)
-        for (let c = 0; c < 3; c++) {
-          g.fillStyle(0xcfefff, 1).fillRect(bx + 12 + c * ((bw - 24) / 3), by + 40 + r * 30, (bw - 24) / 3 - 10, 20);
-        }
-      g.fillStyle(0x5b3b2a, 1).fillRoundedRect(x + w / 2 - 12, baseY - 30, 24, 30, { tl: 8, tr: 8, bl: 0, br: 0 });
-      // Letrero
-      g.fillStyle(0xffffff, 1).fillRoundedRect(x + w / 2 - 26, by - 44, 52, 34, 10);
-      emoji(this, x + w / 2, by - 27, def.icon, 24);
-      label(this, x + w / 2, baseY + 16, def.name, 12, "#14202f", { bold: true }).setWordWrapWidth(w).setAlign("center");
-      // Bocadillo con lo que gana
-      const bubbleBg = this.add.graphics();
-      bubbleBg.fillStyle(0x14202f, 0.9).fillRoundedRect(-44, -13, 88, 26, 13);
-      const text = label(this, 0, 0, "", 13, "#3ddc97", { bold: true });
-      plot.bubble = this.add.container(x + w / 2, by - 64, [bubbleBg, text]).setDepth(10);
-      plot.bubbleText = text;
-      this.tweens.add({ targets: plot.bubble, y: by - 68, yoyo: true, repeat: -1, duration: 900, ease: "Sine.easeInOut" });
+      const key = `bld_${id}`;
+      const spec = ART[key];
+      const img = art(this, bottom.x, bottom.y + 2, key);
+      img.setOrigin(0.5, (spec.h - 6) / spec.h).setDepth(bottom.y);
+      topY = bottom.y - spec.h + 10;
+      const bg = this.add.graphics();
+      bg.fillStyle(0x14202f, 0.92).fillRoundedRect(-46, -14, 92, 28, 14);
+      bg.fillStyle(0x3ddc97, 1).fillCircle(-32, 0, 7);
+      const coin = this.add.image(-32, 0, "coin").setScale(artScale(this, "coin") * 0.7);
+      const text = label(this, 8, 0, "", 13, "#3ddc97", { bold: true });
+      view.bubble = this.add.container(bottom.x, topY - 8, [bg, coin, text]).setDepth(9e4);
+      view.bubbleText = text;
+      this.tweens.add({ targets: view.bubble, y: topY - 13, yoyo: true, repeat: -1, duration: 900, ease: "Sine.easeInOut" });
     } else {
-      g.fillStyle(0xb58b5a, 1).fillRoundedRect(x, y + 30, w, h - 30, 10);
-      g.lineStyle(3, 0xffffff, 0.7);
-      for (let fx = x + 8; fx < x + w; fx += 18) g.lineBetween(fx, y + 34, fx, y + 50);
-      g.lineBetween(x + 4, y + 42, x + w - 4, y + 42);
-      const signBg = this.add.graphics();
-      signBg.fillStyle(0x7a4b25, 1).fillRect(-3, 0, 6, 36);
-      signBg.fillStyle(0xffffff, 1).fillRoundedRect(-58, -48, 116, 56, 10);
-      signBg.lineStyle(3, COLORS.red, 1).strokeRoundedRect(-58, -48, 116, 56, 10);
-      const title = label(this, 0, -34, "SE VENDE", 13, "#ff6b5b", { display: true });
-      const price = label(this, 0, -12, `${fmt(def.price)} €`, 16, "#14202f", { display: true });
-      plot.sign = this.add.container(x + w / 2, y + 110, [signBg, title, price]).setDepth(5);
-      emoji(this, x + w / 2, y + 150, def.icon, 22).setAlpha(0.7);
-      label(this, x + w / 2, baseY + 16, def.name, 12, "#14202f", { bold: true }).setWordWrapWidth(w).setAlign("center");
+      // Solar en venta: tierra, valla y cartel
+      const g = this.add.graphics().setDepth(-5);
+      const pts = [this.iso(c, r), this.iso(c + 2, r), this.iso(c + 2, r + 2), this.iso(c, r + 2)].map((p) => new Phaser.Math.Vector2(p.x, p.y));
+      g.fillStyle(0xc19a6b, 1).fillPoints(pts, true);
+      g.lineStyle(3, 0xffffff, 0.8).strokePoints(pts, true);
+      view.sign = art(this, center.x, center.y + 10, "sign_sale").setOrigin(0.5, 0.95).setDepth(center.y + 10);
+      const price = label(this, center.x, center.y - 46, `${fmt(def.price)} €`, 17, "#14202f", { display: true }).setDepth(center.y + 11);
+      this.tweens.add({ targets: price, scale: 1.08, yoyo: true, repeat: -1, duration: 700 });
+      topY = center.y - 90;
     }
-    const zone = this.add.zone(x, y, w, h + 20).setOrigin(0).setInteractive({ useHandCursor: true });
+    label(this, bottom.x, bottom.y + 14, def.name, 12, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
+
+    const zone = this.add.zone(center.x - TW, topY, TW * 2, bottom.y - topY + 10).setOrigin(0).setInteractive({ useHandCursor: true });
+    zone.setDepth(9.5e4);
     zone.on("pointerup", () => {
       if (!this.drag.wasDrag()) this.bridge.tapPlot(id);
     });
-    this.plots.push(plot);
+    this.plots.push(view);
   }
 
-  private drawComingSoon(c: (typeof COMING_SOON)[number], x: number, y: number, w: number, h: number): void {
-    const g = this.add.graphics();
-    g.fillStyle(0x9aa3b5, 0.6).fillRoundedRect(x, y + 30, w, h - 30, 10);
-    g.lineStyle(3, 0xf5c542, 1);
-    for (let i = 0; i < 6; i++) g.lineBetween(x + 10 + i * 24, y + 40, x + 22 + i * 24, y + 52);
-    emoji(this, x + w / 2, y + 100, "🚧", 34);
-    label(this, x + w / 2, y + 140, `${c.icon} ${c.name}`, 13, "#14202f", { bold: true });
-    label(this, x + w / 2, y + h + 16, "Próximamente", 12, "#14202f");
-  }
+  /* ---------- Tráfico, gente y nubes ---------- */
 
-  /* ---------- Tráfico ---------- */
-
-  private spawnTraffic(rows: number, worldH: number): void {
-    const cx = this.w / 2;
-    const cars = ["🚗", "🚕", "🚙", "🚌", "🛵", "🚚"];
-    for (let i = 0; i < 6; i++) {
-      const down = i % 2 === 0;
-      const obj = emoji(this, cx + (down ? -12 : 12), Phaser.Math.Between(0, worldH), Phaser.Utils.Array.GetRandom(cars), 22).setDepth(8);
-      obj.setAngle(down ? 90 : -90);
-      this.movers.push({ obj, axis: "y", speed: (down ? 1 : -1) * Phaser.Math.Between(50, 90), min: -30, max: worldH + 30 });
-    }
-    for (let r = 0; r < rows; r++) {
-      const y = this.top + 40 + r * ROW_H + 214;
+  private spawnTraffic(): void {
+    const rand = rng(99);
+    ROAD_ROWS.forEach((row, i) => {
       for (let k = 0; k < 2; k++) {
-        const right = k === 0;
-        const obj = emoji(this, Phaser.Math.Between(0, this.w), y + (right ? 24 : 9), Phaser.Utils.Array.GetRandom(cars), 20).setDepth(8);
-        if (right) obj.setScale(-1, 1);
-        this.movers.push({ obj, axis: "x", speed: (right ? 1 : -1) * Phaser.Math.Between(40, 80), min: -30, max: this.w + 30 });
+        const obj = art(this, 0, 0, `car_${(i + k) % 4}`);
+        this.movers.push({ obj, c: rand() * COLS, r: row + (k ? 0.68 : 0.32), dc: 1, dr: 0, speed: 1 + rand() * 0.8, min: -1, max: COLS + 1 });
       }
-      const walker = emoji(this, Phaser.Math.Between(0, this.w), y - 2, Phaser.Utils.Array.GetRandom(["🚶", "🚶‍♀️", "🏃", "🧍"]), 16).setDepth(7);
-      this.movers.push({ obj: walker, axis: "x", speed: Phaser.Math.Between(-25, 25) || 15, min: -20, max: this.w + 20 });
+    });
+    for (let k = 0; k < 3; k++) {
+      const obj = art(this, 0, 0, `car_${k % 4}`).setFlipX(true);
+      this.movers.push({ obj, c: ROAD_COL + (k % 2 ? 0.68 : 0.32), r: rand() * ROWS, dc: 0, dr: 1, speed: 1 + rand() * 0.8, min: -1, max: ROWS + 1 });
+    }
+    // Peatones por las aceras
+    const roles = ["ped0", "ped1", "ped2"];
+    for (let k = 0; k < 7; k++) {
+      const role = roles[k % 3];
+      const obj = art(this, 0, 0, `ch_${role}_0`).setOrigin(0.5, 0.95);
+      obj.setDisplaySize(ART[`ch_${role}_0`].w * 0.55, ART[`ch_${role}_0`].h * 0.55);
+      const alongC = k % 2 === 0;
+      const dir = rand() < 0.5 ? 1 : -1;
+      if (alongC) {
+        const row = ROAD_ROWS[k % ROAD_ROWS.length];
+        this.movers.push({ obj, role, c: rand() * COLS, r: row + (rand() < 0.5 ? -0.08 : 1.08), dc: dir, dr: 0, speed: 0.25 + rand() * 0.15, min: 0, max: COLS });
+      } else {
+        this.movers.push({ obj, role, c: ROAD_COL + (rand() < 0.5 ? -0.08 : 1.08), r: rand() * ROWS, dc: 0, dr: dir, speed: 0.25 + rand() * 0.15, min: 0, max: ROWS });
+      }
+    }
+  }
+
+  private spawnClouds(worldH: number): void {
+    const rand = rng(5);
+    for (let i = 0; i < 4; i++) {
+      const x = rand() * this.worldW;
+      const y = this.oy + rand() * (worldH - this.oy - 200);
+      const shadow = art(this, x + 60, y + 170, "cloud").setTint(0x000000).setAlpha(0.1).setDepth(8e4);
+      shadow.setDisplaySize(ART.cloud.w * 1.1, ART.cloud.h * 0.6);
+      const cloud = art(this, x, y, "cloud").setAlpha(0.92).setDepth(1e5);
+      this.clouds.push({ cloud, shadow, speed: 8 + rand() * 8 });
     }
   }
 
@@ -207,26 +298,50 @@ export class CityScene extends Phaser.Scene {
       this.scene.restart();
       return;
     }
-    const dt = dtMs / 1000;
+    const dt = Math.min(dtMs, 100) / 1000;
+    this.walkClock += dt;
+    const frame = Math.floor(this.walkClock * 6) % 2 ? 1 : 2;
     for (const m of this.movers) {
-      const v = m.obj[m.axis] + m.speed * dt;
-      m.obj[m.axis] = v > m.max ? m.min : v < m.min ? m.max : v;
+      m.c += m.dc * m.speed * dt;
+      m.r += m.dr * m.speed * dt;
+      if (m.role) {
+        // Los peatones dan media vuelta en los extremos
+        const v = m.dc ? m.c : m.r;
+        if (v > m.max || v < m.min) {
+          m.dc = -m.dc;
+          m.dr = -m.dr;
+        }
+        m.obj.setTexture(`ch_${m.role}_${frame}`);
+        // +c y -r van hacia la derecha en pantalla
+        m.obj.setFlipX(m.dc < 0 || m.dr > 0);
+      } else {
+        if (m.c > m.max) m.c = m.min;
+        if (m.r > m.max) m.r = m.min;
+      }
+      const p = this.iso(m.c, m.r);
+      m.obj.setPosition(p.x, p.y).setDepth(p.y + 1);
+    }
+    for (const cl of this.clouds) {
+      cl.cloud.x += cl.speed * dt;
+      cl.shadow.x += cl.speed * dt;
+      if (cl.cloud.x > this.worldW + 100) {
+        cl.cloud.x -= this.worldW + 260;
+        cl.shadow.x -= this.worldW + 260;
+      }
     }
     const now = Date.now();
     for (const p of this.plots) {
-      if (!p.id) continue;
       if (p.owned && p.bubbleText) {
         const rate = businessRate(s, p.id, now);
         p.bubbleText.setText(rate > 0 ? `+${fmt(rate)}/s` : "Entrar ▶");
       } else if (p.sign) {
         const def = BUSINESSES.find((b) => b.id === p.id)!;
-        const afford = s.cash >= def.price;
-        p.sign.setScale(afford ? 1 + Math.sin(now / 200) * 0.04 : 1);
+        p.sign.setTint(s.cash >= def.price ? 0xffffff : mix(0xffffff, 0x999999, 0.5));
       }
     }
     for (const sale of this.bridge.drainSales(null)) {
       const p = this.plots.find((x) => x.id === sale.biz);
-      if (p?.bubble && Math.random() < 0.3) floatText(this, p.bubble.x, p.bubble.y - 16, `+${fmt(sale.amount)}`);
+      if (p?.bubble && Math.random() < 0.25) floatText(this, p.bubble.x, p.bubble.y - 18, `+${fmt(sale.amount)}`);
     }
   }
 }

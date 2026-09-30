@@ -138,48 +138,48 @@ export class Pill extends Phaser.GameObjects.Container {
 }
 
 /**
- * Arrastrar para desplazar la cámara en vertical, distinguiendo un arrastre de un toque.
- * Los objetos deben comprobar `wasDrag()` en su `pointerup`.
+ * Arrastrar para desplazar la cámara (en vertical, o en los dos ejes si hay límites en X),
+ * distinguiendo un arrastre de un toque. Los objetos deben comprobar `wasDrag()` en su `pointerup`.
  */
 export class DragScroll {
-  private startY = 0;
-  private startScroll = 0;
+  private start = { x: 0, y: 0, sx: 0, sy: 0 };
+  private last = { x: 0, y: 0 };
+  private vel = { x: 0, y: 0 };
   private dragging = false;
   private down = false;
-  private velocity = 0;
-  private lastY = 0;
 
   constructor(
     private scene: Phaser.Scene,
     private minY: number,
     private maxY: number,
+    private minX = 0,
+    private maxX = 0,
   ) {
     const cam = scene.cameras.main;
     scene.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       this.down = true;
       this.dragging = false;
-      this.startY = this.lastY = p.y;
-      this.startScroll = cam.scrollY;
-      this.velocity = 0;
+      this.start = { x: p.x, y: p.y, sx: cam.scrollX, sy: cam.scrollY };
+      this.last = { x: p.x, y: p.y };
+      this.vel = { x: 0, y: 0 };
     });
     scene.input.on("pointermove", (p: Phaser.Input.Pointer) => {
       if (!this.down) return;
-      if (Math.abs(p.y - this.startY) > 8 * DPR) this.dragging = true;
-      if (this.dragging) {
-        cam.scrollY = this.clamp(this.startScroll - (p.y - this.startY) / DPR);
-        this.velocity = (this.lastY - p.y) / DPR;
-        this.lastY = p.y;
-      }
+      if (Math.hypot(p.x - this.start.x, p.y - this.start.y) > 8 * DPR) this.dragging = true;
+      if (!this.dragging) return;
+      cam.scrollX = this.clampX(this.start.sx - (p.x - this.start.x) / DPR);
+      cam.scrollY = this.clampY(this.start.sy - (p.y - this.start.y) / DPR);
+      this.vel = { x: (this.last.x - p.x) / DPR, y: (this.last.y - p.y) / DPR };
+      this.last = { x: p.x, y: p.y };
     });
-    scene.input.on("pointerup", () => {
-      this.down = false;
-      // Se deja `dragging` hasta el siguiente pointerdown para que los objetos lo lean.
-    });
+    // Se deja `dragging` hasta el siguiente pointerdown para que los objetos lo lean.
+    scene.input.on("pointerup", () => (this.down = false));
     scene.events.on("update", () => {
-      if (!this.down && Math.abs(this.velocity) > 0.2) {
-        cam.scrollY = this.clamp(cam.scrollY + this.velocity);
-        this.velocity *= 0.92;
-      }
+      if (this.down || Math.hypot(this.vel.x, this.vel.y) < 0.2) return;
+      cam.scrollX = this.clampX(cam.scrollX + this.vel.x);
+      cam.scrollY = this.clampY(cam.scrollY + this.vel.y);
+      this.vel.x *= 0.92;
+      this.vel.y *= 0.92;
     });
   }
 
@@ -187,14 +187,22 @@ export class DragScroll {
     return this.dragging;
   }
 
-  setBounds(minY: number, maxY: number): void {
+  setBounds(minY: number, maxY: number, minX = this.minX, maxX = this.maxX): void {
     this.minY = minY;
     this.maxY = Math.max(minY, maxY);
-    this.scene.cameras.main.scrollY = this.clamp(this.scene.cameras.main.scrollY);
+    this.minX = minX;
+    this.maxX = Math.max(minX, maxX);
+    const cam = this.scene.cameras.main;
+    cam.scrollX = this.clampX(cam.scrollX);
+    cam.scrollY = this.clampY(cam.scrollY);
   }
 
-  private clamp(y: number): number {
-    return Phaser.Math.Clamp(y, this.minY, this.maxY);
+  private clampX(x: number): number {
+    return Phaser.Math.Clamp(x, this.minX, Math.max(this.minX, this.maxX));
+  }
+
+  private clampY(y: number): number {
+    return Phaser.Math.Clamp(y, this.minY, Math.max(this.minY, this.maxY));
   }
 }
 

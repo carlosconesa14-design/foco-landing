@@ -7,6 +7,7 @@ import { earn, lifeIndex, offlineEarnings, passiveRate, tapStation, tick, type S
 import { fmt, fmtTime } from "./game/format";
 import { freshState, migrate, type GameState, type View } from "./game/state";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
+import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
 import { CityScene } from "./scenes/CityScene";
 import { COLORS, DPR, type Bridge } from "./scenes/common";
@@ -71,10 +72,19 @@ const game = new Phaser.Game({
   scene: [],
   callbacks: { preBoot: (g) => g.registry.set("bridge", bridge) },
 });
+game.scene.add("boot", BootScene, true);
 game.scene.add("city", CityScene);
 game.scene.add("business", BusinessScene);
 
+let artReady = false;
+let saveLoaded = false;
+game.events.once("art-ready", () => {
+  artReady = true;
+  if (saveLoaded) startView();
+});
+
 function startView(): void {
+  if (!artReady || !saveLoaded) return;
   for (const sc of game.scene.getScenes(true)) game.scene.stop(sc.scene.key);
   if (S.view.scene === "business") game.scene.start("business", { id: S.view.id });
   else game.scene.start("city");
@@ -235,9 +245,9 @@ async function boot(): Promise<void> {
   S = migrate(await loadSave());
   updateHeader(S, Date.now());
   renderBar(S);
-  // Esperar a que Phaser arranque antes de lanzar la primera escena.
-  if (game.isBooted) startView();
-  else game.events.once("ready", startView);
+  // La primera escena se lanza cuando el arte está listo y la partida cargada.
+  saveLoaded = true;
+  startView();
   offerOffline();
   setInterval(save, 5000);
   document.addEventListener("visibilitychange", () => {
