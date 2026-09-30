@@ -3,8 +3,9 @@ import Phaser from "phaser";
 import { createAds, type Placement } from "./ads";
 import { sound, type Sfx } from "./audio/sound";
 import * as act from "./game/actions";
-import { BUSINESSES, CONFIG, LIFE, VIRAL_TITLES } from "./game/data";
-import { earn, lifeIndex, offlineEarnings, passiveRate, setLuck, tapStation, tick, type SaleEvent } from "./game/economy";
+import { CITIES, CONFIG, LIFE, TOURISM, VIRAL_TITLES } from "./game/data";
+import { boostHours, callWave, tourism } from "./game/world";
+import { bizList, earn, lifeIndex, offlineEarnings, passiveRate, setLuck, tapStation, tick, type SaleEvent } from "./game/economy";
 import { fmt, fmtTime } from "./game/format";
 import { nextGoal } from "./game/goal";
 import * as meta from "./game/meta";
@@ -21,6 +22,7 @@ import { modal, modalOpen, toast } from "./ui/overlays";
 import { openIpoSheet, openPlotSheet, openStationSheet, openUnlockSheet, type PanelCtx } from "./ui/panels";
 import { openAchievements, openDaily, openExecs, openMissions, openSettings } from "./ui/metaPanels";
 import { activeSheet, closeSheet } from "./ui/sheet";
+import { openWorld } from "./ui/worldPanels";
 import "./styles.css";
 
 const root = document.getElementById("app")!;
@@ -172,7 +174,8 @@ document.getElementById("bar")!.addEventListener("click", async (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>("button");
   if (!b) return;
   if (b.dataset.nav === "city") goTo({ scene: "city" });
-  else if (b.dataset.nav === "home") goTo({ scene: "business", id: BUSINESSES[0].id });
+  else if (b.dataset.nav === "home") goTo({ scene: "business", id: bizList(S)[0].id });
+  else if (b.dataset.nav === "world") openWorld(ctx);
   else if (b.dataset.nav === "ipo") openIpoSheet(ctx);
   else if (b.dataset.rush && (await watchAd("rush"))) {
     act.startRush(S, b.dataset.rush, Date.now());
@@ -217,7 +220,7 @@ function updateMeta(now: number): void {
   const step = meta.tutorialStep(S);
   const tut = document.getElementById("tut")!;
   // El tutorial transcurre en el almacén; en la ciudad se oculta.
-  const show = !!step && S.view.scene === "business" && S.view.id === BUSINESSES[0].id && !activeSheet();
+  const show = !!step && S.view.scene === "business" && S.city === CITIES[0].id && S.view.id === bizList(S)[0].id && !activeSheet();
   tut.hidden = !show;
   if (show && step) {
     tut.style.top = `${top}px`;
@@ -239,7 +242,7 @@ function updateGoal(now: number, top: number, tutorialShown: boolean): void {
   if (!g) return;
   el.style.top = `${top}px`;
   document.getElementById("goalIcon")!.textContent = g.icon;
-  document.getElementById("goalText")!.textContent = `${g.text} · ${fmt(g.cost)} €`;
+  document.getElementById("goalText")!.textContent = g.cost > 0 ? `${g.text} · ${fmt(g.cost)} €` : g.text;
   document.getElementById("goalBar")!.style.width = `${g.progress * 100}%`;
   el.classList.toggle("ready", g.progress >= 1);
 }
@@ -248,6 +251,11 @@ document.getElementById("goal")!.addEventListener("click", () => {
   const g = goalAction;
   if (!g) return;
   const a = g.action;
+  if (a.kind === "world") {
+    if (S.view.scene !== "city") goTo({ scene: "city" });
+    openWorld(ctx);
+    return;
+  }
   if (a.kind === "business") {
     if (S.view.scene !== "city") goTo({ scene: "city" });
     openPlotSheet(ctx, a.bizId);
@@ -261,8 +269,35 @@ document.getElementById("goal")!.addEventListener("click", () => {
 document.getElementById("boostBtn")!.addEventListener("click", async () => {
   if (await watchAd("boost_x2")) {
     act.addBoost(S, Date.now());
-    say(`Modo hustle: +${CONFIG.boostHours} h ganando el doble`);
+    say(`Modo hustle: +${boostHours(S)} h ganando el doble`);
   }
+});
+
+/* ---------- Olas turísticas (Miami) ---------- */
+
+let waveWasActive = false;
+
+function updateWave(now: number): void {
+  const el = document.getElementById("wave")!;
+  const t = tourism(S, now);
+  el.hidden = !t;
+  if (!t) return;
+  el.style.bottom = `${document.getElementById("bar")!.offsetHeight + 10}px`;
+  el.classList.toggle("on", t.active);
+  const btn = document.getElementById("waveBtn") as HTMLButtonElement;
+  btn.hidden = t.active;
+  document.getElementById("waveTxt")!.innerHTML = t.active
+    ? `<b>🌊 ¡Ola de turistas! Ventas x${TOURISM.mult}</b>${fmtTime(t.left / 1000)}`
+    : `<b>🌊 Próxima ola</b>en ${fmtTime(t.next / 1000)}`;
+  if (t.active && !waveWasActive) {
+    fx("milestone", true);
+    banner(root, "🌊", `¡Llegan los turistas! Ventas x${TOURISM.mult} durante ${fmtTime(t.left / 1000)}`);
+  }
+  waveWasActive = t.active;
+}
+
+document.getElementById("waveBtn")!.addEventListener("click", async () => {
+  if (await watchAd("tourist_wave")) callWave(S, Date.now());
 });
 
 /* ---------- Evento viral ---------- */
@@ -372,6 +407,7 @@ game.events.on("step", (time: number) => {
     updateBar(S, now);
     activeSheet()?.update?.();
     updateMeta(now);
+    updateWave(now);
     const li = lifeIndex(S.totalEarned);
     if (li > S.lifeSeen) {
       S.lifeSeen = li;

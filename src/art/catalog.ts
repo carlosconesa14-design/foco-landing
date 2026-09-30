@@ -34,6 +34,18 @@ export const LOOKS: Record<string, Look> = {
   rider: { skin: 0xe0ac69, shirt: 0x2ecc71, pants: 0x2c3e50, hat: "cap", hatColor: 0x27ae60 },
   editor: { skin: 0xf1c27d, shirt: 0xfdcb6e, pants: 0x2d3436, hat: "hair", hatColor: 0x5b3a29, extra: "glasses", extraColor: 0x2d3436 },
   tech: { skin: 0xc68642, shirt: 0x34495e, pants: 0x2c3e50, hat: "cap", hatColor: 0x1abc9c },
+  taquero: { skin: 0xc68642, shirt: 0xff9f43, pants: 0x2d3436, hat: "cap", hatColor: 0xee5253, extra: "apron", extraColor: 0x10ac84 },
+  skater: { skin: 0xf1c27d, shirt: 0x48dbfb, pants: 0x576574, hat: "cap", hatColor: 0xff6b6b },
+  vendor: { skin: 0x8d5524, shirt: 0xfeca57, pants: 0x0abde3, hat: "hair", hatColor: 0x1b1b1b },
+  bartender: { skin: 0xe0ac69, shirt: 0x1dd1a1, pants: 0x222f3e, hat: "hair", hatColor: 0x3d2b1f, extra: "bowtie", extraColor: 0xff6b6b },
+  promoter: { skin: 0xf5cba7, shirt: 0xff6fb5, pants: 0x222f3e, hat: "bun", hatColor: 0xf0c05a, extra: "glasses", extraColor: 0x111111 },
+  captain: { skin: 0xf1c27d, shirt: 0xffffff, pants: 0x1e3799, hat: "cap", hatColor: 0x0c2461, extra: "tie", extraColor: 0xf5c542 },
+  sailor: { skin: 0xc68642, shirt: 0x4a69bd, pants: 0xffffff, hat: "cap", hatColor: 0xffffff },
+  agent: { skin: 0xe0ac69, shirt: 0xf8c291, pants: 0x3c6382, hat: "hair", hatColor: 0x6e4b2a, extra: "glasses", extraColor: 0x3c6382 },
+  broker: { skin: 0xf5cba7, shirt: 0x576574, pants: 0x222f3e, hat: "hair", hatColor: 0xa0522d, extra: "tie", extraColor: 0xfeca57 },
+  clerk: { skin: 0x8d5524, shirt: 0xc8d6e5, pants: 0x576574, hat: "bun", hatColor: 0x222222 },
+  coder: { skin: 0xf1c27d, shirt: 0x341f97, pants: 0x222f3e, hat: "headset", hatColor: 0x2d3436 },
+  trader: { skin: 0xc68642, shirt: 0x10ac84, pants: 0x222f3e, hat: "hair", hatColor: 0x111111, extra: "tie", extraColor: 0x341f97 },
   ped0: { skin: 0xf1c27d, shirt: 0xe74c3c, pants: 0x34495e, hat: "hair", hatColor: 0x2c1e12 },
   ped1: { skin: 0x8d5524, shirt: 0xf1c40f, pants: 0x2980b9, hat: "bun", hatColor: 0x111111 },
   ped2: { skin: 0xe0ac69, shirt: 0x27ae60, pants: 0x7f8c8d, hat: "cap", hatColor: 0x8e44ad },
@@ -48,6 +60,11 @@ export const BIZ_ART: Record<string, { worker: string; mover: string; seller: st
   restaurant: { worker: "cook", mover: "waiter", seller: "rider", item: "item_dish", station: "st_restaurant" },
   tiktok: { worker: "creator", mover: "editor", seller: "brand", item: "item_clip", station: "st_tiktok" },
   ai: { worker: "engineer", mover: "tech", seller: "sales", item: "item_chip", station: "st_ai" },
+  foodtruck: { worker: "taquero", mover: "skater", seller: "vendor", item: "item_taco", station: "st_foodtruck" },
+  beachclub: { worker: "bartender", mover: "waiter", seller: "promoter", item: "item_cocktail", station: "st_beachclub" },
+  yachts: { worker: "captain", mover: "sailor", seller: "agent", item: "item_ticket", station: "st_yachts" },
+  realestate: { worker: "broker", mover: "clerk", seller: "sales", item: "item_key", station: "st_realestate" },
+  crypto: { worker: "coder", mover: "tech", seller: "trader", item: "item_token", station: "st_crypto" },
 };
 
 for (const role of Object.keys(LOOKS)) for (const f of [0, 1, 2]) def(`ch_${role}_${f}`, 44, 60);
@@ -155,6 +172,8 @@ def("item_box", 26, 26);
 def("item_dish", 26, 26);
 def("item_clip", 26, 26);
 def("item_chip", 26, 26);
+const MIAMI_ITEMS = ["item_taco", "item_cocktail", "item_ticket", "item_key", "item_token"];
+for (const k of MIAMI_ITEMS) def(k, 26, 26);
 def("coin", 20, 20);
 def("spark", 10, 10);
 def("puff", 24, 24);
@@ -176,6 +195,33 @@ function drawItem(p: Pen, key: string): void {
     p.fill(0xffffff).poly([[3, 5], [23, 2], [23, 7], [3, 10]]);
     p.fill(0x2d3436).poly([[7, 4.4], [11, 3.8], [9, 8.8], [5, 9.3]]).poly([[15, 3.2], [19, 2.6], [17, 7.6], [13, 8.2]]);
     p.fill(0xff6fb5).circle(13, 16.5, 3);
+  } else if (key === "item_taco") {
+    p.fill(0xf6c453).poly([[2, 20], [13, 6], [24, 20]]);
+    p.fill(0x6ab04c).ellipse(13, 13, 16, 6);
+    p.fill(0xeb4d4b).circle(9, 12, 2).circle(16, 11, 2);
+    p.fill(0xe1a730).ellipse(13, 20, 24, 7);
+    p.fill(0xffffff, 0.35).circle(8, 17, 1.5);
+  } else if (key === "item_cocktail") {
+    p.fill(0xffffff, 0.8).poly([[4, 4], [22, 4], [13, 15]]);
+    p.fill(0xff6b81).poly([[6, 6], [20, 6], [13, 13]]);
+    p.fill(0xffffff, 0.9).rect(12, 14, 2, 8).ellipse(13, 23, 12, 3);
+    p.fill(0xfeca57).circle(20, 5, 3.5);
+    p.stroke(1.4, 0x10ac84).line(9, 1, 14, 9);
+  } else if (key === "item_ticket") {
+    p.fill(0x1e3799).rrect(2, 7, 22, 13, 2);
+    p.fill(0xffffff).rrect(4, 9, 13, 9, 1);
+    p.fill(0x1e3799).poly([[6, 15], [15, 15], [13, 12], [9, 12]]);
+    p.fill(0xf5c542).circle(21, 13.5, 2);
+  } else if (key === "item_key") {
+    p.fill(0xc49b1a).circle(8, 12, 6.5);
+    p.fill(0xf5c542).circle(8, 11, 6.5);
+    p.fill(0x2d3436, 0.6).circle(8, 11, 2.5);
+    p.fill(0xf5c542).rect(13, 10, 11, 3).rect(19, 13, 2, 4).rect(22, 13, 2, 3);
+  } else if (key === "item_token") {
+    p.fill(0xb35a00).circle(13, 14, 11);
+    p.fill(0xff9f1a).circle(13, 13, 11);
+    p.fill(0xffc36b).circle(13, 13, 8);
+    p.fill(0xb35a00).rect(10, 8, 2, 10).rect(14, 8, 2, 10).rect(9, 8, 7, 2).rect(9, 12, 8, 2).rect(9, 16, 8, 2);
   } else {
     p.fill(0x2d3436).rrect(4, 4, 18, 18, 3);
     p.fill(0x1abc9c).rrect(8, 8, 10, 10, 2);
@@ -202,7 +248,8 @@ function drawPulley(p: Pen): void {
 
 /* ---------- Estaciones de trabajo (interior) ---------- */
 
-for (const k of ["st_dropship", "st_restaurant", "st_tiktok", "st_ai"]) def(k, 100, 86);
+const STATIONS = ["st_dropship", "st_restaurant", "st_tiktok", "st_ai", "st_foodtruck", "st_beachclub", "st_yachts", "st_realestate", "st_crypto"];
+for (const k of STATIONS) def(k, 100, 86);
 
 function drawStation(p: Pen, key: string): void {
   p.fill(0x000000, 0.18).ellipse(50, 82, 92, 8);
@@ -237,6 +284,58 @@ function drawStation(p: Pen, key: string): void {
     p.fill(0xff6fb5).circle(50, 30, 3);
     p.fill(0xffeaa7).rrect(78, 58, 16, 24, 3);
     p.fill(0xfd79a8).rrect(4, 60, 20, 22, 3);
+  } else if (key === "st_foodtruck") {
+    p.fill(0xff9f43).rrect(6, 20, 80, 50, 8);
+    p.fill(0xee5253).rrect(6, 14, 80, 12, 5);
+    p.fill(0x222f3e).rrect(18, 30, 44, 22, 3);
+    p.fill(0xfeca57).rrect(20, 32, 40, 18, 2);
+    p.fill(0xffffff).rrect(14, 50, 56, 5, 2);
+    p.fill(0xffffff).rrect(66, 28, 14, 30, 3);
+    p.fill(0x48dbfb).rrect(68, 30, 10, 12, 2);
+    for (const x of [22, 70]) {
+      p.fill(0x2b2b2b).circle(x, 72, 8);
+      p.fill(0xb2bec3).circle(x, 72, 3.5);
+    }
+    p.fill(0x10ac84).poly([[30, 2], [52, 2], [48, 14], [34, 14]]);
+  } else if (key === "st_beachclub") {
+    p.fill(0x8e6e53).rrect(4, 44, 92, 36, 6);
+    p.fill(0xb08968).rrect(4, 40, 92, 10, 4);
+    p.fill(0x1dd1a1).rect(4, 56, 92, 4);
+    p.fill(0x6d4c41).rect(48, 6, 4, 38);
+    for (let i = 0; i < 6; i++) p.fill(i % 2 ? 0xffffff : 0xff6b81).poly([[50, 2], [8 + i * 14, 22], [22 + i * 14, 22]]);
+    for (const [x, c] of [[18, 0xff6b81], [34, 0xfeca57], [66, 0x48dbfb], [82, 0x1dd1a1]] as [number, number][]) {
+      p.fill(0xffffff, 0.85).rrect(x - 4, 30, 8, 10, 2);
+      p.fill(c).rect(x - 3, 32, 6, 5);
+    }
+  } else if (key === "st_yachts") {
+    p.fill(0x0abde3).rrect(0, 50, 100, 34, 8);
+    p.fill(0x48dbfb, 0.6).rect(6, 64, 30, 2).rect(56, 74, 34, 2);
+    p.fill(0x8e6e53).rect(2, 44, 96, 8);
+    p.fill(0x6d4c41).rect(8, 44, 4, 30).rect(88, 44, 4, 30);
+    p.fill(0xffffff).poly([[10, 30], [90, 30], [80, 50], [18, 50]]);
+    p.fill(0x1e3799).rect(14, 42, 72, 3);
+    p.fill(0xf5f6fa).rrect(30, 16, 40, 16, 5);
+    p.fill(0x0c2461).rrect(34, 19, 32, 7, 2);
+    p.fill(0xdfe6e9).rrect(42, 6, 18, 12, 4);
+  } else if (key === "st_realestate") {
+    p.fill(0x8395a7).rrect(8, 48, 84, 34, 4);
+    p.fill(0xc8d6e5).rrect(8, 44, 84, 8, 3);
+    p.fill(0x576574).rrect(28, 16, 44, 30, 4);
+    p.fill(0x222f3e).rrect(31, 19, 38, 23, 2);
+    p.fill(0xfeca57).poly([[38, 36], [50, 26], [62, 36]]).rect(42, 36, 16, 5);
+    p.fill(0xffffff).rrect(74, 30, 14, 16, 2);
+    p.fill(0x10ac84).circle(20, 36, 8);
+    p.fill(0x6d4c41).rect(18, 42, 4, 6);
+  } else if (key === "st_crypto") {
+    p.fill(0x1e272e).rrect(10, 2, 80, 82, 5);
+    p.fill(0x341f97).rrect(14, 6, 72, 40, 3);
+    p.stroke(2.4, 0x1dd1a1).line(18, 38, 30, 28).line(30, 28, 40, 32).line(40, 32, 54, 16).line(54, 16, 64, 22).line(64, 22, 82, 10);
+    p.fill(0x2f3640);
+    for (let i = 0; i < 3; i++) p.rrect(14, 50 + i * 11, 72, 8, 2);
+    for (let i = 0; i < 3; i++) {
+      p.fill(0xff9f1a).circle(20, 54 + i * 11, 1.8);
+      p.fill(0x1dd1a1).circle(26, 54 + i * 11, 1.8);
+    }
   } else {
     p.fill(0x1e272e).rrect(18, 2, 64, 82, 5);
     p.fill(0x2f3640);
@@ -254,6 +353,7 @@ function drawStation(p: Pen, key: string): void {
 def("tree_0", 56, 72);
 def("tree_1", 48, 76);
 def("bush", 36, 24);
+def("palm", 60, 84);
 def("cloud", 150, 64);
 def("sign_sale", 112, 92);
 def("lamp_post", 16, 56);
@@ -272,6 +372,28 @@ function drawTree(p: Pen, variant: number): void {
     p.fill(0x27ae60).poly([[24, 4], [38, 42], [10, 42]]);
     p.fill(0x58d68d, 0.6).poly([[24, 6], [30, 24], [20, 24]]);
   }
+}
+
+function drawPalm(p: Pen): void {
+  p.fill(0x000000, 0.2).ellipse(30, 79, 34, 9);
+  // Tronco curvado por segmentos
+  for (let i = 0; i < 9; i++) {
+    const t = i / 8;
+    const x = 26 + Math.sin(t * 1.4) * 8;
+    const y = 78 - t * 56;
+    p.fill(i % 2 ? 0xa47148 : 0x8b5a2b).ellipse(x, y, 9 - t * 2, 8);
+  }
+  const top: [number, number] = [34, 22];
+  const leaf = (dx: number, dy: number, c: number) =>
+    p.fill(c).poly([top, [top[0] + dx * 0.5 - dy * 0.18, top[1] + dy * 0.5 + dx * 0.18 - 4], [top[0] + dx, top[1] + dy], [top[0] + dx * 0.5 + dy * 0.12, top[1] + dy * 0.5 - dx * 0.12 + 3]]);
+  leaf(-28, 10, 0x1e8449);
+  leaf(26, 12, 0x1e8449);
+  leaf(-22, -12, 0x27ae60);
+  leaf(22, -10, 0x27ae60);
+  leaf(-4, -20, 0x2ecc71);
+  leaf(-10, 22, 0x229954);
+  leaf(12, 20, 0x229954);
+  p.fill(0x6d4c41).circle(32, 25, 3).circle(37, 26, 3);
 }
 
 function drawBush(p: Pen): void {
@@ -306,7 +428,10 @@ function drawLampPost(p: Pen): void {
 /* ---------- Edificios isométricos ---------- */
 
 const BLD_W = 172;
-const BLD: Record<string, number> = { dropship: 150, restaurant: 164, tiktok: 236, ai: 270, soon: 170 };
+const BLD: Record<string, number> = {
+  dropship: 150, restaurant: 164, tiktok: 236, ai: 270, soon: 170,
+  foodtruck: 140, beachclub: 170, yachts: 180, realestate: 260, crypto: 300,
+};
 for (const [id, h] of Object.entries(BLD)) def(`bld_${id}`, BLD_W, h);
 
 function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: string, s: number) => void): void {
@@ -387,6 +512,76 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
     p.fill(0xff4757).circle(cx, by - H - 101, 3.5);
     p.fill(0xffffff).rrect(cx - 24, by - H - 64, 48, 30, 9);
     emoji(cx, by - H - 49, "🤖", 20);
+  } else if (id === "foodtruck") {
+    // Plaza con dos food trucks y un toldo
+    p.fill(0xf8e2a5).poly([[cx - a, by - b], [cx, by], [cx + a, by - b], [cx, by - 2 * b]]);
+    const truck = (x: number, y: number, body: number, top: number) => {
+      isoBox(p, x, y, 34, 17, 30, body, top);
+      const R = rightFace(x, y, 34, 17);
+      p.fill(0x222f3e).poly(faceQuad(R, 0.15, 0.8, 12, 26));
+      p.fill(0xfeca57).poly(faceQuad(R, 0.18, 0.77, 14, 24));
+      p.fill(0x2b2b2b).circle(x - 18, y - 4, 5).circle(x + 20, y - 5, 5);
+    };
+    truck(cx - 26, by - 30, 0xff9f43, 0xee5253);
+    truck(cx + 28, by - 20, 0x48dbfb, 0x0abde3);
+    p.fill(0x6d4c41).rect(cx - 2, by - 70, 3, 44);
+    for (let i = 0; i < 6; i++) p.fill(i % 2 ? 0xffffff : 0x10ac84).poly([[cx, by - 82], [cx - 30 + i * 10, by - 64], [cx - 20 + i * 10, by - 64]]);
+    p.fill(0xffffff).rrect(cx - 26, by - 136, 52, 34, 9);
+    emoji(cx, by - 119, "🌮", 22);
+  } else if (id === "beachclub") {
+    const H = 44, wall = 0xf5f6fa;
+    p.fill(0xf8e2a5).poly([[cx - a, by - b], [cx, by], [cx + a, by - b], [cx, by - 2 * b]]);
+    // Piscina
+    p.fill(0x48dbfb).poly([[cx + 6, by - 12], [cx + 50, by - 34], [cx + 30, by - 44], [cx - 14, by - 22]]);
+    p.fill(0xffffff, 0.5).poly([[cx + 10, by - 18], [cx + 30, by - 28], [cx + 26, by - 30], [cx + 6, by - 20]]);
+    isoBox(p, cx - 18, by - 24, a - 30, b - 15, H, wall, 0x0abde3);
+    const L = leftFace(cx - 18, by - 24, a - 30, b - 15);
+    win(L, 3, 1, 10, 34, 0x48dbfb, 2);
+    for (const [x, y, c] of [[cx + 40, by - 60, 0xff6b81], [cx - 58, by - 34, 0xfeca57]] as [number, number, number][]) {
+      p.fill(0x6d4c41).rect(x - 1, y, 2, 22);
+      p.fill(c).poly([[x - 16, y + 4], [x, y - 6], [x + 16, y + 4]]);
+    }
+    p.fill(0xffffff).rrect(cx - 44, by - H - 90, 52, 34, 9);
+    emoji(cx - 18, by - H - 73, "🍹", 22);
+  } else if (id === "yachts") {
+    // Muelle sobre el agua con un yate
+    p.fill(0x2ec4d6).poly([[cx - a, by - b], [cx, by], [cx + a, by - b], [cx, by - 2 * b]]);
+    p.fill(0xffffff, 0.35).rect(cx - 40, by - 30, 20, 2).rect(cx + 20, by - 50, 26, 2);
+    p.fill(0x8e6e53).poly([[cx - a + 6, by - b], [cx - a + 24, by - b + 9], [cx + 6, by - 2 * b + 18], [cx - 12, by - 2 * b + 9]]);
+    const yx = cx + 14, yy = by - 26;
+    p.fill(0xdfe6e9).poly([[yx - 56, yy - 14], [yx + 40, yy - 14], [yx + 28, yy + 6], [yx - 44, yy + 6]]);
+    p.fill(0x1e3799).rect(yx - 50, yy - 6, 84, 3);
+    p.fill(0xffffff).rrect(yx - 36, yy - 36, 56, 24, 6);
+    p.fill(0x0c2461).rrect(yx - 30, yy - 30, 44, 8, 3);
+    p.fill(0xf5f6fa).rrect(yx - 22, yy - 52, 30, 18, 5);
+    p.fill(0x0c2461).rrect(yx - 18, yy - 47, 22, 6, 2);
+    p.stroke(2, 0x57606f).line(yx - 6, yy - 52, yx - 6, yy - 80);
+    p.fill(0xffffff).rrect(cx - 26, by - 170, 52, 34, 9);
+    emoji(cx, by - 153, "🛥️", 22);
+  } else if (id === "realestate") {
+    const H = 150, wall = 0xfeca57;
+    isoBox(p, cx, by - 6, a - 18, b - 9, H, wall, 0x8395a7);
+    const L = leftFace(cx, by - 6, a - 18, b - 9);
+    const R = rightFace(cx, by - 6, a - 18, b - 9);
+    win(L, 3, 7, 10, H - 8, 0x74b9ff, 1);
+    win(R, 3, 7, 10, H - 8, 0x5fa8f5, 1);
+    for (let v = 26; v < H; v += 20) {
+      p.fill(0xffffff).poly(faceQuad(R, 0, 1, v, v + 3));
+      p.fill(0xffffff).poly(faceQuad(L, 0, 1, v, v + 3));
+    }
+    p.fill(0xffffff).rrect(cx - 26, by - H - 64, 52, 34, 9);
+    emoji(cx, by - H - 47, "🔑", 22);
+  } else if (id === "crypto") {
+    const H = 190, wall = 0x341f97;
+    isoBox(p, cx, by - 6, a - 22, b - 11, H, wall, 0x5f27cd);
+    const L = leftFace(cx, by - 6, a - 22, b - 11);
+    const R = rightFace(cx, by - 6, a - 22, b - 11);
+    win(L, 3, 9, 8, H - 6, 0x8c7ae6, 1);
+    win(R, 3, 9, 8, H - 6, 0x7158e2, 1);
+    p.fill(0xff9f1a).poly(faceQuad(L, 0, 1, 40, 46)).poly(faceQuad(R, 0, 1, 40, 46));
+    p.fill(0xff9f1a).circle(cx, by - H - 52, 22);
+    p.fill(0xffc36b).circle(cx, by - H - 52, 16);
+    emoji(cx, by - H - 52, "🪙", 20);
   } else {
     // En obras
     p.fill(0xb58b5a).poly([[cx - a, by - b], [cx, by], [cx + a, by - b], [cx, by - 2 * b]]);
@@ -430,15 +625,16 @@ export function buildArt(scene: Phaser.Scene, k: number): void {
   for (const [role, look] of Object.entries(LOOKS)) for (const f of [0, 1, 2]) make(scene, `ch_${role}_${f}`, k, (p) => drawChar(p, look, f));
   make(scene, "van", k, drawVan);
   CAR_COLORS.forEach((c, i) => make(scene, `car_${i}`, k, (p) => drawCar(p, c)));
-  for (const key of ["item_box", "item_dish", "item_clip", "item_chip"]) make(scene, key, k, (p) => drawItem(p, key));
+  for (const key of ["item_box", "item_dish", "item_clip", "item_chip", ...MIAMI_ITEMS]) make(scene, key, k, (p) => drawItem(p, key));
   make(scene, "coin", k, drawCoin);
   make(scene, "spark", k, (p) => p.fill(0xffffff).circle(5, 5, 5));
   make(scene, "puff", k, (p) => p.fill(0xffffff, 0.8).circle(12, 12, 11));
   make(scene, "pulley", k, drawPulley);
-  for (const key of ["st_dropship", "st_restaurant", "st_tiktok", "st_ai"]) make(scene, key, k, (p) => drawStation(p, key));
+  for (const key of STATIONS) make(scene, key, k, (p) => drawStation(p, key));
   make(scene, "tree_0", k, (p) => drawTree(p, 0));
   make(scene, "tree_1", k, (p) => drawTree(p, 1));
   make(scene, "bush", k, drawBush);
+  make(scene, "palm", k, drawPalm);
   make(scene, "cloud", k, drawCloud);
   make(scene, "sign_sale", k, drawSaleSign);
   make(scene, "lamp_post", k, drawLampPost);

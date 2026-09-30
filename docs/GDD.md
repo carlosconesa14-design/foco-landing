@@ -58,6 +58,18 @@ Cada negocio es un recinto isométrico vallado, con el edificio principal, camin
 - **Salida a bolsa (prestigio):** acciones con +2 % permanente cada una.
 - **💎 Diamantes (fase 2 ✅):** se ganan con las misiones, el premio diario, los logros, el tutorial y los maletines. Se gastan en maletines y en paquetes de dinero. Nunca se pierden, tampoco al salir a bolsa.
 
+### Expansión mundial: varias ciudades (fase 3 ✅ Madrid + Miami)
+Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. Así el juego dura semanas en vez de días.
+
+- **Completar una ciudad:** tener todos sus negocios y haber ganado su objetivo (Madrid 1 Qn = 10^30 €, Miami 10^36 €). Aparece el objetivo "¡Expándete a…!" y un punto rojo en el botón 🌍 Mundo.
+- **Expandirse:** la ciudad queda como franquicia y da **+50 % de ingresos en todas las ciudades** para siempre. Además ganas **⭐ estrellas de franquicia**: 10 × (ganado / objetivo)^¼, o el doble con un anuncio (`expand_x2`).
+- **Qué se conserva:** diamantes, ejecutivos, logros, misiones, estilo de vida máximo, ajustes y estrellas. **Qué se reinicia:** dinero, negocios y acciones de la nueva ciudad (cada ciudad tiene su propia bolsa).
+- **Viajar:** puedes volver a cualquier ciudad abierta desde el mapa. Al llegar cobras lo que ganaron tus gerentes mientras no estabas (con el tope offline).
+- **Oficina central (se paga con ⭐):** Marca global (+25 % por nivel), Equipo inicial (gerentes del primer negocio desde el inicio), Local reformado (+1 puesto inicial por nivel), Proveedores (−8 % en mejoras), Turno de noche (+2 h de offline), Coach de productividad (+1 h de modo hustle por anuncio) y Marketing viral (+1 % de ventas virales).
+- **Cada ciudad tiene una regla propia.** Miami tiene **olas turísticas**: cada 15 min llegan turistas durante 3 min y las ventas se multiplican por 3 (solo jugando, no offline). Un anuncio (`tourist_wave`) atrae una ola al momento. Premia abrir la app a menudo.
+- **Miami:** 5 negocios (Food trucks → Club de playa → Alquiler de yates → Inmobiliaria → Exchange de cripto), arena y palmeras. Es más lenta que Madrid: un jugador activo sin anuncios la completa en unos 6–7 días (con anuncios, unos 3).
+- **Siguientes ciudades:** Dubái (mecánica: petróleo que sube y baja de precio), Tokio (tecnología, turnos de noche)… Solo hay que añadir un `CityDef` en `src/game/data.ts` y su arte.
+
 ### Retención (fase 2 ✅)
 - **Tutorial guiado** de 6 pasos, con premio en diamantes al terminar.
 - **3 misiones diarias** elegidas al azar cada día, con un premio extra por completar las tres.
@@ -89,6 +101,16 @@ Ajustada con un simulador (`npx vite-node scripts/balance.ts`): un bot juega con
 | Agencia de IA | ~24 h | ~12 h |
 | Primera acción en bolsa | ~9 h | ~4 h 30 min |
 | Los 4 negocios completos | ~3 días | ~1,5 días |
+
+**Miami** (`--city=miami --stars=10`, con Marca global 1, Equipo inicial y Local reformado 1):
+
+| Hito | Sin anuncios | Con x2 de anuncios |
+| --- | --- | --- |
+| Club de playa | ~53 min | — |
+| Alquiler de yates | ~10 h | ~4 h |
+| Inmobiliaria | ~40 h | ~18 h 30 min |
+| Exchange de cripto | ~3 días | ~1,5 días |
+| Ciudad completada (10^36 €) | ~6,5 días | ~3 días |
 
 Claves del equilibrio:
 - **Puestos:** cada uno produce x5 y cuesta x11. Cada puesto nuevo tarda más en llegar, pero siempre compensa.
@@ -128,6 +150,8 @@ Anuncios bonificados, siempre opcionales:
 | `free_chest` | Maletín de ejecutivo gratis cada 4 h | 2 ✅ |
 | `ability_recharge` | Recargar la habilidad de un ejecutivo | 2 ✅ |
 | `daily_double` | Doble premio diario | 2 ✅ |
+| `expand_x2` | Doble de estrellas al expandirse a otra ciudad | 3 ✅ |
+| `tourist_wave` | Atraer una ola turística al momento en Miami (ventas x3 durante 3 min) | 3 ✅ |
 
 Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2 permanente").
 
@@ -137,5 +161,5 @@ Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2
 | --- | --- |
 | **1. Núcleo jugable** ✅ | Motor Phaser, ciudad isométrica con 4 negocios, recintos con puestos animados, gerentes básicos, mejoras, offline, anuncios, bolsa, guardado, arte sustituible |
 | **2. Retención** | ✅ 💎, ejecutivos con rareza y habilidades, maletines, misiones diarias, premio diario, logros, tutorial guiado · ✅ sonido, música, vibración y ajustes · Pendiente: Liga Millonario (servidor) |
-| **3. Contenido** | Más negocios, segunda ciudad, eventos de temporada, avatar |
+| **3. Contenido** | ✅ Expansión mundial: Miami, estrellas y Oficina central · Pendiente: más ciudades, eventos de temporada, avatar |
 | **4. Lanzamiento** | Arte profesional (sprites), analítica, tiendas, compras dentro de la app, SSV de AdMob |

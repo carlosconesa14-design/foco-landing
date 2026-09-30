@@ -1,6 +1,5 @@
 import {
   ACHIEVEMENTS,
-  BUSINESSES,
   CHESTS,
   DAILY_REWARDS,
   EXEC_FACES,
@@ -16,7 +15,7 @@ import {
   type ExecKind,
   type MissionId,
 } from "./data";
-import { earn, passiveRate } from "./economy";
+import { bizList, earn, passiveRate } from "./economy";
 import { bump, type Exec, type GameState, type Mission } from "./state";
 
 /** Diamantes, ejecutivos y maletines, misiones diarias, racha diaria, logros y tutorial. */
@@ -234,13 +233,13 @@ export function achievementProgress(s: GameState, a: AchievementDef): number {
   let v = 0;
   switch (a.metric) {
     case "totalEarned":
-      v = s.totalEarned;
+      v = s.world.lifetimeEarned;
       break;
     case "businesses":
-      v = BUSINESSES.filter((b) => s.biz[b.id].owned).length;
+      v = bizList(s).filter((b) => s.biz[b.id].owned).length;
       break;
     case "maxFloors":
-      v = Math.max(...BUSINESSES.map((b) => (s.biz[b.id].owned ? s.biz[b.id].floors.length : 0)));
+      v = Math.max(...bizList(s).map((b) => (s.biz[b.id].owned ? s.biz[b.id].floors.length : 0)));
       break;
     case "ipos":
       v = s.ipos;

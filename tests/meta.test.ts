@@ -165,7 +165,7 @@ describe("logros, tienda y tutorial", () => {
   it("los logros se cobran al alcanzarlos", () => {
     const s = freshState(NOW);
     expect(meta.claimAchievement(s, "earn_1k")).toBeNull();
-    s.totalEarned = 1e3;
+    s.world.lifetimeEarned = 1e3;
     expect(meta.achievementsToClaim(s)).toBe(1);
     expect(meta.claimAchievement(s, "earn_1k")).toBe(5);
     expect(meta.claimAchievement(s, "earn_1k")).toBeNull();

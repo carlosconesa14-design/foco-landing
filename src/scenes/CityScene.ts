@@ -1,7 +1,8 @@
 import Phaser from "phaser";
 import { ART, art, artScale } from "../art/catalog";
 import { mix } from "../art/pen";
-import { BUSINESSES } from "../game/data";
+import { ALL_BUSINESSES, type CityDef } from "../game/data";
+import { cityDef } from "../game/state";
 import { businessRate } from "../game/economy";
 import { fmt } from "../game/format";
 import { DragScroll, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
@@ -15,14 +16,27 @@ const ROAD_ROWS = [3, 7, 11];
 const ROAD_COL = 4;
 
 type LotKind = { id: string } | { soon: string };
-const LOTS: { c: number; r: number; kind: LotKind }[] = [
-  { c: 1, r: 1, kind: { id: "dropship" } },
-  { c: 6, r: 1, kind: { id: "restaurant" } },
-  { c: 1, r: 5, kind: { id: "tiktok" } },
-  { c: 6, r: 5, kind: { id: "ai" } },
-  { c: 1, r: 9, kind: { soon: "🏋️ Gimnasio" } },
-  { c: 6, r: 9, kind: { soon: "🏨 Hotel" } },
+/** Parcelas del mapa: los negocios de la ciudad se colocan en orden y el resto queda en obras. */
+const LOT_POSITIONS: { c: number; r: number }[] = [
+  { c: 1, r: 1 },
+  { c: 6, r: 1 },
+  { c: 1, r: 5 },
+  { c: 6, r: 5 },
+  { c: 1, r: 9 },
+  { c: 6, r: 9 },
 ];
+const SOON_LABELS: Record<string, string[]> = {
+  madrid: ["🏋️ Gimnasio", "🏨 Hotel"],
+  miami: ["🏨 Resort"],
+};
+
+function lotsFor(city: CityDef): { c: number; r: number; kind: LotKind }[] {
+  const soon = SOON_LABELS[city.id] ?? [];
+  return LOT_POSITIONS.map((p, i) => ({
+    ...p,
+    kind: i < city.businesses.length ? { id: city.businesses[i].id } : { soon: soon[i - city.businesses.length] ?? "🏗️ Solar" },
+  }));
+}
 
 interface PlotView {
   id: string;
@@ -62,6 +76,8 @@ export class CityScene extends Phaser.Scene {
   private clouds: { cloud: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; speed: number }[] = [];
   private drag!: DragScroll;
   private ownedKey = "";
+  private city!: CityDef;
+  private lots: { c: number; r: number; kind: LotKind }[] = [];
   private worldW = 0;
   private walkClock = 0;
 
@@ -82,7 +98,9 @@ export class CityScene extends Phaser.Scene {
     setupCamera(this);
     const insets = this.bridge.insets();
     const s = this.bridge.state();
-    this.ownedKey = BUSINESSES.map((b) => (s.biz[b.id].owned ? 1 : 0)).join("");
+    this.city = cityDef(s.city);
+    this.lots = lotsFor(this.city);
+    this.ownedKey = s.city + this.city.businesses.map((b) => (s.biz[b.id].owned ? 1 : 0)).join("");
 
     const margin = 40;
     this.ox = (ROWS * TW) / 2 + margin;
@@ -90,17 +108,17 @@ export class CityScene extends Phaser.Scene {
     this.worldW = ((COLS + ROWS) * TW) / 2 + margin * 2;
     const worldH = this.oy + ((COLS + ROWS) * TH) / 2 + 60 + insets.bottom;
 
-    this.cameras.main.setBackgroundColor(0x4fb8d8);
+    this.cameras.main.setBackgroundColor(this.city.ground.water);
     this.drawWater(worldH);
     this.drawGround();
     this.placeDecor();
-    for (const lot of LOTS) this.drawLot(lot.c, lot.r, lot.kind);
+    for (const lot of this.lots) this.drawLot(lot.c, lot.r, lot.kind);
     this.spawnTraffic();
     this.spawnClouds(worldH);
 
     this.drag = new DragScroll(this, this.worldW, worldH, { zoom: 0.85, minZoom: 0.5, maxZoom: 1.4 });
     // Empezar centrados en el primer negocio
-    const first = this.iso(LOTS[0].c + 1, LOTS[0].r + 1);
+    const first = this.iso(this.lots[0].c + 1, this.lots[0].r + 1);
     this.drag.centerOn(first.x, first.y);
   }
 
@@ -122,7 +140,7 @@ export class CityScene extends Phaser.Scene {
     if (onRow && onCol) return "cross";
     if (onRow) return "road_c";
     if (onCol) return "road_r";
-    if (LOTS.some((l) => c >= l.c && c < l.c + 2 && r >= l.r && r < l.r + 2)) return "lot";
+    if (this.lots.some((l) => c >= l.c && c < l.c + 2 && r >= l.r && r < l.r + 2)) return "lot";
     return "grass";
   }
 
@@ -146,8 +164,8 @@ export class CityScene extends Phaser.Scene {
     const L = this.iso(0, ROWS);
     const B = this.iso(COLS, ROWS);
     const R = this.iso(COLS, 0);
-    g.fillStyle(0x6b4a2f, 1).fillPoints([new Phaser.Math.Vector2(L.x, L.y), new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(B.x, B.y + 26), new Phaser.Math.Vector2(L.x, L.y + 26)], true);
-    g.fillStyle(0x8a6240, 1).fillPoints([new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(R.x, R.y), new Phaser.Math.Vector2(R.x, R.y + 26), new Phaser.Math.Vector2(B.x, B.y + 26)], true);
+    g.fillStyle(this.city.ground.edge, 1).fillPoints([new Phaser.Math.Vector2(L.x, L.y), new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(B.x, B.y + 26), new Phaser.Math.Vector2(L.x, L.y + 26)], true);
+    g.fillStyle(mix(this.city.ground.edge, 0xffffff, 0.15), 1).fillPoints([new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(R.x, R.y), new Phaser.Math.Vector2(R.x, R.y + 26), new Phaser.Math.Vector2(B.x, B.y + 26)], true);
 
     for (let r = 0; r < ROWS; r++)
       for (let c = 0; c < COLS; c++) {
@@ -156,8 +174,8 @@ export class CityScene extends Phaser.Scene {
         const cx = t.x;
         const cy = t.y + TH / 2;
         if (kind === "grass") {
-          const base = (c + r) % 2 ? 0x7cc96b : 0x76c265;
-          g.fillStyle(mix(base, 0x8fd67a, rand() * 0.3), 1).fillPoints(diamond(c, r), true);
+          const base = (c + r) % 2 ? this.city.ground.grass : this.city.ground.grassAlt;
+          g.fillStyle(mix(base, 0xffffff, rand() * 0.12), 1).fillPoints(diamond(c, r), true);
           if (rand() < 0.3) g.fillStyle(0xffffff, 0.8).fillCircle(cx + (rand() - 0.5) * 30, cy + (rand() - 0.5) * 12, 1.6);
           if (rand() < 0.2) g.fillStyle(0xffd166, 0.9).fillCircle(cx + (rand() - 0.5) * 30, cy + (rand() - 0.5) * 12, 1.6);
         } else if (kind === "lot") {
@@ -185,7 +203,7 @@ export class CityScene extends Phaser.Scene {
         const p = this.iso(c + 0.5, r + 0.5);
         const roll = rand();
         if (roll < 0.34) {
-          const key = rand() < 0.5 ? "tree_0" : "tree_1";
+          const key = this.city.trees[Math.floor(rand() * this.city.trees.length)];
           const tree = art(this, p.x + (rand() - 0.5) * 14, p.y + 8, key).setOrigin(0.5, 0.92);
           tree.setDepth(tree.y);
         } else if (roll < 0.5) {
@@ -208,7 +226,7 @@ export class CityScene extends Phaser.Scene {
       return;
     }
     const id = kind.id;
-    const def = BUSINESSES.find((b) => b.id === id)!;
+    const def = ALL_BUSINESSES.find((b) => b.id === id)!;
     const owned = this.bridge.state().biz[id].owned;
     const view: PlotView = { id, owned };
     let topY = bottom.y - 90;
@@ -292,7 +310,7 @@ export class CityScene extends Phaser.Scene {
 
   update(_t: number, dtMs: number): void {
     const s = this.bridge.state();
-    const key = BUSINESSES.map((b) => (s.biz[b.id].owned ? 1 : 0)).join("");
+    const key = s.city + this.city.businesses.map((b) => (s.biz[b.id]?.owned ? 1 : 0)).join("");
     if (key !== this.ownedKey) {
       this.scene.restart();
       return;
@@ -334,7 +352,7 @@ export class CityScene extends Phaser.Scene {
         const rate = businessRate(s, p.id, now);
         p.bubbleText.setText(rate > 0 ? `+${fmt(rate)}/s` : "Entrar ▶");
       } else if (p.sign) {
-        const def = BUSINESSES.find((b) => b.id === p.id)!;
+        const def = ALL_BUSINESSES.find((b) => b.id === p.id)!;
         p.sign.setTint(s.cash >= def.price ? 0xffffff : mix(0xffffff, 0x999999, 0.5));
       }
     }

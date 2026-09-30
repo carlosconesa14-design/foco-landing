@@ -4,7 +4,7 @@ import { mix, shade } from "../art/pen";
 import { CHAIN } from "../game/data";
 import { bizDef, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
 import { fmt } from "../game/format";
-import type { BusinessState } from "../game/state";
+import { cityDef, type BusinessState } from "../game/state";
 import { COLORS, DPR, DragScroll, Pill, bridgeOf, emoji, floatText, label, setupCamera, type Bridge } from "./common";
 
 /* Rejilla isométrica del recinto */
@@ -40,6 +40,11 @@ const GROUND: Record<string, { a: number; b: number; path: number; pad: number }
   restaurant: { a: 0xeccfae, b: 0xe3c29e, path: 0xffffff, pad: 0xc0392b },
   tiktok: { a: 0xdcd3f2, b: 0xd2c8ec, path: 0xff6fb5, pad: 0x6c5ce7 },
   ai: { a: 0xd3e6e3, b: 0xc8dfdb, path: 0x1abc9c, pad: 0x2c3e50 },
+  foodtruck: { a: 0xf6e3b4, b: 0xefd9a4, path: 0xff9f43, pad: 0xee5253 },
+  beachclub: { a: 0xf8e7c0, b: 0xf1dcae, path: 0x48dbfb, pad: 0x0abde3 },
+  yachts: { a: 0xd9c3a5, b: 0xd0b999, path: 0x1e3799, pad: 0x576574 },
+  realestate: { a: 0xe9e4d6, b: 0xe0dac9, path: 0xfeca57, pad: 0x8395a7 },
+  crypto: { a: 0xd9d3ee, b: 0xcfc8e8, path: 0xff9f1a, pad: 0x341f97 },
 };
 
 interface SlotView {
@@ -159,7 +164,7 @@ export class BusinessScene extends Phaser.Scene {
     this.worldW = ((COLS + ROWS) * TW) / 2 + margin * 2;
     const worldH = this.oy + ((COLS + ROWS + 2) * TH) / 2 + 40 + insets.bottom;
 
-    this.cameras.main.setBackgroundColor(0x6fbf5e);
+    this.cameras.main.setBackgroundColor(mix(cityDef(this.bridge.state().city).ground.grass, 0x000000, 0.06));
     this.drawGround();
     this.drawFence();
     this.drawDecor();
@@ -282,7 +287,8 @@ export class BusinessScene extends Phaser.Scene {
       ] as Pt[]) {
         if (rand() < 0.55) continue;
         const p = this.iso(c, r);
-        const tree = art(this, p.x, p.y + 8, rand() < 0.5 ? "tree_0" : "tree_1").setOrigin(0.5, 0.92);
+        const trees = cityDef(this.bridge.state().city).trees;
+        const tree = art(this, p.x, p.y + 8, trees[Math.floor(rand() * trees.length)]).setOrigin(0.5, 0.92);
         tree.setDepth(tree.y);
       }
     }

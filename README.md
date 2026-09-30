@@ -44,6 +44,8 @@ Todos son opcionales. `Placement` en `src/ads/types.ts`:
 | `free_chest` | Maletín de ejecutivo gratis cada 4 h |
 | `ability_recharge` | Recargar al instante la habilidad de un ejecutivo |
 | `daily_double` | Duplicar el premio diario |
+| `expand_x2` | Doble de estrellas de franquicia al expandirse a otra ciudad |
+| `tourist_wave` | Miami: atraer una ola de turistas al momento (ventas x3 durante 3 min) |
 
 El panel de la Bolsa incluye un panel de desarrollo con los anuncios vistos por ubicación y un ingreso estimado. Hay que quitarlo antes de publicar.
 

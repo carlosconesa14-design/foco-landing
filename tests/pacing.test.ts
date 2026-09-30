@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../src/game/balance";
+import { applyStartPerks } from "../src/game/world";
 
 /**
  * Protege el ritmo del juego: un bot activo (sin anuncios) debe llegar a cada hito
@@ -45,3 +46,27 @@ describe("ritmo de progresión", () => {
     expect(ads.at["biz_tiktok"]).toBeLessThan(res.at["biz_tiktok"] * 0.75);
   });
 }, 120_000);
+
+describe("ritmo de Miami (segunda ciudad, con 10 ⭐ repartidas)", () => {
+  const res = simulate({
+    hours: 90,
+    dt: 2,
+    city: "miami",
+    setup: (s) => {
+      s.world.completed = ["madrid"];
+      s.world.upgrades = { brand: 1, team: 1, floors: 1 };
+      applyStartPerks(s);
+    },
+  });
+
+  it("el arranque es rápido gracias a la Oficina central", () => {
+    expect(res.at["biz_beachclub"]).toBeLessThan(2 * h);
+  });
+
+  it("cada negocio tarda más que su equivalente de Madrid", () => {
+    expect(res.at["biz_yachts"]).toBeGreaterThan(6 * h);
+    expect(res.at["biz_realestate"]).toBeGreaterThan(24 * h);
+    expect(res.at["biz_crypto"]).toBeGreaterThan(48 * h);
+    expect(res.at["biz_crypto"]).toBeLessThan(90 * h);
+  });
+}, 300_000);

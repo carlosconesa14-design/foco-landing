@@ -21,7 +21,7 @@ import {
   type Station,
 } from "../game/economy";
 import { fmt } from "../game/format";
-import type { BuyMode, GameState, View } from "../game/state";
+import { cityDef, type BuyMode, type GameState, type View } from "../game/state";
 import type { Celebration } from "./celebrate";
 import { closeSheet, openSheet } from "./sheet";
 
@@ -218,7 +218,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
   const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">📈</span><div><h3>Salir a bolsa</h3><p class="muted">Tienes <b class="gold">${fmt(s0.shares)} acciones</b>: +${fmt(s0.shares * CONFIG.shareBonus * 100)}% a todo lo que ganas.</p></div></div>
-     <p class="muted">Vendes todos tus negocios y vuelves a empezar con el almacén, pero cada acción suma un +${CONFIG.shareBonus * 100}% para siempre. Tu estilo de vida (${LIFE[li].icon} ${LIFE[li].name}) se mantiene.</p>
+     <p class="muted">Vendes todos los negocios de esta ciudad y vuelves a empezar con el primero, pero cada acción suma un +${CONFIG.shareBonus * 100}% para siempre. Tu estilo de vida (${LIFE[li].icon} ${LIFE[li].name}) se mantiene.</p>
      <div class="stat"><span>Recibirías ahora</span><b class="gold" data-gain></b></div>
      <p class="small muted" data-need></p>
      <div class="actions col">
@@ -235,7 +235,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
     (el) => {
       const g = sharesToGain(ctx.state());
       $(el, "[data-gain]").textContent = `${fmt(g)} acciones`;
-      $(el, "[data-need]").textContent = g < 1 ? `Necesitas ganar ${fmt(CONFIG.shareDivisor)} € en esta partida para tu primera acción.` : "";
+      $(el, "[data-need]").textContent = g < 1 ? `Necesitas ganar ${fmt(cityDef(ctx.state().city).shareDivisor)} € en esta partida para tu primera acción.` : "";
       el.querySelectorAll<HTMLButtonElement>("[data-ipo]").forEach((b) => (b.disabled = g < 1));
     },
   );
@@ -255,7 +255,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
       void ctx.celebrate({
         icon: "🔔",
         title: "¡Has salido a bolsa!",
-        subtitle: "Vuelves a empezar con el almacén, pero ahora todo rinde más.",
+        subtitle: "Vuelves a empezar con tu primer negocio, pero ahora todo rinde más.",
         highlight: `+${fmt(res.gained)} acciones · +${fmt(res.gained * CONFIG.shareBonus * 100)} % para siempre`,
         color: "#4aa8ff",
       });

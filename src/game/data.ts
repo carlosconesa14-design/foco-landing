@@ -101,6 +101,111 @@ export const BUSINESSES: BusinessDef[] = [
   },
 ];
 
+/** Negocios de Miami: cinco en vez de cuatro, y cada uno más lento de completar. */
+export const MIAMI_BUSINESSES: BusinessDef[] = [
+  {
+    id: "foodtruck", name: "Food trucks", icon: "🌮", blurb: "Tacos y batidos para los turistas del paseo marítimo.",
+    price: 0, mult: 1, pace: 2.5, wall: 0xff9f43, roof: 0xee5253,
+    floorName: "Food truck", worker: "🧑‍🍳", item: "🌮", transportName: "Patinadores", transportIcon: "🛼",
+    saleName: "Puestos de playa", saleWorker: "🏖️", customer: "🏖️",
+  },
+  {
+    id: "beachclub", name: "Club de playa", icon: "🏖️", blurb: "Tumbonas, cócteles y música hasta que se pone el sol.",
+    price: 1.5e9, mult: 4e5, pace: 8, wall: 0x48dbfb, roof: 0x0abde3,
+    floorName: "Barra", worker: "🍹", item: "🍹", transportName: "Camareros", transportIcon: "🤵",
+    saleName: "Relaciones públicas", saleWorker: "📣", customer: "🏖️",
+  },
+  {
+    id: "yachts", name: "Alquiler de yates", icon: "🛥️", blurb: "Excursiones de lujo por la bahía de Biscayne.",
+    price: 3e16, mult: 1e12, pace: 25, wall: 0xf5f6fa, roof: 0x1e3799,
+    floorName: "Amarre", worker: "🧑‍✈️", item: "🎫", transportName: "Lanchas", transportIcon: "🚤",
+    saleName: "Agentes de viaje", saleWorker: "🧳", customer: "🛳️",
+  },
+  {
+    id: "realestate", name: "Inmobiliaria", icon: "🏘️", blurb: "Áticos frente al mar que se venden antes de construirse.",
+    price: 2e23, mult: 4e18, pace: 60, wall: 0xfeca57, roof: 0x8395a7,
+    floorName: "Oficina", worker: "🧑‍💼", item: "🔑", transportName: "Gestores", transportIcon: "📁",
+    saleName: "Agentes", saleWorker: "🤝", customer: "🏘️",
+  },
+  {
+    id: "crypto", name: "Exchange de cripto", icon: "🪙", blurb: "Millones de operaciones por segundo en la capital cripto.",
+    price: 2e29, mult: 1e24, pace: 150, wall: 0x341f97, roof: 0x5f27cd,
+    floorName: "Servidor", worker: "🧑‍💻", item: "🪙", transportName: "Bots", transportIcon: "🤖",
+    saleName: "Traders", saleWorker: "📊", customer: "🏦",
+  },
+];
+
+/* ---------- Ciudades ---------- */
+
+export type CityMechanic = "none" | "tourism";
+
+export interface CityDef {
+  id: string;
+  name: string;
+  flag: string;
+  blurb: string;
+  businesses: BusinessDef[];
+  /** Ganado en la ciudad (con todos sus negocios comprados) para completarla y expandirse. */
+  goal: number;
+  /** Divisor de las acciones de la bolsa en esta ciudad. */
+  shareDivisor: number;
+  mechanic: CityMechanic;
+  /** Colores del mapa de la ciudad. */
+  ground: { grass: number; grassAlt: number; water: number; edge: number };
+  trees: string[];
+}
+
+export const CITIES: CityDef[] = [
+  {
+    id: "madrid", name: "Madrid", flag: "🇪🇸", blurb: "Donde empieza todo: de rider a dueño de una agencia de IA.",
+    businesses: BUSINESSES, goal: 1e30, shareDivisor: 3e20, mechanic: "none",
+    ground: { grass: 0x7cc96b, grassAlt: 0x76c265, water: 0x4fb8d8, edge: 0x6b4a2f },
+    trees: ["tree_0", "tree_1"],
+  },
+  {
+    id: "miami", name: "Miami", flag: "🇺🇸", blurb: "Sol, playa y turistas: la demanda llega en olas.",
+    businesses: MIAMI_BUSINESSES, goal: 1e36, shareDivisor: 3e24, mechanic: "tourism",
+    ground: { grass: 0xf3d99b, grassAlt: 0xeccf8a, water: 0x2ec4d6, edge: 0xc79a55 },
+    trees: ["palm", "palm", "bush"],
+  },
+];
+
+export const ALL_BUSINESSES: BusinessDef[] = CITIES.flatMap((c) => c.businesses);
+
+/** Olas turísticas de Miami: cada 15 min llega una ola de 3 min que triplica las ventas. */
+export const TOURISM = { periodMin: 15, waveMin: 3, mult: 3, adWaveMin: 3 } as const;
+
+/* ---------- Oficina central: mejoras permanentes con estrellas de franquicia ---------- */
+
+export const FRANCHISE = {
+  /** Bonus de ingresos por cada ciudad completada, en todas las ciudades. */
+  cityBonus: 0.5,
+  /** Estrellas base al completar una ciudad; crecen con la raíz cuarta de lo ganado sobre el objetivo. */
+  baseStars: 10,
+} as const;
+
+export type OfficeId = "brand" | "suppliers" | "offline" | "hustle" | "luck" | "team" | "floors";
+
+export interface OfficeUpgrade {
+  id: OfficeId;
+  icon: string;
+  name: string;
+  desc: string;
+  max: number;
+  /** Coste en estrellas del siguiente nivel, estando en `level`. */
+  cost: (level: number) => number;
+}
+
+export const OFFICE: OfficeUpgrade[] = [
+  { id: "brand", icon: "🌍", name: "Marca global", desc: "+25 % de ingresos en todas las ciudades", max: 10, cost: (l) => 2 + l * 2 },
+  { id: "team", icon: "👔", name: "Equipo inicial", desc: "Empiezas cada ciudad (y cada salida a bolsa) con los gerentes del primer negocio", max: 1, cost: () => 4 },
+  { id: "floors", icon: "🏗️", name: "Local reformado", desc: "Empiezas con +1 puesto abierto (y su gerente) en el primer negocio", max: 3, cost: (l) => 3 + l * 3 },
+  { id: "suppliers", icon: "🤝", name: "Proveedores", desc: "Las mejoras cuestan un 8 % menos", max: 5, cost: (l) => 3 + l * 3 },
+  { id: "offline", icon: "🌙", name: "Turno de noche", desc: "+2 h de ganancias con la app cerrada", max: 4, cost: (l) => 3 + l * 2 },
+  { id: "hustle", icon: "⚡", name: "Coach de productividad", desc: "El modo hustle dura +1 h por anuncio", max: 4, cost: (l) => 2 + l * 2 },
+  { id: "luck", icon: "🔥", name: "Marketing viral", desc: "+1 % de probabilidad de venta viral", max: 4, cost: (l) => 4 + l * 3 },
+];
+
 /** Estilo de vida según lo ganado en total. No se pierde al salir a bolsa. */
 export const LIFE: { min: number; icon: string; name: string }[] = [
   { min: 0, icon: "🛏️", name: "Vives con tus padres" },

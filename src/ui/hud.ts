@@ -1,7 +1,8 @@
 import { CONFIG, LIFE } from "../game/data";
 import { bizDef, businessRate, chainRates, lifeIndex, passiveRate } from "../game/economy";
 import { fmt, fmtTime } from "../game/format";
-import type { GameState } from "../game/state";
+import { boostHours, canExpand } from "../game/world";
+import { cityDef, type GameState } from "../game/state";
 
 /** Cabecera (dinero, estilo de vida, modo hustle) y barra inferior según la escena. */
 
@@ -36,14 +37,16 @@ export function updateHeader(s: GameState, now: number): void {
   $("boostTxt").innerHTML =
     rem > 0
       ? `<b>Modo hustle x2 · ${fmtTime(rem)}</b>Acumulable hasta ${CONFIG.boostMaxHours} h`
-      : `<b>Modo hustle</b>Anuncio: todo x2 durante ${CONFIG.boostHours} h`;
-  $<HTMLButtonElement>("boostBtn").disabled = rem > (CONFIG.boostMaxHours - CONFIG.boostHours) * 3600;
+      : `<b>Modo hustle</b>Anuncio: todo x2 durante ${boostHours(s)} h`;
+  $<HTMLButtonElement>("boostBtn").disabled = rem > (CONFIG.boostMaxHours - boostHours(s)) * 3600;
+  $("boostBtn").lastChild!.textContent = `+${boostHours(s)} h`;
 }
 
 let barKey = "";
 
 export function renderBar(s: GameState): void {
-  const key = s.view.scene === "business" ? `b:${s.view.id}` : "city";
+  const key = s.view.scene === "business" ? `b:${s.view.id}` : `city:${s.city}`;
+  const city = cityDef(s.city);
   if (key === barKey) return;
   barKey = key;
   const bar = $("bar");
@@ -56,12 +59,14 @@ export function renderBar(s: GameState): void {
   } else {
     bar.innerHTML = `
       <button class="navbtn" data-nav="ipo"><span class="ic">📈</span>Bolsa</button>
-      <div class="barmid"><b>🏙️ Tu ciudad</b><span>Toca un edificio para entrar</span></div>
-      <button class="navbtn" data-nav="home"><span class="ic">📦</span>Almacén</button>`;
+      <div class="barmid"><b>${city.flag} ${city.name}</b><span>Toca un edificio para entrar</span></div>
+      <button class="navbtn" data-nav="world"><span class="ic">🌍</span>Mundo<i class="dot" id="worldDot" hidden></i></button>`;
   }
 }
 
 export function updateBar(s: GameState, now: number): void {
+  const dot = document.getElementById("worldDot");
+  if (dot) dot.hidden = !canExpand(s);
   if (s.view.scene !== "business") return;
   const id = s.view.id;
   const b = s.biz[id];

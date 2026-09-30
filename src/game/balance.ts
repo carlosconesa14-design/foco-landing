@@ -1,7 +1,8 @@
 import * as act from "./actions";
-import { BUSINESSES, CHAIN, LIFE } from "./data";
+import { CHAIN, LIFE } from "./data";
 import {
   bizDef,
+  bizList,
   chainRates,
   floorUnlockCost,
   lifeIndex,
@@ -93,12 +94,21 @@ function bestOption(s: GameState, id: string, now: number): Option | null {
   return { ...best, gain: best.gain * scale };
 }
 
-export function simulate(opts: { hours: number; ads?: boolean; dt?: number }): SimResult {
+export function simulate(opts: {
+  hours: number;
+  ads?: boolean;
+  dt?: number;
+  /** Ciudad a simular (por defecto Madrid). */
+  city?: string;
+  /** Prepara el estado antes de empezar (p. ej. mejoras de la Oficina central). */
+  setup?: (s: GameState) => void;
+}): SimResult {
   const dt = opts.dt ?? 1;
   // Suerte con semilla fija para que la simulación sea reproducible.
   let seed = 12345;
   setLuck(() => ((seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) >>> 8) / 16777216);
-  const s = freshState(T0);
+  const s = freshState(T0, opts.city);
+  opts.setup?.(s);
   s.buyMode = 1;
   const events: SimEvent[] = [];
   const at: Record<string, number> = {};
@@ -118,7 +128,7 @@ export function simulate(opts: { hours: number; ads?: boolean; dt?: number }): S
     tick(s, dt, now);
 
     // Toca todo lo que no tiene gerente (jugador activo)
-    for (const d of BUSINESSES) {
+    for (const d of bizList(s)) {
       if (!s.biz[d.id].owned) continue;
       for (const st of stations(s, d.id)) {
         const b = s.biz[d.id];
@@ -131,7 +141,7 @@ export function simulate(opts: { hours: number; ads?: boolean; dt?: number }): S
     for (let guard = 0; guard < 20; guard++) {
       // 1) Gerentes: prioridad si se pueden pagar
       let bought = false;
-      for (const d of BUSINESSES) {
+      for (const d of bizList(s)) {
         if (!s.biz[d.id].owned || bought) continue;
         for (const st of stations(s, d.id)) {
           const b = s.biz[d.id];
@@ -146,7 +156,7 @@ export function simulate(opts: { hours: number; ads?: boolean; dt?: number }): S
       }
       if (bought) continue;
       // 2) Siguiente negocio si se puede pagar
-      const next = BUSINESSES.find((d) => !s.biz[d.id].owned);
+      const next = bizList(s).find((d) => !s.biz[d.id].owned);
       if (next && s.cash >= next.price) {
         act.buyBusiness(s, next.id);
         mark(t, `biz_${next.id}`, `Compra ${next.icon} ${next.name}`);
@@ -154,7 +164,7 @@ export function simulate(opts: { hours: number; ads?: boolean; dt?: number }): S
       }
       // 3) La mejora más rentable de todos los negocios
       let best: Option | null = null;
-      for (const d of BUSINESSES) {
+      for (const d of bizList(s)) {
         if (!s.biz[d.id].owned) continue;
         const o = bestOption(s, d.id, now);
         if (o && (!best || o.gain / o.cost > best.gain / best.cost)) best = o;
@@ -165,7 +175,7 @@ export function simulate(opts: { hours: number; ads?: boolean; dt?: number }): S
       if (!best || s.cash < best.cost) break;
       best.run();
       if (best.label === "puesto") {
-        for (const d of BUSINESSES) if (s.biz[d.id].owned) mark(t, `floors_${d.id}_${s.biz[d.id].floors.length}`, `${d.icon} ${d.name}: ${s.biz[d.id].floors.length} puestos`);
+        for (const d of bizList(s)) if (s.biz[d.id].owned) mark(t, `floors_${d.id}_${s.biz[d.id].floors.length}`, `${d.icon} ${d.name}: ${s.biz[d.id].floors.length} puestos`);
       }
     }
 

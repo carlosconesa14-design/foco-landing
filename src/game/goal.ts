@@ -1,6 +1,7 @@
-import { BUSINESSES, CHAIN } from "./data";
+import { CHAIN } from "./data";
 import {
   bizDef,
+  bizList,
   chainRates,
   floorNextCost,
   floorUnlockCost,
@@ -14,6 +15,7 @@ import {
 } from "./economy";
 import { stationName } from "./actions";
 import type { GameState } from "./state";
+import { canExpand, nextCity } from "./world";
 
 /**
  * "Próximo objetivo": la siguiente meta con sentido y cuánto falta.
@@ -24,11 +26,11 @@ export interface Goal {
   text: string;
   cost: number;
   progress: number;
-  action: { kind: "station"; bizId: string; station: Station } | { kind: "floor"; bizId: string } | { kind: "business"; bizId: string };
+  action: { kind: "station"; bizId: string; station: Station } | { kind: "floor"; bizId: string } | { kind: "business"; bizId: string } | { kind: "world" };
 }
 
 export function nextGoal(s: GameState, now: number): Goal | null {
-  const owned = BUSINESSES.filter((d) => s.biz[d.id].owned);
+  const owned = bizList(s).filter((d) => s.biz[d.id].owned);
   const here = s.view.scene === "business" ? s.view.id : owned[owned.length - 1]?.id;
   const goals: Goal[] = [];
   const make = (icon: string, text: string, cost: number, action: Goal["action"]): Goal => ({
@@ -38,6 +40,12 @@ export function nextGoal(s: GameState, now: number): Goal | null {
     progress: Math.min(1, s.cash / Math.max(1, cost)),
     action,
   });
+
+  // 0) Ciudad completada: lo siguiente es expandirse
+  if (canExpand(s)) {
+    const next = nextCity(s)!;
+    return { icon: next.flag, text: `¡Expándete a ${next.name}!`, cost: 0, progress: 1, action: { kind: "world" } };
+  }
 
   // 1) Gerentes que faltan: lo más valioso al principio
   for (const d of owned) {
@@ -51,7 +59,7 @@ export function nextGoal(s: GameState, now: number): Goal | null {
   if (goals.length) return goals.reduce((a, g) => (g.cost < a.cost ? g : a));
 
   // 2) El siguiente negocio, cuando está a menos de ~3 h de ingresos
-  const next = BUSINESSES.find((d) => !s.biz[d.id].owned);
+  const next = bizList(s).find((d) => !s.biz[d.id].owned);
   const rate = passiveRate(s, now);
   if (next && rate > 0 && (next.price - s.cash) / rate < 3 * 3600) {
     return make(next.icon, `Compra ${next.name}`, next.price, { kind: "business", bizId: next.id });

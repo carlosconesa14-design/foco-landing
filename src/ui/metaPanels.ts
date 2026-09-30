@@ -1,4 +1,4 @@
-import { ACHIEVEMENTS, BUSINESSES, CHESTS, DAILY_REWARDS, EXEC_KINDS, META, MISSIONS, RARITIES, type ChestType, type DailyReward } from "../game/data";
+import { ACHIEVEMENTS, ALL_BUSINESSES, CHESTS, DAILY_REWARDS, EXEC_KINDS, META, MISSIONS, RARITIES, type ChestType, type DailyReward } from "../game/data";
 import { fmt, fmtTime } from "../game/format";
 import * as meta from "../game/meta";
 import type { Exec } from "../game/state";
@@ -150,7 +150,7 @@ async function showExec(ctx: PanelCtx, e: Exec, g: meta.Grant, chestIcon = "💼
 
 function execRow(e: Exec, here: string | null, now: number): string {
   const r = RARITIES[e.rarity];
-  const at = e.assigned ? BUSINESSES.find((b) => b.id === e.assigned) : null;
+  const at = e.assigned ? ALL_BUSINESSES.find((b) => b.id === e.assigned) : null;
   const active = e.abilityEnd > now;
   const ready = e.readyAt <= now;
   let buttons = "";
@@ -170,7 +170,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
   let current = tab;
   const view = ctx.state().view;
   const here = view.scene === "business" ? view.id : null;
-  const hereDef = here ? BUSINESSES.find((b) => b.id === here) : null;
+  const hereDef = here ? ALL_BUSINESSES.find((b) => b.id === here) : null;
   const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">💼</span><div><h3>Ejecutivos</h3><p class="muted">Tienes <b data-gems></b>. Cada negocio puede tener un ejecutivo.</p></div></div>

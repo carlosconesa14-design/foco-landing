@@ -10,6 +10,7 @@ import {
   type Station,
 } from "./economy";
 import { afterIpo, bump, freshFloor, type GameState } from "./state";
+import { applyStartPerks, boostHours } from "./world";
 
 /** Acciones del jugador. Devuelven un mensaje para mostrar ("" si no hace falta), o null si no se pudo. */
 
@@ -67,8 +68,8 @@ export function buyBusiness(s: GameState, id: string): string | null {
 
 export function addBoost(s: GameState, now: number): boolean {
   const remaining = s.boostEnd - now;
-  if (remaining > (CONFIG.boostMaxHours - CONFIG.boostHours) * 3600e3) return false;
-  s.boostEnd = Math.max(now, s.boostEnd) + CONFIG.boostHours * 3600e3;
+  if (remaining > (CONFIG.boostMaxHours - boostHours(s)) * 3600e3) return false;
+  s.boostEnd = Math.max(now, s.boostEnd) + boostHours(s) * 3600e3;
   return true;
 }
 
@@ -83,7 +84,9 @@ export function startRush(s: GameState, id: string, now: number): boolean {
 export function ipo(s: GameState, mult: 1 | 2, now: number): { state: GameState; gained: number } | null {
   const gained = sharesToGain(s) * mult;
   if (gained < 1) return null;
-  return { state: afterIpo(s, gained, now), gained };
+  const state = afterIpo(s, gained, now);
+  applyStartPerks(state);
+  return { state, gained };
 }
 
 export function recordAd(s: GameState, placement: string, now: Date = new Date()): void {

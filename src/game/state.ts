@@ -1,4 +1,4 @@
-import { BUSINESSES, CONFIG, type ExecKind, type MissionId, type StatKey } from "./data";
+import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
 
@@ -96,10 +96,39 @@ export interface Settings {
   haptics: boolean;
 }
 
+/** Lo que se guarda de una ciudad mientras estás en otra. */
+export interface CitySave {
+  cash: number;
+  runEarned: number;
+  totalEarned: number;
+  shares: number;
+  ipos: number;
+  biz: Record<string, BusinessState>;
+  lifeSeen: number;
+  savedAt: number;
+}
+
+/** Progreso global entre ciudades: estrellas, mejoras de la Oficina central y franquicias. */
+export interface WorldState {
+  stars: number;
+  upgrades: Partial<Record<OfficeId, number>>;
+  /** Ciudades completadas (dan el bonus de franquicia). */
+  completed: string[];
+  /** Ciudades en las que no estás ahora mismo. */
+  archive: Record<string, CitySave>;
+  /** Ganado desde siempre en todas las ciudades (para los logros). */
+  lifetimeEarned: number;
+}
+
 export interface GameState {
   version: 2;
   meta: MetaState;
   settings: Settings;
+  /** Ciudad en la que estás; lo que sigue (cash, biz, shares…) es de esa ciudad. */
+  city: string;
+  world: WorldState;
+  /** Fin de la ola turística pedida con un anuncio (Miami). */
+  waveEnd: number;
   cash: number;
   /** Ganado desde la última salida a bolsa: decide cuántas acciones recibes. */
   runEarned: number;
@@ -151,20 +180,28 @@ export function bump(s: GameState, key: StatKey, n = 1): void {
   st.day[key] = (st.day[key] ?? 0) + n;
 }
 
-export function freshState(now = Date.now()): GameState {
+export const cityDef = (id: string): CityDef => CITIES.find((c) => c.id === id) ?? CITIES[0];
+
+export const freshWorld = (): WorldState => ({ stars: 0, upgrades: {}, completed: [], archive: {}, lifetimeEarned: 0 });
+
+export function freshState(now = Date.now(), cityId = CITIES[0].id): GameState {
+  const city = cityDef(cityId);
   return {
     version: 2,
     meta: freshMeta(now),
     settings: { music: true, sfx: true, haptics: true },
+    city: city.id,
+    world: freshWorld(),
+    waveEnd: 0,
     cash: 0,
     runEarned: 0,
     totalEarned: 0,
     shares: 0,
     ipos: 0,
-    biz: Object.fromEntries(BUSINESSES.map((b) => [b.id, freshBusiness(b.price === 0)])),
+    biz: Object.fromEntries(city.businesses.map((b) => [b.id, freshBusiness(b.price === 0)])),
     boostEnd: 0,
     buyMode: 1,
-    view: { scene: "business", id: BUSINESSES[0].id },
+    view: { scene: "business", id: city.businesses[0].id },
     lastSeen: now,
     nextViral: now + 90_000,
     lifeSeen: 0,
@@ -215,7 +252,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
         face: typeof e.face === "string" ? e.face : "🧑‍💼",
         rarity: Math.min(3, Math.max(0, Math.floor(num(e.rarity, 0)))),
         kind: e.kind === "prod" || e.kind === "log" || e.kind === "sale" ? e.kind : "sale",
-        assigned: typeof e.assigned === "string" && BUSINESSES.some((b) => b.id === e.assigned) ? (e.assigned as string) : null,
+        assigned: typeof e.assigned === "string" && ALL_BUSINESSES.some((b) => b.id === e.assigned) ? (e.assigned as string) : null,
         abilityEnd: num(e.abilityEnd, 0),
         readyAt: num(e.readyAt, 0),
       }));
@@ -239,9 +276,12 @@ function migrateMeta(raw: unknown, now: number): MetaState {
 
 /** Convierte una partida guardada en un estado válido. Las partidas de la versión 1 empiezan de cero. */
 export function migrate(raw: unknown, now = Date.now()): GameState {
-  const s = freshState(now);
   const r = obj(raw);
-  if (r.version !== 2) return s;
+  if (r.version !== 2) return freshState(now);
+  // Las partidas anteriores a las ciudades pasan a ser Madrid.
+  const s = freshState(now, typeof r.city === "string" ? cityDef(r.city).id : CITIES[0].id);
+  s.world = migrateWorld(r.world, num(r.totalEarned, 0));
+  s.waveEnd = num(r.waveEnd, 0);
   s.cash = num(r.cash, 0);
   s.runEarned = num(r.runEarned, 0);
   s.totalEarned = num(r.totalEarned, 0);
@@ -253,7 +293,7 @@ export function migrate(raw: unknown, now = Date.now()): GameState {
   s.lifeSeen = num(r.lifeSeen, 0);
   if (r.buyMode === 1 || r.buyMode === 10 || r.buyMode === 50 || r.buyMode === "max") s.buyMode = r.buyMode;
   const biz = obj(r.biz);
-  for (const def of BUSINESSES) if (biz[def.id]) s.biz[def.id] = migrateBusiness(biz[def.id], def);
+  for (const def of cityDef(s.city).businesses) if (biz[def.id]) s.biz[def.id] = migrateBusiness(biz[def.id], def);
   const v = obj(r.view);
   if (v.scene === "business" && typeof v.id === "string" && s.biz[v.id]?.owned) s.view = { scene: "business", id: v.id };
   else if (v.scene === "city") s.view = { scene: "city" };
@@ -270,19 +310,74 @@ export function migrate(raw: unknown, now = Date.now()): GameState {
   return s;
 }
 
+function migrateWorld(raw: unknown, totalEarned: number): WorldState {
+  const w = freshWorld();
+  const r = obj(raw);
+  w.stars = Math.max(0, num(r.stars, 0));
+  w.lifetimeEarned = Math.max(num(r.lifetimeEarned, 0), totalEarned);
+  for (const [k, v] of Object.entries(obj(r.upgrades))) if (typeof v === "number" && v > 0) w.upgrades[k as OfficeId] = Math.floor(v);
+  w.completed = Array.isArray(r.completed) ? r.completed.filter((c): c is string => typeof c === "string" && CITIES.some((x) => x.id === c)) : [];
+  for (const [id, raw2] of Object.entries(obj(r.archive))) {
+    const city = CITIES.find((c) => c.id === id);
+    if (!city) continue;
+    const a = obj(raw2);
+    const biz: Record<string, BusinessState> = {};
+    for (const def of city.businesses) biz[def.id] = migrateBusiness(obj(a.biz)[def.id] ?? {}, def);
+    w.archive[id] = {
+      cash: num(a.cash, 0),
+      runEarned: num(a.runEarned, 0),
+      totalEarned: num(a.totalEarned, 0),
+      shares: num(a.shares, 0),
+      ipos: num(a.ipos, 0),
+      biz,
+      lifeSeen: num(a.lifeSeen, 0),
+      savedAt: num(a.savedAt, Date.now()),
+    };
+  }
+  return w;
+}
+
+/** Copia a una partida nueva todo lo que no depende de la ciudad. */
+function keepGlobal(from: GameState, to: GameState): GameState {
+  to.meta = from.meta;
+  to.settings = from.settings;
+  to.world = from.world;
+  to.boostEnd = from.boostEnd;
+  to.ads = from.ads;
+  to.buyMode = from.buyMode;
+  to.waveEnd = from.waveEnd;
+  return to;
+}
+
+/** Empieza (o reanuda) otra ciudad. La actual queda guardada en el archivo. */
+export function switchCity(s: GameState, cityId: string, now = Date.now()): GameState {
+  s.world.archive[s.city] = {
+    cash: s.cash,
+    runEarned: s.runEarned,
+    totalEarned: s.totalEarned,
+    shares: s.shares,
+    ipos: s.ipos,
+    biz: s.biz,
+    lifeSeen: s.lifeSeen,
+    savedAt: now,
+  };
+  const n = keepGlobal(s, freshState(now, cityId));
+  const saved = n.world.archive[cityId];
+  if (saved) {
+    Object.assign(n, { cash: saved.cash, runEarned: saved.runEarned, totalEarned: saved.totalEarned, shares: saved.shares, ipos: saved.ipos, biz: saved.biz, lifeSeen: saved.lifeSeen });
+    delete n.world.archive[cityId];
+  }
+  n.nextViral = now + CONFIG.viralMinSec * 1000;
+  return n;
+}
+
 /** Nueva partida tras salir a bolsa: se conserva lo permanente. */
 export function afterIpo(s: GameState, gained: number, now = Date.now()): GameState {
-  const n = freshState(now);
+  const n = keepGlobal(s, freshState(now, s.city));
   n.shares = s.shares + gained;
   n.ipos = s.ipos + 1;
   n.totalEarned = s.totalEarned;
   n.lifeSeen = s.lifeSeen;
-  n.boostEnd = s.boostEnd;
-  n.ads = s.ads;
-  n.buyMode = s.buyMode;
-  // Diamantes, ejecutivos, misiones y logros no se pierden al salir a bolsa.
-  n.meta = s.meta;
-  n.settings = s.settings;
   n.nextViral = now + CONFIG.viralMinSec * 1000;
   return n;
 }
