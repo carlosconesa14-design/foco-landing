@@ -1,56 +1,65 @@
-import { CONFIG, JOBS, JOB_MILESTONES, STATION_MILESTONES } from "./data";
-import { jobBuyCost, milestonesReached, propDef, sharesToGain, stationUpgradeCost } from "./economy";
-import { afterIpo, type GameState } from "./state";
+import { CHAIN, CONFIG } from "./data";
+import {
+  bizDef,
+  floorUnlockCost,
+  managerCost,
+  milestonesReached,
+  sharesToGain,
+  stationLevel,
+  upgradeQuote,
+  type Station,
+} from "./economy";
+import { afterIpo, freshFloor, type GameState } from "./state";
 
-/** Acciones del jugador. Devuelven un mensaje para mostrar, o null si no se pudo. */
+/** Acciones del jugador. Devuelven un mensaje para mostrar ("" si no hace falta), o null si no se pudo. */
 
-export function startJob(s: GameState, i: number): boolean {
-  const j = s.jobs[i];
-  if (!j.level || j.running) return false;
-  j.running = true;
-  return true;
+export function stationName(id: string, st: Station): string {
+  const def = bizDef(id);
+  if (st.kind === "floor") return `${def.floorName} ${st.index + 1}`;
+  return st.kind === "transport" ? def.transportName : def.saleName;
 }
 
-export function buyJob(s: GameState, i: number): string | null {
-  const { qty, cost } = jobBuyCost(s, i);
+export function upgrade(s: GameState, id: string, st: Station): string | null {
+  const b = s.biz[id];
+  if (!b.owned) return null;
+  const { qty, cost } = upgradeQuote(s, id, st);
   if (s.cash < cost) return null;
-  const before = milestonesReached(s.jobs[i].level, JOB_MILESTONES);
+  const before = milestonesReached(stationLevel(b, st));
   s.cash -= cost;
-  s.jobs[i].level += qty;
-  if (milestonesReached(s.jobs[i].level, JOB_MILESTONES) > before) return `${JOBS[i].name}: ¡velocidad x2!`;
-  return "";
+  if (st.kind === "floor") b.floors[st.index].level += qty;
+  else if (st.kind === "transport") b.transport.level += qty;
+  else b.sale.level += qty;
+  return milestonesReached(stationLevel(b, st)) > before ? `${stationName(id, st)}: ¡rendimiento x2!` : "";
 }
 
-export function automateJob(s: GameState, i: number): string | null {
-  const def = JOBS[i];
-  const j = s.jobs[i];
-  if (!j.level || j.auto || s.cash < def.autoCost) return null;
-  s.cash -= def.autoCost;
-  j.auto = true;
-  return `${def.name} ya funciona solo`;
+export function hireManager(s: GameState, id: string, st: Station): string | null {
+  const b = s.biz[id];
+  const cost = managerCost(bizDef(id), st);
+  const target = st.kind === "floor" ? b.floors[st.index] : st.kind === "transport" ? b.transport : b.sale;
+  if (!b.owned || target.managed || s.cash < cost) return null;
+  s.cash -= cost;
+  target.managed = true;
+  return `${stationName(id, st)} ya funciona solo`;
 }
 
-export function buyProperty(s: GameState, id: string): string | null {
-  const def = propDef(id);
-  const p = s.props[id];
-  if (p.owned || s.cash < def.price) return null;
+export function unlockFloor(s: GameState, id: string): string | null {
+  const b = s.biz[id];
+  const i = b.floors.length;
+  if (!b.owned || i >= CHAIN.maxFloors) return null;
+  const cost = floorUnlockCost(bizDef(id), i);
+  if (s.cash < cost) return null;
+  s.cash -= cost;
+  b.floors.push(freshFloor());
+  return `¡Nueva planta: ${bizDef(id).floorName} ${i + 1}!`;
+}
+
+export function buyBusiness(s: GameState, id: string): string | null {
+  const def = bizDef(id);
+  const b = s.biz[id];
+  if (b.owned || s.cash < def.price) return null;
   s.cash -= def.price;
-  p.owned = true;
-  return `¡Has comprado ${def.name}!`;
-}
-
-export function upgradeStation(s: GameState, id: string, station: number): string | null {
-  const p = s.props[id];
-  if (!p.owned) return null;
-  const { qty, cost } = stationUpgradeCost(s, id, station);
-  if (s.cash < cost) return null;
-  const before = milestonesReached(p.levels[station], STATION_MILESTONES);
-  s.cash -= cost;
-  p.levels[station] += qty;
-  if (milestonesReached(p.levels[station], STATION_MILESTONES) > before) {
-    return `${propDef(id).stations[station].name}: ¡capacidad x2!`;
-  }
-  return "";
+  b.owned = true;
+  return `¡Has comprado: ${def.name}!`;
 }
 
 export function addBoost(s: GameState, now: number): boolean {
@@ -61,9 +70,9 @@ export function addBoost(s: GameState, now: number): boolean {
 }
 
 export function startRush(s: GameState, id: string, now: number): boolean {
-  const p = s.props[id];
-  if (!p.owned || p.rushEnd > now) return false;
-  p.rushEnd = now + CONFIG.rushMinutes * 60e3;
+  const b = s.biz[id];
+  if (!b.owned || b.rushEnd > now) return false;
+  b.rushEnd = now + CONFIG.rushMinutes * 60e3;
   return true;
 }
 

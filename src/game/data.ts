@@ -1,4 +1,4 @@
-/** Contenido del juego: todo lo que se equilibra está aquí, sin lógica. */
+/** Contenido y equilibrio del juego. Sin lógica. */
 
 export const CONFIG = {
   boostHours: 4,
@@ -7,7 +7,7 @@ export const CONFIG = {
   /** Bonus por cada acción conseguida al salir a bolsa. */
   shareBonus: 0.02,
   /** acciones = floor(sqrt(ganado en la partida / shareDivisor)) */
-  shareDivisor: 1e9,
+  shareDivisor: 1e8,
   rushMinutes: 30,
   rushMult: 3,
   viralMinSec: 120,
@@ -15,120 +15,82 @@ export const CONFIG = {
   viralVisibleSec: 25,
 } as const;
 
-/** Cada hito de nivel duplica la velocidad de un trabajo. */
-export const JOB_MILESTONES = [25, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
-/** Cada hito de nivel duplica la capacidad de una estación de un negocio de la ciudad. */
-export const STATION_MILESTONES = [10, 25, 50, 100, 150, 200, 300, 400, 500];
+/** Cadena de producción: parámetros comunes a todos los negocios (se escalan con `mult`). */
+export const CHAIN = {
+  maxFloors: 8,
+  /** Duración del ciclo de un trabajador de planta (ir, producir, volver). */
+  floorCycle: 5,
+  /** Cada planta produce `floorGrowth` veces más que la anterior. */
+  floorGrowth: 6,
+  floorBaseRate: 1,
+  /** Desbloquear la planta i cuesta unlockBase * unlockGrowth^i. La 0 viene gratis. */
+  unlockBase: 10,
+  unlockGrowth: 8,
+  floorUpgradeK: 1.12,
+  transportBaseCap: 15,
+  transportBaseSpeed: 1.5,
+  transportMaxSpeed: 8,
+  transportLoadTime: 0.4,
+  transportUnloadTime: 0.4,
+  saleBaseCap: 20,
+  saleBaseWalk: 2,
+  saleMinWalk: 0.6,
+  logisticsCostBase: 10,
+  logisticsCostK: 1.17,
+  managerFloorBase: 40,
+  managerTransport: 60,
+  managerSale: 80,
+} as const;
 
-export interface JobDef {
-  id: string;
-  name: string;
-  icon: string;
-  /** Coste del primer nivel y crecimiento geométrico por nivel. */
-  cost: number;
-  k: number;
-  /** Ingreso por ciclo y por nivel, y duración base del ciclo en segundos. */
-  rev: number;
-  time: number;
-  /** La automatización que lo convierte en ingreso pasivo. */
-  auto: string;
-  autoIcon: string;
-  autoCost: number;
-}
+/** Cada hito de nivel duplica el rendimiento de esa parte de la cadena. */
+export const MILESTONES = [10, 25, 50, 100, 150, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
 
-/** La carrera: de trabajos mal pagados a negocios de IA. */
-export const JOBS: JobDef[] = [
-  { id: "rider", name: "Repartidor en bici", icon: "🚲", cost: 4, k: 1.07, rev: 1, time: 0.6, auto: "Moto de reparto", autoIcon: "🛵", autoCost: 1e3 },
-  { id: "wallapop", name: "Reventa en Wallapop", icon: "📦", cost: 60, k: 1.15, rev: 60, time: 3, auto: "Bot de respuestas", autoIcon: "💬", autoCost: 15e3 },
-  { id: "dropship", name: "Tienda dropshipping", icon: "🛒", cost: 720, k: 1.14, rev: 540, time: 6, auto: "Proveedor automático", autoIcon: "🚚", autoCost: 1e5 },
-  { id: "tiktok", name: "Canal de TikTok", icon: "📱", cost: 8640, k: 1.13, rev: 4320, time: 12, auto: "Editor de vídeo", autoIcon: "🎬", autoCost: 5e5 },
-  { id: "marketing", name: "Agencia de marketing", icon: "📊", cost: 103680, k: 1.12, rev: 51840, time: 24, auto: "Community manager", autoIcon: "🧑‍💻", autoCost: 1.2e6 },
-  { id: "ai_agency", name: "Agencia de IA", icon: "🤖", cost: 1244160, k: 1.11, rev: 622080, time: 96, auto: "Agente IA 24/7", autoIcon: "🦾", autoCost: 1e7 },
-  { id: "saas", name: "App SaaS de IA", icon: "🧠", cost: 14929920, k: 1.1, rev: 7464960, time: 384, auto: "Equipo de ventas", autoIcon: "🤝", autoCost: 1.11e8 },
-  { id: "unicorn", name: "Startup unicornio", icon: "🦄", cost: 179159040, k: 1.09, rev: 89579520, time: 1536, auto: "CEO contratado", autoIcon: "👔", autoCost: 5.55e8 },
-];
-
-export interface StationDef {
-  name: string;
-  icon: string;
-  /** Qué mide su capacidad, p. ej. "platos cocinados". */
-  verb: string;
-  /** Unidades por segundo en el nivel 1. */
-  baseCap: number;
-}
-
-export interface PropertyDef {
+export interface BusinessDef {
   id: string;
   name: string;
   icon: string;
   blurb: string;
+  /** Precio del edificio. El primero es gratis. */
   price: number;
-  /** Nombre en plural de lo que vende, p. ej. "platos". */
-  unit: string;
-  /** Euros por unidad vendida. */
-  unitPrice: number;
-  /** Coste del primer nivel de mejora de cada estación y su crecimiento. */
-  upgradeCost: number;
-  upgradeK: number;
-  /** Cadena de producción: vende al ritmo de la estación más lenta. */
-  stations: [StationDef, StationDef, StationDef];
+  /** Multiplicador de toda la economía de este negocio. */
+  mult: number;
+  /** Colores del edificio y del interior. */
+  wall: number;
+  roof: number;
+  floorName: string;
+  worker: string;
+  item: string;
+  transportName: string;
+  transportIcon: string;
+  saleName: string;
+  saleWorker: string;
+  customer: string;
 }
 
-/** La ciudad: negocios con su propio idle dentro. */
-export const PROPERTIES: PropertyDef[] = [
+export const BUSINESSES: BusinessDef[] = [
   {
-    id: "cafe", name: "Cafetería", icon: "☕", blurb: "Tu primer local físico. Café de especialidad a precio de oro.",
-    price: 5e4, unit: "cafés", unitPrice: 90, upgradeCost: 800, upgradeK: 1.12,
-    stations: [
-      { name: "Cafeteras", icon: "☕", verb: "cafés preparados", baseCap: 1 },
-      { name: "Baristas", icon: "🧑‍🍳", verb: "cafés servidos", baseCap: 0.8 },
-      { name: "Terraza", icon: "🪑", verb: "clientes sentados", baseCap: 1.2 },
-    ],
+    id: "dropship", name: "Almacén de dropshipping", icon: "📦", blurb: "Tu primer negocio. Pedidos online que salen solos.",
+    price: 0, mult: 1, wall: 0xe8b04b, roof: 0x9c5b2e,
+    floorName: "Estantería", worker: "🧑‍🔧", item: "📦", transportName: "Montacargas", transportIcon: "🛗",
+    saleName: "Furgonetas", saleWorker: "🚚", customer: "🏠",
   },
   {
-    id: "restaurant", name: "Restaurante", icon: "🍝", blurb: "Cocina, sala y mesas. Si una falla, se atasca todo.",
-    price: 2e6, unit: "platos", unitPrice: 3500, upgradeCost: 3e4, upgradeK: 1.12,
-    stations: [
-      { name: "Cocina", icon: "🔥", verb: "platos cocinados", baseCap: 1 },
-      { name: "Camareros", icon: "🤵", verb: "platos servidos", baseCap: 0.9 },
-      { name: "Mesas", icon: "🍽️", verb: "clientes atendidos", baseCap: 1.1 },
-    ],
+    id: "restaurant", name: "Restaurante", icon: "🍝", blurb: "Cocinas, montaplatos y camareros. Si uno falla, se atasca todo.",
+    price: 5e4, mult: 400, wall: 0xd9534f, roof: 0x7a2323,
+    floorName: "Cocina", worker: "🧑‍🍳", item: "🍝", transportName: "Montaplatos", transportIcon: "🛗",
+    saleName: "Camareros", saleWorker: "🤵", customer: "🍽️",
   },
   {
-    id: "gym", name: "Gimnasio", icon: "🏋️", blurb: "Cuotas mensuales: el sueño de todo emprendedor.",
-    price: 8e7, unit: "cuotas", unitPrice: 1.4e5, upgradeCost: 1.2e6, upgradeK: 1.12,
-    stations: [
-      { name: "Máquinas", icon: "🏋️", verb: "socios entrenando", baseCap: 1 },
-      { name: "Entrenadores", icon: "🧑‍🏫", verb: "socios atendidos", baseCap: 0.85 },
-      { name: "Publicidad", icon: "📣", verb: "altas nuevas", baseCap: 1.15 },
-    ],
+    id: "tiktok", name: "Estudio de TikTok", icon: "📱", blurb: "Creadores grabando sin parar y marcas pagando por salir.",
+    price: 2e7, mult: 1.5e5, wall: 0x6f5bd6, roof: 0x2e2270,
+    floorName: "Set de grabación", worker: "🤳", item: "🎬", transportName: "Servidor de subida", transportIcon: "☁️",
+    saleName: "Marcas", saleWorker: "🤝", customer: "🏢",
   },
   {
-    id: "warehouse", name: "Almacén de dropshipping", icon: "🏭", blurb: "Deja de depender de proveedores: el stock es tuyo.",
-    price: 3e9, unit: "paquetes", unitPrice: 5e6, upgradeCost: 4.5e7, upgradeK: 1.12,
-    stations: [
-      { name: "Estanterías", icon: "📦", verb: "paquetes en stock", baseCap: 1 },
-      { name: "Mozos", icon: "🦺", verb: "paquetes preparados", baseCap: 0.9 },
-      { name: "Furgonetas", icon: "🚚", verb: "paquetes entregados", baseCap: 1.1 },
-    ],
-  },
-  {
-    id: "hotel", name: "Hotel", icon: "🏨", blurb: "Turistas todo el año y una piscina en la azotea.",
-    price: 1.2e11, unit: "noches", unitPrice: 1.9e8, upgradeCost: 1.8e9, upgradeK: 1.12,
-    stations: [
-      { name: "Habitaciones", icon: "🛏️", verb: "noches disponibles", baseCap: 1 },
-      { name: "Recepción", icon: "🛎️", verb: "check-ins", baseCap: 0.85 },
-      { name: "Limpieza", icon: "🧹", verb: "habitaciones listas", baseCap: 1.15 },
-    ],
-  },
-  {
-    id: "club", name: "Discoteca", icon: "🪩", blurb: "La cola da la vuelta a la manzana cada sábado.",
-    price: 5e12, unit: "entradas", unitPrice: 7.5e9, upgradeCost: 7.5e10, upgradeK: 1.12,
-    stations: [
-      { name: "DJs", icon: "🎧", verb: "entradas vendidas", baseCap: 1 },
-      { name: "Barra", icon: "🍸", verb: "copas servidas", baseCap: 0.9 },
-      { name: "Porteros", icon: "🕴️", verb: "personas dentro", baseCap: 1.1 },
-    ],
+    id: "ai", name: "Agencia de IA", icon: "🤖", blurb: "GPUs a tope y clientes que pagan por automatizarlo todo.",
+    price: 1e10, mult: 6e7, wall: 0x2bb5a0, roof: 0x145c52,
+    floorName: "Rack de GPUs", worker: "🦾", item: "🧠", transportName: "Pipeline de datos", transportIcon: "🔌",
+    saleName: "Comerciales", saleWorker: "💼", customer: "🏦",
   },
 ];
 

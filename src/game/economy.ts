@@ -1,111 +1,147 @@
-import { CONFIG, JOBS, JOB_MILESTONES, LIFE, PROPERTIES, STATION_MILESTONES, type PropertyDef } from "./data";
-import type { BuyMode, GameState } from "./state";
+import { BUSINESSES, CHAIN, CONFIG, LIFE, MILESTONES, type BusinessDef } from "./data";
+import type { BusinessState, BuyMode, GameState } from "./state";
 
-/* ---------- Costes geométricos ---------- */
+/* ---------- Utilidades ---------- */
 
-/** Coste de comprar `n` niveles cuando ya tienes `owned`. */
-export function geomCost(base: number, k: number, owned: number, n: number): number {
-  return (base * Math.pow(k, owned) * (Math.pow(k, n) - 1)) / (k - 1);
+/** Coste de comprar `n` niveles cuando el siguiente cuesta `first`. */
+export function geomCost(first: number, k: number, n: number): number {
+  return (first * (Math.pow(k, n) - 1)) / (k - 1);
 }
 
-/** Cuántos niveles puedes pagar con `cash`. */
-export function maxAffordable(base: number, k: number, owned: number, cash: number): number {
-  const first = base * Math.pow(k, owned);
+/** Cuántos niveles puedes pagar con `cash` si el siguiente cuesta `first`. */
+export function maxAffordable(first: number, k: number, cash: number): number {
   if (cash < first) return 0;
   return Math.floor(Math.log((cash * (k - 1)) / first + 1) / Math.log(k));
 }
 
-/** Niveles que compraría el botón según el modo x1/x10/x100/Máx (mínimo 1 para mostrar el precio). */
-export function buyQty(mode: BuyMode, base: number, k: number, owned: number, cash: number): number {
-  if (mode === "max") return Math.max(1, maxAffordable(base, k, owned, cash));
-  return mode;
+export function buyQty(mode: BuyMode, first: number, k: number, cash: number): number {
+  return mode === "max" ? Math.max(1, maxAffordable(first, k, cash)) : mode;
 }
 
-export const milestonesReached = (level: number, list: number[]) => list.filter((m) => level >= m).length;
-export const nextMilestone = (level: number, list: number[]) => list.find((m) => level < m);
+export const milestonesReached = (level: number) => MILESTONES.filter((m) => level >= m).length;
+export const nextMilestone = (level: number) => MILESTONES.find((m) => level < m);
+const msMult = (level: number) => Math.pow(2, milestonesReached(level));
 
-/* ---------- Multiplicadores ---------- */
-
-export const boostActive = (s: GameState, now: number) => s.boostEnd > now;
-
-export function globalMult(s: GameState, now: number, withBoost = true): number {
-  return (withBoost && boostActive(s, now) ? 2 : 1) * (1 + CONFIG.shareBonus * s.shares);
-}
-
-/* ---------- Carrera ---------- */
-
-export function jobCycle(s: GameState, i: number): number {
-  return JOBS[i].time / Math.pow(2, milestonesReached(s.jobs[i].level, JOB_MILESTONES));
-}
-
-export function jobRevenue(s: GameState, i: number, now: number, withBoost = true): number {
-  return JOBS[i].rev * s.jobs[i].level * globalMult(s, now, withBoost);
-}
-
-export function jobRate(s: GameState, i: number, now: number, withBoost = true): number {
-  return s.jobs[i].level ? jobRevenue(s, i, now, withBoost) / jobCycle(s, i) : 0;
-}
-
-export function jobBuyCost(s: GameState, i: number): { qty: number; cost: number } {
-  const j = JOBS[i];
-  const owned = s.jobs[i].level;
-  const qty = owned === 0 ? 1 : buyQty(s.buyMode, j.cost, j.k, owned, s.cash);
-  return { qty, cost: geomCost(j.cost, j.k, owned, qty) };
-}
-
-/* ---------- Ciudad: idle dentro de cada negocio ---------- */
-
-export const propDef = (id: string): PropertyDef => {
-  const p = PROPERTIES.find((x) => x.id === id);
-  if (!p) throw new Error(`Negocio desconocido: ${id}`);
-  return p;
+export const bizDef = (id: string): BusinessDef => {
+  const d = BUSINESSES.find((b) => b.id === id);
+  if (!d) throw new Error(`Negocio desconocido: ${id}`);
+  return d;
 };
 
-export function stationCap(def: PropertyDef, station: number, level: number): number {
-  return def.stations[station].baseCap * level * Math.pow(2, milestonesReached(level, STATION_MILESTONES));
+/* ---------- Multiplicadores de venta ---------- */
+
+export const boostActive = (s: GameState, now: number) => s.boostEnd > now;
+export const rushActive = (b: BusinessState, now: number) => b.rushEnd > now;
+
+/** Multiplica el dinero al vender. El x2 y la hora punta no cuentan offline. */
+export function saleMult(s: GameState, id: string, now: number, live = true): number {
+  const boost = live && boostActive(s, now) ? 2 : 1;
+  const rush = live && rushActive(s.biz[id], now) ? CONFIG.rushMult : 1;
+  return boost * rush * (1 + CONFIG.shareBonus * s.shares);
 }
 
-/** Índice de la estación que limita la producción (la de menor capacidad). */
-export function bottleneck(s: GameState, id: string): number {
-  const def = propDef(id);
-  const caps = s.props[id].levels.map((l, i) => stationCap(def, i, l));
-  return caps.indexOf(Math.min(...caps));
+/* ---------- Plantas ---------- */
+
+export function floorRate(def: BusinessDef, i: number, level: number): number {
+  return def.mult * CHAIN.floorBaseRate * Math.pow(CHAIN.floorGrowth, i) * level * msMult(level);
 }
 
-/** Unidades por segundo que vende el negocio. */
-export function propThroughput(s: GameState, id: string): number {
-  const def = propDef(id);
-  return Math.min(...s.props[id].levels.map((l, i) => stationCap(def, i, l)));
+export const floorLoad = (def: BusinessDef, i: number, level: number) => floorRate(def, i, level) * CHAIN.floorCycle;
+
+export function floorUnlockCost(def: BusinessDef, i: number): number {
+  return def.mult * CHAIN.unlockBase * Math.pow(CHAIN.unlockGrowth, i);
 }
 
-export const rushActive = (s: GameState, id: string, now: number) => s.props[id].rushEnd > now;
-
-export function propRate(s: GameState, id: string, now: number, withBoost = true): number {
-  const p = s.props[id];
-  if (!p.owned) return 0;
-  const rush = withBoost && rushActive(s, id, now) ? CONFIG.rushMult : 1;
-  return propThroughput(s, id) * propDef(id).unitPrice * globalMult(s, now, withBoost) * rush;
+/** Coste del siguiente nivel de la planta i estando en `level`. */
+export function floorNextCost(def: BusinessDef, i: number, level: number): number {
+  const base = i === 0 ? def.mult * 5 : floorUnlockCost(def, i) * 0.2;
+  return base * Math.pow(CHAIN.floorUpgradeK, level - 1);
 }
 
-export function stationUpgradeCost(s: GameState, id: string, station: number): { qty: number; cost: number } {
-  const def = propDef(id);
-  const owned = s.props[id].levels[station] - 1;
-  const base = def.upgradeCost * (1 + station * 0.15);
-  const qty = buyQty(s.buyMode, base, def.upgradeK, owned, s.cash);
-  return { qty, cost: geomCost(base, def.upgradeK, owned, qty) };
+/* ---------- Transporte ---------- */
+
+export const transportCap = (def: BusinessDef, level: number) => def.mult * CHAIN.transportBaseCap * level * msMult(level);
+
+/** Plantas por segundo. */
+export const transportSpeed = (level: number) =>
+  Math.min(CHAIN.transportMaxSpeed, CHAIN.transportBaseSpeed * (1 + 0.04 * (level - 1)));
+
+/** Tiempo de un viaje completo visitando todas las plantas. */
+export function transportRoundTrip(floors: number, level: number): number {
+  return (2 * floors) / transportSpeed(level) + floors * CHAIN.transportLoadTime + CHAIN.transportUnloadTime;
+}
+
+/* ---------- Venta ---------- */
+
+export const saleCap = (def: BusinessDef, level: number) => def.mult * CHAIN.saleBaseCap * level * msMult(level);
+export const saleWalk = (level: number) => Math.max(CHAIN.saleMinWalk, CHAIN.saleBaseWalk / (1 + 0.03 * (level - 1)));
+
+export const logisticsNextCost = (def: BusinessDef, level: number) =>
+  def.mult * CHAIN.logisticsCostBase * Math.pow(CHAIN.logisticsCostK, level - 1);
+
+/* ---------- Gerentes ---------- */
+
+export type Station = { kind: "floor"; index: number } | { kind: "transport" } | { kind: "sale" };
+
+export function managerCost(def: BusinessDef, st: Station): number {
+  if (st.kind === "floor") return def.mult * CHAIN.managerFloorBase * Math.pow(CHAIN.unlockGrowth, st.index);
+  return def.mult * (st.kind === "transport" ? CHAIN.managerTransport : CHAIN.managerSale);
+}
+
+/* ---------- Mejoras de una parte de la cadena ---------- */
+
+export function stationLevel(b: BusinessState, st: Station): number {
+  if (st.kind === "floor") return b.floors[st.index].level;
+  return st.kind === "transport" ? b.transport.level : b.sale.level;
+}
+
+export function upgradeQuote(s: GameState, id: string, st: Station): { qty: number; cost: number } {
+  const def = bizDef(id);
+  const level = stationLevel(s.biz[id], st);
+  const first = st.kind === "floor" ? floorNextCost(def, st.index, level) : logisticsNextCost(def, level);
+  const k = st.kind === "floor" ? CHAIN.floorUpgradeK : CHAIN.logisticsCostK;
+  const qty = buyQty(s.buyMode, first, k, s.cash);
+  return { qty, cost: geomCost(first, k, qty) };
+}
+
+/* ---------- Ritmos (para la interfaz y el offline) ---------- */
+
+export interface ChainRates {
+  production: number;
+  transport: number;
+  sale: number;
+  /** Lo que de verdad llega a venderse: el mínimo de las tres. */
+  total: number;
+  /** Qué parte limita. */
+  bottleneck: "production" | "transport" | "sale";
+}
+
+/** Ritmos de la cadena en €/s (antes de multiplicadores). Con `managedOnly` solo cuenta lo automatizado. */
+export function chainRates(def: BusinessDef, b: BusinessState, managedOnly: boolean): ChainRates {
+  const production = b.floors.reduce(
+    (a, f, i) => a + (!managedOnly || f.managed ? floorRate(def, i, f.level) : 0),
+    0,
+  );
+  const transport = !managedOnly || b.transport.managed
+    ? transportCap(def, b.transport.level) / transportRoundTrip(b.floors.length, b.transport.level)
+    : 0;
+  const sale = !managedOnly || b.sale.managed ? saleCap(def, b.sale.level) / (2 * saleWalk(b.sale.level)) : 0;
+  const total = Math.min(production, transport, sale);
+  const bottleneck = total === production ? "production" : total === transport ? "transport" : "sale";
+  return { production, transport, sale, total, bottleneck };
+}
+
+export function businessRate(s: GameState, id: string, now: number, live = true): number {
+  const b = s.biz[id];
+  if (!b.owned) return 0;
+  return chainRates(bizDef(id), b, true).total * saleMult(s, id, now, live);
+}
+
+export function passiveRate(s: GameState, now: number, live = true): number {
+  return BUSINESSES.reduce((a, d) => a + businessRate(s, d.id, now, live), 0);
 }
 
 /* ---------- Totales ---------- */
-
-/** Ingresos por segundo que no requieren tocar la pantalla. */
-export function passiveRate(s: GameState, now: number, withBoost = true): number {
-  let r = 0;
-  JOBS.forEach((_, i) => {
-    if (s.jobs[i].auto) r += jobRate(s, i, now, withBoost);
-  });
-  for (const p of PROPERTIES) r += propRate(s, p.id, now, withBoost);
-  return r;
-}
 
 export function sharesToGain(s: GameState): number {
   return Math.floor(Math.sqrt(s.runEarned / CONFIG.shareDivisor));
@@ -117,46 +153,159 @@ export function lifeIndex(total: number): number {
   return i;
 }
 
-export function earn(s: GameState, amount: number): void {
+export function earn(s: GameState, amount: number, bizId?: string): void {
   s.cash += amount;
   s.runEarned += amount;
   s.totalEarned += amount;
+  if (bizId) s.biz[bizId].earned += amount;
 }
 
 /* ---------- Simulación ---------- */
 
 export interface SaleEvent {
-  job: number;
+  biz: string;
   amount: number;
 }
 
-/** Avanza el juego `dt` segundos. Devuelve las ventas manuales completadas para mostrarlas. */
-export function tick(s: GameState, dt: number, now: number): SaleEvent[] {
-  const sales: SaleEvent[] = [];
-  s.jobs.forEach((j, i) => {
-    if (!j.level) return;
-    if (j.auto) j.running = true;
-    if (!j.running) return;
-    j.prog += dt;
-    const c = jobCycle(s, i);
-    if (j.prog < c) return;
-    if (j.auto) {
-      const n = Math.floor(j.prog / c);
-      earn(s, jobRevenue(s, i, now) * n);
-      j.prog -= n * c;
-    } else {
-      const amount = jobRevenue(s, i, now);
-      earn(s, amount);
-      j.prog = 0;
-      j.running = false;
-      sales.push({ job: i, amount });
+function tickBusiness(s: GameState, id: string, dt: number, now: number, events: SaleEvent[]): void {
+  const def = bizDef(id);
+  const b = s.biz[id];
+
+  // Plantas: cada trabajador completa ciclos y deja producto en su depósito.
+  b.floors.forEach((f, i) => {
+    if (f.managed) f.running = true;
+    if (!f.running) return;
+    f.prog += dt;
+    if (f.prog < CHAIN.floorCycle) return;
+    const n = f.managed ? Math.floor(f.prog / CHAIN.floorCycle) : 1;
+    f.stock += floorLoad(def, i, f.level) * n;
+    if (f.managed) f.prog -= n * CHAIN.floorCycle;
+    else {
+      f.prog = 0;
+      f.running = false;
     }
   });
-  for (const p of PROPERTIES) {
-    const r = propRate(s, p.id, now);
-    if (r) earn(s, r * dt);
+
+  // Transporte: baja planta a planta, carga hasta llenarse y sube.
+  const t = b.transport;
+  const cap = transportCap(def, t.level);
+  const speed = transportSpeed(t.level);
+  let left = dt;
+  let guard = 0;
+  while (left > 0 && guard++ < 64) {
+    if (t.phase === "idle") {
+      if (!t.managed) break;
+      t.phase = "down";
+      t.target = 0;
+    } else if (t.phase === "down" || t.phase === "up") {
+      const goal = t.phase === "down" ? t.target + 1 : 0;
+      const dist = Math.abs(goal - t.pos);
+      const step = speed * left;
+      if (step < dist) {
+        t.pos += Math.sign(goal - t.pos) * step;
+        left = 0;
+      } else {
+        t.pos = goal;
+        left -= dist / speed;
+        t.phase = t.phase === "down" ? "load" : "unload";
+        t.timer = t.phase === "load" ? CHAIN.transportLoadTime : CHAIN.transportUnloadTime;
+      }
+    } else {
+      // load / unload: esperar el temporizador
+      if (t.timer > left) {
+        t.timer -= left;
+        left = 0;
+        break;
+      }
+      left -= t.timer;
+      t.timer = 0;
+      if (t.phase === "load") {
+        const f = b.floors[t.target];
+        const take = Math.min(f.stock, cap - t.carry);
+        f.stock -= take;
+        t.carry += take;
+        const last = t.target >= b.floors.length - 1;
+        if (t.carry >= cap - 1e-9 || last) t.phase = "up";
+        else {
+          t.target++;
+          t.phase = "down";
+        }
+      } else {
+        b.topStock += t.carry;
+        t.carry = 0;
+        t.phase = t.managed ? "down" : "idle";
+        t.target = 0;
+      }
+    }
   }
-  return sales;
+
+  // Venta: carga lo que hay arriba, lo lleva al cliente y vuelve.
+  const sl = b.sale;
+  const walk = saleWalk(sl.level);
+  left = dt;
+  guard = 0;
+  while (left > 0 && guard++ < 64) {
+    if (sl.phase === "idle") {
+      if (!sl.managed || b.topStock <= 0) break;
+      startSale(def, b);
+    } else {
+      const need = (1 - sl.prog) * walk;
+      if (need > left) {
+        sl.prog += left / walk;
+        left = 0;
+      } else {
+        left -= need;
+        sl.prog = 0;
+        if (sl.phase === "out") {
+          const amount = sl.carry * saleMult(s, id, now);
+          sl.carry = 0;
+          earn(s, amount, id);
+          events.push({ biz: id, amount });
+          sl.phase = "back";
+        } else {
+          sl.phase = "idle";
+        }
+      }
+    }
+  }
+}
+
+function startSale(def: BusinessDef, b: BusinessState): void {
+  const take = Math.min(b.topStock, saleCap(def, b.sale.level));
+  b.topStock -= take;
+  b.sale.carry = take;
+  b.sale.phase = "out";
+  b.sale.prog = 0;
+}
+
+/** Avanza el juego `dt` segundos. Devuelve las ventas para mostrarlas. */
+export function tick(s: GameState, dt: number, now: number): SaleEvent[] {
+  const events: SaleEvent[] = [];
+  for (const d of BUSINESSES) if (s.biz[d.id].owned) tickBusiness(s, d.id, dt, now, events);
+  return events;
+}
+
+/* ---------- Toques del jugador ---------- */
+
+/** Pone en marcha una parte parada. Devuelve un aviso si no se puede. */
+export function tapStation(s: GameState, id: string, st: Station): string | null {
+  const b = s.biz[id];
+  if (st.kind === "floor") {
+    const f = b.floors[st.index];
+    if (!f.running) f.running = true;
+    return null;
+  }
+  if (st.kind === "transport") {
+    if (b.transport.phase === "idle") {
+      b.transport.phase = "down";
+      b.transport.target = 0;
+    }
+    return null;
+  }
+  if (b.sale.phase !== "idle") return null;
+  if (b.topStock <= 0) return "Aún no hay nada que vender arriba";
+  startSale(bizDef(id), b);
+  return null;
 }
 
 /** Lo ganado mientras la app estuvo cerrada (sin x2 ni hora punta, con tope). */

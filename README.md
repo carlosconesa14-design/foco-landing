@@ -1,19 +1,20 @@
 # De Rider a Millonario
 
-Juego idle para móvil: empiezas repartiendo en bici y acabas con una startup unicornio, una cadena de locales y una isla privada. Se monetiza con anuncios bonificados (rewarded ads) de AdMob, siempre opcionales.
+Idle tycoon para móvil: construyes un imperio de negocios modernos (dropshipping, restaurante, TikTok, IA) en una ciudad que ves crecer. Cada negocio es una cadena de producción animada al estilo Idle Miner Tycoon. Se monetiza con anuncios bonificados (rewarded ads) de AdMob, siempre opcionales.
 
-Hecho con **TypeScript + Vite**, empaquetado para Android e iOS con **Capacitor**.
+Hecho con **TypeScript + Phaser 3 + Vite**, empaquetado para Android e iOS con **Capacitor**. El diseño completo y la hoja de ruta están en [`docs/GDD.md`](docs/GDD.md).
 
 ## Cómo se juega
 
-| Pestaña | Qué haces |
-| --- | --- |
-| **Carrera** | Trabajos de peor a mejor pagados: rider, Wallapop, dropshipping, TikTok, agencia de marketing, agencia de IA, SaaS de IA, startup unicornio. Tocas para trabajar y subes niveles. Cada 25/50/100… niveles, velocidad x2. |
-| **Automatizar** | Convierte cada trabajo en ingreso pasivo (moto de reparto, bot de respuestas, agente IA 24/7…). Solo lo automatizado gana con la app cerrada. |
-| **Ciudad** | Compras locales (cafetería, restaurante, gimnasio, almacén, hotel, discoteca). Cada uno es un **idle dentro del idle**: una cadena de 3 estaciones que vende al ritmo de la más lenta, así que siempre hay que mejorar el cuello de botella. |
-| **Bolsa** | Prestigio: sales a bolsa, vuelves a empezar de rider y te quedas acciones que suman +2 % a todo para siempre. |
-
-El **estilo de vida** (de "vives con tus padres" a "isla privada") avanza con todo lo que has ganado y no se pierde nunca.
+- **Interior de un negocio:** plantas de producción → transporte → venta.
+  - Tocas a cada trabajador para que haga un viaje.
+  - Los botones `Nv ⬆` abren el panel de mejora y de contratación de gerente.
+  - La parte que frena la cadena se marca en rojo.
+- **Gerentes:** automatizan su parte, que sigue ganando dinero con la app cerrada.
+- **Plantas nuevas:** cada una produce 6 veces más que la anterior (hasta 8 por negocio).
+- **Ciudad:** un mapa que puedes arrastrar, con parcelas "Se vende". Cada negocio produce cientos de veces más que el anterior.
+- **Bolsa:** el prestigio. Vuelves a empezar con acciones que dan +2 % permanente cada una.
+- **Estilo de vida:** avanza según lo ganado en total, de "vives con tus padres" a "isla privada", y no se pierde nunca.
 
 ## Dónde salen los anuncios
 
@@ -27,7 +28,7 @@ Todos son opcionales. `Placement` en `src/ads/types.ts`:
 | `rush` | Hora punta: un local de la ciudad x3 durante 30 min |
 | `ipo_x2` | Doble de acciones al salir a bolsa |
 
-La pestaña Bolsa incluye un panel de desarrollo con los anuncios vistos por ubicación y un ingreso estimado. Hay que quitarlo antes de publicar.
+El panel de la Bolsa incluye un panel de desarrollo con los anuncios vistos por ubicación y un ingreso estimado. Hay que quitarlo antes de publicar.
 
 ## Desarrollo
 
@@ -44,15 +45,17 @@ En el navegador los anuncios son una pantalla simulada de 5 s (`src/ads/mock.ts`
 
 ```
 src/
-  game/data.ts      contenido y equilibrio (trabajos, locales, precios)
-  game/state.ts     estado, partida nueva, migración de guardados
-  game/economy.ts   fórmulas puras y simulación (tick, offline)
-  game/actions.ts   acciones del jugador (comprar, mejorar, salir a bolsa…)
-  ads/              AdMob en móvil, anuncio simulado en web
-  platform/         guardado con @capacitor/preferences
-  ui/               render de pestañas, modales y toasts
-  main.ts           bucle de juego y eventos
-tests/              tests con Vitest
+  game/data.ts        contenido y equilibrio (negocios, cadena, estilo de vida)
+  game/state.ts       estado, partida nueva, migración de guardados
+  game/economy.ts     fórmulas y simulación pura de la cadena (testeada)
+  game/actions.ts     acciones del jugador (mejorar, gerentes, plantas, bolsa…)
+  scenes/             escenas de Phaser: ciudad e interior animado
+  ui/                 cabecera, barra inferior, paneles y modales en HTML
+  ads/                AdMob en móvil, anuncio simulado en web
+  platform/           guardado con @capacitor/preferences
+  main.ts             arranque, bucle y puente entre Phaser y la interfaz
+tests/                tests con Vitest
+docs/GDD.md           documento de diseño y hoja de ruta
 ```
 
 ## Publicar en Android e iOS
@@ -78,8 +81,4 @@ El consentimiento GDPR (formulario UMP de Google) y el permiso ATT de iOS ya se 
 
 ## Próximos pasos
 
-- Mejoras permanentes que se compren con acciones.
-- Recompensa diaria y logros.
-- Más locales en la ciudad y eventos por local.
-- Verificación de recompensas en servidor (SSV) cuando haya tráfico.
-- Analítica (Firebase) para medir retención y anuncios por jugador.
+Ver la hoja de ruta en [`docs/GDD.md`](docs/GDD.md). La fase 2 incluye 💎, gerentes con rareza y habilidades, cofres, misiones diarias y el tutorial guiado.

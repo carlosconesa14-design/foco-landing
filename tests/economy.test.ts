@@ -1,100 +1,167 @@
 import { describe, expect, it } from "vitest";
 import * as act from "../src/game/actions";
-import { CONFIG, PROPERTIES } from "../src/game/data";
+import { BUSINESSES, CHAIN, CONFIG } from "../src/game/data";
 import {
-  bottleneck,
+  chainRates,
+  floorLoad,
   geomCost,
-  jobCycle,
   maxAffordable,
   offlineEarnings,
   passiveRate,
-  propRate,
+  saleCap,
   sharesToGain,
+  tapStation,
   tick,
+  transportCap,
+  upgradeQuote,
 } from "../src/game/economy";
 import { fmt, fmtTime } from "../src/game/format";
-import { freshState, migrate } from "../src/game/state";
+import { freshState, migrate, type GameState } from "../src/game/state";
 
 const NOW = 1_700_000_000_000;
+const DROP = BUSINESSES[0];
+const FLOOR0 = { kind: "floor", index: 0 } as const;
+const TRANSPORT = { kind: "transport" } as const;
+const SALE = { kind: "sale" } as const;
+
+/** Simula `seconds` en pasos pequeños, como el bucle real. */
+function run(s: GameState, seconds: number, step = 1 / 30) {
+  const events = [];
+  for (let t = 0; t < seconds; t += step) events.push(...tick(s, step, NOW));
+  return events;
+}
+
+function automate(s: GameState, id = DROP.id) {
+  const b = s.biz[id];
+  b.floors.forEach((f) => (f.managed = true));
+  b.transport.managed = true;
+  b.sale.managed = true;
+}
 
 describe("costes", () => {
   it("geomCost suma la serie geométrica", () => {
-    expect(geomCost(4, 1.07, 0, 1)).toBeCloseTo(4);
-    expect(geomCost(4, 1.07, 0, 2)).toBeCloseTo(4 + 4 * 1.07);
-    expect(geomCost(10, 1.1, 3, 1)).toBeCloseTo(10 * 1.1 ** 3);
+    expect(geomCost(4, 1.07, 1)).toBeCloseTo(4);
+    expect(geomCost(4, 1.07, 2)).toBeCloseTo(4 + 4 * 1.07);
   });
 
   it("maxAffordable no se pasa del dinero disponible", () => {
     for (const cash of [0, 3.99, 4, 100, 12345, 1e9]) {
-      const n = maxAffordable(4, 1.07, 5, cash);
-      expect(geomCost(4, 1.07, 5, n)).toBeLessThanOrEqual(cash + 1e-6);
-      expect(geomCost(4, 1.07, 5, n + 1)).toBeGreaterThan(cash);
+      const n = maxAffordable(4, 1.07, cash);
+      expect(geomCost(4, 1.07, n)).toBeLessThanOrEqual(cash + 1e-6);
+      expect(geomCost(4, 1.07, n + 1)).toBeGreaterThan(cash);
     }
   });
 });
 
-describe("carrera", () => {
-  it("un trabajo manual cobra una vez y se para", () => {
+describe("cadena de producción", () => {
+  it("sin gerentes, cada toque hace un solo ciclo de cada parte", () => {
     const s = freshState(NOW);
-    act.startJob(s, 0);
-    const sales = tick(s, 1, NOW);
+    tapStation(s, DROP.id, FLOOR0);
+    run(s, CHAIN.floorCycle + 0.1);
+    const b = s.biz[DROP.id];
+    expect(b.floors[0].stock).toBeCloseTo(floorLoad(DROP, 0, 1));
+    expect(b.floors[0].running).toBe(false);
+
+    tapStation(s, DROP.id, TRANSPORT);
+    run(s, 3);
+    expect(b.transport.phase).toBe("idle");
+    expect(b.floors[0].stock).toBe(0);
+    expect(b.topStock).toBeCloseTo(floorLoad(DROP, 0, 1));
+
+    expect(tapStation(s, DROP.id, SALE)).toBeNull();
+    const sales = run(s, 5);
     expect(sales).toHaveLength(1);
-    expect(s.cash).toBe(1);
-    expect(s.jobs[0].running).toBe(false);
+    expect(s.cash).toBeCloseTo(floorLoad(DROP, 0, 1));
+    expect(b.sale.phase).toBe("idle");
   });
 
-  it("un trabajo automatizado cobra varios ciclos por tick", () => {
+  it("no deja vender si no hay nada arriba", () => {
     const s = freshState(NOW);
-    s.jobs[0].auto = true;
-    tick(s, 6, NOW); // ciclo de 0.6 s
-    expect(s.cash).toBeCloseTo(10);
+    expect(tapStation(s, DROP.id, SALE)).not.toBeNull();
   });
 
-  it("los hitos de nivel duplican la velocidad", () => {
+  it("el transporte no carga más de su capacidad", () => {
     const s = freshState(NOW);
-    s.jobs[0].level = 25;
-    expect(jobCycle(s, 0)).toBeCloseTo(0.3);
+    const b = s.biz[DROP.id];
+    b.floors[0].stock = 1e6;
+    tapStation(s, DROP.id, TRANSPORT);
+    run(s, 5);
+    expect(b.topStock).toBeCloseTo(transportCap(DROP, 1));
+    expect(b.floors[0].stock).toBeCloseTo(1e6 - transportCap(DROP, 1));
   });
 
-  it("comprar y automatizar descuentan el dinero", () => {
+  it("el transporte recorre todas las plantas en orden", () => {
     const s = freshState(NOW);
-    s.cash = 2000;
-    expect(act.buyJob(s, 1)).toBe("");
-    expect(s.jobs[1].level).toBe(1);
-    expect(s.cash).toBeCloseTo(1940);
-    expect(act.automateJob(s, 0)).not.toBeNull();
-    expect(s.jobs[0].auto).toBe(true);
-    expect(act.automateJob(s, 2)).toBeNull(); // no empezado
+    const b = s.biz[DROP.id];
+    s.cash = 1e6;
+    act.unlockFloor(s, DROP.id);
+    act.unlockFloor(s, DROP.id);
+    b.floors.forEach((f) => (f.stock = 1));
+    tapStation(s, DROP.id, TRANSPORT);
+    run(s, 10);
+    expect(b.floors.map((f) => f.stock)).toEqual([0, 0, 0]);
+    expect(b.topStock).toBeCloseTo(3);
+  });
+
+  it("con gerentes, lo que se gana se acerca al ritmo de la parte más lenta", () => {
+    const s = freshState(NOW);
+    automate(s);
+    const rates = chainRates(DROP, s.biz[DROP.id], true);
+    run(s, 120);
+    const measured = s.cash / 120;
+    expect(measured).toBeGreaterThan(rates.total * 0.8);
+    expect(measured).toBeLessThanOrEqual(rates.total * 1.05);
+  });
+
+  it("la venta no lleva más de su capacidad", () => {
+    const s = freshState(NOW);
+    s.biz[DROP.id].topStock = 1e6;
+    tapStation(s, DROP.id, SALE);
+    run(s, 10);
+    expect(s.cash).toBeCloseTo(saleCap(DROP, 1));
   });
 });
 
-describe("ciudad", () => {
-  it("vende al ritmo de la estación más lenta", () => {
+describe("mejoras y compras", () => {
+  it("mejorar descuenta el dinero y sube el nivel", () => {
     const s = freshState(NOW);
-    s.cash = 1e5;
-    act.buyProperty(s, "cafe");
-    const cafe = PROPERTIES[0];
-    expect(bottleneck(s, "cafe")).toBe(1); // baristas 0.8
-    expect(propRate(s, "cafe", NOW)).toBeCloseTo(0.8 * cafe.unitPrice);
-    act.upgradeStation(s, "cafe", 1);
-    expect(bottleneck(s, "cafe")).toBe(0); // ahora las cafeteras (1.0)
-    expect(propRate(s, "cafe", NOW)).toBeCloseTo(1 * cafe.unitPrice);
+    s.cash = 100;
+    const { cost } = upgradeQuote(s, DROP.id, FLOOR0);
+    expect(act.upgrade(s, DROP.id, FLOOR0)).toBe("");
+    expect(s.biz[DROP.id].floors[0].level).toBe(2);
+    expect(s.cash).toBeCloseTo(100 - cost);
   });
 
-  it("la hora punta multiplica solo ese local", () => {
+  it("el hito del nivel 10 avisa y duplica", () => {
     const s = freshState(NOW);
-    s.cash = 1e5;
-    act.buyProperty(s, "cafe");
-    const base = propRate(s, "cafe", NOW);
-    expect(act.startRush(s, "cafe", NOW)).toBe(true);
-    expect(propRate(s, "cafe", NOW + 1000)).toBeCloseTo(base * CONFIG.rushMult);
-    expect(propRate(s, "cafe", NOW + CONFIG.rushMinutes * 60e3 + 1)).toBeCloseTo(base);
+    s.cash = 1e9;
+    s.buyMode = 10;
+    expect(act.upgrade(s, DROP.id, TRANSPORT)).toContain("x2");
+    expect(transportCap(DROP, 11)).toBeCloseTo(DROP.mult * CHAIN.transportBaseCap * 11 * 2);
   });
 
-  it("no se puede comprar sin dinero", () => {
+  it("contratar un gerente solo se puede una vez", () => {
     const s = freshState(NOW);
-    expect(act.buyProperty(s, "restaurant")).toBeNull();
-    expect(s.props.restaurant.owned).toBe(false);
+    s.cash = 1e6;
+    expect(act.hireManager(s, DROP.id, SALE)).not.toBeNull();
+    expect(act.hireManager(s, DROP.id, SALE)).toBeNull();
+  });
+
+  it("no se puede comprar un negocio sin dinero", () => {
+    const s = freshState(NOW);
+    expect(act.buyBusiness(s, "restaurant")).toBeNull();
+    s.cash = BUSINESSES[1].price;
+    expect(act.buyBusiness(s, "restaurant")).not.toBeNull();
+    expect(s.cash).toBe(0);
+  });
+
+  it("hay un máximo de plantas", () => {
+    const s = freshState(NOW);
+    s.cash = 1e30;
+    while (act.unlockFloor(s, DROP.id)) {
+      /* desbloquear todas */
+    }
+    expect(s.biz[DROP.id].floors).toHaveLength(CHAIN.maxFloors);
   });
 });
 
@@ -108,41 +175,61 @@ describe("anuncios y bonus", () => {
     expect(s.boostEnd - NOW).toBe(CONFIG.boostMaxHours * 3600e3);
   });
 
-  it("las ganancias offline ignoran el x2 y tienen tope", () => {
+  it("la hora punta triplica lo que vende ese negocio", () => {
+    const a = freshState(NOW);
+    const b = freshState(NOW);
+    act.startRush(b, DROP.id, NOW);
+    for (const s of [a, b]) {
+      s.biz[DROP.id].topStock = 10;
+      tapStation(s, DROP.id, SALE);
+      run(s, 10);
+    }
+    expect(b.cash).toBeCloseTo(a.cash * CONFIG.rushMult);
+  });
+
+  it("offline solo cuenta lo automatizado, sin x2 y con tope", () => {
     const s = freshState(NOW);
-    s.jobs[0].auto = true;
-    s.boostEnd = NOW + 1e9;
     s.lastSeen = NOW - 100 * 3600e3;
+    expect(offlineEarnings(s, NOW).amount).toBe(0);
+    automate(s);
+    s.boostEnd = NOW + 1e9;
     const { seconds, amount } = offlineEarnings(s, NOW);
     expect(seconds).toBe(CONFIG.offlineCapHours * 3600);
     expect(amount).toBeCloseTo(passiveRate(s, NOW, false) * seconds);
+    expect(passiveRate(s, NOW, true)).toBeCloseTo(passiveRate(s, NOW, false) * 2);
   });
 
   it("salir a bolsa conserva lo permanente y reinicia lo demás", () => {
     const s = freshState(NOW);
-    s.runEarned = s.totalEarned = 4e9;
+    s.runEarned = s.totalEarned = 4e8;
     s.cash = 1e6;
-    act.buyProperty(s, "cafe");
+    act.buyBusiness(s, "restaurant");
     act.recordAd(s, "viral", new Date(NOW));
     expect(sharesToGain(s)).toBe(2);
     const res = act.ipo(s, 2, NOW)!;
     expect(res.gained).toBe(4);
     expect(res.state.shares).toBe(4);
-    expect(res.state.totalEarned).toBe(4e9);
+    expect(res.state.totalEarned).toBe(4e8);
     expect(res.state.cash).toBe(0);
-    expect(res.state.props.cafe.owned).toBe(false);
+    expect(res.state.biz.restaurant.owned).toBe(false);
+    expect(res.state.biz.dropship.owned).toBe(true);
     expect(res.state.ads.total).toBe(1);
   });
 });
 
 describe("guardado", () => {
-  it("migrate repara partidas incompletas o corruptas", () => {
+  it("migrate repara partidas incompletas y descarta la versión 1", () => {
     expect(migrate(null, NOW)).toEqual(freshState(NOW));
-    const s = migrate({ cash: 50, jobs: [{ level: 3 }], props: { cafe: { owned: true } }, buyMode: "raro" }, NOW);
+    expect(migrate({ cash: 50 }, NOW).cash).toBe(0);
+    const s = migrate(
+      { version: 2, cash: 50, biz: { dropship: { floors: [{ level: 3 }, {}], transport: { level: 4, carry: 7 } } }, buyMode: "raro" },
+      NOW,
+    );
     expect(s.cash).toBe(50);
-    expect(s.jobs[0].level).toBe(3);
-    expect(s.jobs).toHaveLength(8);
-    expect(s.props.cafe).toEqual({ owned: true, levels: [1, 1, 1], rushEnd: 0 });
+    expect(s.biz.dropship.floors.map((f) => f.level)).toEqual([3, 1]);
+    expect(s.biz.dropship.transport.level).toBe(4);
+    expect(s.biz.dropship.topStock).toBe(7);
+    expect(s.biz.restaurant.owned).toBe(false);
     expect(s.buyMode).toBe(1);
   });
 });
