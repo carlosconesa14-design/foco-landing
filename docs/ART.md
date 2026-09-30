@@ -1,6 +1,6 @@
 # Guía de arte
 
-Todo el arte del juego está en `src/art/catalog.ts` y se dibuja por código. Cada pieza tiene un **nombre (clave)** y un **tamaño lógico**. Si le das al juego un PNG con esa clave, lo usa en lugar del dibujo por código. Así puedes cambiar el arte pieza a pieza sin tocar nada más.
+Todo el arte del juego (ciudad y recintos isométricos) está en `src/art/catalog.ts` y se dibuja por código. Cada pieza tiene un **nombre (clave)** y un **tamaño lógico**. Si le das al juego un PNG con esa clave, lo usa en lugar del dibujo por código. Así puedes cambiar el arte pieza a pieza sin tocar nada más.
 
 ## Cómo añadir una imagen
 
@@ -60,19 +60,22 @@ Todos tienen una base de rombo 2:1 de unos 150×75 px lógicos, que ocupa una pa
 | `ch_brand_0` | 44×60 | Chibi brand manager, purple suit, blonde bun, full body, standing |
 | `ch_engineer_0` | 44×60 | Chibi AI engineer, teal hoodie, glasses, full body, standing |
 | `ch_sales_0` | 44×60 | Chibi salesperson, navy suit and gold tie, full body, standing |
+| `ch_rider_0` | 44×60 | Chibi food delivery rider, green shirt and green cap, full body, standing |
+| `ch_editor_0` | 44×60 | Chibi video editor, yellow shirt, glasses, full body, standing |
+| `ch_tech_0` | 44×60 | Chibi IT technician, dark blue shirt, teal cap, full body, standing |
 | `ch_ped0_0` … `ch_ped2_0` | 44×60 | Chibi casual pedestrian, varied outfits, full body, standing |
 
 Para las poses de caminar (`_1` y `_2`), el prompt es el mismo con "walking, left leg forward" o "walking, right leg forward".
 
-### Interior de los negocios
+### Recinto de los negocios
 
 | Clave | Tamaño lógico | Prompt |
 | --- | --- | --- |
-| `st_dropship` | 100×86 | Side view wooden warehouse shelves full of cardboard boxes |
+| `st_dropship` | 100×86 | Wooden warehouse shelves full of cardboard boxes, slight 3/4 view |
 | `st_restaurant` | 100×86 | Side view professional kitchen stove with two steaming pots |
 | `st_tiktok` | 100×86 | Side view ring light on a tripod holding a smartphone, colorful props |
 | `st_ai` | 100×86 | Side view black server rack with glowing cyan and green LEDs |
-| `van` | 76×46 | Side view white delivery van with orange stripe, facing right |
+| `van` | 76×46 | Side view white delivery van with orange stripe, facing right (se usa en pantallas laterales) |
 | `item_box` | 26×26 | Small cardboard box with tape |
 | `item_dish` | 26×26 | Plate of spaghetti with tomato sauce |
 | `item_clip` | 26×26 | Film clapperboard |
@@ -84,4 +87,4 @@ Para las poses de caminar (`_1` y `_2`), el prompt es el mismo con "walking, lef
 
 - Pide **una pieza por imagen** y di explícitamente "transparent background". Si el fondo sale blanco, quítalo con cualquier herramienta de recorte.
 - Genera primero un edificio y un personaje. Cuando te guste el resultado, pide el resto "in exactly the same style as the previous image" para que todo sea coherente.
-- Mantén siempre la misma **vista**: isométrica 2:1 para la ciudad y lateral para los interiores.
+- Mantén siempre la misma **vista**: isométrica 2:1 para edificios, coches y árboles. Los personajes y los puestos van de frente, en vista 3/4.

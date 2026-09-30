@@ -31,17 +31,23 @@ export const LOOKS: Record<string, Look> = {
   brand: { skin: 0xf1c27d, shirt: 0x6c5ce7, pants: 0x2d3436, hat: "bun", hatColor: 0xf0c05a, extra: "tie", extraColor: 0xfdcb6e },
   engineer: { skin: 0x8d5524, shirt: 0x1abc9c, pants: 0x2c3e50, hat: "hair", hatColor: 0x1b1b1b, extra: "glasses", extraColor: 0x1b1b1b },
   sales: { skin: 0xf5cba7, shirt: 0x1f3a93, pants: 0x1b2631, hat: "hair", hatColor: 0x8e5a2b, extra: "tie", extraColor: 0xf5c542 },
+  rider: { skin: 0xe0ac69, shirt: 0x2ecc71, pants: 0x2c3e50, hat: "cap", hatColor: 0x27ae60 },
+  editor: { skin: 0xf1c27d, shirt: 0xfdcb6e, pants: 0x2d3436, hat: "hair", hatColor: 0x5b3a29, extra: "glasses", extraColor: 0x2d3436 },
+  tech: { skin: 0xc68642, shirt: 0x34495e, pants: 0x2c3e50, hat: "cap", hatColor: 0x1abc9c },
   ped0: { skin: 0xf1c27d, shirt: 0xe74c3c, pants: 0x34495e, hat: "hair", hatColor: 0x2c1e12 },
   ped1: { skin: 0x8d5524, shirt: 0xf1c40f, pants: 0x2980b9, hat: "bun", hatColor: 0x111111 },
   ped2: { skin: 0xe0ac69, shirt: 0x27ae60, pants: 0x7f8c8d, hat: "cap", hatColor: 0x8e44ad },
 };
 
-/** Qué arte usa cada negocio en su interior. */
-export const BIZ_ART: Record<string, { worker: string; seller: string; vehicle: boolean; item: string; station: string }> = {
-  dropship: { worker: "packer", seller: "van", vehicle: true, item: "item_box", station: "st_dropship" },
-  restaurant: { worker: "cook", seller: "waiter", vehicle: false, item: "item_dish", station: "st_restaurant" },
-  tiktok: { worker: "creator", seller: "brand", vehicle: false, item: "item_clip", station: "st_tiktok" },
-  ai: { worker: "engineer", seller: "sales", vehicle: false, item: "item_chip", station: "st_ai" },
+/**
+ * Qué arte usa cada negocio en su recinto. `mover` recorre los puestos recogiendo
+ * y `seller` sale a vender; si empiezan por "car_" son vehículos, si no, personajes.
+ */
+export const BIZ_ART: Record<string, { worker: string; mover: string; seller: string; item: string; station: string }> = {
+  dropship: { worker: "packer", mover: "car_3", seller: "car_2", item: "item_box", station: "st_dropship" },
+  restaurant: { worker: "cook", mover: "waiter", seller: "rider", item: "item_dish", station: "st_restaurant" },
+  tiktok: { worker: "creator", mover: "editor", seller: "brand", item: "item_clip", station: "st_tiktok" },
+  ai: { worker: "engineer", mover: "tech", seller: "sales", item: "item_chip", station: "st_ai" },
 };
 
 for (const role of Object.keys(LOOKS)) for (const f of [0, 1, 2]) def(`ch_${role}_${f}`, 44, 60);

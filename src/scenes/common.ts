@@ -138,7 +138,7 @@ export class Pill extends Phaser.GameObjects.Container {
 }
 
 /**
- * Arrastrar para desplazar la cámara (en vertical, o en los dos ejes si hay límites en X),
+ * Cámara del mapa: arrastrar para moverse, pellizcar (o rueda del ratón) para hacer zoom,
  * distinguiendo un arrastre de un toque. Los objetos deben comprobar `wasDrag()` en su `pointerup`.
  */
 export class DragScroll {
@@ -147,33 +147,61 @@ export class DragScroll {
   private vel = { x: 0, y: 0 };
   private dragging = false;
   private down = false;
+  private pinch: { dist: number; z: number } | null = null;
+  private z: number;
+  private minZ: number;
+  private maxZ: number;
 
   constructor(
     private scene: Phaser.Scene,
-    private minY: number,
-    private maxY: number,
-    private minX = 0,
-    private maxX = 0,
+    private worldW: number,
+    private worldH: number,
+    opts: { zoom?: number; minZoom?: number; maxZoom?: number } = {},
   ) {
+    this.minZ = opts.minZoom ?? 1;
+    this.maxZ = opts.maxZoom ?? 1;
+    this.z = Phaser.Math.Clamp(opts.zoom ?? 1, this.minZ, this.maxZ);
     const cam = scene.cameras.main;
-    scene.input.on("pointerdown", (p: Phaser.Input.Pointer) => {
+    cam.setZoom(DPR * this.z);
+    scene.input.addPointer(1);
+    const input = scene.input;
+
+    input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       this.down = true;
       this.dragging = false;
+      this.vel = { x: 0, y: 0 };
+      if (input.pointer1.isDown && input.pointer2.isDown) {
+        this.pinch = { dist: Phaser.Math.Distance.BetweenPoints(input.pointer1, input.pointer2), z: this.z };
+        this.dragging = true;
+        return;
+      }
       this.start = { x: p.x, y: p.y, sx: cam.scrollX, sy: cam.scrollY };
       this.last = { x: p.x, y: p.y };
-      this.vel = { x: 0, y: 0 };
     });
-    scene.input.on("pointermove", (p: Phaser.Input.Pointer) => {
-      if (!this.down) return;
+    input.on("pointermove", (p: Phaser.Input.Pointer) => {
+      if (this.pinch && input.pointer1.isDown && input.pointer2.isDown) {
+        const d = Phaser.Math.Distance.BetweenPoints(input.pointer1, input.pointer2);
+        const mx = (input.pointer1.x + input.pointer2.x) / 2;
+        const my = (input.pointer1.y + input.pointer2.y) / 2;
+        this.zoomAround(mx, my, (this.pinch.z * d) / Math.max(1, this.pinch.dist));
+        return;
+      }
+      if (!this.down || this.pinch) return;
       if (Math.hypot(p.x - this.start.x, p.y - this.start.y) > 8 * DPR) this.dragging = true;
       if (!this.dragging) return;
-      cam.scrollX = this.clampX(this.start.sx - (p.x - this.start.x) / DPR);
-      cam.scrollY = this.clampY(this.start.sy - (p.y - this.start.y) / DPR);
-      this.vel = { x: (this.last.x - p.x) / DPR, y: (this.last.y - p.y) / DPR };
+      cam.scrollX = this.clampX(this.start.sx - (p.x - this.start.x) / cam.zoom);
+      cam.scrollY = this.clampY(this.start.sy - (p.y - this.start.y) / cam.zoom);
+      this.vel = { x: (this.last.x - p.x) / cam.zoom, y: (this.last.y - p.y) / cam.zoom };
       this.last = { x: p.x, y: p.y };
     });
     // Se deja `dragging` hasta el siguiente pointerdown para que los objetos lo lean.
-    scene.input.on("pointerup", () => (this.down = false));
+    input.on("pointerup", () => {
+      if (!input.pointer1.isDown && !input.pointer2.isDown) this.pinch = null;
+      this.down = input.activePointer.isDown;
+    });
+    input.on("wheel", (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
+      this.zoomAround(p.x, p.y, this.z * (dy > 0 ? 0.9 : 1.1));
+    });
     scene.events.on("update", () => {
       if (this.down || Math.hypot(this.vel.x, this.vel.y) < 0.2) return;
       cam.scrollX = this.clampX(cam.scrollX + this.vel.x);
@@ -187,22 +215,46 @@ export class DragScroll {
     return this.dragging;
   }
 
-  setBounds(minY: number, maxY: number, minX = this.minX, maxX = this.maxX): void {
-    this.minY = minY;
-    this.maxY = Math.max(minY, maxY);
-    this.minX = minX;
-    this.maxX = Math.max(minX, maxX);
+  /** Ancho y alto visibles en coordenadas del mundo. */
+  view(): { w: number; h: number } {
     const cam = this.scene.cameras.main;
-    cam.scrollX = this.clampX(cam.scrollX);
-    cam.scrollY = this.clampY(cam.scrollY);
+    return { w: cam.width / cam.zoom, h: cam.height / cam.zoom };
   }
 
+  /** Centra la vista en un punto del mundo. */
+  centerOn(x: number, y: number): void {
+    const cam = this.scene.cameras.main;
+    const v = this.view();
+    cam.scrollX = this.clampX(x - v.w / 2);
+    cam.scrollY = this.clampY(y - v.h / 2);
+  }
+
+  scrollTo(x: number, y: number): void {
+    const cam = this.scene.cameras.main;
+    cam.scrollX = this.clampX(x);
+    cam.scrollY = this.clampY(y);
+  }
+
+  private zoomAround(px: number, py: number, z: number): void {
+    const cam = this.scene.cameras.main;
+    const nz = Phaser.Math.Clamp(z, this.minZ, this.maxZ);
+    const wx = cam.scrollX + px / cam.zoom;
+    const wy = cam.scrollY + py / cam.zoom;
+    this.z = nz;
+    cam.setZoom(DPR * nz);
+    cam.scrollX = this.clampX(wx - px / cam.zoom);
+    cam.scrollY = this.clampY(wy - py / cam.zoom);
+  }
+
+  // Si el mapa cabe entero en pantalla, se centra en lugar de pegarse arriba a la izquierda.
   private clampX(x: number): number {
-    return Phaser.Math.Clamp(x, this.minX, Math.max(this.minX, this.maxX));
+    const free = this.worldW - this.view().w;
+    return free < 0 ? free / 2 : Phaser.Math.Clamp(x, 0, free);
   }
 
   private clampY(y: number): number {
-    return Phaser.Math.Clamp(y, this.minY, Math.max(this.minY, this.maxY));
+    const free = this.worldH - this.view().h;
+    return free < 0 ? free / 2 : Phaser.Math.Clamp(y, 0, free);
   }
 }
 

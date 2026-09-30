@@ -71,25 +71,25 @@ export const BUSINESSES: BusinessDef[] = [
   {
     id: "dropship", name: "Almacén de dropshipping", icon: "📦", blurb: "Tu primer negocio. Pedidos online que salen solos.",
     price: 0, mult: 1, wall: 0xe8b04b, roof: 0x9c5b2e,
-    floorName: "Estantería", worker: "🧑‍🔧", item: "📦", transportName: "Montacargas", transportIcon: "🛗",
+    floorName: "Estantería", worker: "🧑‍🔧", item: "📦", transportName: "Carretilla", transportIcon: "🛻",
     saleName: "Furgonetas", saleWorker: "🚚", customer: "🏠",
   },
   {
-    id: "restaurant", name: "Restaurante", icon: "🍝", blurb: "Cocinas, montaplatos y camareros. Si uno falla, se atasca todo.",
+    id: "restaurant", name: "Restaurante", icon: "🍝", blurb: "Cocinas, camareros y repartidores. Si uno falla, se atasca todo.",
     price: 5e4, mult: 400, wall: 0xd9534f, roof: 0x7a2323,
-    floorName: "Cocina", worker: "🧑‍🍳", item: "🍝", transportName: "Montaplatos", transportIcon: "🛗",
-    saleName: "Camareros", saleWorker: "🤵", customer: "🍽️",
+    floorName: "Cocina", worker: "🧑‍🍳", item: "🍝", transportName: "Camareros", transportIcon: "🤵",
+    saleName: "Repartidores", saleWorker: "🛵", customer: "🏠",
   },
   {
     id: "tiktok", name: "Estudio de TikTok", icon: "📱", blurb: "Creadores grabando sin parar y marcas pagando por salir.",
     price: 2e7, mult: 1.5e5, wall: 0x6f5bd6, roof: 0x2e2270,
-    floorName: "Set de grabación", worker: "🤳", item: "🎬", transportName: "Servidor de subida", transportIcon: "☁️",
+    floorName: "Set de grabación", worker: "🤳", item: "🎬", transportName: "Editores", transportIcon: "✂️",
     saleName: "Marcas", saleWorker: "🤝", customer: "🏢",
   },
   {
     id: "ai", name: "Agencia de IA", icon: "🤖", blurb: "GPUs a tope y clientes que pagan por automatizarlo todo.",
     price: 1e10, mult: 6e7, wall: 0x2bb5a0, roof: 0x145c52,
-    floorName: "Rack de GPUs", worker: "🦾", item: "🧠", transportName: "Pipeline de datos", transportIcon: "🔌",
+    floorName: "Rack de GPUs", worker: "🦾", item: "🧠", transportName: "Técnicos", transportIcon: "🧑‍🔧",
     saleName: "Comerciales", saleWorker: "💼", customer: "🏦",
   },
 ];

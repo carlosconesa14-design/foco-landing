@@ -79,7 +79,7 @@ export class CityScene extends Phaser.Scene {
     this.plots = [];
     this.movers = [];
     this.clouds = [];
-    const { w, h } = setupCamera(this);
+    setupCamera(this);
     const insets = this.bridge.insets();
     const s = this.bridge.state();
     this.ownedKey = BUSINESSES.map((b) => (s.biz[b.id].owned ? 1 : 0)).join("");
@@ -98,11 +98,10 @@ export class CityScene extends Phaser.Scene {
     this.spawnTraffic();
     this.spawnClouds(worldH);
 
-    this.drag = new DragScroll(this, 0, worldH - h, 0, this.worldW - w);
+    this.drag = new DragScroll(this, this.worldW, worldH, { zoom: 0.85, minZoom: 0.5, maxZoom: 1.4 });
     // Empezar centrados en el primer negocio
     const first = this.iso(LOTS[0].c + 1, LOTS[0].r + 1);
-    this.cameras.main.scrollX = Phaser.Math.Clamp(first.x - w / 2, 0, Math.max(0, this.worldW - w));
-    this.cameras.main.scrollY = Phaser.Math.Clamp(first.y - h / 2, 0, Math.max(0, worldH - h));
+    this.drag.centerOn(first.x, first.y);
   }
 
   private drawWater(worldH: number): void {

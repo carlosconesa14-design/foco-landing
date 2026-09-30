@@ -1,19 +1,19 @@
 # De Rider a Millonario
 
-Idle tycoon para móvil: construyes un imperio de negocios modernos (dropshipping, restaurante, TikTok, IA) en una ciudad que ves crecer. Cada negocio es una cadena de producción animada al estilo Idle Miner Tycoon. Se monetiza con anuncios bonificados (rewarded ads) de AdMob, siempre opcionales.
+Idle tycoon para móvil: construyes un imperio de negocios modernos (dropshipping, restaurante, TikTok, IA) en una ciudad isométrica que ves crecer. Cada negocio es un recinto en el mapa donde construyes puestos y ves a tus trabajadores producir, recoger y vender. Se monetiza con anuncios bonificados (rewarded ads) de AdMob, siempre opcionales.
 
 Hecho con **TypeScript + Phaser 3 + Vite**, empaquetado para Android e iOS con **Capacitor**. El diseño completo y la hoja de ruta están en [`docs/GDD.md`](docs/GDD.md).
 
-**Arte:** ciudad isométrica 2.5D e interiores en corte lateral. Todo se dibuja por código (`src/art/`), y cada pieza se puede sustituir por un PNG propio sin tocar código. Los tamaños y los prompts para generarlas con IA están en [`docs/ART.md`](docs/ART.md).
+**Arte:** ciudad y recintos en isométrico 2.5D, con arrastre y zoom pellizcando. Todo se dibuja por código (`src/art/`), y cada pieza se puede sustituir por un PNG propio sin tocar código. Los tamaños y los prompts para generarlas con IA están en [`docs/ART.md`](docs/ART.md).
 
 ## Cómo se juega
 
-- **Interior de un negocio:** plantas de producción → transporte → venta.
-  - Tocas a cada trabajador para que haga un viaje.
-  - Los botones `Nv ⬆` abren el panel de mejora y de contratación de gerente.
+- **Recinto de un negocio:** puestos de producción → transporte → venta.
+  - Tocas un puesto, la carretilla o la furgoneta para que hagan un viaje.
+  - Los botones `Nv` abren el panel de mejora y de contratación de gerente.
   - La parte que frena la cadena se marca en rojo.
 - **Gerentes:** automatizan su parte, que sigue ganando dinero con la app cerrada.
-- **Plantas nuevas:** cada una produce 6 veces más que la anterior (hasta 8 por negocio).
+- **Puestos nuevos:** se construyen en las parcelas del recinto y cada uno produce 6 veces más que el anterior (hasta 8 por negocio).
 - **Ciudad:** un mapa que puedes arrastrar, con parcelas "Se vende". Cada negocio produce cientos de veces más que el anterior.
 - **Bolsa:** el prestigio. Vuelves a empezar con acciones que dan +2 % permanente cada una.
 - **Estilo de vida:** avanza según lo ganado en total, de "vives con tus padres" a "isla privada", y no se pierde nunca.
@@ -51,7 +51,7 @@ src/
   game/state.ts       estado, partida nueva, migración de guardados
   game/economy.ts     fórmulas y simulación pura de la cadena (testeada)
   game/actions.ts     acciones del jugador (mejorar, gerentes, plantas, bolsa…)
-  scenes/             escenas de Phaser: ciudad e interior animado
+  scenes/             escenas de Phaser: ciudad y recinto de cada negocio
   ui/                 cabecera, barra inferior, paneles y modales en HTML
   ads/                AdMob en móvil, anuncio simulado en web
   platform/           guardado con @capacitor/preferences

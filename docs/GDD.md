@@ -2,14 +2,14 @@
 
 ## La idea en una frase
 
-Un idle tycoon donde construyes un imperio de negocios en una ciudad que ves crecer: almacén de dropshipping, restaurante, estudio de TikTok, agencia de IA… Cada negocio es una cadena de producción animada que puedes mejorar, al estilo Idle Miner Tycoon.
+Un idle tycoon donde construyes un imperio de negocios en una ciudad isométrica que ves crecer: almacén de dropshipping, restaurante, estudio de TikTok, agencia de IA… Cada negocio es un recinto en el mapa, al estilo de Idle Theme Park: construyes puestos, y ves a tus trabajadores producir, recoger y vender.
 
 ## Qué tomamos de los referentes
 
 | Referente | Qué funciona | Cómo lo adaptamos |
 | --- | --- | --- |
-| **Idle Miner Tycoon** (4,7★, n.º 16 en Estrategia) | Cadena de pozos → ascensor → almacén. Siempre hay un cuello de botella que mejorar. Gerentes con habilidades. Varias minas y continentes. Eventos de temporada. | Cada negocio tiene **plantas de producción → transporte → venta**. El mismo sistema con distinta estética en cada negocio. |
-| **Idle Theme Park Tycoon** (4,4★) | Un mundo visual que se llena. Mucha información de un vistazo (dinero, gemas, checklist, expediciones). | La **ciudad** es un mapa que arrastras, con parcelas, tráfico y gente. Cada edificio muestra lo que gana. |
+| **Idle Miner Tycoon** (4,7★, n.º 16 en Estrategia) | Una cadena de producción donde siempre hay un cuello de botella que mejorar. Gerentes con habilidades. Varias minas y continentes. Eventos de temporada. | La economía de cada negocio es **producción → transporte → venta**, con la parte que atasca marcada en rojo. Visualmente no copiamos el corte vertical de la mina. |
+| **Idle Theme Park Tycoon** (4,4★) | Un mundo visual en mapa que se va llenando. Mucha información de un vistazo (dinero, gemas, checklist, expediciones). | Tanto la **ciudad** como **cada negocio** son mapas isométricos que arrastras y ves crecer, con parcelas, tráfico y gente. |
 | **AdVenture Capitalist** | Números enormes, hitos que duplican, prestigio con inversores. | Hitos x2 por nivel, **salida a bolsa** con acciones permanentes. |
 
 Lo que nos diferencia es el **tema**: ganar dinero con negocios modernos (dropshipping, creadores, IA). Es aspiracional y atrae a un público joven que no juega a minas ni parques temáticos.
@@ -30,18 +30,21 @@ Lo que nos diferencia es el **tema**: ganar dinero con negocios modernos (dropsh
 - Cada parcela es un negocio: primero sale el cartel de "Se vende" y, cuando lo compras, el edificio con un bocadillo que indica lo que gana por segundo.
 - Más adelante habrá varias ciudades (Madrid → Miami → Dubái → Tokio), como los continentes de Idle Miner.
 
-### Interior de un negocio (cadena de producción)
+### Recinto de un negocio (vista de mapa)
+Cada negocio es un recinto isométrico vallado, con el edificio principal, caminos, hasta 8 puestos y un portón que da a la calle.
+
 | Parte | Almacén de dropshipping | Restaurante | Estudio de TikTok | Agencia de IA |
 | --- | --- | --- | --- | --- |
-| Plantas (hasta 8) | Estanterías con mozos | Cocinas con cocineros | Sets con creadores | Racks de GPUs |
-| Transporte | Montacargas | Montaplatos | Servidor de subida | Pipeline de datos |
-| Venta | Furgonetas | Camareros | Marcas | Comerciales |
+| Puestos (hasta 8) | Estanterías con mozos | Cocinas con cocineros | Sets con creadores | Racks de GPUs |
+| Transporte | Carretilla | Camareros | Editores | Técnicos |
+| Venta | Furgonetas | Repartidores | Marcas | Comerciales |
 
-- **Plantas:** un trabajador va, produce y deja el producto en el depósito. Cada planta nueva produce 6 veces más que la anterior.
-- **Transporte:** baja planta por planta recogiendo hasta llenar su capacidad y lo sube.
-- **Venta:** lleva lo que hay arriba a los clientes y lo convierte en dinero.
+- **Puestos:** el trabajador produce y deja el producto junto al puesto. Cada puesto nuevo se construye en una parcela del recinto y produce 6 veces más que el anterior.
+- **Transporte:** recorre los caminos parando en cada puesto hasta llenar su capacidad y lo lleva al edificio principal.
+- **Venta:** sale por el portón hacia la calle y vuelve con el dinero.
 - Sin gerente, cada parte hace un solo ciclo por toque. Con gerente, repite sola.
 - Cada 10/25/50/100… niveles, esa parte rinde el doble.
+- El mapa se arrastra y se acerca o aleja pellizcando la pantalla.
 
 ### Gerentes
 - **Fase 1:** se contratan con dinero y automatizan su parte.
@@ -78,7 +81,7 @@ Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2
 
 | Fase | Contenido |
 | --- | --- |
-| **1. Núcleo jugable** | Motor Phaser, ciudad con 4 negocios, interior animado, gerentes básicos, mejoras, offline, anuncios, bolsa, guardado |
+| **1. Núcleo jugable** ✅ | Motor Phaser, ciudad isométrica con 4 negocios, recintos con puestos animados, gerentes básicos, mejoras, offline, anuncios, bolsa, guardado, arte sustituible |
 | **2. Retención** | 💎, gerentes con rareza y habilidades, cofres, misiones diarias, logros, tutorial guiado, sonido |
 | **3. Contenido** | Más negocios, segunda ciudad, eventos de temporada, avatar |
 | **4. Lanzamiento** | Arte profesional (sprites), analítica, tiendas, compras dentro de la app, SSV de AdMob |
