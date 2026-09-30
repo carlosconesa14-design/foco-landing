@@ -1,12 +1,14 @@
 import { App } from "@capacitor/app";
 import Phaser from "phaser";
 import { createAds, type Placement } from "./ads";
+import { sound, type Sfx } from "./audio/sound";
 import * as act from "./game/actions";
 import { BUSINESSES, CONFIG, LIFE, VIRAL_TITLES } from "./game/data";
 import { earn, lifeIndex, offlineEarnings, passiveRate, tapStation, tick, type SaleEvent } from "./game/economy";
 import { fmt, fmtTime } from "./game/format";
 import * as meta from "./game/meta";
 import { freshState, migrate, type GameState, type View } from "./game/state";
+import { haptics } from "./platform/haptics";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
@@ -15,7 +17,7 @@ import { COLORS, DPR, type Bridge } from "./scenes/common";
 import { renderBar, updateBar, updateHeader } from "./ui/hud";
 import { modal, modalOpen, toast } from "./ui/overlays";
 import { openIpoSheet, openPlotSheet, openStationSheet, openUnlockSheet, type PanelCtx } from "./ui/panels";
-import { openAchievements, openDaily, openExecs, openMissions } from "./ui/metaPanels";
+import { openAchievements, openDaily, openExecs, openMissions, openSettings } from "./ui/metaPanels";
 import { activeSheet, closeSheet } from "./ui/sheet";
 import "./styles.css";
 
@@ -37,11 +39,35 @@ function save(): void {
   void writeSave(S);
 }
 
+/* ---------- Sonido y vibración ---------- */
+
+function fx(name: Sfx, strong = false): void {
+  sound.play(name);
+  if (strong) haptics.medium();
+  else if (name === "tap") haptics.light();
+}
+
+function applySettings(): void {
+  sound.setMusic(S.settings.music);
+  sound.setSfx(S.settings.sfx);
+  haptics.enabled = S.settings.haptics;
+}
+
+// El audio solo puede empezar tras un gesto del jugador.
+document.addEventListener("pointerdown", () => sound.unlock(), { capture: true });
+// Un "clic" suave en cualquier botón de la interfaz HTML.
+root.addEventListener("click", (e) => {
+  if ((e.target as HTMLElement).closest("button")) sound.play("click", 0.7);
+});
+
 /* ---------- Anuncios ---------- */
 
 async function watchAd(placement: Placement): Promise<boolean> {
-  const ok = await ads.showRewarded(placement);
+  // El vídeo trae su propio sonido: silenciamos el juego mientras dura.
+  sound.duck(true);
+  const ok = await ads.showRewarded(placement).finally(() => sound.duck(false));
   if (ok) {
+    fx("gems", true);
     act.recordAd(S, placement);
     save();
   } else {
@@ -54,7 +80,11 @@ async function watchAd(placement: Placement): Promise<boolean> {
 
 const bridge: Bridge = {
   state: () => S,
-  tapStation: (id, st) => say(tapStation(S, id, st)),
+  tapStation: (id, st) => {
+    const err = tapStation(S, id, st);
+    fx(err ? "error" : "tap");
+    say(err);
+  },
   openStation: (id, st) => openStationSheet(ctx, id, st),
   openUnlockFloor: (id) => openUnlockSheet(ctx, id),
   tapPlot: (id) => (S.biz[id].owned ? goTo({ scene: "business", id }) : openPlotSheet(ctx, id)),
@@ -121,9 +151,12 @@ const ctx: PanelCtx = {
   wipe: async () => {
     await clearSave();
     S = freshState();
+    applySettings();
     startView();
     say("Partida borrada");
   },
+  fx,
+  applySettings,
 };
 
 document.getElementById("bar")!.addEventListener("click", async (e) => {
@@ -148,6 +181,7 @@ document.getElementById("rail")!.addEventListener("click", (e) => {
   else if (which === "daily") openDaily(ctx);
   else if (which === "execs") openExecs(ctx, S.meta.execs.length ? "execs" : "chests");
   else if (which === "achievements") openAchievements(ctx);
+  else if (which === "settings") openSettings(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openExecs(ctx, "chests"));
 
@@ -267,6 +301,12 @@ game.events.on("step", (time: number) => {
   // Tras volver de segundo plano no se simula el hueco: lo paga offerOffline().
   const dt = elapsed > 2 ? 0 : elapsed;
   frameSales = tick(S, dt, now);
+  // Monedas al vender: más fuerte en el negocio que estás viendo, suave desde la ciudad.
+  if (frameSales.length) {
+    const here = S.view.scene === "business" ? S.view.id : null;
+    const local = here ? frameSales.some((e) => e.biz === here) : false;
+    if (local || !here) sound.play("coin", local ? 1 : 0.45);
+  }
   viralTick(now);
   if (time - lastUi > 120) {
     lastUi = time;
@@ -284,6 +324,7 @@ game.events.on("step", (time: number) => {
 
 async function boot(): Promise<void> {
   S = migrate(await loadSave());
+  applySettings();
   updateHeader(S, Date.now());
   renderBar(S);
   // La primera escena se lanza cuando el arte está listo y la partida cargada.
@@ -292,14 +333,19 @@ async function boot(): Promise<void> {
   offerOffline();
   setInterval(save, 5000);
   document.addEventListener("visibilitychange", () => {
+    sound.setHidden(document.hidden);
     if (document.hidden) save();
     else offerOffline();
   });
   window.addEventListener("pagehide", save);
-  void App.addListener("appStateChange", ({ isActive }) => (isActive ? offerOffline() : save())).catch(() => {});
+  void App.addListener("appStateChange", ({ isActive }) => {
+    sound.setHidden(!isActive);
+    if (isActive) offerOffline();
+    else save();
+  }).catch(() => {});
   ads.init().catch(() => {});
 }
 
 void boot();
 // Para depurar desde la consola del navegador.
-Object.assign(window, { __game: { get state() { return S; }, game } });
+Object.assign(window, { __game: { get state() { return S; }, game, sound } });

@@ -190,6 +190,17 @@ describe("logros, tienda y tutorial", () => {
     expect(s.meta.gems).toBe(META.tutorialGems);
   });
 
+  it("los ajustes de sonido se guardan y sobreviven a la bolsa", () => {
+    const s = freshState(NOW);
+    expect(s.settings).toEqual({ music: true, sfx: true, haptics: true });
+    s.settings.music = false;
+    s.runEarned = 1e9;
+    const res = act.ipo(s, 1, NOW)!;
+    expect(res.state.settings.music).toBe(false);
+    const loaded = migrate(JSON.parse(JSON.stringify(res.state)), NOW);
+    expect(loaded.settings).toEqual({ music: false, sfx: true, haptics: true });
+  });
+
   it("diamantes y ejecutivos se conservan al salir a bolsa y al guardar", () => {
     const s = freshState(NOW);
     s.runEarned = 1e9;

@@ -90,9 +90,16 @@ export interface MetaState {
   tutorial: number;
 }
 
+export interface Settings {
+  music: boolean;
+  sfx: boolean;
+  haptics: boolean;
+}
+
 export interface GameState {
   version: 2;
   meta: MetaState;
+  settings: Settings;
   cash: number;
   /** Ganado desde la última salida a bolsa: decide cuántas acciones recibes. */
   runEarned: number;
@@ -148,6 +155,7 @@ export function freshState(now = Date.now()): GameState {
   return {
     version: 2,
     meta: freshMeta(now),
+    settings: { music: true, sfx: true, haptics: true },
     cash: 0,
     runEarned: 0,
     totalEarned: 0,
@@ -250,6 +258,8 @@ export function migrate(raw: unknown, now = Date.now()): GameState {
   if (v.scene === "business" && typeof v.id === "string" && s.biz[v.id]?.owned) s.view = { scene: "business", id: v.id };
   else if (v.scene === "city") s.view = { scene: "city" };
   s.meta = migrateMeta(r.meta, now);
+  const set = obj(r.settings);
+  s.settings = { music: set.music !== false, sfx: set.sfx !== false, haptics: set.haptics !== false };
   const ads = obj(r.ads);
   s.ads = {
     total: num(ads.total, 0),
@@ -272,6 +282,7 @@ export function afterIpo(s: GameState, gained: number, now = Date.now()): GameSt
   n.buyMode = s.buyMode;
   // Diamantes, ejecutivos, misiones y logros no se pierden al salir a bolsa.
   n.meta = s.meta;
+  n.settings = s.settings;
   n.nextViral = now + CONFIG.viralMinSec * 1000;
   return n;
 }

@@ -20,6 +20,16 @@ Hecho con **TypeScript + Phaser 3 + Vite**, empaquetado para Android e iOS con *
 - **Bolsa:** el prestigio. Vuelves a empezar con acciones que dan +2 % permanente cada una.
 - **Estilo de vida:** avanza según lo ganado en total, de "vives con tus padres" a "isla privada", y no se pierde nunca.
 
+## Sonido
+
+- **Efectos y música generados por código** con Web Audio (`src/audio/sound.ts`): no hay archivos ni licencias que gestionar.
+  - Efectos: toque, monedas, mejora, hito x2, gerente, desbloqueo, maletín, diamantes, habilidad y error.
+  - Música: un bucle lo-fi suave a 88 pulsaciones por minuto.
+- **Sustituibles por archivos:** deja `public/audio/<clave>.mp3` y añade la clave a `public/audio/manifest.json`. Las claves son las de los efectos (`coin`, `chest`…) y `music`. Hay sonidos gratuitos en Kenney.nl, y música en Pixabay u OpenGameArt (revisa la licencia de cada uno).
+- **La música se silencia durante los anuncios** y cuando la app pasa a segundo plano.
+- **Vibración** con `@capacitor/haptics`.
+- **Ajustes** para la música, los sonidos y la vibración (botón ⚙️).
+
 ## Dónde salen los anuncios
 
 Todos son opcionales. `Placement` en `src/ads/types.ts`:
@@ -61,7 +71,8 @@ src/
   scenes/             escenas de Phaser: ciudad y recinto de cada negocio
   ui/                 cabecera, barra inferior, paneles y modales en HTML
   ads/                AdMob en móvil, anuncio simulado en web
-  platform/           guardado con @capacitor/preferences
+  audio/              efectos y música (Web Audio)
+  platform/           guardado con @capacitor/preferences y vibración
   main.ts             arranque, bucle y puente entre Phaser y la interfaz
 tests/                tests con Vitest
 docs/GDD.md           documento de diseño y hoja de ruta

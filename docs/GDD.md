@@ -99,6 +99,6 @@ Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2
 | Fase | Contenido |
 | --- | --- |
 | **1. Núcleo jugable** ✅ | Motor Phaser, ciudad isométrica con 4 negocios, recintos con puestos animados, gerentes básicos, mejoras, offline, anuncios, bolsa, guardado, arte sustituible |
-| **2. Retención** | ✅ 💎, ejecutivos con rareza y habilidades, maletines, misiones diarias, premio diario, logros, tutorial guiado · Pendiente: sonido, Liga Millonario (servidor) |
+| **2. Retención** | ✅ 💎, ejecutivos con rareza y habilidades, maletines, misiones diarias, premio diario, logros, tutorial guiado · ✅ sonido, música, vibración y ajustes · Pendiente: Liga Millonario (servidor) |
 | **3. Contenido** | Más negocios, segunda ciudad, eventos de temporada, avatar |
 | **4. Lanzamiento** | Arte profesional (sprites), analítica, tiendas, compras dentro de la app, SSV de AdMob |

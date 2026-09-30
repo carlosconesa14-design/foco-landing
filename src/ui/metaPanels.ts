@@ -49,14 +49,20 @@ export function openMissions(ctx: PanelCtx): void {
         list.querySelectorAll<HTMLButtonElement>("[data-claim]").forEach((b) => {
           b.onclick = () => {
             const g = meta.claimMission(ctx.state(), Number(b.dataset.claim));
-            if (g) ctx.toast(`+${g} 💎`);
+            if (g) {
+              ctx.fx("gems", true);
+              ctx.toast(`+${g} 💎`);
+            }
           };
         });
         const bonus = list.querySelector<HTMLButtonElement>("[data-bonus]");
         if (bonus)
           bonus.onclick = () => {
             const g = meta.claimMissionBonus(ctx.state());
-            if (g) ctx.toast(`¡Misiones completadas! +${g} 💎`);
+            if (g) {
+              ctx.fx("milestone", true);
+              ctx.toast(`¡Misiones completadas! +${g} 💎`);
+            }
           };
       }
     },
@@ -112,6 +118,7 @@ export function openDaily(ctx: PanelCtx): void {
           if (double && !(await ctx.watchAd("daily_double"))) return;
           const g = meta.claimDaily(ctx.state(), Date.now(), double);
           if (g) {
+            ctx.fx(g.exec ? "chest" : "gems", true);
             if (g.exec) showExec(ctx, g.exec, g);
             else ctx.toast(`Premio diario: ${describeGrant(g)}`);
           }
@@ -195,14 +202,18 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
               const type = b.dataset.chest as ChestType;
               if (type === "free" && !(await ctx.watchAd("free_chest"))) return;
               const g = meta.openChest(ctx.state(), type, Date.now());
-              if (g?.exec) showExec(ctx, g.exec, g);
+              if (!g) return ctx.fx("error");
+              ctx.fx("chest", true);
+              if (g.exec) showExec(ctx, g.exec, g);
             };
           });
           const cash = body.querySelector<HTMLButtonElement>("[data-cash]");
           if (cash)
             cash.onclick = () => {
               const c = meta.buyCashPack(ctx.state(), Date.now());
-              if (c) ctx.toast(`+${fmt(c)} €`);
+              if (!c) return ctx.fx("error");
+              ctx.fx("coin", true);
+              ctx.toast(`+${fmt(c)} €`);
             };
         }
       } else {
@@ -216,12 +227,18 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
         if (paint(body, html)) {
           body.querySelectorAll<HTMLButtonElement>("[data-assign]").forEach((b) => {
             b.onclick = () => {
-              if (here && meta.assignExec(ctx.state(), b.dataset.assign!, here)) ctx.toast("Ejecutivo asignado");
+              if (here && meta.assignExec(ctx.state(), b.dataset.assign!, here)) {
+                ctx.fx("hire");
+                ctx.toast("Ejecutivo asignado");
+              }
             };
           });
           body.querySelectorAll<HTMLButtonElement>("[data-ability]").forEach((b) => {
             b.onclick = () => {
-              if (meta.activateAbility(ctx.state(), b.dataset.ability!, Date.now())) ctx.toast("⚡ ¡Habilidad activada!");
+              if (meta.activateAbility(ctx.state(), b.dataset.ability!, Date.now())) {
+                ctx.fx("ability", true);
+                ctx.toast("⚡ ¡Habilidad activada!");
+              }
             };
           });
           body.querySelectorAll<HTMLButtonElement>("[data-recharge]").forEach((b) => {
@@ -239,6 +256,42 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
       sheet.update?.();
     };
   });
+}
+
+/* ---------- Ajustes ---------- */
+
+export function openSettings(ctx: PanelCtx): void {
+  const rows: { key: "music" | "sfx" | "haptics"; icon: string; name: string; desc: string }[] = [
+    { key: "music", icon: "🎵", name: "Música", desc: "Música de fondo relajada" },
+    { key: "sfx", icon: "🔊", name: "Sonidos", desc: "Monedas, mejoras, maletines…" },
+    { key: "haptics", icon: "📳", name: "Vibración", desc: "Al tocar y al comprar (en el móvil)" },
+  ];
+  openSheet(
+    ctx.root,
+    `<div class="sheet-head"><span class="sicon">⚙️</span><div><h3>Ajustes</h3><p class="muted">Se guardan con tu partida.</p></div></div>
+     <div data-list style="display:grid;gap:8px"></div>`,
+    (el) => {
+      const set = ctx.state().settings;
+      const list = $(el, "[data-list]");
+      const html = rows
+        .map(
+          (r) => `<div class="row"><span class="face">${r.icon}</span><div><b>${r.name}</b><span class="sub">${r.desc}</span></div>
+          <button class="switch" role="switch" aria-checked="${set[r.key]}" data-set="${r.key}" aria-label="${r.name}"><i></i></button></div>`,
+        )
+        .join("");
+      if (paint(list, html)) {
+        list.querySelectorAll<HTMLButtonElement>("[data-set]").forEach((b) => {
+          b.onclick = () => {
+            const s = ctx.state().settings;
+            const key = b.dataset.set as keyof typeof s;
+            s[key] = !s[key];
+            ctx.applySettings();
+            ctx.fx("click");
+          };
+        });
+      }
+    },
+  );
 }
 
 /* ---------- Logros ---------- */
@@ -267,7 +320,10 @@ export function openAchievements(ctx: PanelCtx): void {
         list.querySelectorAll<HTMLButtonElement>("[data-ach]").forEach((b) => {
           b.onclick = () => {
             const g = meta.claimAchievement(ctx.state(), b.dataset.ach!);
-            if (g) ctx.toast(`¡Logro conseguido! +${g} 💎`);
+            if (g) {
+              ctx.fx("milestone", true);
+              ctx.toast(`¡Logro conseguido! +${g} 💎`);
+            }
           };
         });
       }

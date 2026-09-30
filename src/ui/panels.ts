@@ -1,4 +1,5 @@
 import type { Placement } from "../ads";
+import type { Sfx } from "../audio/sound";
 import * as act from "../game/actions";
 import { CHAIN, CONFIG, LIFE } from "../game/data";
 import {
@@ -31,6 +32,10 @@ export interface PanelCtx {
   toast(msg: string): void;
   goTo(view: View): void;
   wipe(): Promise<void>;
+  /** Efecto de sonido y vibración; `strong` para compras y premios. */
+  fx(name: Sfx, strong?: boolean): void;
+  /** Aplica los ajustes de sonido y vibración guardados en el estado. */
+  applySettings(): void;
 }
 
 const $ = <T extends HTMLElement>(el: HTMLElement, sel: string) => el.querySelector<T>(sel)!;
@@ -112,13 +117,20 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
         mgr.innerHTML = html;
         mgr.dataset.html = html;
         const hire = mgr.querySelector<HTMLButtonElement>("[data-hire]");
-        if (hire) hire.onclick = () => ctx.toast(act.hireManager(ctx.state(), id, st) ?? "No tienes suficiente dinero");
+        if (hire)
+          hire.onclick = () => {
+            const msg = act.hireManager(ctx.state(), id, st);
+            ctx.fx(msg ? "hire" : "error", !!msg);
+            ctx.toast(msg ?? "No tienes suficiente dinero");
+          };
       }
       $(el, "[data-chain]").innerHTML = chainSummary(s, id);
     },
   );
   $<HTMLButtonElement>(sheet.el, "[data-up]").onclick = () => {
     const msg = act.upgrade(ctx.state(), id, st);
+    if (msg === null) return ctx.fx("error");
+    ctx.fx(msg ? "milestone" : "upgrade", !!msg);
     if (msg) ctx.toast(msg);
   };
   wireBuyModes(sheet.el, ctx);
@@ -133,20 +145,20 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
   const cost = floorUnlockCost(def, i);
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">🔓</span><div><h3>${def.floorName} ${i + 1}</h3><p class="muted">Nueva planta de producción</p></div></div>
+    `<div class="sheet-head"><span class="sicon">🔓</span><div><h3>${def.floorName} ${i + 1}</h3><p class="muted">Nuevo puesto de producción</p></div></div>
      <div class="stat"><span>Producción inicial</span><b class="good">+${fmt(floorRate(def, i, 1))} €/s</b></div>
-     <p class="small muted">Cada planta nueva produce ${CHAIN.floorGrowth} veces más que la anterior. Recuerda mejorar el transporte y la venta para que no se atasque.</p>
-     <button class="buy big wide" data-unlock><span>Abrir planta</span><b>${fmt(cost)} €</b></button>`,
+     <p class="small muted">Cada puesto nuevo produce ${CHAIN.floorGrowth} veces más que el anterior. Recuerda mejorar el transporte y la venta para que no se atasque.</p>
+     <button class="buy big wide" data-unlock><span>Abrir puesto</span><b>${fmt(cost)} €</b></button>`,
     (el) => {
       $<HTMLButtonElement>(el, "[data-unlock]").disabled = ctx.state().cash < cost;
     },
   );
   $<HTMLButtonElement>(sheet.el, "[data-unlock]").onclick = () => {
     const msg = act.unlockFloor(ctx.state(), id);
-    if (msg) {
-      ctx.toast(msg);
-      closeSheet();
-    }
+    if (!msg) return ctx.fx("error");
+    ctx.fx("unlock", true);
+    ctx.toast(msg);
+    closeSheet();
   };
 }
 
@@ -157,7 +169,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
   const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">${def.icon}</span><div><h3>${def.name}</h3><p class="muted">${def.blurb}</p></div></div>
-     <div class="stat"><span>Plantas</span><b>${def.floorName} ${def.worker}</b></div>
+     <div class="stat"><span>Puestos</span><b>${def.floorName} ${def.worker}</b></div>
      <div class="stat"><span>Transporte</span><b>${def.transportName} ${def.transportIcon}</b></div>
      <div class="stat"><span>Venta</span><b>${def.saleName} ${def.saleWorker}</b></div>
      <div class="stat"><span>Rentabilidad</span><b class="good">x${fmt(def.mult)} frente a tu primer negocio</b></div>
@@ -168,7 +180,8 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
   );
   $<HTMLButtonElement>(sheet.el, "[data-buyplot]").onclick = () => {
     const msg = act.buyBusiness(ctx.state(), id);
-    if (!msg) return;
+    if (!msg) return ctx.fx("error");
+    ctx.fx("unlock", true);
     ctx.toast(msg);
     closeSheet();
     ctx.goTo({ scene: "business", id });
@@ -221,6 +234,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
       const res = act.ipo(ctx.state(), mult, Date.now());
       if (!res) return;
       ctx.replaceState(res.state);
+      ctx.fx("unlock", true);
       closeSheet();
       ctx.toast(`+${fmt(res.gained)} acciones. Empiezas de nuevo, pero más rápido.`);
     };
