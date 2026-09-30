@@ -83,6 +83,96 @@ Para las poses de caminar (`_1` y `_2`), el prompt es el mismo con "walking, lef
 | `coin` | 20×20 | Shiny gold coin, front view |
 | `pulley` | 34×34 | Grey metal pulley wheel with spokes, front view |
 
+### Miami (segunda ciudad)
+
+Mismo estilo común, con luz de playa soleada. Para la arena y las palmeras, añade "tropical beach, Miami vibes, pastel colors" al prompt.
+
+| Clave | Tamaño lógico | Prompt |
+| --- | --- | --- |
+| `bld_foodtruck` | 172×140 | Isometric 2:1 view of a small beach plaza with two colorful food trucks (orange and turquoise) and a striped parasol, on a sandy diamond-shaped base |
+| `bld_beachclub` | 172×170 | Isometric 2:1 view of a white modern beach club with turquoise roof, small pool and sun umbrellas, on a sandy diamond-shaped base |
+| `bld_yachts` | 172×180 | Isometric 2:1 view of a wooden pier on turquoise water with a white luxury yacht moored, on a diamond-shaped water base |
+| `bld_realestate` | 172×260 | Isometric 2:1 view of a tall yellow Miami art-deco residential tower with white balconies and blue windows, on a light grey diamond-shaped base |
+| `bld_crypto` | 172×300 | Isometric 2:1 view of a futuristic dark purple skyscraper with an orange glowing crypto coin on top, on a light grey diamond-shaped base |
+| `palm` | 60×84 | Isometric tropical palm tree with curved trunk and coconuts, soft shadow |
+| `st_foodtruck` | 100×86 | Side view orange taco food truck with open serving window |
+| `st_beachclub` | 100×86 | Side view wooden tiki beach bar with straw umbrella and colorful cocktails |
+| `st_yachts` | 100×86 | Side view small white yacht moored at a wooden dock on turquoise water |
+| `st_realestate` | 100×86 | Side view real estate agent desk with computer showing a house, small plant |
+| `st_crypto` | 100×86 | Side view black trading server with a screen showing a rising green chart |
+| `item_taco` | 26×26 | Cartoon taco |
+| `item_cocktail` | 26×26 | Pink cocktail glass with orange slice |
+| `item_ticket` | 26×26 | Blue boat trip ticket |
+| `item_key` | 26×26 | Golden house key |
+| `item_token` | 26×26 | Orange gold crypto coin |
+| `ch_taquero_0` | 44×60 | Chibi taco cook, orange shirt, red cap, green apron |
+| `ch_skater_0` | 44×60 | Chibi roller skater waiter, light blue shirt, red cap |
+| `ch_vendor_0` | 44×60 | Chibi beach vendor, yellow shirt, blue shorts |
+| `ch_bartender_0` | 44×60 | Chibi bartender, mint shirt, red bow tie |
+| `ch_promoter_0` | 44×60 | Chibi party promoter, pink shirt, sunglasses, blonde bun |
+| `ch_captain_0` | 44×60 | Chibi yacht captain, white uniform, navy captain hat, gold tie |
+| `ch_sailor_0` | 44×60 | Chibi sailor, blue striped shirt, white cap |
+| `ch_agent_0` | 44×60 | Chibi travel agent, peach shirt, glasses |
+| `ch_broker_0` | 44×60 | Chibi real estate broker, grey suit, yellow tie |
+| `ch_clerk_0` | 44×60 | Chibi office clerk, light blue shirt, hair bun |
+| `ch_coder_0` | 44×60 | Chibi crypto developer, purple hoodie, headphones |
+| `ch_trader_0` | 44×60 | Chibi trader, green shirt, purple tie |
+
+## Plan de mejora gráfica (para ChatGPT)
+
+Revisión del juego actual, ordenada por impacto: lo que más se nota en pantalla va primero.
+
+### 1. Edificios de la ciudad (máximo impacto)
+Es lo primero que ve el jugador y lo que más "vende" en las capturas de la tienda. Hoy son cajas isométricas dibujadas por código, con un emoji encima en un recuadro blanco.
+- Genera los 9 `bld_*` y `bld_soon` con las tablas de arriba.
+- **Sin emoji encima:** el edificio tiene que reconocerse solo por su forma (un cartel de pasta, un aro de luz…). Cuando haya PNG, quitaremos el recuadro del emoji.
+- **Idea que requiere código:** 3 versiones por edificio según sus puestos (`bld_x_1`, `_2`, `_3`). Por ejemplo, un almacén pequeño que se vuelve nave logística y luego centro de distribución con camiones. Es la recompensa visual más fuerte de un tycoon: ver crecer lo que compras.
+
+### 2. Suelo de la ciudad y del recinto
+El suelo son rombos de color plano: carreteras, césped, aceras y arena. Se ve vacío.
+- **Requiere código:** baldosas isométricas 88×44 como `tile_grass`, `tile_sand`, `tile_road_h`, `tile_road_v`, `tile_cross`, `tile_sidewalk`, `tile_lot` y `tile_water`. Con 2–3 variantes de césped y arena ya no se nota la repetición.
+- El borde de tierra de la isla (`island_edge`) y el agua animada del mar.
+
+### 3. Personajes
+Son chibis sencillos y solo tienen 2 poses al caminar.
+- Haz primero `ch_*_0` de los 25 personajes, con el mismo prompt base para que tengan la misma cara y proporciones.
+- Después, las poses de caminar `_1` y `_2`.
+- Para Miami, los coches (`car_*`) también podrían ser descapotables o tener colores pastel.
+
+### 4. Puestos y objetos del recinto
+Son los 9 `st_*` y los 9 `item_*`. Se ven de cerca y mucho rato, así que merecen más detalle que los edificios.
+
+### 5. Iconos de la interfaz (hoy son emojis)
+Los emojis cambian según el móvil (Apple, Samsung, Google), se ven poco profesionales y no siguen el estilo del juego.
+- **Requiere código:** iconos PNG de 64×64 para sustituirlos. Por prioridad:
+  - dinero `ic_cash`, diamante `ic_gem`, estrella de franquicia `ic_star`;
+  - botones laterales: misiones, diario, ejecutivos, logros y ajustes (`ic_missions`, `ic_daily`, `ic_execs`, `ic_trophy`, `ic_settings`);
+  - barra inferior: ciudad, bolsa y mundo (`ic_city`, `ic_ipo`, `ic_world`);
+  - un icono por negocio (`ic_biz_<id>`), uno por estilo de vida (`ic_life_0` a `ic_life_9`) y uno por mejora de la Oficina central (`ic_office_<id>`);
+  - maletines: normal, oro y gratis (`chest_normal`, `chest_premium`, `chest_free`);
+  - banderas de ciudad (`flag_madrid`, `flag_miami`).
+- **Retratos de ejecutivos** (hoy son emojis 💼): 8 caras de 96×96 (`exec_0` a `exec_7`), con un marco de color por rareza (gris, azul, morado y dorado).
+
+### 6. Interfaz (marcos y botones)
+Los paneles son rectángulos azul marino, limpios pero genéricos.
+- Pide a ChatGPT un **kit de interfaz** en el mismo estilo: marco de panel, botón dorado, botón verde de anuncio (con el icono ▶ de vídeo), barra de progreso y cabecera del dinero.
+- Se pueden aplicar como imágenes de fondo con CSS (`border-image`) sin tocar la lógica.
+
+### 7. Efectos y ambiente
+Todo esto es código más que sprites. ChatGPT solo tendría que dibujar la pieza:
+- monedas que vuelan hasta el contador al cobrar;
+- ciclo de día y noche con farolas y ventanas encendidas;
+- olas animadas, barcos y gaviotas en el mar;
+- banderines y destellos dorados cuando un negocio crece;
+- confeti y rayos de las celebraciones con sprites propios.
+
+### 8. Tienda y marca (antes de publicar)
+- Icono de la app (1024×1024), pantalla de carga (splash) y logotipo "De Rider a Millonario".
+- 5 capturas para la tienda con textos grandes; se pueden montar sobre capturas reales del juego.
+
+### Qué ya funciona sin tocar código
+Cualquier clave de las tablas de arriba: se deja el PNG en `public/sprites/` y se añade al `manifest.json`. Para los puntos marcados como **requiere código** hay que añadir antes el enganche. Es una tarea pequeña que se puede hacer antes de pasarle el proyecto a ChatGPT, para que sus imágenes entren directamente.
+
 ## Consejos para generar con ChatGPT
 
 - Pide **una pieza por imagen** y di explícitamente "transparent background". Si el fondo sale blanco, quítalo con cualquier herramienta de recorte.
