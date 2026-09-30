@@ -340,7 +340,8 @@ export class CityScene extends Phaser.Scene {
     }
     for (const sale of this.bridge.drainSales(null)) {
       const p = this.plots.find((x) => x.id === sale.biz);
-      if (p?.bubble && Math.random() < 0.25) floatText(this, p.bubble.x, p.bubble.y - 18, `+${fmt(sale.amount)}`);
+      if (p?.bubble && (sale.lucky || Math.random() < 0.25))
+        floatText(this, p.bubble.x, p.bubble.y - 18, sale.lucky ? `🔥 +${fmt(sale.amount)}` : `+${fmt(sale.amount)}`, sale.lucky ? "#f5c542" : undefined);
     }
   }
 }

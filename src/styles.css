@@ -1,6 +1,9 @@
 /* Juego de una sola pantalla: mapa en el canvas, cabecera y barra inferior en HTML encima.
    Estética fija de "mesa de trading nocturna": azul marino, dorado y verde de beneficios. */
 
+/* El atributo hidden siempre gana a los display de las clases */
+[hidden] { display: none !important; }
+
 /* Interruptor de ajustes */
 .switch { position: relative; width: 50px; height: 30px; border-radius: 15px; background: var(--panel-2); border: 1px solid var(--line); transition: background 0.15s; }
 .switch i { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--muted); transition: transform 0.15s, background 0.15s; }
@@ -210,3 +213,42 @@ footer {
 .btnrow { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .mini { padding: 7px 9px; font-size: 12px; border-radius: 10px; font-weight: 700; background: var(--gold); color: var(--gold-ink); box-shadow: 0 3px 0 var(--gold-dark); white-space: nowrap; }
 .mini:disabled { background: var(--panel-2); color: var(--muted); box-shadow: none; }
+
+/* ---------- Dopamina: celebraciones, banda dorada, confeti y próximo objetivo ---------- */
+.banner { position: absolute; left: 50%; top: calc(18px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 70; display: flex; gap: 10px; align-items: center; max-width: calc(100% - 32px); padding: 12px 18px; border-radius: 16px; background: linear-gradient(180deg, #ffe07a, var(--gold)); color: var(--gold-ink); font-family: var(--display); font-size: 19px; letter-spacing: 0.3px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(255, 255, 255, 0.35) inset; animation: bannerIn 0.35s cubic-bezier(0.2, 1.4, 0.4, 1); }
+.banner .bicon { font-size: 26px; }
+.banner.out { animation: bannerOut 0.35s ease-in forwards; }
+@keyframes bannerIn { from { transform: translate(-50%, -80px) scale(0.8); opacity: 0; } }
+@keyframes bannerOut { to { transform: translate(-50%, -80px); opacity: 0; } }
+
+.celebrate, .chestreveal { position: absolute; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; overflow: hidden; background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--glow) 30%, transparent), transparent 55%), rgba(5, 10, 20, 0.94); animation: fade 0.2s ease-out; }
+.celebrate.out { animation: fadeOut 0.25s ease-in forwards; }
+@keyframes fadeOut { to { opacity: 0; } }
+.rays { position: absolute; left: 50%; top: 42%; width: 900px; height: 900px; margin: -450px 0 0 -450px; background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--glow) 22%, transparent) 0deg 10deg, transparent 10deg 24deg); border-radius: 50%; mask-image: radial-gradient(circle, #000 20%, transparent 65%); animation: spin 14s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.cbox { position: relative; display: grid; gap: 10px; justify-items: center; text-align: center; max-width: 340px; }
+.cicon { font-size: 96px; line-height: 1; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5)); animation: pop 0.6s cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes pop { from { transform: scale(0.2) rotate(-20deg); opacity: 0; } }
+.cbox h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 34px; color: #fff; text-shadow: 0 3px 0 rgba(0, 0, 0, 0.4); text-wrap: balance; animation: pop 0.6s 0.08s both cubic-bezier(0.2, 1.4, 0.4, 1); }
+.cbox .csub { margin: 0; color: #dfe8f5; font-size: 16px; line-height: 1.45; }
+.cbox .chigh { margin: 0; font-family: var(--display); font-size: 24px; color: var(--glow); }
+.cbtn { margin-top: 8px; padding: 13px 28px; font-size: 17px; }
+.confetti { position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 2px; animation: fall linear forwards; }
+@keyframes fall { to { transform: translate(var(--drift), 110vh) rotate(var(--spin)); } }
+
+.bigchest { position: relative; font-size: 120px; animation: shake 0.12s linear infinite; }
+.chestreveal.open .bigchest { animation: burst 0.6s ease-out forwards; }
+@keyframes shake { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) scale(1.04); } }
+@keyframes burst { to { transform: scale(2.4); opacity: 0; filter: brightness(3); } }
+
+.cash.bump { animation: cashBump 0.35s ease-out; }
+@keyframes cashBump { 40% { transform: scale(1.12); color: #fff3b0; } }
+
+.goal { position: absolute; left: 12px; right: 80px; z-index: 6; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 10px; align-items: center; padding: 8px 12px; border-radius: 14px; background: rgba(14, 26, 43, 0.9); border: 1px solid var(--line); text-align: left; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); }
+.goal .gicon { grid-row: span 2; font-size: 22px; }
+.goal .gtext { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.goal .gtext small { color: var(--muted); font-weight: 400; margin-right: 4px; text-transform: uppercase; letter-spacing: 0.06em; font-size: 10px; }
+.goal .gbar { height: 6px; background: rgba(0, 0, 0, 0.4); border-radius: 3px; overflow: hidden; }
+.goal .gbar i { display: block; height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); transition: width 0.3s; }
+.goal.ready { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245, 197, 66, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25); animation: ready 1.2s ease-in-out infinite; }
+@keyframes ready { 50% { transform: scale(1.02); } }

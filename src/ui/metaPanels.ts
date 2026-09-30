@@ -2,6 +2,7 @@ import { ACHIEVEMENTS, BUSINESSES, CHESTS, DAILY_REWARDS, EXEC_KINDS, META, MISS
 import { fmt, fmtTime } from "../game/format";
 import * as meta from "../game/meta";
 import type { Exec } from "../game/state";
+import { revealChest } from "./celebrate";
 import { modal } from "./overlays";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
@@ -61,7 +62,7 @@ export function openMissions(ctx: PanelCtx): void {
             const g = meta.claimMissionBonus(ctx.state());
             if (g) {
               ctx.fx("milestone", true);
-              ctx.toast(`¡Misiones completadas! +${g} 💎`);
+              ctx.banner("🏅", `¡Misiones del día completadas! +${g} 💎`);
             }
           };
       }
@@ -119,7 +120,7 @@ export function openDaily(ctx: PanelCtx): void {
           const g = meta.claimDaily(ctx.state(), Date.now(), double);
           if (g) {
             ctx.fx(g.exec ? "chest" : "gems", true);
-            if (g.exec) showExec(ctx, g.exec, g);
+            if (g.exec) void showExec(ctx, g.exec, g);
             else ctx.toast(`Premio diario: ${describeGrant(g)}`);
           }
         };
@@ -134,8 +135,11 @@ export function openDaily(ctx: PanelCtx): void {
 
 /* ---------- Ejecutivos y maletines ---------- */
 
-function showExec(ctx: PanelCtx, e: Exec, g: meta.Grant): void {
+async function showExec(ctx: PanelCtx, e: Exec, g: meta.Grant, chestIcon = "💼"): Promise<void> {
   const r = RARITIES[e.rarity];
+  // Suspense: el maletín tiembla y estalla con el color de la rareza antes de revelar al ejecutivo.
+  await revealChest(ctx.root, chestIcon, r.color, e.rarity >= 2);
+  if (e.rarity >= 2) ctx.fx("milestone", true);
   modal(ctx.root, {
     title: `¡Nuevo ejecutivo ${r.name.toLowerCase()}!`,
     amount: `${e.face} ${e.name}`,
@@ -204,7 +208,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
               const g = meta.openChest(ctx.state(), type, Date.now());
               if (!g) return ctx.fx("error");
               ctx.fx("chest", true);
-              if (g.exec) showExec(ctx, g.exec, g);
+              if (g.exec) void showExec(ctx, g.exec, g, CHESTS[type].icon);
             };
           });
           const cash = body.querySelector<HTMLButtonElement>("[data-cash]");

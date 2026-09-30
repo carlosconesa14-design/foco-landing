@@ -4,6 +4,7 @@ import * as act from "../game/actions";
 import { CHAIN, CONFIG, LIFE } from "../game/data";
 import {
   bizDef,
+  businessRate,
   chainRates,
   floorRate,
   floorUnlockCost,
@@ -21,6 +22,7 @@ import {
 } from "../game/economy";
 import { fmt } from "../game/format";
 import type { BuyMode, GameState, View } from "../game/state";
+import type { Celebration } from "./celebrate";
 import { closeSheet, openSheet } from "./sheet";
 
 /** Lo que los paneles necesitan del controlador del juego. */
@@ -36,6 +38,12 @@ export interface PanelCtx {
   fx(name: Sfx, strong?: boolean): void;
   /** Aplica los ajustes de sonido y vibración guardados en el estado. */
   applySettings(): void;
+  /** Celebración a pantalla completa (logros grandes). */
+  celebrate(c: Celebration): Promise<void>;
+  /** Banda dorada (logros medianos). */
+  banner(icon: string, text: string): void;
+  /** Texto que sube desde un elemento. */
+  floatAt(anchor: Element, text: string): void;
 }
 
 const $ = <T extends HTMLElement>(el: HTMLElement, sel: string) => el.querySelector<T>(sel)!;
@@ -128,10 +136,15 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
     },
   );
   $<HTMLButtonElement>(sheet.el, "[data-up]").onclick = () => {
-    const msg = act.upgrade(ctx.state(), id, st);
+    const s = ctx.state();
+    const before = businessRate(s, id, Date.now()) || chainRates(bizDef(id), s.biz[id], false).total;
+    const msg = act.upgrade(s, id, st);
     if (msg === null) return ctx.fx("error");
+    const after = businessRate(s, id, Date.now()) || chainRates(bizDef(id), s.biz[id], false).total;
     ctx.fx(msg ? "milestone" : "upgrade", !!msg);
-    if (msg) ctx.toast(msg);
+    // Recompensa inmediata y visible: cuánto más ganas con esta mejora.
+    if (after > before) ctx.floatAt($(sheet.el, "[data-up]"), `+${fmt(after - before)} €/s`);
+    if (msg) ctx.banner("⚡", msg);
   };
   wireBuyModes(sheet.el, ctx);
 }
@@ -157,7 +170,7 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
     const msg = act.unlockFloor(ctx.state(), id);
     if (!msg) return ctx.fx("error");
     ctx.fx("unlock", true);
-    ctx.toast(msg);
+    ctx.banner("🔓", msg);
     closeSheet();
   };
 }
@@ -181,10 +194,14 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
   $<HTMLButtonElement>(sheet.el, "[data-buyplot]").onclick = () => {
     const msg = act.buyBusiness(ctx.state(), id);
     if (!msg) return ctx.fx("error");
-    ctx.fx("unlock", true);
-    ctx.toast(msg);
     closeSheet();
     ctx.goTo({ scene: "business", id });
+    void ctx.celebrate({
+      icon: def.icon,
+      title: "¡Nuevo negocio!",
+      subtitle: `Ya eres dueño de: ${def.name}. Contrata gerentes para que funcione solo.`,
+      highlight: def.blurb,
+    });
   };
 }
 
@@ -234,9 +251,14 @@ export function openIpoSheet(ctx: PanelCtx): void {
       const res = act.ipo(ctx.state(), mult, Date.now());
       if (!res) return;
       ctx.replaceState(res.state);
-      ctx.fx("unlock", true);
       closeSheet();
-      ctx.toast(`+${fmt(res.gained)} acciones. Empiezas de nuevo, pero más rápido.`);
+      void ctx.celebrate({
+        icon: "🔔",
+        title: "¡Has salido a bolsa!",
+        subtitle: "Vuelves a empezar con el almacén, pero ahora todo rinde más.",
+        highlight: `+${fmt(res.gained)} acciones · +${fmt(res.gained * CONFIG.shareBonus * 100)} % para siempre`,
+        color: "#4aa8ff",
+      });
     };
   });
   $<HTMLButtonElement>(sheet.el, "[data-wipe]").onclick = async (e) => {

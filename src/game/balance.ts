@@ -7,6 +7,7 @@ import {
   lifeIndex,
   managerCost,
   passiveRate,
+  setLuck,
   sharesToGain,
   tapStation,
   tick,
@@ -94,6 +95,9 @@ function bestOption(s: GameState, id: string, now: number): Option | null {
 
 export function simulate(opts: { hours: number; ads?: boolean; dt?: number }): SimResult {
   const dt = opts.dt ?? 1;
+  // Suerte con semilla fija para que la simulación sea reproducible.
+  let seed = 12345;
+  setLuck(() => ((seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) >>> 8) / 16777216);
   const s = freshState(T0);
   s.buyMode = 1;
   const events: SimEvent[] = [];
@@ -177,6 +181,7 @@ export function simulate(opts: { hours: number; ads?: boolean; dt?: number }): S
     if (sh >= 50) mark(t, "shares_50", "50 acciones disponibles");
   }
   const now = T0 + end * 1000;
+  setLuck(Math.random);
   return {
     events,
     at,

@@ -616,8 +616,16 @@ export class BusinessScene extends Phaser.Scene {
 
     for (const sale of this.bridge.drainSales(this.bizId)) {
       const gate = this.iso(4.5, 9.3);
-      this.coins.explode(7, gate.x, gate.y - 20);
-      floatText(this, gate.x, gate.y - 60, `+${fmt(sale.amount)}`);
+      if (sale.lucky) {
+        // Venta viral: lluvia de monedas y texto dorado grande
+        this.coins.explode(24, gate.x, gate.y - 20);
+        this.sparks.explode(20, gate.x, gate.y - 40);
+        floatText(this, gate.x, gate.y - 90, `🔥 ¡VIRAL! +${fmt(sale.amount)}`, "#f5c542");
+        this.cameras.main.shake(180, 0.004);
+      } else {
+        this.coins.explode(7, gate.x, gate.y - 20);
+        floatText(this, gate.x, gate.y - 60, `+${fmt(sale.amount)}`);
+      }
     }
   }
 }

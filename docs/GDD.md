@@ -77,6 +77,43 @@ Un concurso mensual gratuito basado en habilidad, pensado para atraer jugadores.
   - revisión de un abogado antes de activar los premios en dinero.
 - **Cuándo activarla:** con unos 1.000 jugadores activos al día, y mantenerla si sube la retención y el número de anuncios por jugador lo suficiente para pagar la bolsa.
 
+## Economía y ritmo
+
+Ajustada con un simulador (`npx vite-node scripts/balance.ts`): un bot juega con la lógica real y mide cuándo llega a cada hito. `tests/pacing.test.ts` falla si un cambio rompe estos márgenes.
+
+| Hito | Jugador activo sin anuncios | Con x2 de anuncios |
+| --- | --- | --- |
+| Gerentes del almacén | ~1 min | ~1 min |
+| Restaurante | ~45 min | ~23 min |
+| Estudio de TikTok | ~4 h 45 min | ~2 h 20 min |
+| Agencia de IA | ~24 h | ~12 h |
+| Primera acción en bolsa | ~9 h | ~4 h 30 min |
+| Los 4 negocios completos | ~3 días | ~1,5 días |
+
+Claves del equilibrio:
+- **Puestos:** cada uno produce x5 y cuesta x11. Cada puesto nuevo tarda más en llegar, pero siempre compensa.
+- **Transporte y venta:** su capacidad crece de forma exponencial con el nivel, para que puedan seguir a los puestos.
+- **Ritmo por negocio** (`pace`): multiplica todos los costes de ese negocio. Así los últimos negocios duran más.
+- **Precio de cada negocio:** unos 20 minutos de los ingresos que tienes al llegar a él.
+- **Bolsa:** acciones = raíz cúbica de lo ganado entre `shareDivisor`, con +5 % por acción.
+
+## Dopamina estratégica
+
+Recompensas de distinto tamaño en el momento justo, no ruido constante:
+
+| Nivel | Frecuencia | Qué pasa |
+| --- | --- | --- |
+| Micro | Segundos | Monedas y sonido al vender, y el dinero que sube contando con un pequeño salto |
+| Pequeño | 1–2 min | "+X €/s" flotante al mejorar; **próximo objetivo** siempre visible con barra, que late cuando ya puedes pagarlo |
+| Medio | 5–20 min | **Banda dorada** al alcanzar un hito x2, abrir un puesto o completar las misiones |
+| Grande | Horas | **Celebración a pantalla completa** con rayos y confeti: negocio nuevo, estilo de vida, bolsa, tutorial |
+| Sorpresa | Al azar | **Venta viral** (4 % de las ventas, x5; solo jugando, no offline) y **maletines con suspense** (tiembla y estalla con el color de la rareza) |
+
+Reglas:
+- Lo grande es raro, para que no pierda valor.
+- Lo aleatorio solo ocurre jugando, para premiar abrir la app.
+- Siempre hay un objetivo cercano a la vista.
+
 ## Monetización
 
 Anuncios bonificados, siempre opcionales:

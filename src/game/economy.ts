@@ -172,6 +172,14 @@ export function earn(s: GameState, amount: number, bizId?: string): void {
 export interface SaleEvent {
   biz: string;
   amount: number;
+  /** Venta viral: paga CONFIG.luckyMult veces más. */
+  lucky?: boolean;
+}
+
+/** Tirada de suerte de las ventas virales. Se puede fijar en tests y simulaciones. */
+let luck: () => number = Math.random;
+export function setLuck(fn: () => number): void {
+  luck = fn;
 }
 
 function tickBusiness(s: GameState, id: string, dt: number, now: number, events: SaleEvent[]): void {
@@ -265,11 +273,13 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
         left -= need;
         sl.prog = 0;
         if (sl.phase === "out") {
-          const amount = sl.carry * saleMult(s, id, now);
+          // Recompensa variable: de vez en cuando una venta se hace viral y paga mucho más.
+          const lucky = sl.carry > 0 && luck() < CONFIG.luckyChance;
+          const amount = sl.carry * saleMult(s, id, now) * (lucky ? CONFIG.luckyMult : 1);
           sl.carry = 0;
           earn(s, amount, id);
           bump(s, "sales");
-          events.push({ biz: id, amount });
+          events.push({ biz: id, amount, lucky });
           sl.phase = "back";
         } else {
           sl.phase = "idle";

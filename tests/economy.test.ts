@@ -243,3 +243,32 @@ describe("formato", () => {
     expect(fmtTime(3725)).toBe("1:02:05");
   });
 });
+
+describe("dopamina", () => {
+  it("una venta viral paga x5 y se marca", async () => {
+    const { setLuck } = await import("../src/game/economy");
+    const s = freshState(NOW);
+    s.biz[DROP.id].topStock = 10;
+    setLuck(() => 0);
+    tapStation(s, DROP.id, SALE);
+    const events = run(s, 5);
+    setLuck(() => 1);
+    expect(events[0].lucky).toBe(true);
+    expect(s.cash).toBeCloseTo(10 * CONFIG.luckyMult);
+  });
+
+  it("el próximo objetivo empieza por los gerentes y después sugiere puestos o hitos", async () => {
+    const { nextGoal } = await import("../src/game/goal");
+    const s = freshState(NOW);
+    const g = nextGoal(s, NOW)!;
+    expect(g.text).toContain("gerente");
+    expect(g.action.kind).toBe("station");
+    s.cash = 1e6;
+    act.hireManager(s, DROP.id, FLOOR0);
+    act.hireManager(s, DROP.id, TRANSPORT);
+    act.hireManager(s, DROP.id, SALE);
+    const g2 = nextGoal(s, NOW)!;
+    expect(g2.text).not.toContain("gerente");
+    expect(g2.progress).toBe(1);
+  });
+});

@@ -7,8 +7,21 @@ import type { GameState } from "../game/state";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
+/** Dinero mostrado: sube contando hacia el real en vez de saltar (micro-recompensa constante). */
+let shownCash = 0;
+
 export function updateHeader(s: GameState, now: number): void {
-  $("cash").innerHTML = `<small>€</small>${fmt(s.cash)}`;
+  const target = s.cash;
+  const prev = shownCash;
+  // Si baja (una compra) se muestra al instante; si sube, se acerca poco a poco.
+  shownCash = target < shownCash || Math.abs(target - shownCash) < 1 ? target : shownCash + (target - shownCash) * 0.35;
+  const cash = $("cash");
+  cash.innerHTML = `<small>€</small>${fmt(shownCash)}`;
+  // Pequeño salto visual cuando entra un buen pellizco (más de un 5 %)
+  if (target > prev * 1.05 && prev > 0 && !cash.classList.contains("bump")) {
+    cash.classList.add("bump");
+    setTimeout(() => cash.classList.remove("bump"), 350);
+  }
   $("rate").innerHTML = `+${fmt(passiveRate(s, now))} /s<span>ingresos pasivos</span>`;
   $("gems").textContent = `💎 ${fmt(s.meta.gems)}`;
 

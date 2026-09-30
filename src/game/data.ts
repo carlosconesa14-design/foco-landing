@@ -13,6 +13,9 @@ export const CONFIG = {
   viralMinSec: 120,
   viralMaxSec: 240,
   viralVisibleSec: 25,
+  /** Probabilidad de que una venta sea viral y cuánto multiplica (solo jugando, no offline). */
+  luckyChance: 0.04,
+  luckyMult: 5,
 } as const;
 
 /** Cadena de producción: parámetros comunes a todos los negocios (se escalan con `mult`). */

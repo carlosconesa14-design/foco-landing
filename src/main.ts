@@ -4,8 +4,9 @@ import { createAds, type Placement } from "./ads";
 import { sound, type Sfx } from "./audio/sound";
 import * as act from "./game/actions";
 import { BUSINESSES, CONFIG, LIFE, VIRAL_TITLES } from "./game/data";
-import { earn, lifeIndex, offlineEarnings, passiveRate, tapStation, tick, type SaleEvent } from "./game/economy";
+import { earn, lifeIndex, offlineEarnings, passiveRate, setLuck, tapStation, tick, type SaleEvent } from "./game/economy";
 import { fmt, fmtTime } from "./game/format";
+import { nextGoal } from "./game/goal";
 import * as meta from "./game/meta";
 import { freshState, migrate, type GameState, type View } from "./game/state";
 import { haptics } from "./platform/haptics";
@@ -14,6 +15,7 @@ import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
 import { CityScene } from "./scenes/CityScene";
 import { COLORS, DPR, type Bridge } from "./scenes/common";
+import { banner, celebrate, floatAt } from "./ui/celebrate";
 import { renderBar, updateBar, updateHeader } from "./ui/hud";
 import { modal, modalOpen, toast } from "./ui/overlays";
 import { openIpoSheet, openPlotSheet, openStationSheet, openUnlockSheet, type PanelCtx } from "./ui/panels";
@@ -157,6 +159,13 @@ const ctx: PanelCtx = {
   },
   fx,
   applySettings,
+  celebrate: (c) => {
+    closeSheet();
+    fx("unlock", true);
+    return celebrate(root, c);
+  },
+  banner: (icon, text) => banner(root, icon, text),
+  floatAt,
 };
 
 document.getElementById("bar")!.addEventListener("click", async (e) => {
@@ -197,7 +206,14 @@ function updateMeta(now: number): void {
   dots[3].hidden = meta.achievementsToClaim(S) === 0;
 
   const adv = meta.advanceTutorial(S);
-  if (adv?.done) say(`¡Tutorial completado! +${adv.gems} 💎`);
+  if (adv?.done)
+    void ctx.celebrate({
+      icon: "🎓",
+      title: "¡Tutorial completado!",
+      subtitle: "Ya sabes montar un negocio. Ahora haz crecer tu imperio.",
+      highlight: `+${adv.gems} 💎`,
+    });
+  else if (adv) fx("click");
   const step = meta.tutorialStep(S);
   const tut = document.getElementById("tut")!;
   // El tutorial transcurre en el almacén; en la ciudad se oculta.
@@ -208,7 +224,39 @@ function updateMeta(now: number): void {
     document.getElementById("tutStep")!.textContent = `${S.meta.tutorial + 1}/${meta.TUTORIAL_LENGTH}`;
     document.getElementById("tutText")!.textContent = step.text;
   }
+  updateGoal(now, top, show);
 }
+
+/* ---------- Próximo objetivo ---------- */
+
+let goalAction: ReturnType<typeof nextGoal> = null;
+
+function updateGoal(now: number, top: number, tutorialShown: boolean): void {
+  const el = document.getElementById("goal")!;
+  const g = tutorialShown || activeSheet() ? null : nextGoal(S, now);
+  goalAction = g;
+  el.hidden = !g;
+  if (!g) return;
+  el.style.top = `${top}px`;
+  document.getElementById("goalIcon")!.textContent = g.icon;
+  document.getElementById("goalText")!.textContent = `${g.text} · ${fmt(g.cost)} €`;
+  document.getElementById("goalBar")!.style.width = `${g.progress * 100}%`;
+  el.classList.toggle("ready", g.progress >= 1);
+}
+
+document.getElementById("goal")!.addEventListener("click", () => {
+  const g = goalAction;
+  if (!g) return;
+  const a = g.action;
+  if (a.kind === "business") {
+    if (S.view.scene !== "city") goTo({ scene: "city" });
+    openPlotSheet(ctx, a.bizId);
+    return;
+  }
+  if (S.view.scene !== "business" || S.view.id !== a.bizId) goTo({ scene: "business", id: a.bizId });
+  if (a.kind === "floor") openUnlockSheet(ctx, a.bizId);
+  else openStationSheet(ctx, a.bizId, a.station);
+});
 
 document.getElementById("boostBtn")!.addEventListener("click", async () => {
   if (await watchAd("boost_x2")) {
@@ -290,6 +338,7 @@ function offerOffline(): void {
 /* ---------- Bucle ---------- */
 
 let lastUi = 0;
+let lastLuckyBanner = -Infinity;
 let lastStep = performance.now();
 
 game.events.on("step", (time: number) => {
@@ -306,6 +355,15 @@ game.events.on("step", (time: number) => {
     const here = S.view.scene === "business" ? S.view.id : null;
     const local = here ? frameSales.some((e) => e.biz === here) : false;
     if (local || !here) sound.play("coin", local ? 1 : 0.45);
+    // Venta viral (recompensa variable): destello de sonido, vibración y, como mucho cada 20 s, una banda dorada.
+    const lucky = frameSales.find((e) => e.lucky && (!here || e.biz === here));
+    if (lucky) {
+      fx("gems", true);
+      if (performance.now() - lastLuckyBanner > 20_000) {
+        lastLuckyBanner = performance.now();
+        banner(root, "🔥", `¡Venta viral! +${fmt(lucky.amount)} €`);
+      }
+    }
   }
   viralTick(now);
   if (time - lastUi > 120) {
@@ -317,7 +375,14 @@ game.events.on("step", (time: number) => {
     const li = lifeIndex(S.totalEarned);
     if (li > S.lifeSeen) {
       S.lifeSeen = li;
-      say(`${LIFE[li].icon} Nuevo estilo de vida: ${LIFE[li].name}`);
+      const nextLife = LIFE[li + 1];
+      void ctx.celebrate({
+        icon: LIFE[li].icon,
+        title: LIFE[li].name,
+        subtitle: "¡Nuevo estilo de vida! Tu esfuerzo empieza a notarse.",
+        highlight: nextLife ? `Siguiente: ${nextLife.icon} ${nextLife.name}` : "Has llegado a lo más alto",
+        color: "#3ddc97",
+      });
     }
   }
 });
@@ -348,4 +413,4 @@ async function boot(): Promise<void> {
 
 void boot();
 // Para depurar desde la consola del navegador.
-Object.assign(window, { __game: { get state() { return S; }, game, sound } });
+Object.assign(window, { __game: { get state() { return S; }, game, sound, setLuck } });

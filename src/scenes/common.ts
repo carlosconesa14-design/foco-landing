@@ -43,7 +43,7 @@ export interface Bridge {
   /** Toque sobre una parcela de la ciudad. */
   tapPlot(bizId: string): void;
   /** Ventas pendientes de mostrar, se vacía al leerla. */
-  drainSales(bizId: string | null): { biz: string; amount: number }[];
+  drainSales(bizId: string | null): { biz: string; amount: number; lucky?: boolean }[];
   /** Altura ocupada por la interfaz HTML arriba y abajo. */
   insets(): { top: number; bottom: number };
 }
@@ -147,6 +147,7 @@ export class DragScroll {
   private vel = { x: 0, y: 0 };
   private dragging = false;
   private down = false;
+  private downOnMap = false;
   private pinch: { dist: number; z: number } | null = null;
   private z: number;
   private minZ: number;
@@ -168,6 +169,7 @@ export class DragScroll {
 
     input.on("pointerdown", (p: Phaser.Input.Pointer) => {
       this.down = true;
+      this.downOnMap = true;
       this.dragging = false;
       this.vel = { x: 0, y: 0 };
       if (input.pointer1.isDown && input.pointer2.isDown) {
@@ -198,6 +200,8 @@ export class DragScroll {
     input.on("pointerup", () => {
       if (!input.pointer1.isDown && !input.pointer2.isDown) this.pinch = null;
       this.down = input.activePointer.isDown;
+      // Los objetos ya han recibido su pointerup (Phaser los avisa antes que a la escena).
+      this.downOnMap = false;
     });
     input.on("wheel", (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
       this.zoomAround(p.x, p.y, this.z * (dy > 0 ? 0.9 : 1.1));
@@ -211,8 +215,12 @@ export class DragScroll {
     });
   }
 
+  /**
+   * true si el gesto no debe contar como toque: fue un arrastre, o empezó fuera del mapa
+   * (por ejemplo, en la ✕ de un panel HTML que se cerró encima de un botón del mapa).
+   */
   wasDrag(): boolean {
-    return this.dragging;
+    return this.dragging || !this.downOnMap;
   }
 
   /** Ancho y alto visibles en coordenadas del mundo. */
@@ -260,6 +268,7 @@ export class DragScroll {
 
 /** Texto que sube y se desvanece (dinero ganado). */
 export function floatText(scene: Phaser.Scene, x: number, y: number, text: string, color = "#3ddc97"): void {
-  const t = label(scene, x, y, text, 18, color, { display: true, stroke: "#14202f" }).setDepth(50);
-  scene.tweens.add({ targets: t, y: y - 50, alpha: 0, duration: 1000, ease: "Cubic.easeOut", onComplete: () => t.destroy() });
+  const big = color !== "#3ddc97";
+  const t = label(scene, x, y, text, big ? 24 : 18, color, { display: true, stroke: "#14202f" }).setDepth(9.9e4);
+  scene.tweens.add({ targets: t, y: y - (big ? 80 : 50), alpha: 0, duration: big ? 1600 : 1000, ease: "Cubic.easeOut", onComplete: () => t.destroy() });
 }
