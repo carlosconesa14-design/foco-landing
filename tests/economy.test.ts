@@ -137,7 +137,8 @@ describe("mejoras y compras", () => {
     s.cash = 1e9;
     s.buyMode = 10;
     expect(act.upgrade(s, DROP.id, TRANSPORT)).toContain("x2");
-    expect(transportCap(DROP, 11)).toBeCloseTo(DROP.mult * CHAIN.transportBaseCap * 11 * 2);
+    // Nivel 11: lineal × crecimiento exponencial × hito del 10 (x2)
+    expect(transportCap(DROP, 11)).toBeCloseTo(DROP.mult * CHAIN.transportBaseCap * 11 * CHAIN.logisticsCapGrowth ** 10 * 2);
   });
 
   it("contratar un gerente solo se puede una vez", () => {
@@ -201,7 +202,7 @@ describe("anuncios y bonus", () => {
 
   it("salir a bolsa conserva lo permanente y reinicia lo demás", () => {
     const s = freshState(NOW);
-    s.runEarned = s.totalEarned = 4e8;
+    s.runEarned = s.totalEarned = 8 * CONFIG.shareDivisor;
     s.cash = 1e6;
     act.buyBusiness(s, "restaurant");
     act.recordAd(s, "viral", new Date(NOW));
@@ -209,7 +210,7 @@ describe("anuncios y bonus", () => {
     const res = act.ipo(s, 2, NOW)!;
     expect(res.gained).toBe(4);
     expect(res.state.shares).toBe(4);
-    expect(res.state.totalEarned).toBe(4e8);
+    expect(res.state.totalEarned).toBe(8 * CONFIG.shareDivisor);
     expect(res.state.cash).toBe(0);
     expect(res.state.biz.restaurant.owned).toBe(false);
     expect(res.state.biz.dropship.owned).toBe(true);

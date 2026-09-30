@@ -5,9 +5,9 @@ export const CONFIG = {
   boostMaxHours: 12,
   offlineCapHours: 8,
   /** Bonus por cada acción conseguida al salir a bolsa. */
-  shareBonus: 0.02,
-  /** acciones = floor(sqrt(ganado en la partida / shareDivisor)) */
-  shareDivisor: 1e8,
+  shareBonus: 0.05,
+  /** acciones = floor(cbrt(ganado en la partida / shareDivisor)) */
+  shareDivisor: 3e20,
   rushMinutes: 30,
   rushMult: 3,
   viralMinSec: 120,
@@ -21,12 +21,12 @@ export const CHAIN = {
   /** Duración del ciclo de un trabajador de planta (ir, producir, volver). */
   floorCycle: 5,
   /** Cada planta produce `floorGrowth` veces más que la anterior. */
-  floorGrowth: 6,
+  floorGrowth: 5,
   floorBaseRate: 1,
   /** Desbloquear la planta i cuesta unlockBase * unlockGrowth^i. La 0 viene gratis. */
-  unlockBase: 10,
-  unlockGrowth: 8,
-  floorUpgradeK: 1.12,
+  unlockBase: 25,
+  unlockGrowth: 11,
+  floorUpgradeK: 1.15,
   transportBaseCap: 15,
   transportBaseSpeed: 1.5,
   transportMaxSpeed: 8,
@@ -36,7 +36,9 @@ export const CHAIN = {
   saleBaseWalk: 2,
   saleMinWalk: 0.6,
   logisticsCostBase: 10,
-  logisticsCostK: 1.17,
+  logisticsCostK: 1.2,
+  /** Cada nivel de transporte o venta multiplica su capacidad por este factor (además del nivel y los hitos). */
+  logisticsCapGrowth: 1.12,
   managerFloorBase: 40,
   managerTransport: 60,
   managerSale: 80,
@@ -54,6 +56,8 @@ export interface BusinessDef {
   price: number;
   /** Multiplicador de toda la economía de este negocio. */
   mult: number;
+  /** Multiplicador de todos sus costes: más alto = el negocio tarda más en completarse. */
+  pace: number;
   /** Colores del edificio y del interior. */
   wall: number;
   roof: number;
@@ -70,25 +74,25 @@ export interface BusinessDef {
 export const BUSINESSES: BusinessDef[] = [
   {
     id: "dropship", name: "Almacén de dropshipping", icon: "📦", blurb: "Tu primer negocio. Pedidos online que salen solos.",
-    price: 0, mult: 1, wall: 0xe8b04b, roof: 0x9c5b2e,
+    price: 0, mult: 1, pace: 1, wall: 0xe8b04b, roof: 0x9c5b2e,
     floorName: "Estantería", worker: "🧑‍🔧", item: "📦", transportName: "Carretilla", transportIcon: "🛻",
     saleName: "Furgonetas", saleWorker: "🚚", customer: "🏠",
   },
   {
     id: "restaurant", name: "Restaurante", icon: "🍝", blurb: "Cocinas, camareros y repartidores. Si uno falla, se atasca todo.",
-    price: 5e4, mult: 400, wall: 0xd9534f, roof: 0x7a2323,
+    price: 2e8, mult: 2e5, pace: 3, wall: 0xd9534f, roof: 0x7a2323,
     floorName: "Cocina", worker: "🧑‍🍳", item: "🍝", transportName: "Camareros", transportIcon: "🤵",
     saleName: "Repartidores", saleWorker: "🛵", customer: "🏠",
   },
   {
     id: "tiktok", name: "Estudio de TikTok", icon: "📱", blurb: "Creadores grabando sin parar y marcas pagando por salir.",
-    price: 2e7, mult: 1.5e5, wall: 0x6f5bd6, roof: 0x2e2270,
+    price: 6e14, mult: 5e11, pace: 10, wall: 0x6f5bd6, roof: 0x2e2270,
     floorName: "Set de grabación", worker: "🤳", item: "🎬", transportName: "Editores", transportIcon: "✂️",
     saleName: "Marcas", saleWorker: "🤝", customer: "🏢",
   },
   {
     id: "ai", name: "Agencia de IA", icon: "🤖", blurb: "GPUs a tope y clientes que pagan por automatizarlo todo.",
-    price: 1e10, mult: 6e7, wall: 0x2bb5a0, roof: 0x145c52,
+    price: 6e21, mult: 5e18, pace: 30, wall: 0x2bb5a0, roof: 0x145c52,
     floorName: "Rack de GPUs", worker: "🦾", item: "🧠", transportName: "Técnicos", transportIcon: "🧑‍🔧",
     saleName: "Comerciales", saleWorker: "💼", customer: "🏦",
   },
@@ -98,12 +102,14 @@ export const BUSINESSES: BusinessDef[] = [
 export const LIFE: { min: number; icon: string; name: string }[] = [
   { min: 0, icon: "🛏️", name: "Vives con tus padres" },
   { min: 1e3, icon: "🏚️", name: "Piso compartido" },
-  { min: 1e5, icon: "🏠", name: "Estudio de alquiler" },
-  { min: 1e7, icon: "🏢", name: "Piso propio" },
-  { min: 1e9, icon: "🌆", name: "Ático en el centro" },
-  { min: 1e11, icon: "🏝️", name: "Villa con piscina" },
-  { min: 1e13, icon: "🏰", name: "Mansión en Marbella" },
-  { min: 1e15, icon: "🛥️", name: "Isla privada" },
+  { min: 1e6, icon: "🏠", name: "Estudio de alquiler" },
+  { min: 1e9, icon: "🏢", name: "Piso propio" },
+  { min: 1e12, icon: "🌆", name: "Ático en el centro" },
+  { min: 1e15, icon: "🏡", name: "Villa con piscina" },
+  { min: 1e18, icon: "🏰", name: "Mansión en Marbella" },
+  { min: 1e21, icon: "🛥️", name: "Yate de lujo" },
+  { min: 1e24, icon: "🏝️", name: "Isla privada" },
+  { min: 1e29, icon: "🚀", name: "Viaje a Marte" },
 ];
 
 export const VIRAL_TITLES = [
@@ -205,7 +211,9 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: "earn_1k", text: "Gana 1 K € en total", metric: "totalEarned", target: 1e3, gems: 5 },
   { id: "earn_1m", text: "Gana 1 M € en total", metric: "totalEarned", target: 1e6, gems: 10 },
   { id: "earn_1b", text: "Gana 1 B € en total", metric: "totalEarned", target: 1e9, gems: 20 },
-  { id: "earn_1t", text: "Gana 1 T € en total", metric: "totalEarned", target: 1e12, gems: 40 },
+  { id: "earn_1t", text: "Gana 1 T € en total", metric: "totalEarned", target: 1e12, gems: 30 },
+  { id: "earn_aa", text: "Gana 1 aa € en total (mil billones)", metric: "totalEarned", target: 1e15, gems: 40 },
+  { id: "earn_ac", text: "Gana 1 ac € en total", metric: "totalEarned", target: 1e21, gems: 60 },
   { id: "biz_2", text: "Ten 2 negocios", metric: "businesses", target: 2, gems: 15 },
   { id: "biz_3", text: "Ten 3 negocios", metric: "businesses", target: 3, gems: 25 },
   { id: "biz_4", text: "Ten 4 negocios", metric: "businesses", target: 4, gems: 40 },

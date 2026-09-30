@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as act from "../src/game/actions";
-import { BUSINESSES, CHESTS, DAILY_REWARDS, META, MISSIONS, RARITIES, TUTORIAL } from "../src/game/data";
+import { BUSINESSES, CHESTS, CONFIG, DAILY_REWARDS, META, MISSIONS, RARITIES, TUTORIAL } from "../src/game/data";
 import { chainRates, saleCap, tapStation, tick } from "../src/game/economy";
 import { execMults } from "../src/game/execs";
 import * as meta from "../src/game/meta";
@@ -194,7 +194,7 @@ describe("logros, tienda y tutorial", () => {
     const s = freshState(NOW);
     expect(s.settings).toEqual({ music: true, sfx: true, haptics: true });
     s.settings.music = false;
-    s.runEarned = 1e9;
+    s.runEarned = CONFIG.shareDivisor;
     const res = act.ipo(s, 1, NOW)!;
     expect(res.state.settings.music).toBe(false);
     const loaded = migrate(JSON.parse(JSON.stringify(res.state)), NOW);
@@ -203,7 +203,7 @@ describe("logros, tienda y tutorial", () => {
 
   it("diamantes y ejecutivos se conservan al salir a bolsa y al guardar", () => {
     const s = freshState(NOW);
-    s.runEarned = 1e9;
+    s.runEarned = CONFIG.shareDivisor;
     s.meta.gems = 42;
     s.meta.execs.push(meta.newExec(1, seq(0.3)));
     const res = act.ipo(s, 1, NOW)!;

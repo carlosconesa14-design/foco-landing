@@ -41,6 +41,9 @@ export function saleMult(s: GameState, id: string, now: number, live = true): nu
   return boost * rush * (1 + CONFIG.shareBonus * s.shares) * execMults(s, id, now, live).sale;
 }
 
+/** Escala de costes del negocio: su multiplicador por su ritmo (los últimos negocios avanzan más despacio). */
+export const costScale = (def: BusinessDef) => def.mult * def.pace;
+
 /* ---------- Plantas ---------- */
 
 export function floorRate(def: BusinessDef, i: number, level: number): number {
@@ -50,18 +53,21 @@ export function floorRate(def: BusinessDef, i: number, level: number): number {
 export const floorLoad = (def: BusinessDef, i: number, level: number) => floorRate(def, i, level) * CHAIN.floorCycle;
 
 export function floorUnlockCost(def: BusinessDef, i: number): number {
-  return def.mult * CHAIN.unlockBase * Math.pow(CHAIN.unlockGrowth, i);
+  return costScale(def) * CHAIN.unlockBase * Math.pow(CHAIN.unlockGrowth, i);
 }
 
 /** Coste del siguiente nivel de la planta i estando en `level`. */
 export function floorNextCost(def: BusinessDef, i: number, level: number): number {
-  const base = i === 0 ? def.mult * 5 : floorUnlockCost(def, i) * 0.2;
+  const base = i === 0 ? costScale(def) * 5 : floorUnlockCost(def, i) * 0.2;
   return base * Math.pow(CHAIN.floorUpgradeK, level - 1);
 }
 
 /* ---------- Transporte ---------- */
 
-export const transportCap = (def: BusinessDef, level: number) => def.mult * CHAIN.transportBaseCap * level * msMult(level);
+/** Capacidad logística: crece de forma exponencial con el nivel para poder seguir a los puestos nuevos. */
+const logisticsGrowth = (level: number) => level * Math.pow(CHAIN.logisticsCapGrowth, level - 1) * msMult(level);
+
+export const transportCap = (def: BusinessDef, level: number) => def.mult * CHAIN.transportBaseCap * logisticsGrowth(level);
 
 /** Plantas por segundo. */
 export const transportSpeed = (level: number) =>
@@ -74,19 +80,19 @@ export function transportRoundTrip(floors: number, level: number): number {
 
 /* ---------- Venta ---------- */
 
-export const saleCap = (def: BusinessDef, level: number) => def.mult * CHAIN.saleBaseCap * level * msMult(level);
+export const saleCap = (def: BusinessDef, level: number) => def.mult * CHAIN.saleBaseCap * logisticsGrowth(level);
 export const saleWalk = (level: number) => Math.max(CHAIN.saleMinWalk, CHAIN.saleBaseWalk / (1 + 0.03 * (level - 1)));
 
 export const logisticsNextCost = (def: BusinessDef, level: number) =>
-  def.mult * CHAIN.logisticsCostBase * Math.pow(CHAIN.logisticsCostK, level - 1);
+  costScale(def) * CHAIN.logisticsCostBase * Math.pow(CHAIN.logisticsCostK, level - 1);
 
 /* ---------- Gerentes ---------- */
 
 export type Station = { kind: "floor"; index: number } | { kind: "transport" } | { kind: "sale" };
 
 export function managerCost(def: BusinessDef, st: Station): number {
-  if (st.kind === "floor") return def.mult * CHAIN.managerFloorBase * Math.pow(CHAIN.unlockGrowth, st.index);
-  return def.mult * (st.kind === "transport" ? CHAIN.managerTransport : CHAIN.managerSale);
+  if (st.kind === "floor") return costScale(def) * CHAIN.managerFloorBase * Math.pow(CHAIN.unlockGrowth, st.index);
+  return costScale(def) * (st.kind === "transport" ? CHAIN.managerTransport : CHAIN.managerSale);
 }
 
 /* ---------- Mejoras de una parte de la cadena ---------- */
@@ -144,7 +150,7 @@ export function passiveRate(s: GameState, now: number, live = true): number {
 /* ---------- Totales ---------- */
 
 export function sharesToGain(s: GameState): number {
-  return Math.floor(Math.sqrt(s.runEarned / CONFIG.shareDivisor));
+  return Math.floor(Math.cbrt(s.runEarned / CONFIG.shareDivisor) + 1e-9);
 }
 
 export function lifeIndex(total: number): number {
