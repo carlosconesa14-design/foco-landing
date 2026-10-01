@@ -82,16 +82,11 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
 - **Más adelante:** eventos de temporada de 7 días con su propia ciudad (fase 3) y avatar u oficina personalizables.
 
 ### Liga Millonario (diseñada, pendiente de servidor)
-Un concurso mensual gratuito basado en habilidad, pensado para atraer jugadores. Tiene que cumplir las políticas de AdMob y de las tiendas.
-- **Ranking mensual** por el crecimiento del imperio ese mes. **Los multiplicadores de anuncios no cuentan para la puntuación**: el premio nunca es a cambio de ver anuncios, porque AdMob prohíbe dar dinero, cripto o tarjetas regalo como recompensa de un anuncio.
-- **Premios fijos para pocos ganadores** (por ejemplo 50 €, 25 € y 10 €) y premios dentro del juego para el top 100.
-- **Bolsa de premios = un % de los ingresos por anuncios del mes anterior**, con un tope y un mínimo como gasto de marketing en el lanzamiento. Cada premio se queda por debajo de 300 €, para que en España no haga falta retener IRPF.
-- **Requisitos:**
-  - servidor con cuentas y puntuaciones validadas (plan: Supabase), con comprobaciones antitrampas;
-  - ganadores mayores de 18 y verificados;
-  - bases legales dentro de la app (Apple 5.3) con número de ganadores, fechas y método (Google Play);
-  - revisión de un abogado antes de activar los premios en dinero.
-- **Cuándo activarla:** con unos 1.000 jugadores activos al día, y mantenerla si sube la retención y el número de anuncios por jugador lo suficiente para pagar la bolsa.
+Torneo **semanal** gratuito con premios reales, pensado como gancho principal para atraer jugadores. El diseño completo está en [`LIGA.md`](LIGA.md):
+- **Puntos de Liga** por acciones con tope diario (misiones, hitos, puestos, negocios). Ni los anuncios ni las compras dan puntos.
+- **Reparto mixto:** sorteo con papeletas ganadas jugando (60 %) y top por división, Bronce/Plata/Oro (40 %).
+- **Bote** = el mayor de un mínimo garantizado (50 €/semana, lo pone el dueño) o el 10 % de los ingresos de la semana anterior.
+- Validación en el servidor (Supabase), mayores de 18, bases legales en la app y revisión de un asesor antes de dar dinero.
 
 ## Economía y ritmo
 
