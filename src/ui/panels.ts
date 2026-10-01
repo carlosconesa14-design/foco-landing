@@ -46,6 +46,8 @@ export interface PanelCtx {
   banner(icon: string, text: string): void;
   /** Texto que sube desde un elemento. */
   floatAt(anchor: Element, text: string): void;
+  /** Anuncio de prueba sin recompensa (diagnóstico). */
+  testAd(): Promise<boolean>;
 }
 
 const $ = <T extends HTMLElement>(el: HTMLElement, sel: string) => el.querySelector<T>(sel)!;

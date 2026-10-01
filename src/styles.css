@@ -375,3 +375,5 @@ header { gap: 6px; padding-bottom: 8px; }
 .lg-nick { display: flex; gap: 8px; margin: 14px 0 4px; }
 .lg-nick input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: inherit; font: inherit; }
 .lg-mono { font-family: ui-monospace, monospace; word-break: break-all; }
+.bad { color: var(--red); }
+.diag { margin: 10px 0; }

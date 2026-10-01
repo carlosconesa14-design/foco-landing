@@ -176,6 +176,7 @@ const ctx: PanelCtx = {
   },
   banner: (icon, text) => banner(root, icon, text),
   floatAt,
+  testAd: () => ads.showRewarded("boost_x2"),
 };
 
 document.getElementById("bar")!.addEventListener("click", async (e) => {

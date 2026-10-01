@@ -60,4 +60,13 @@ export const leagueApi = {
   events: (c: Creds, events: LeagueEvent[]) => call<{ added: number }>({ action: "events", ...c, events }),
   nickname: (c: Creds, nickname: string) => call<{ nickname: string }>({ action: "nickname", ...c, nickname }),
   claim: (c: Creds) => call<{ gems: number }>({ action: "claim", ...c }),
+  /** ¿Se llega al servidor? Unas credenciales falsas tienen que devolver «auth». */
+  ping: async (): Promise<boolean> => {
+    try {
+      await call({ action: "status", id: "00000000-0000-0000-0000-000000000000", secret: "x" }, 6000);
+      return true;
+    } catch (e) {
+      return (e as Error).message === "auth";
+    }
+  },
 };

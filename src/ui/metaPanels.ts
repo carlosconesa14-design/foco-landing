@@ -7,6 +7,7 @@ import { modal } from "./overlays";
 import type { PanelCtx } from "./panels";
 import { bizIcon, chestIcon, execFace, gem } from "./icons";
 import { openSheet } from "./sheet";
+import { openDiagnostics } from "./diagnostics";
 import { notifications } from "../platform/notifications";
 
 /** Paneles de la fase 2: misiones, premio diario, ejecutivos y maletines, logros. */
@@ -273,10 +274,11 @@ export function openSettings(ctx: PanelCtx): void {
     { key: "haptics", icon: "📳", name: "Vibración", desc: "Al tocar y al comprar (en el móvil)" },
     { key: "notify", icon: "🔔", name: "Avisos", desc: "Caja llena, maletín gratis y premio diario (en el móvil)" },
   ];
-  openSheet(
+  const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">⚙️</span><div><h3>Ajustes</h3><p class="muted">Se guardan con tu partida.</p></div></div>
-     <div data-list style="display:grid;gap:8px"></div>`,
+     <div data-list style="display:grid;gap:8px"></div>
+     <button class="btn ghost wide" data-diag style="margin-top:12px">🩺 Diagnóstico del móvil</button>`,
     (el) => {
       const set = ctx.state().settings;
       const list = $(el, "[data-list]");
@@ -300,6 +302,7 @@ export function openSettings(ctx: PanelCtx): void {
       }
     },
   );
+  sheet.el.querySelector<HTMLButtonElement>("[data-diag]")!.onclick = () => openDiagnostics(ctx);
 }
 
 /* ---------- Logros ---------- */

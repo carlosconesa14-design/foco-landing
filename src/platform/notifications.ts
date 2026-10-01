@@ -39,6 +39,29 @@ export const notifications = {
     }
   },
 
+  /** Estado del permiso, para el diagnóstico. */
+  async permission(): Promise<string> {
+    if (!this.supported) return "solo en el móvil";
+    try {
+      return (await LocalNotifications.checkPermissions()).display;
+    } catch {
+      return "error";
+    }
+  },
+
+  /** Aviso de prueba dentro de `seconds` segundos (diagnóstico). */
+  async test(seconds = 10): Promise<boolean> {
+    if (!(await this.ask())) return false;
+    try {
+      await LocalNotifications.schedule({
+        notifications: [{ id: 99, title: "🔔 Aviso de prueba", body: "Si ves esto, los avisos funcionan.", schedule: { at: new Date(Date.now() + seconds * 1000), allowWhileIdle: true } }],
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
   /** Al volver a la app ya no hacen falta. */
   async cancelAll(): Promise<void> {
     if (!this.supported) return;
