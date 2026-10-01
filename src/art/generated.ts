@@ -58,5 +58,5 @@ export function swapArt(image: Phaser.GameObjects.Image, key: string): void {
 export function generatedIcon(key: string, className = "game-icon"): string {
   const ref = GENERATED_FRAMES[key];
   if (!ref) return "";
-  return `<svg class="${className}" viewBox="${ref.x} ${ref.y} ${ref.w} ${ref.h}" aria-hidden="true" focusable="false" overflow="hidden"><image href="/sprites/generated/${ref.file}.png" width="${ref.sheetW}" height="${ref.sheetH}"/></svg>`;
+  return `<svg class="${className}" viewBox="${ref.x} ${ref.y} ${ref.w} ${ref.h}" aria-hidden="true" focusable="false" overflow="hidden"><image href="sprites/generated/${ref.file}.png" width="${ref.sheetW}" height="${ref.sheetH}"/></svg>`;
 }

@@ -1,3 +1,4 @@
+import { WEB_BETA } from "./web";
 import { Capacitor } from "@capacitor/core";
 
 /**
@@ -76,8 +77,8 @@ export const daysSinceInstall = () => Math.floor((Date.now() - installedAt) / 86
 
 let queue: Ev[] = read<Ev[]>(QKEY, []);
 let sending = false;
-/** En la web de pruebas (navegador) no se envía nada salvo que se active a mano. */
-let enabled = Capacitor.isNativePlatform();
+/** En `npm run dev` no se envía nada salvo que se active a mano; en el móvil y en la beta web, sí. */
+let enabled = Capacitor.isNativePlatform() || WEB_BETA;
 
 export const analytics = {
   /** Activa el envío también en la web (para probar). */

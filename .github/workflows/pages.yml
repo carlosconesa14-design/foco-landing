@@ -1,6 +1,6 @@
 # Web pública (GitHub Pages): portada, política de privacidad y bases de la Liga.
 # Una sola vez: Settings → Pages → Source: «GitHub Actions». Se publica al subir a main.
-# Para publicar también la demo jugable, cambia DEMO a "true".
+# DEMO "true": publica también la beta jugable en /jugar/ (sin compras, ver src/platform/web.ts).
 name: Web (GitHub Pages)
 
 on:
@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DEMO: "false"
+  DEMO: "true"
 
 jobs:
   deploy:
@@ -36,7 +36,7 @@ jobs:
       - name: Montar la web
         run: |
           if [ "$DEMO" = "true" ]; then
-            npm run build
+            VITE_WEB_BETA=true npm run build
             mkdir -p _site && cp -r dist _site/jugar
           else
             npm run legal

@@ -97,6 +97,8 @@ Se anuncia antes de que empiece la semana y no cambia durante ella.
 | 4. Integridad del dispositivo | Play Integrity (Android) / App Attest (iOS): descarta emuladores y apps modificadas | Antes de los premios en dinero |
 | 5. Revisión del ganador | Antes de pagar se mira su historial; email o teléfono verificado; un premio por persona y semana | Siempre, a mano al principio |
 
+**Beta web:** quien se apunta desde el navegador queda marcado como `platform = web` (`league_players`). Nunca recibe premios en dinero: un trigger (migración 0006) anula el importe y le deja los diamantes del premio, o 300 💎 si el premio no tenía. Es una barrera, no una garantía: el juego dice su plataforma al apuntarse. Para los premios en dinero, la verificación con Play Integrity sigue siendo necesaria.
+
 Clave: con **puntos con tope diario**, el máximo que puede sacar un tramposo es lo mismo que un jugador constante. Hacer trampas no compensa, y eso hace el sistema viable sin tener que simular toda la economía en el servidor.
 
 ---

@@ -466,4 +466,14 @@ export const EN: Record<string, string> = {
   "Tus puntos": "Your points",
   "¡Puntos x2 durante {min} min!": "Points x2 for {min} min!",
   "¡Has completado el evento!": "You completed the event!",
+
+  /* ---------- Beta web ---------- */
+  "Beta web: las compras estarán disponibles en la app de Google Play.": "Web beta: purchases will be available in the Google Play app.",
+  "En la app": "In the app",
+  "Beta web: en la app aquí verás un anuncio corto. La recompensa es tuya igualmente.": "Web beta: in the app you'll see a short ad here. You get the reward anyway.",
+  "Beta web: los premios de la Liga son dentro del juego. Los premios en dinero son solo para la app.": "Web beta: League prizes are in-game. Cash prizes are for the app only.",
+  "¡Bienvenido a la beta!": "Welcome to the beta!",
+  "Estás jugando la versión web de prueba. Tu partida se guarda en este navegador: si borras sus datos o cambias de dispositivo, empezarás de cero. Muy pronto, en Google Play.":
+    "You're playing the web test version. Your game is saved in this browser: if you clear its data or switch devices, you'll start from scratch. Coming soon to Google Play.",
+  "¡A jugar!": "Let's play!",
 };

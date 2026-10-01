@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import type { LeagueEvent } from "../game/league";
 
 /**
@@ -61,7 +62,7 @@ async function call<T>(body: Record<string, unknown>, timeoutMs = 8000): Promise
 }
 
 export const leagueApi = {
-  register: () => call<{ id: string; secret: string; nickname: string }>({ action: "register" }),
+  register: () => call<{ id: string; secret: string; nickname: string }>({ action: "register", platform: Capacitor.isNativePlatform() ? "app" : "web" }),
   status: (c: Creds) => call<LeagueStatus>({ action: "status", ...c }),
   events: (c: Creds, events: LeagueEvent[]) => call<{ added: number }>({ action: "events", ...c, events }),
   nickname: (c: Creds, nickname: string) => call<{ nickname: string }>({ action: "nickname", ...c, nickname }),

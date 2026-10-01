@@ -30,7 +30,7 @@ async function rpc(fn: string, args: Record<string, unknown>) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "method" }, 405);
-  let body: { action?: string; id?: string; secret?: string; events?: unknown; nickname?: string; week?: string; email?: string; adult?: boolean };
+  let body: { action?: string; id?: string; secret?: string; events?: unknown; nickname?: string; week?: string; email?: string; adult?: boolean; platform?: string };
   try {
     body = await req.json();
   } catch {
@@ -41,7 +41,9 @@ Deno.serve(async (req) => {
     if (body.action === "register") {
       // La IP solo se guarda como hash, para limitar altas masivas.
       const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
-      return json(await rpc("league_register", { p_ip_hash: await sha256(`league:${ip}`) }));
+      // Beta web: sin premios en dinero (ver migración 0006).
+      const platform = body.platform === "web" ? "web" : "app";
+      return json(await rpc("league_register", { p_ip_hash: await sha256(`league:${ip}`), p_platform: platform }));
     }
 
     if (typeof body.id !== "string" || typeof body.secret !== "string") return json({ error: "auth" }, 401);

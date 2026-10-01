@@ -1,3 +1,4 @@
+import { WEB_BETA } from "../platform/web";
 import { PRODUCTS, canBuy, grantProduct, isVip, type ProductId } from "../game/shop";
 import { analytics, minutesSinceInstall } from "../platform/analytics";
 import { store } from "../platform/store";
@@ -14,8 +15,8 @@ export function openShop(ctx: PanelCtx): void {
     `<div class="sheet-head"><span class="sicon">🛍️</span><div><h3>${t("Tienda")}</h3><p class="muted">${t("Apoya el juego y avanza más rápido")}</p></div></div>
      <div class="shop" data-list></div>
      <button class="btn ghost wide" data-chests style="margin-top:10px">💼 ${t("Maletines de ejecutivos")}</button>
-     <button class="btn ghost wide" data-restore style="margin-top:8px">${t("Restaurar compras")}</button>
-     <p class="small muted" style="margin-top:10px">${store.simulated ? t("Versión web: las compras son simuladas y no se cobra nada.") : t("Pagos gestionados por Google Play / App Store.")} ${t("Las compras no dan puntos en la Liga.")} ${t("El dinero del juego es ficticio: no tiene valor real y no se puede canjear.")}</p>`,
+     ${WEB_BETA ? "" : `<button class="btn ghost wide" data-restore style="margin-top:8px">${t("Restaurar compras")}</button>`}
+     <p class="small muted" style="margin-top:10px">${WEB_BETA ? t("Beta web: las compras estarán disponibles en la app de Google Play.") : store.simulated ? t("Versión web: las compras son simuladas y no se cobra nada.") : t("Pagos gestionados por Google Play / App Store.")} ${t("Las compras no dan puntos en la Liga.")} ${t("El dinero del juego es ficticio: no tiene valor real y no se puede canjear.")}</p>`,
     (el) => {
       const s = ctx.state();
       const list = el.querySelector<HTMLElement>("[data-list]")!;
@@ -26,7 +27,7 @@ export function openShop(ctx: PanelCtx): void {
               ${p.highlight ? `<span class="shop-tag">${p.highlight}</span>` : ""}
               <span class="shop-ic">${p.icon}</span>
               <div><b>${p.name}</b><span class="sub">${p.desc}</span></div>
-              <button class="buy" data-buy="${p.id}"><span>${t("Comprar")}</span><b>${store.price(p.id)}</b></button>
+              ${WEB_BETA ? `<button class="buy" disabled><span>${t("En la app")}</span><b>${store.price(p.id)}</b></button>` : `<button class="buy" data-buy="${p.id}"><span>${t("Comprar")}</span><b>${store.price(p.id)}</b></button>`}
             </div>`,
           )
           .join("");
@@ -60,7 +61,8 @@ export function openShop(ctx: PanelCtx): void {
     },
   );
   sheet.el.querySelector<HTMLButtonElement>("[data-chests]")!.onclick = () => openExecs(ctx, "chests");
-  sheet.el.querySelector<HTMLButtonElement>("[data-restore]")!.onclick = async () => {
+  const restore = sheet.el.querySelector<HTMLButtonElement>("[data-restore]");
+  if (restore) restore.onclick = async () => {
     const owned = await store.owned();
     const got = owned.map((o) => grantProduct(ctx.state(), o.id, o.order, Date.now())).filter(Boolean);
     ctx.toast(got.length ? t("Restaurado: {n} compra(s)", { n: got.length }) : store.simulated ? t("En la web no hay compras que restaurar") : t("No hay compras que restaurar"));

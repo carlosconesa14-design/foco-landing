@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { fmt, fmtTime } from "../game/format";
 import { LEAGUE_POINTS, leagueEvent, leagueJoined, type LeagueKind } from "../game/league";
 import { dayKey } from "../game/meta";
@@ -107,11 +108,13 @@ export function openLeague(ctx: PanelCtx): void {
       <p class="small"><a href="#" data-legal="bases-liga">${t("Leer las bases completas")}</a></p>
     </details>`;
 
+  const webNote = () => (Capacitor.isNativePlatform() ? "" : `<p class="small muted">${t("Beta web: los premios de la Liga son dentro del juego. Los premios en dinero son solo para la app.")}</p>`);
+
   /* --- Aún no apuntado --- */
   const renderJoin = (err = "") => {
     body.innerHTML = `
       <div class="lg-hero"><b>🏆 ${t("Premios cada semana")}</b><span>${t("Para el primero de cada división y un sorteo entre todos los que jueguen.")}</span></div>
-      ${how()}${rules()}
+      ${webNote()}${how()}${rules()}
       <label class="lg-check"><input type="checkbox" data-accept> ${t("Acepto las bases de la Liga")}</label>
       <button class="buy big wide" data-join disabled><span>${t("Unirme a la Liga")}</span><b>${t("Gratis")}</b></button>
       ${err ? `<p class="small" style="color:var(--red)">${err}</p>` : ""}`;
@@ -184,7 +187,7 @@ export function openLeague(ctx: PanelCtx): void {
           : ""
       }
       <div class="lg-nick"><input data-nick maxlength="16" value="${esc(me.nickname)}" aria-label="${t("Tu nombre en la Liga")}"><button class="btn ghost" data-save>${t("Cambiar nombre")}</button></div>
-      ${how()}${rules()}
+      ${webNote()}${how()}${rules()}
       <p class="small muted lg-mono">${t("Sorteo de esta semana sellado")}: ${esc(st.week.seedHash.slice(0, 16))}…</p>`;
 
     body.querySelectorAll<HTMLElement>(".lg-pay[data-week]").forEach((box) => {

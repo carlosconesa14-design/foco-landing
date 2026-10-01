@@ -37,6 +37,7 @@ import { leagueJoined } from "./game/league";
 import { ensureEvent, eventTiersReached, eventToClaim, eventWindow } from "./game/event";
 import { fmtWait, openEvent } from "./ui/eventPanel";
 import { loadIcons } from "./ui/icons";
+import { WEB_BETA } from "./platform/web";
 import "./styles.css";
 import { decorateIcons } from "./ui/icons";
 
@@ -596,6 +597,23 @@ async function boot(): Promise<void> {
   void store.owned().then((owned) => owned.forEach((o) => grantProduct(S, o.id, o.order, Date.now())));
 }
 
-void boot();
-// Para depurar desde la consola del navegador.
-Object.assign(window, { __game: { get state() { return S; }, game, sound, setLuck, analytics } });
+/** Beta web: una vez, explica que es una versión de prueba y dónde se guarda la partida. */
+function welcomeBeta(): void {
+  try {
+    if (localStorage.getItem("betaSeen")) return;
+    localStorage.setItem("betaSeen", "1");
+  } catch {
+    return;
+  }
+  modal(root, {
+    title: t("¡Bienvenido a la beta!"),
+    text: t("Estás jugando la versión web de prueba. Tu partida se guarda en este navegador: si borras sus datos o cambias de dispositivo, empezarás de cero. Muy pronto, en Google Play."),
+    actions: [{ label: t("¡A jugar!"), run: () => {} }],
+  });
+}
+
+void boot().then(() => {
+  if (WEB_BETA) welcomeBeta();
+});
+// Para depurar desde la consola del navegador (solo con `npm run dev`).
+if (import.meta.env.DEV) Object.assign(window, { __game: { get state() { return S; }, game, sound, setLuck, analytics } });

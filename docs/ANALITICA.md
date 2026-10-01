@@ -17,6 +17,8 @@ Analítica propia en Supabase, sin cuentas externas. Es **anónima**: cada insta
 | `offline_collect` | Cobrar lo ganado offline | Minutos fuera, si se triplicó |
 | `event_claim` / `event_boost` | Cobrar un premio del evento del fin de semana / x2 con anuncio | Semana y número de premio |
 
+La plataforma (`android`, `ios` o `web`) va en cada evento: la beta web también envía analítica. Para ver solo la beta: `where platform = 'web'`.
+
 Los eventos se guardan en el móvil y se envían cada 30 s y al salir. Si no hay conexión, se reintenta después.
 
 ## Informes

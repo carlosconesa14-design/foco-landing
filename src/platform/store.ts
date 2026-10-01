@@ -1,3 +1,4 @@
+import { WEB_BETA } from "./web";
 import { Capacitor } from "@capacitor/core";
 import { NativePurchases, PURCHASE_TYPE } from "@capgo/native-purchases";
 import { PRODUCTS, productDef, type ProductId } from "../game/shop";
@@ -42,6 +43,7 @@ export const store = {
   },
 
   async buy(id: ProductId): Promise<StoreResult> {
+    if (WEB_BETA) return { ok: false, error: "web" };
     if (!native()) {
       // Tienda simulada: confirma con el navegador, no cobra nada.
       const ok = window.confirm(`${t("Compra simulada (no se cobra nada):")}\n${productDef(id).name} · ${productDef(id).price}`);

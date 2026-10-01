@@ -31,11 +31,26 @@ Con eso, la política de privacidad sirve para la tienda.
 
 Las bases de la Liga (`docs/BASES_LIGA.md`) solo hacen falta completas **antes de dar premios en dinero**, y conviene que las revise un asesor. Mientras los premios sean diamantes, basta con el borrador.
 
-## 4. Unir la PR a `main` (y activar la web)
+## 4. Unir la PR a `main` y publicar la beta web
 1. Repositorio → **Settings → Pages → Source: «GitHub Actions»** (una vez).
 2. Une la PR a `main`.
 
-Se publica la web con la portada, la política de privacidad y las bases de la Liga. La URL de privacidad (`…/legal/privacidad.html`) es la que pide Play Console.
+Se publica la web en `https://carlosconesa14-design.github.io/foco-landing/`:
+- portada con el botón **«Jugar gratis (beta)»**;
+- el juego, en `…/jugar/`;
+- la política de privacidad y las bases de la Liga.
+
+Cada vez que se sube algo a `main`, la web se actualiza sola.
+
+**Qué cambia en la beta web** (`src/platform/web.ts`):
+- **Tienda:** las compras no están; los botones dicen «En la app».
+- **Anuncios:** son simulados (5 s) y la recompensa se da igualmente.
+- **Liga:** funciona, pero sin premios en dinero (el servidor marca al jugador como web).
+- **Analítica:** activa, con plataforma `web`. Así se ven los números de la beta en Supabase.
+- **Partida:** se guarda en el navegador. Al entrar la primera vez, un aviso lo explica.
+- **Depuración:** la consola del navegador (`__game`) no está disponible.
+
+Pon el enlace en la bio de TikTok: así consigues jugadores y los 12 probadores de Google Play. La URL de privacidad (`…/legal/privacidad.html`) es la que pide Play Console.
 
 **Importante:** GitHub solo deja lanzar a mano los workflows que están en `main`. Hasta que unas la PR, no aparecerá «Android release (Google Play)» en Actions.
 
