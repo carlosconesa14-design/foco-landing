@@ -32,7 +32,8 @@ Ideas que encajan (elige, amplía o descarta con criterio):
 Cosas que hay que saber:
 - **Isometría 2:1:** `TW = 88`, `TH = 44`. La profundidad de dibujo es la `y` en pantalla.
 - **Píxeles CSS con DPR:** el canvas va a resolución física y la cámara hace zoom. `art()` escala cualquier textura a su tamaño lógico, así que un PNG más grande se ve nítido sin tocar nada.
-- **Hay partes que aún no se pueden sustituir por PNG:** baldosas del suelo, iconos (hoy son emojis), retratos de ejecutivos y versiones de edificio por categoría. Si los haces, añade antes el enganche en el código.
+- **Iconos, baldosas del suelo y retratos de ejecutivos ya se sustituyen por PNG** con las claves de `docs/ART.md` («Enganches ya preparados»). Los iconos están en `src/ui/icons.ts` y las baldosas en `placeTile` (catalog.ts). Los edificios en PNG se recortan y se ajustan a la parcela solos (`BootScene`).
+- **Edificios que crecen:** `bld_<id>_1`, `_2` y `_3` (categorías ★, ★★ y ★★★, con 1, 3 y 6 puestos) ya tienen imágenes en los atlas generados (`buildingKey` en catalog.ts). `public/sprites/generated/` contiene también mobiliario y poses del restaurante abierto.
 
 ## Reglas
 

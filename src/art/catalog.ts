@@ -1,6 +1,7 @@
 import { artRef, hasGeneratedArt } from "./generated";
 import Phaser from "phaser";
 import { EMOJI_FONT } from "../scenes/common";
+import { ALL_BUSINESSES, CITIES } from "../game/data";
 import { Pen, faceQuad, isoBox, leftFace, rightFace, shade } from "./pen";
 
 /**
@@ -66,7 +67,7 @@ export const LOOKS: Record<string, Look> = {
  * y `seller` sale a vender; si empiezan por "car_" son vehículos, si no, personajes.
  */
 export const BIZ_ART: Record<string, { worker: string; mover: string; seller: string; item: string; station: string }> = {
-  dropship: { worker: "packer", mover: "car_3", seller: "car_2", item: "item_box", station: "st_dropship" },
+  dropship: { worker: "packer", mover: "veh_forklift", seller: "veh_van", item: "item_box", station: "st_dropship" },
   restaurant: { worker: "cook", mover: "waiter", seller: "rider", item: "item_dish", station: "st_restaurant" },
   tiktok: { worker: "creator", mover: "editor", seller: "brand", item: "item_clip", station: "st_tiktok" },
   ai: { worker: "engineer", mover: "tech", seller: "sales", item: "item_chip", station: "st_ai" },
@@ -161,6 +162,9 @@ function drawVan(p: Pen): void {
 
 const CAR_COLORS = [0xe74c3c, 0x3498db, 0xf1c40f, 0x2ecc71];
 CAR_COLORS.forEach((_, i) => def(`car_${i}`, 44, 34));
+// Vehículos propios del almacén (solo PNG; sin PNG se usa un coche): carretilla elevadora y furgoneta de reparto.
+def("veh_forklift", 44, 40);
+def("veh_van", 52, 40);
 
 /** Coche isométrico orientado hacia abajo-derecha (eje de columnas). */
 function drawCar(p: Pen, color: number): void {
@@ -470,7 +474,7 @@ function drawLampPost(p: Pen): void {
 
 /* ---------- Edificios isométricos ---------- */
 
-const BLD_W = 172;
+export const BLD_W = 172;
 const BLD: Record<string, number> = {
   dropship: 150, restaurant: 164, tiktok: 236, ai: 270, soon: 170,
   foodtruck: 140, beachclub: 170, yachts: 180, realestate: 260, crypto: 300,
@@ -716,6 +720,37 @@ function drawBuilding(p: Pen, id: string, tier = 1): void {
   }
 }
 
+/* ---------- Baldosas del suelo (solo PNG; sin PNG el suelo se dibuja por código) ---------- */
+
+/**
+ * Claves de baldosa. Cada una admite variantes `_1`, `_2` y `_3` que se reparten al azar.
+ * Rombo de 88×44 (más alto si la baldosa tiene grosor: se apoya por el vértice de arriba).
+ */
+export const TILE_KEYS = [
+  ...CITIES.map((c) => `tile_${c.id}_ground`),
+  "tile_lot",
+  "tile_road_c",
+  "tile_road_r",
+  "tile_cross",
+  "tile_path",
+  ...ALL_BUSINESSES.map((b) => `tile_biz_${b.id}`),
+];
+for (const key of TILE_KEYS) for (const v of ["", "_1", "_2", "_3"]) def(key + v, 88, 44);
+
+/**
+ * Pone la baldosa en PNG de esa clave (o una de sus variantes) con el vértice de arriba en (x, yTop).
+ * Devuelve false si no hay PNG, para que la escena dibuje el suelo por código.
+ */
+export function placeTile(scene: Phaser.Scene, x: number, yTop: number, key: string, rand: () => number): boolean {
+  const options = [key, `${key}_1`, `${key}_2`, `${key}_3`].filter((k) => scene.textures.exists(k));
+  if (!options.length) return false;
+  const k = options[Math.floor(rand() * options.length)];
+  const src = scene.textures.get(k).getSourceImage() as { width: number; height: number };
+  const img = scene.add.image(x, yTop, k).setOrigin(0.5, 0).setDepth(-10);
+  img.setDisplaySize(88, (88 * src.height) / src.width);
+  return true;
+}
+
 /* ---------- Generación ---------- */
 
 type EmojiFn = (x: number, y: number, ch: string, size: number) => void;
@@ -786,7 +821,7 @@ export function buildArt(scene: Phaser.Scene, k: number): void {
     if (id !== "soon") for (const tier of [1, 2, 3]) {
       const key = `bld_${id}_${tier}`;
       // Existing custom PNGs remain authoritative when no tier-specific PNG is supplied.
-      if (!scene.textures.exists(key) && scene.textures.exists(`bld_${id}`) && scene.cache.json.get("sprite-manifest")?.includes(`bld_${id}`)) {
+      if (!hasGeneratedArt(scene, key) && !scene.textures.exists(key) && scene.textures.exists(`bld_${id}`) && scene.cache.json.get("sprite-manifest")?.includes(`bld_${id}`)) {
         scene.textures.addImage(key, scene.textures.get(`bld_${id}`).getSourceImage() as HTMLImageElement);
         ART[key] = ART[`bld_${id}`];
       }

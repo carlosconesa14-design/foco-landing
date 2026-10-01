@@ -4,6 +4,7 @@ import * as act from "../game/actions";
 import { CHAIN, CONFIG, LIFE } from "../game/data";
 import {
   bizDef,
+  bizTier,
   businessRate,
   chainRates,
   floorRate,
@@ -23,6 +24,8 @@ import {
 import { fmt } from "../game/format";
 import { cityDef, type BuyMode, type GameState, type View } from "../game/state";
 import type { Celebration } from "./celebrate";
+import { bizIcon, icon } from "./icons";
+import { analytics, minutesSinceInstall } from "../platform/analytics";
 import { closeSheet, openSheet } from "./sheet";
 
 /** Lo que los paneles necesitan del controlador del juego. */
@@ -44,6 +47,8 @@ export interface PanelCtx {
   banner(icon: string, text: string): void;
   /** Texto que sube desde un elemento. */
   floatAt(anchor: Element, text: string): void;
+  /** Anuncio de prueba sin recompensa (diagnóstico). */
+  testAd(): Promise<boolean>;
 }
 
 const $ = <T extends HTMLElement>(el: HTMLElement, sel: string) => el.querySelector<T>(sel)!;
@@ -167,11 +172,24 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
     },
   );
   $<HTMLButtonElement>(sheet.el, "[data-unlock]").onclick = () => {
+    const before = bizTier(ctx.state().biz[id]);
     const msg = act.unlockFloor(ctx.state(), id);
     if (!msg) return ctx.fx("error");
+    analytics.track("floor_opened", { biz: id, floors: ctx.state().biz[id].floors.length });
+    closeSheet();
+    const tier = bizTier(ctx.state().biz[id]);
+    if (tier > before) {
+      // Sube de categoría: el edificio crece en el mapa. Es un hito grande, se celebra a lo grande.
+      void ctx.celebrate({
+        icon: def.icon,
+        title: `¡${def.name} sube de categoría!`,
+        subtitle: tier === 3 ? "Ya es de los grandes: el edificio luce su versión de lujo." : "El negocio crece y el edificio se amplía.",
+        highlight: "★".repeat(tier),
+      });
+      return;
+    }
     ctx.fx("unlock", true);
     ctx.banner("🔓", msg);
-    closeSheet();
   };
 }
 
@@ -181,7 +199,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
   const def = bizDef(id);
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">${def.icon}</span><div><h3>${def.name}</h3><p class="muted">${def.blurb}</p></div></div>
+    `<div class="sheet-head"><span class="sicon">${bizIcon(def)}</span><div><h3>${def.name}</h3><p class="muted">${def.blurb}</p></div></div>
      <div class="stat"><span>Puestos</span><b>${def.floorName} ${def.worker}</b></div>
      <div class="stat"><span>Transporte</span><b>${def.transportName} ${def.transportIcon}</b></div>
      <div class="stat"><span>Venta</span><b>${def.saleName} ${def.saleWorker}</b></div>
@@ -194,6 +212,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
   $<HTMLButtonElement>(sheet.el, "[data-buyplot]").onclick = () => {
     const msg = act.buyBusiness(ctx.state(), id);
     if (!msg) return ctx.fx("error");
+    analytics.track("business_bought", { biz: id, minutes: minutesSinceInstall() });
     closeSheet();
     ctx.goTo({ scene: "business", id });
     void ctx.celebrate({
@@ -217,7 +236,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
   const li = lifeIndex(s0.totalEarned);
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">📈</span><div><h3>Salir a bolsa</h3><p class="muted">Tienes <b class="gold">${fmt(s0.shares)} acciones</b>: +${fmt(s0.shares * CONFIG.shareBonus * 100)}% a todo lo que ganas.</p></div></div>
+    `<div class="sheet-head"><span class="sicon">${icon("ic_ipo", "📈")}</span><div><h3>Salir a bolsa</h3><p class="muted">Tienes <b class="gold">${fmt(s0.shares)} acciones</b>: +${fmt(s0.shares * CONFIG.shareBonus * 100)}% a todo lo que ganas.</p></div></div>
      <p class="muted">Vendes todos los negocios de esta ciudad y vuelves a empezar con el primero, pero cada acción suma un +${CONFIG.shareBonus * 100}% para siempre. Tu estilo de vida (${LIFE[li].icon} ${LIFE[li].name}) se mantiene.</p>
      <div class="stat"><span>Recibirías ahora</span><b class="gold" data-gain></b></div>
      <p class="small muted" data-need></p>
@@ -250,6 +269,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
       if (mult === 2 && !(await ctx.watchAd("ipo_x2"))) return;
       const res = act.ipo(ctx.state(), mult, Date.now());
       if (!res) return;
+      analytics.track("ipo", { shares: Math.round(res.gained), withAd: mult === 2, minutes: minutesSinceInstall() });
       ctx.replaceState(res.state);
       closeSheet();
       void ctx.celebrate({

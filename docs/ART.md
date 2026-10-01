@@ -75,6 +75,8 @@ Para las poses de caminar (`_1` y `_2`), el prompt es el mismo con "walking, lef
 | `st_restaurant` | 100×86 | Side view professional kitchen stove with two steaming pots |
 | `st_tiktok` | 100×86 | Side view ring light on a tripod holding a smartphone, colorful props |
 | `st_ai` | 100×86 | Side view black server rack with glowing cyan and green LEDs |
+| `veh_forklift` | 44×40 | Isometric 2:1 small yellow warehouse forklift carrying nothing, driving toward the bottom-right (es la «Carretilla» del almacén; sin PNG se usa un coche) |
+| `veh_van` | 52×40 | Isometric 2:1 white delivery van with an orange stripe, driving toward the bottom-right (son las «Furgonetas» del almacén) |
 | `van` | 76×46 | Side view white delivery van with orange stripe, facing right (se usa en pantallas laterales) |
 | `item_box` | 26×26 | Small cardboard box with tape |
 | `item_dish` | 26×26 | Plate of spaghetti with tomato sauce |
@@ -125,12 +127,12 @@ Revisión del juego actual, ordenada por impacto: lo que más se nota en pantall
 ### 1. Edificios de la ciudad (máximo impacto)
 Es lo primero que ve el jugador y lo que más "vende" en las capturas de la tienda. Hoy son cajas isométricas dibujadas por código, con un emoji encima en un recuadro blanco.
 - Genera los 9 `bld_*` y `bld_soon` con las tablas de arriba.
-- **Sin emoji encima:** el edificio tiene que reconocerse solo por su forma (un cartel de pasta, un aro de luz…). Cuando haya PNG, quitaremos el recuadro del emoji.
-- **Idea que requiere código:** 3 versiones por edificio según sus puestos (`bld_x_1`, `_2`, `_3`). Por ejemplo, un almacén pequeño que se vuelve nave logística y luego centro de distribución con camiones. Es la recompensa visual más fuerte de un tycoon: ver crecer lo que compras.
+- **Sin emoji encima:** el edificio tiene que reconocerse solo por su forma (un cartel de pasta, un aro de luz…). Ya hay PNG de Madrid; el recuadro del emoji solo sale con el arte por código.
+- ✅ **Enganche listo:** 3 versiones por edificio según sus puestos (`bld_x`, `bld_x_2`, `bld_x_3`; ver más abajo). Por ejemplo, un almacén pequeño que se vuelve nave logística y luego centro de distribución con camiones. Es la recompensa visual más fuerte de un tycoon: ver crecer lo que compras.
 
 ### 2. Suelo de la ciudad y del recinto
 El suelo son rombos de color plano: carreteras, césped, aceras y arena. Se ve vacío.
-- **Requiere código:** baldosas isométricas 88×44 como `tile_grass`, `tile_sand`, `tile_road_h`, `tile_road_v`, `tile_cross`, `tile_sidewalk`, `tile_lot` y `tile_water`. Con 2–3 variantes de césped y arena ya no se nota la repetición.
+- ✅ **Enganche listo** (ver más abajo): baldosas isométricas 88×44 (`tile_madrid_ground`, `tile_miami_ground`, carreteras, solares y suelo de cada recinto), con hasta 4 variantes por clave para que no se note la repetición.
 - El borde de tierra de la isla (`island_edge`) y el agua animada del mar.
 
 ### 3. Personajes
@@ -144,14 +146,14 @@ Son los 9 `st_*` y los 9 `item_*`. Se ven de cerca y mucho rato, así que merece
 
 ### 5. Iconos de la interfaz (hoy son emojis)
 Los emojis cambian según el móvil (Apple, Samsung, Google), se ven poco profesionales y no siguen el estilo del juego.
-- **Requiere código:** iconos PNG de 64×64 para sustituirlos. Por prioridad:
+- ✅ **Enganche listo** (ver más abajo): iconos PNG de 64×64. Por prioridad:
   - dinero `ic_cash`, diamante `ic_gem`, estrella de franquicia `ic_star`;
   - botones laterales: misiones, diario, ejecutivos, logros y ajustes (`ic_missions`, `ic_daily`, `ic_execs`, `ic_trophy`, `ic_settings`);
   - barra inferior: ciudad, bolsa y mundo (`ic_city`, `ic_ipo`, `ic_world`);
   - un icono por negocio (`ic_biz_<id>`), uno por estilo de vida (`ic_life_0` a `ic_life_9`) y uno por mejora de la Oficina central (`ic_office_<id>`);
   - maletines: normal, oro y gratis (`chest_normal`, `chest_premium`, `chest_free`);
   - banderas de ciudad (`flag_madrid`, `flag_miami`).
-- **Retratos de ejecutivos** (hoy son emojis 💼): 8 caras de 96×96 (`exec_0` a `exec_7`), con un marco de color por rareza (gris, azul, morado y dorado).
+- ✅ **Retratos de ejecutivos** (hoy son emojis): 8 caras de 96×96 (`exec_0` a `exec_7`). Sin marco: el juego ya pone el borde del color de la rareza.
 
 ### 6. Interfaz (marcos y botones)
 Los paneles son rectángulos azul marino, limpios pero genéricos.
@@ -170,8 +172,57 @@ Todo esto es código más que sprites. ChatGPT solo tendría que dibujar la piez
 - Icono de la app (1024×1024), pantalla de carga (splash) y logotipo "De Rider a Millonario".
 - 5 capturas para la tienda con textos grandes; se pueden montar sobre capturas reales del juego.
 
+### Enganches ya preparados en el código
+
+Estas piezas ya se pueden sustituir por PNG igual que el resto: se dejan en `public/sprites/` y se añaden a `manifest.json`. Mientras no exista el PNG, el juego sigue con el emoji o el dibujo por código.
+
+**Edificios (`bld_*`):** al cargar se recorta solo el margen transparente y se escalan para que la base ocupe la parcela. No hace falta encuadrarlos con precisión, solo que la base (el rombo de suelo) sea lo más ancho del dibujo.
+
+**Iconos de la interfaz** (64×64, o 3 veces más grandes, con fondo transparente, sin texto):
+
+| Clave | Sustituye a | Dónde sale |
+| --- | --- | --- |
+| `ic_gem` | 💎 | Cabecera, precios y premios |
+| `ic_star` | ⭐ | Estrellas de franquicia |
+| `ic_city`, `ic_ipo`, `ic_world` | 🏙️ 📈 🌍 | Barra inferior |
+| `ic_missions`, `ic_daily`, `ic_execs`, `ic_trophy`, `ic_league`, `ic_settings` | 📋 🎁 💼 🏆 🏅 ⚙️ | Menú lateral |
+| `ic_biz_<id>` (`ic_biz_dropship`, `ic_biz_restaurant`, `ic_biz_tiktok`, `ic_biz_ai`, `ic_biz_foodtruck`, `ic_biz_beachclub`, `ic_biz_yachts`, `ic_biz_realestate`, `ic_biz_crypto`) | 📦 🍝 📱 🤖 🌮 🏖️ 🛥️ 🏘️ 🪙 | Barra, paneles y ejecutivos |
+| `ic_life_0` … `ic_life_9` | 🛏️ 🏚️ 🏠 🏢 🌆 🏡 🏰 🛥️ 🏝️ 🚀 | Estilo de vida en la cabecera |
+| `ic_office_<id>` (`brand`, `team`, `floors`, `suppliers`, `offline`, `hustle`, `luck`) | 🌍 👔 🏗️ 🤝 🌙 ⚡ 🔥 | Oficina central |
+| `chest_free`, `chest_normal`, `chest_premium` | 💼 👜 | Maletines |
+| `flag_madrid`, `flag_miami` | 🇪🇸 🇺🇸 | Barra y mapa del mundo |
+| `exec_0` … `exec_7` (96×96) | Caras de los ejecutivos | Panel de ejecutivos |
+
+Prompt base para iconos: "Game UI icon of <objeto>, glossy cartoon style matching the buildings, bold shapes, subtle dark outline, centered, transparent background, no text."
+
+**Baldosas del suelo** (rombo isométrico de 88×44, o 264×132 a 3x; si tiene grosor puede ser más alto: se apoya por el vértice de arriba). Cada clave admite variantes `_1`, `_2` y `_3`, que el juego reparte al azar para que no se note la repetición:
+
+| Clave | Qué es |
+| --- | --- |
+| `tile_madrid_ground`, `tile_miami_ground` | Césped de Madrid y arena de Miami |
+| `tile_lot` | Solar pavimentado bajo los edificios |
+| `tile_road_c`, `tile_road_r`, `tile_cross` | Carretera en cada dirección y cruce con paso de cebra |
+| `tile_path` | Camino peatonal dentro de los recintos |
+| `tile_biz_<id>` | Suelo del recinto de cada negocio (por ejemplo, `tile_biz_restaurant` con terraza de baldosas) |
+
+Prompt base para baldosas: "Seamless isometric 2:1 ground tile, top face only, <material>, flat even lighting, edges must tile perfectly with copies of itself, transparent outside the diamond."
+
+**Edificios que crecen** (mismo tamaño y encuadre que `bld_<id>`; el juego los recorta y ajusta a la parcela). Con 3 puestos el negocio pasa a ★★ y con 6 a ★★★. Se celebra con una pantalla de "¡sube de categoría!" y el edificio cambia en el mapa y en el recinto. Si falta una versión, se usa la anterior.
+
+| Clave | Prompt (tras el estilo común; mantener la misma base de rombo, colores y vista) |
+| --- | --- |
+| `bld_dropship_2` | The same warehouse, now bigger: two connected warehouse halls, a loading dock with a delivery truck, stacked pallets |
+| `bld_dropship_3` | The same brand as a large modern logistics center: tall building, solar panels on the roof, several trucks, a small conveyor belt, company flag |
+| `bld_restaurant_2` | The same Italian restaurant, now with a terrace full of tables and string lights, and a second floor |
+| `bld_restaurant_3` | The same restaurant as an upscale three-floor venue: rooftop terrace, golden sign, valet stand, lush plants |
+| `bld_tiktok_2` | The same purple studio tower, taller, with a big LED screen on the facade |
+| `bld_tiktok_3` | The same content-creator HQ as a landmark skyscraper: giant ring light crown, neon billboards, rooftop helipad |
+| `bld_ai_2` | The same AI tower, taller, with a glowing data center wing beside it |
+| `bld_ai_3` | The same AI company as a futuristic campus: twin teal skyscrapers joined by a sky bridge, holographic logo, antenna |
+| `bld_<id>_2` / `bld_<id>_3` de Miami (`foodtruck`, `beachclub`, `yachts`, `realestate`, `crypto`) | La misma regla: la versión 2 es el mismo negocio más grande y con más detalle; la 3, la versión de lujo y emblemática |
+
 ### Qué ya funciona sin tocar código
-Cualquier clave de las tablas de arriba: se deja el PNG en `public/sprites/` y se añade al `manifest.json`. Para los puntos marcados como **requiere código** hay que añadir antes el enganche. Es una tarea pequeña que se puede hacer antes de pasarle el proyecto a ChatGPT, para que sus imágenes entren directamente.
+Cualquier clave de las tablas de arriba: se deja el PNG en `public/sprites/` y se añade al `manifest.json`. Ya no hace falta código para ninguna pieza de esta guía.
 
 ## Consejos para generar con ChatGPT
 
@@ -393,3 +444,32 @@ la economía. Hay texturas procedurales de respaldo si el atlas no carga.
 Validación de este bloque: 67 tests, compilación y navegador móvil 390×844;
 apertura, contratación real, servicio tras ventas y ampliaciones de una a ocho
 cocinas. Cabecera y menú comprobados también a 320 y 560 px.
+
+## Integración con los avances de Claude
+
+La versión integrada conserva el restaurante abierto, las calles continuas,
+las sombras y las cámaras de esta revisión junto a la barra de cadena, Imperio,
+el tutorial, Liga, tienda y diagnóstico de Claude.
+
+- Los 39 PNG individuales de personajes de Madrid conservan sus tres poses
+  (`_0`, `_1`, `_2`). El manifiesto activa estas animaciones; los elementos
+  estáticos compartidos usan los atlas generados para mantener el estilo visual.
+  Los PNG estáticos anteriores siguen disponibles en el repositorio.
+- Las categorías de edificios usan las 27 imágenes de los atlas. Una imagen
+  base no sustituye las versiones de categoría si ya existen en un atlas.
+- Los enganches de PNG individuales, baldosas e iconos siguen disponibles.
+  Los iconos admiten PNG, atlas y el kit SVG como alternativa.
+- La barra fija reúne producción, transporte y venta; sustituye los botones
+  flotantes de nivel de transporte/venta. Los actores siguen siendo tocables.
+- Misiones permanece en el lateral; el menú compacto reúne diario, ejecutivos,
+  logros, Liga y ajustes. Las gemas abren la tienda y la barra permite abrir
+  Imperio. Las cámaras descuentan la altura real de la nueva barra.
+- Las pistas de tutorial del transporte y reparto respetan movimiento reducido.
+  Los paneles incluyen los campos de Liga en la navegación con teclado.
+
+Validación de la integración: 88 tests y `npm run build` correctos. En navegador:
+menú/paneles a 320, 390 y 560 px, contratación desde la cadena, tienda y maletines,
+Imperio y servicio del restaurante. Sobre el build de producción a 390×844:
+tutorial con clics reales, ampliaciones de una a ocho cocinas, edificios de
+categorías 1/3 en la ciudad, controles de cámara y movimiento reducido, sin
+errores de consola. Esta comprobación no sustituye una prueba en Android físico.

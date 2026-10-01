@@ -4,19 +4,19 @@ Idle tycoon para móvil: construyes un imperio de negocios modernos (dropshippin
 
 Hecho con **TypeScript + Phaser 3 + Vite**, empaquetado para Android e iOS con **Capacitor**. El diseño completo y la hoja de ruta están en [`docs/GDD.md`](docs/GDD.md).
 
-**Arte:** ciudad y recintos en isométrico 2.5D, con arrastre y zoom pellizcando. Todo se dibuja por código (`src/art/`), y cada pieza se puede sustituir por un PNG propio sin tocar código. Los tamaños y los prompts para generarlas con IA están en [`docs/ART.md`](docs/ART.md).
+**Arte:** ciudad y recintos en isométrico 2.5D, con arrastre y zoom pellizcando. Combina atlas propios generados con ChatGPT, poses de personajes en PNG y geometrías de suelo (`src/art/`). Las piezas admiten sustituciones mediante el manifiesto de sprites. Los tamaños y los prompts para generarlas con IA están en [`docs/ART.md`](docs/ART.md).
 
 ## Cómo se juega
 
 - **Recinto de un negocio:** puestos de producción → transporte → venta.
   - Tocas un puesto, la carretilla o la furgoneta para que hagan un viaje.
-  - Los botones `Nv` abren el panel de mejora y de contratación de gerente.
+  - Los botones `Nv` de los puestos y la barra fija de producción, transporte y venta abren mejoras y contratación de gerentes.
   - La parte que frena la cadena se marca en rojo.
 - **Gerentes:** automatizan su parte, que sigue ganando dinero con la app cerrada.
 - **Puestos nuevos:** se construyen en las parcelas del recinto y cada uno produce 6 veces más que el anterior (hasta 8 por negocio).
 - **Ciudad:** un mapa que puedes arrastrar, con parcelas "Se vende". Cada negocio produce cientos de veces más que el anterior.
 - **Diamantes, ejecutivos y maletines:** los ejecutivos se asignan uno por negocio, dan un bonus y tienen una habilidad activa.
-- **Misiones diarias, premio diario, logros y tutorial** en los botones laterales.
+- **Misiones** en el lateral; **premio diario, ejecutivos, logros, Liga y ajustes** en Menú. Las gemas abren la tienda.
 - **Bolsa:** el prestigio. Vuelves a empezar con acciones que dan +2 % permanente cada una.
 - **Estilo de vida:** avanza según lo ganado en total, de "vives con tus padres" a "isla privada", y no se pierde nunca.
 
@@ -98,6 +98,10 @@ docs/GDD.md           documento de diseño y hoja de ruta
    - Los valores de arriba son los de prueba de Google. Cámbialos por los tuyos al publicar.
 3. Copia `.env.example` a `.env` y pon tus IDs de bloque de anuncios bonificados. Deja `VITE_ADMOB_TESTING=true` hasta el build final: hacer clic en tus propios anuncios reales puede suspenderte la cuenta de AdMob.
 4. `npm run cap:sync` y abre el proyecto con `npx cap open android` o `npx cap open ios`.
+
+**Avisos en el móvil** (`@capacitor/local-notifications`): al salir de la app se programan tres avisos: caja llena, maletín gratis y premio diario. Nunca suenan entre las 22:00 y las 9:00, y se cancelan al volver. El permiso se pide una vez, al acabar el tutorial, y el jugador puede desactivarlos en Ajustes. La lógica está en `src/game/notify.ts` (con tests) y la entrega en `src/platform/notifications.ts`. Al añadir Android, revisa en la documentación del plugin los permisos de Android 13+ y de alarmas exactas; sin alarma exacta, el aviso puede llegar unos minutos tarde.
+
+**Liga Millonario** (Supabase): la URL y la clave pública por defecto son las del proyecto del juego. Se pueden cambiar con `VITE_LEAGUE_URL` y `VITE_LEAGUE_KEY` (ver `.env.example`). Cómo funciona y cómo se gestiona: [`docs/LIGA.md`](docs/LIGA.md).
 
 El consentimiento GDPR (formulario UMP de Google) y el permiso ATT de iOS ya se piden en `AdMobAds.init()`. Solo tienes que crear el mensaje de consentimiento en la consola de AdMob, en **Privacidad y mensajes**.
 

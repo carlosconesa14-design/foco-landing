@@ -4,10 +4,10 @@ import { actorShadow, gait } from "./motion";
 import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
 import { groundDetail } from "../art/ground";
 import Phaser from "phaser";
-import { buildingKey, ART, BIZ_ART, art, artScale } from "../art/catalog";
+import { buildingKey, ART, BIZ_ART, art, artScale, placeTile } from "../art/catalog";
 import { mix, shade } from "../art/pen";
-import { CHAIN } from "../game/data";
-import { bizDef, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
+import { CHAIN, TUTORIAL } from "../game/data";
+import { bizDef, bizList, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
 import { fmt } from "../game/format";
 import { cityDef, type BusinessState } from "../game/state";
 import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, emoji, floatText, label, setupCamera, type Bridge } from "./common";
@@ -98,7 +98,10 @@ function along(pts: Pt[], t: number): { c: number; r: number; dc: number; dr: nu
   return { c: pts[0][0], r: pts[0][1], dc: 0, dr: 0 };
 }
 
-const isVehicle = (key: string) => key.startsWith("car_");
+const isVehicle = (key: string) => key.startsWith("car_") || key.startsWith("veh_");
+
+/** Vehículos propios de un negocio que, si aún no tienen PNG, se sustituyen por un coche. */
+const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_van: "car_2" };
 
 /**
  * Recinto de un negocio visto en un mapa isométrico: edificio principal, caminos y puestos.
@@ -119,14 +122,14 @@ export class BusinessScene extends Phaser.Scene {
   private moverItem!: Phaser.GameObjects.Image;
   private moverCarry!: Phaser.GameObjects.Text;
   private moverHint!: Phaser.GameObjects.Text;
+  private moverTag!: Phaser.GameObjects.Text;
+  private moverRing!: Phaser.GameObjects.Ellipse;
+  private sellerRing!: Phaser.GameObjects.Ellipse;
+  private sellerTag!: Phaser.GameObjects.Text;
   private seller!: Phaser.GameObjects.Image;
   private sellerItem!: Phaser.GameObjects.Image;
   private sellerCarry!: Phaser.GameObjects.Text;
   private sellerHint!: Phaser.GameObjects.Text;
-  private transportPill!: Pill;
-  private transportMgr!: Phaser.GameObjects.Text;
-  private salePill!: Pill;
-  private saleMgr!: Phaser.GameObjects.Text;
   private topPile: Phaser.GameObjects.Image[] = [];
   private topStock!: Phaser.GameObjects.Text;
   private unlockPill: Pill | null = null;
@@ -157,7 +160,9 @@ export class BusinessScene extends Phaser.Scene {
   }
 
   private get look() {
-    return BIZ_ART[this.bizId] ?? BIZ_ART.dropship;
+    const look = BIZ_ART[this.bizId] ?? BIZ_ART.dropship;
+    const pick = (k: string) => (VEHICLE_FALLBACK[k] && !this.textures.exists(k) ? VEHICLE_FALLBACK[k] : k);
+    return { ...look, mover: pick(look.mover), seller: pick(look.seller) };
   }
 
   private iso(c: number, r: number): { x: number; y: number } {
@@ -245,12 +250,16 @@ export class BusinessScene extends Phaser.Scene {
     g.fillStyle(0x4e7f3f, 1).fillPoints([new Phaser.Math.Vector2(L.x, L.y), new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(B.x, B.y + 14), new Phaser.Math.Vector2(L.x, L.y + 14)], true);
     g.fillStyle(0x5a9148, 1).fillPoints([new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(R.x, R.y), new Phaser.Math.Vector2(R.x, R.y + 14), new Phaser.Math.Vector2(B.x, B.y + 14)], true);
 
+    let seed = 17;
+    const tileRand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
     for (let r = 0; r <= ROAD_ROW; r++)
       for (let c = 0; c < COLS; c++) {
         const kind = this.tileKind(c, r);
         const t = this.iso(c, r);
         const cx = t.x;
         const cy = t.y + TH / 2;
+        const tileKey = kind === "road" ? "tile_road_c" : kind === "path" ? "tile_path" : `tile_biz_${this.bizId}`;
+        if (placeTile(this, cx, t.y, tileKey, tileRand)) continue;
         if (kind === "road") {
           g.fillStyle(0x46586a, 1).fillPoints(this.diamond(c, r), true);
           const quad=(r0:number,r1:number) => [this.iso(c,r0),this.iso(c+1,r0),this.iso(c+1,r1),this.iso(c,r1)].map(p=>new Phaser.Math.Vector2(p.x,p.y));
@@ -341,17 +350,7 @@ export class BusinessScene extends Phaser.Scene {
     this.topPile = this.pile(pileAt.x, pileAt.y, pileAt.y + 2);
     this.topStock = label(this, pileAt.x, pileAt.y - 44, "", 12, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
 
-    const def = bizDef(this.bizId);
-    const tp = this.iso(...this.layout.transportBadge);
-    this.plaque(tp.x, tp.y - 26, def.transportName);
-    this.transportPill = this.pill(tp.x, tp.y + 4, { kind: "transport" });
-    this.transportMgr = emoji(this, tp.x + 40, tp.y + 4, "👔", 16).setDepth(9.2e4);
-
-    const sp = this.iso(...this.layout.saleBadge);
-    this.plaque(sp.x, sp.y - 26, def.saleName);
-    this.salePill = this.pill(sp.x, sp.y + 4, { kind: "sale" });
-    this.saleMgr = emoji(this, sp.x + 40, sp.y + 4, "👔", 16).setDepth(9.2e4);
-
+    // El nivel y la mejora del transporte y la venta están en la barra de la cadena (abajo, fija).
     // Zonas de toque: puerta (transporte) y portón (venta)
     const door = this.iso(this.layout.door[0], this.layout.door[1]);
     this.tapZone(door.x - 60, door.y - 60, 120, 80, { kind: "transport" });
@@ -436,6 +435,16 @@ export class BusinessScene extends Phaser.Scene {
     this.moverItem = art(this, 0, 0, this.look.item).setVisible(false);
     this.moverCarry = label(this, 0, 0, "", 11, "#ffffff", { bold: true, stroke: "#14202f" });
     this.moverHint = emoji(this, 0, 0, "👆", 22);
+    // Durante el tutorial, cartel con el nombre encima: si no, no se sabe cuál es «la carretilla».
+    // Aro dorado en el suelo bajo quien hay que tocar en el tutorial (que no haya dudas entre dos vehículos)
+    const ring = () => {
+      const e = this.add.ellipse(0, 0, 64, 28, 0xf5c542, 0.3).setStrokeStyle(3, 0xf5c542, 1).setVisible(false);
+
+      return e;
+    };
+    this.moverRing = ring();
+    this.sellerRing = ring();
+    this.moverTag = label(this, 0, 0, bizDef(this.bizId).transportName, 12, "#14202f", { bold: true }).setBackgroundColor("#f5c542").setPadding(6, 2, 6, 2).setVisible(false);
 
     this.seller = this.actor(this.look.seller, 0).setInteractive({ useHandCursor: true });
     this.seller.on("pointerup", () => {
@@ -444,6 +453,7 @@ export class BusinessScene extends Phaser.Scene {
     this.sellerItem = art(this, 0, 0, this.look.item).setVisible(false);
     this.sellerCarry = label(this, 0, 0, "", 11, "#ffffff", { bold: true, stroke: "#14202f" });
     this.sellerHint = emoji(this, 0, 0, "👆", 22);
+    this.sellerTag = label(this, 0, 0, bizDef(this.bizId).saleName, 12, "#14202f", { bold: true }).setBackgroundColor("#f5c542").setPadding(6, 2, 6, 2).setVisible(false);
 
     // Tráfico por la calle de delante
     for (let k = 0; k < 2; k++) {
@@ -488,11 +498,6 @@ export class BusinessScene extends Phaser.Scene {
     return p;
   }
 
-  private plaque(x: number, y: number, text: string): void {
-    const t = label(this, x, y, text, 11, "#ffffff", { bold: true }).setDepth(9.1e4);
-    const g = this.add.graphics().setDepth(9.05e4);
-    g.fillStyle(0x14202f, 0.85).fillRoundedRect(x - t.width / 2 - 9, y - 10, t.width + 18, 20, 10);
-  }
 
   private pile(x: number, y: number, depth: number, scale = 0.85): Phaser.GameObjects.Image[] {
     const spots: Pt[] = [
@@ -571,6 +576,8 @@ export class BusinessScene extends Phaser.Scene {
     const dt = Math.min(dtMs, 100) / 1000;
     const walkFrame = reducedMotion() ? 0 : Math.floor(t * WALK_FPS) % 2 ? 1 : 2;
     const tutorial = s.totalEarned < 30;
+    // Paso del tutorial en curso: las pistas siguen al paso, no al stock (así nunca falta la mano).
+    const tutStat = s.meta.tutorial < TUTORIAL.length && this.bizId === bizList(s)[0].id ? TUTORIAL[s.meta.tutorial].stat : null;
     const unit = CHAIN.floorCycle * def.mult;
 
     // Puestos
@@ -598,7 +605,7 @@ export class BusinessScene extends Phaser.Scene {
       this.showPile(v.pile, f.stock, unit);
       v.stock.setText(f.stock > 0 ? fmt(f.stock) : "");
       v.bar.width = 44 * p;
-      v.hint.setVisible(tutorial && !f.managed && !f.running);
+      v.hint.setVisible(tutStat ? tutStat === "tapFloor" && !f.running : tutorial && !f.managed && !f.running);
       v.manager.setVisible(f.managed);
       if (f.level > v.level) {
         if (!reducedMotion()) this.sparks.explode(14, v.station.x, v.station.y - 30);
@@ -622,17 +629,20 @@ export class BusinessScene extends Phaser.Scene {
     const carryY = this.mover.y - (isVehicle(this.look.mover) ? 34 : 50);
     this.moverItem.setVisible(tr.carry > 0).setPosition(mp.x, carryY).setDepth(mp.y + 3);
     this.moverCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "").setPosition(mp.x, carryY - 18).setDepth(9e4);
-    this.moverHint.setVisible(tutorial && tr.phase === "idle" && !tr.managed && b.floors.some((f) => f.stock > 0));
-    this.moverHint.setPosition(mp.x, mp.y - 64 + (reducedMotion() ? 0 : Math.sin(t * 8) * 4)).setDepth(9.4e4);
-    this.transportMgr.setVisible(tr.managed);
+    const ringScale = reducedMotion() ? 1 : 1 + Math.sin(t * 5) * 0.075;
+    this.moverRing.setScale(ringScale);
+    this.sellerRing.setScale(ringScale);
+    const moverStep = tutStat === "tapTransport";
+    // En el tutorial solo señala lo que pide el paso actual; fuera de él, lo que está listo para tocar.
+    this.moverHint.setVisible((tutStat ? moverStep : tutorial && b.floors.some((f) => f.stock > 0)) && tr.phase === "idle" && !tr.managed);
+    const mvLift = isVehicle(this.look.mover) ? 22 : 0; // los vehículos son más bajos que una persona
+    this.moverHint.setPosition(mp.x, mp.y - 64 + mvLift + (reducedMotion() ? 0 : Math.sin(t * 8) * 4)).setDepth(9.4e4);
+    this.moverTag.setVisible(moverStep).setPosition(mp.x, mp.y - 92 + mvLift).setDepth(9.4e4);
+    this.moverRing.setVisible(moverStep).setPosition(mp.x, mp.y).setDepth(mp.y - 0.5);
     if (tr.level > this.levels.transport) {
       if (!reducedMotion()) this.sparks.explode(14, mp.x, mp.y - 20);
       this.levels.transport = tr.level;
     }
-    const tq = upgradeQuote(s, this.bizId, { kind: "transport" });
-    this.transportPill
-      .setText(`Nv ${tr.level}`)
-      .setAlert(s.cash >= tq.cost || (!tr.managed && s.cash >= managerCost(def, { kind: "transport" })));
 
     // Venta: sale por el portón hacia la calle y vuelve
     const sl = b.sale;
@@ -643,8 +653,13 @@ export class BusinessScene extends Phaser.Scene {
     const sCarryY = this.seller.y - (isVehicle(this.look.seller) ? 34 : 50);
     this.sellerItem.setVisible(sl.carry > 0).setPosition(sp.x, sCarryY).setDepth(sp.y + 3);
     this.sellerCarry.setText(sl.carry > 0 ? fmt(sl.carry) : "").setPosition(sp.x, sCarryY - 18).setDepth(9e4);
-    this.sellerHint.setVisible(tutorial && sl.phase === "idle" && !sl.managed && b.topStock > 0);
-    this.sellerHint.setPosition(sp.x, sp.y - 64 + (reducedMotion() ? 0 : Math.sin(t * 8) * 4)).setDepth(9.4e4);
+    const sellerStep = tutStat === "sales";
+    this.sellerHint.setVisible((tutStat ? sellerStep : tutorial && b.topStock > 0) && sl.phase === "idle" && !sl.managed);
+    const slLift = isVehicle(this.look.seller) ? 22 : 0;
+    this.sellerHint.setPosition(sp.x, sp.y - 64 + slLift + (reducedMotion() ? 0 : Math.sin(t * 8) * 4)).setDepth(9.4e4);
+    // El cartel va debajo: encima suele estar el otro vehículo aparcado.
+    this.sellerTag.setVisible(sellerStep).setPosition(sp.x, sp.y + 26).setDepth(9.4e4);
+    this.sellerRing.setVisible(sellerStep).setPosition(sp.x, sp.y).setDepth(sp.y - 0.5);
     if(b.topStock>this.lastTopStock) {
       const door=this.iso(...this.layout.pile);
       transferProduct(this,this.look.item,{x:mp.x,y:carryY}, {x:door.x,y:door.y-12});
@@ -652,13 +667,10 @@ export class BusinessScene extends Phaser.Scene {
     this.lastTopStock=b.topStock;
     this.showPile(this.topPile, b.topStock, unit);
     this.topStock.setText(b.topStock > 0 ? fmt(b.topStock) : "");
-    this.saleMgr.setVisible(sl.managed);
     if (sl.level > this.levels.sale) {
       if (!reducedMotion()) this.sparks.explode(14, sp.x, sp.y - 20);
       this.levels.sale = sl.level;
     }
-    const sq = upgradeQuote(s, this.bizId, { kind: "sale" });
-    this.salePill.setText(`Nv ${sl.level}`).setAlert(s.cash >= sq.cost || (!sl.managed && s.cash >= managerCost(def, { kind: "sale" })));
 
     if (this.unlockPill) {
       const cost = floorUnlockCost(def, b.floors.length);
@@ -681,8 +693,6 @@ export class BusinessScene extends Phaser.Scene {
     const rates = chainRates(def, b, false);
     const auto = tr.managed || sl.managed || b.floors.some((f) => f.managed);
     this.slots.forEach((v) => v.pill.setWarn(auto && rates.bottleneck === "production"));
-    this.transportPill.setWarn(auto && rates.bottleneck === "transport");
-    this.salePill.setWarn(auto && rates.bottleneck === "sale");
 
     for (const sale of this.bridge.drainSales(this.bizId)) {
       this.restaurant?.onSale();

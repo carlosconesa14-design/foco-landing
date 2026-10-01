@@ -1,4 +1,3 @@
-import { executivePortrait } from "./portraits";
 import { ACHIEVEMENTS, ALL_BUSINESSES, CHESTS, DAILY_REWARDS, EXEC_KINDS, META, MISSIONS, RARITIES, type ChestType, type DailyReward } from "../game/data";
 import { fmt, fmtTime } from "../game/format";
 import * as meta from "../game/meta";
@@ -6,7 +5,10 @@ import type { Exec } from "../game/state";
 import { revealChest } from "./celebrate";
 import { modal } from "./overlays";
 import type { PanelCtx } from "./panels";
+import { bizIcon, chestIcon, execFace, gem } from "./icons";
 import { openSheet } from "./sheet";
+import { openDiagnostics } from "./diagnostics";
+import { notifications } from "../platform/notifications";
 
 /** Paneles de la fase 2: misiones, premio diario, ejecutivos y maletines, logros. */
 
@@ -40,12 +42,12 @@ export function openMissions(ctx: PanelCtx): void {
         const done = v >= mi.target;
         return `<div class="row ${mi.claimed ? "done" : ""}"><span class="face">${mi.claimed ? "✅" : "🎯"}</span>
           <div><b>${def.text.replace("{n}", fmt(mi.target))}</b><span class="sub">${fmt(v)} / ${fmt(mi.target)}</span><div class="bar2"><i style="width:${pct(v, mi.target)}"></i></div></div>
-          <button class="claim" data-claim="${i}" ${!done || mi.claimed ? "disabled" : ""}>${mi.claimed ? "Hecho" : `+${def.gems} 💎`}</button></div>`;
+          <button class="claim" data-claim="${i}" ${!done || mi.claimed ? "disabled" : ""}>${mi.claimed ? "Hecho" : `+${def.gems} ${gem()}`}</button></div>`;
       });
       const all = meta.allMissionsClaimed(s);
       rows.push(`<div class="row ${s.meta.missions.bonusClaimed ? "done" : ""}"><span class="face">🏅</span>
         <div><b>Completa las 3 misiones</b><span class="sub">Premio extra del día</span></div>
-        <button class="claim" data-bonus ${!all || s.meta.missions.bonusClaimed ? "disabled" : ""}>+${META.missionBonusGems} 💎</button></div>`);
+        <button class="claim" data-bonus ${!all || s.meta.missions.bonusClaimed ? "disabled" : ""}>+${META.missionBonusGems} ${gem()}</button></div>`);
       const list = $(el, "[data-list]");
       if (paint(list, rows.join(""))) {
         list.querySelectorAll<HTMLButtonElement>("[data-claim]").forEach((b) => {
@@ -74,9 +76,9 @@ export function openMissions(ctx: PanelCtx): void {
 /* ---------- Premio diario ---------- */
 
 function rewardLabel(r: DailyReward): { icon: string; text: string } {
-  if ("gems" in r) return { icon: "💎", text: `${r.gems} 💎` };
+  if ("gems" in r) return { icon: gem(), text: `${r.gems} ${gem()}` };
   if ("cashHours" in r) return { icon: "💶", text: r.cashHours >= 1 ? `${r.cashHours} h de ingresos` : `${r.cashHours * 60} min de ingresos` };
-  return { icon: CHESTS[r.chest].icon, text: CHESTS[r.chest].name };
+  return { icon: chestIcon(r.chest), text: CHESTS[r.chest].name };
 }
 
 function describeGrant(g: meta.Grant): string {
@@ -161,9 +163,9 @@ function execRow(e: Exec, here: string | null, now: number): string {
     else if (ready) buttons += `<button class="claim" data-ability="${e.id}">⚡ x${r.ability} ventas</button>`;
     else buttons += `<button class="ad-btn" data-recharge="${e.id}"><span class="play"></span>${fmtTime((e.readyAt - now) / 1000)}</button>`;
   }
-  return `<div class="row"><span class="face" style="border:2px solid ${r.color};box-shadow:0 0 8px ${r.color}44">${executivePortrait(e.name)}</span>
+  return `<div class="row"><span class="face" style="box-shadow:inset 0 0 0 2px ${r.color}">${execFace(e)}</span>
     <div><b>${e.name} <span class="rar" style="color:${r.color}">${r.name}</span></b>
-    <span class="sub">+${r.bonus * 100}% ${EXEC_KINDS[e.kind].desc} · ${at ? `en ${at.icon} ${at.name}` : "sin asignar"}</span></div>
+    <span class="sub">+${r.bonus * 100}% ${EXEC_KINDS[e.kind].desc} · ${at ? `en ${bizIcon(at)} ${at.name}` : "sin asignar"}</span></div>
     <div class="btnrow">${buttons}</div></div>`;
 }
 
@@ -180,14 +182,14 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
     (el) => {
       const s = ctx.state();
       const now = Date.now();
-      $(el, "[data-gems]").textContent = `${fmt(s.meta.gems)} 💎`;
+      $(el, "[data-gems]").innerHTML = `${fmt(s.meta.gems)} ${gem()}`;
       $(el, "[data-freedot]").hidden = !meta.freeChestReady(s, now);
       el.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === current)));
       const body = $(el, "[data-body]");
       if (current === "chests") {
         const freeReady = meta.freeChestReady(s, now);
         const card = (type: ChestType, button: string, note: string) =>
-          `<div class="chest"><span class="ic">${CHESTS[type].icon}</span><b>${CHESTS[type].name}</b><small>${note}</small>${button}</div>`;
+          `<div class="chest"><span class="ic">${chestIcon(type)}</span><b>${CHESTS[type].name}</b><small>${note}</small>${button}</div>`;
         const html =
           `<div class="chests">` +
           card(
@@ -197,9 +199,9 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
               : `<button class="mini" disabled>${fmtTime((s.meta.freeChestAt - now) / 1000)}</button>`,
             `Cada ${META.freeChestHours} h viendo un anuncio`,
           ) +
-          card("normal", `<button class="mini" data-chest="normal" ${s.meta.gems < CHESTS.normal.cost ? "disabled" : ""}>${CHESTS.normal.cost} 💎</button>`, "Raro o mejor: 40 %") +
-          card("premium", `<button class="mini" data-chest="premium" ${s.meta.gems < CHESTS.premium.cost ? "disabled" : ""}>${CHESTS.premium.cost} 💎</button>`, "Siempre raro o mejor") +
-          `<div class="chest"><span class="ic">💶</span><b>Paquete de dinero</b><small>${META.cashPackHours} h de tus ingresos pasivos</small><button class="mini" data-cash ${s.meta.gems < META.cashPackGems ? "disabled" : ""}>${META.cashPackGems} 💎</button></div>` +
+          card("normal", `<button class="mini" data-chest="normal" ${s.meta.gems < CHESTS.normal.cost ? "disabled" : ""}>${CHESTS.normal.cost} ${gem()}</button>`, "Raro o mejor: 40 %") +
+          card("premium", `<button class="mini" data-chest="premium" ${s.meta.gems < CHESTS.premium.cost ? "disabled" : ""}>${CHESTS.premium.cost} ${gem()}</button>`, "Siempre raro o mejor") +
+          `<div class="chest"><span class="ic">💶</span><b>Paquete de dinero</b><small>${META.cashPackHours} h de tus ingresos pasivos</small><button class="mini" data-cash ${s.meta.gems < META.cashPackGems ? "disabled" : ""}>${META.cashPackGems} ${gem()}</button></div>` +
           `</div><p class="small muted">Consigue diamantes con las misiones diarias, el premio diario y los logros.</p>`;
         if (paint(body, html)) {
           body.querySelectorAll<HTMLButtonElement>("[data-chest]").forEach((b) => {
@@ -224,7 +226,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
       } else {
         const execs = [...s.meta.execs].sort((a, b) => b.rarity - a.rarity || a.name.localeCompare(b.name));
         const intro = hereDef
-          ? `<p class="small muted">Estás en ${hereDef.icon} ${hereDef.name}. «Asignar aquí» pone al ejecutivo en este negocio.</p>`
+          ? `<p class="small muted">Estás en ${bizIcon(hereDef)} ${hereDef.name}. «Asignar aquí» pone al ejecutivo en este negocio.</p>`
           : `<p class="small muted">Entra en un negocio para asignarle un ejecutivo.</p>`;
         const html = execs.length
           ? intro + execs.map((e) => execRow(e, here, now)).join("")
@@ -266,15 +268,17 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
 /* ---------- Ajustes ---------- */
 
 export function openSettings(ctx: PanelCtx): void {
-  const rows: { key: "music" | "sfx" | "haptics"; icon: string; name: string; desc: string }[] = [
+  const rows: { key: "music" | "sfx" | "haptics" | "notify"; icon: string; name: string; desc: string }[] = [
     { key: "music", icon: "🎵", name: "Música", desc: "Música de fondo relajada" },
     { key: "sfx", icon: "🔊", name: "Sonidos", desc: "Monedas, mejoras, maletines…" },
     { key: "haptics", icon: "📳", name: "Vibración", desc: "Al tocar y al comprar (en el móvil)" },
+    { key: "notify", icon: "🔔", name: "Avisos", desc: "Caja llena, maletín gratis y premio diario (en el móvil)" },
   ];
-  openSheet(
+  const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">⚙️</span><div><h3>Ajustes</h3><p class="muted">Se guardan con tu partida.</p></div></div>
-     <div data-list style="display:grid;gap:8px"></div>`,
+     <div data-list style="display:grid;gap:8px"></div>
+     <button class="btn ghost wide" data-diag style="margin-top:12px">🩺 Diagnóstico del móvil</button>`,
     (el) => {
       const set = ctx.state().settings;
       const list = $(el, "[data-list]");
@@ -290,6 +294,7 @@ export function openSettings(ctx: PanelCtx): void {
             const s = ctx.state().settings;
             const key = b.dataset.set as keyof typeof s;
             s[key] = !s[key];
+            if (key === "notify" && s.notify) void notifications.ask();
             ctx.applySettings();
             ctx.fx("click");
           };
@@ -297,6 +302,7 @@ export function openSettings(ctx: PanelCtx): void {
       }
     },
   );
+  sheet.el.querySelector<HTMLButtonElement>("[data-diag]")!.onclick = () => openDiagnostics(ctx);
 }
 
 /* ---------- Logros ---------- */
@@ -318,7 +324,7 @@ export function openAchievements(ctx: PanelCtx): void {
           const done = v >= a.target;
           return `<div class="row ${claimed ? "done" : ""}"><span class="face">${claimed ? "✅" : done ? "🏆" : "🔒"}</span>
             <div><b>${a.text}</b><span class="sub">${fmt(v)} / ${fmt(a.target)}</span><div class="bar2"><i style="width:${pct(v, a.target)}"></i></div></div>
-            <button class="claim" data-ach="${a.id}" ${!done || claimed ? "disabled" : ""}>${claimed ? "Hecho" : `+${a.gems} 💎`}</button></div>`;
+            <button class="claim" data-ach="${a.id}" ${!done || claimed ? "disabled" : ""}>${claimed ? "Hecho" : `+${a.gems} ${gem()}`}</button></div>`;
         })
         .join("");
       if (paint(list, html)) {

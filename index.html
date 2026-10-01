@@ -31,7 +31,7 @@
       <button class="goal" id="goal" hidden aria-label="Próximo objetivo"><span class="gicon" id="goalIcon"></span><span class="gtext"><small>Objetivo</small><span id="goalText"></span></span><span class="gbar"><i id="goalBar"></i></span></button>
       <div class="tut" id="tut" hidden><span class="tut-step" id="tutStep"></span><span id="tutText"></span></div>
       <div class="rail" id="rail">
-        <button data-open="missions" aria-label="Misiones"><span class="ic">📋</span>Misiones<i class="dot" hidden></i></button>
+        <button data-open="missions" aria-label="Misiones"><span class="ic" data-icon="ic_missions">📋</span>Misiones<i class="dot" hidden></i></button>
         <button id="menuToggle" aria-label="Menú y recompensas" aria-haspopup="dialog" aria-controls="moreMenu" aria-expanded="false"><span class="menu-symbol" aria-hidden="true">☰</span>Menú<i class="dot" id="menuDot" hidden></i></button>
       </div>
       <dialog id="moreMenu" class="more-menu" aria-labelledby="menuTitle">
@@ -45,6 +45,7 @@
           <button data-open="daily"><span class="ic">🎁</span><b>Premio diario</b><small>Tu recompensa de hoy</small><i class="dot" hidden></i></button>
           <button data-open="execs"><span class="ic">💼</span><b>Ejecutivos</b><small>Equipo y maletines</small><i class="dot" hidden></i></button>
           <button data-open="achievements"><span class="ic">🏆</span><b>Logros</b><small>Celebra tus hitos</small><i class="dot" hidden></i></button>
+          <button data-open="league"><span class="ic">🏅</span><b>Liga Millonario</b><small>Compite y reclama premios</small><i class="dot" hidden></i></button>
           <button data-open="settings"><span class="ic">⚙️</span><b>Ajustes</b><small>Sonido y vibración</small></button>
         </div>
       </dialog>

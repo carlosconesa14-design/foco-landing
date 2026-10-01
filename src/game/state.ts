@@ -1,3 +1,5 @@
+import { freshShop, migrateShop, type ShopState } from "./shop";
+import { freshLeague, migrateLeague, type LeagueState } from "./league";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
@@ -88,12 +90,18 @@ export interface MetaState {
   achievements: string[];
   /** Paso actual del tutorial; igual a TUTORIAL.length cuando se ha completado. */
   tutorial: number;
+  /** Liga Millonario: credenciales y eventos pendientes de enviar. */
+  league: LeagueState;
+  /** Compras dentro de la app. */
+  shop: ShopState;
 }
 
 export interface Settings {
   music: boolean;
   sfx: boolean;
   haptics: boolean;
+  /** Avisos en el móvil (caja llena, maletín gratis, premio diario). */
+  notify: boolean;
 }
 
 /** Lo que se guarda de una ciudad mientras estás en otra. */
@@ -170,6 +178,8 @@ export function freshMeta(now = Date.now()): MetaState {
     daily: { lastDay: "", streak: 0 },
     achievements: [],
     tutorial: 0,
+    league: freshLeague(),
+    shop: freshShop(),
   };
 }
 
@@ -189,7 +199,7 @@ export function freshState(now = Date.now(), cityId = CITIES[0].id): GameState {
   return {
     version: 2,
     meta: freshMeta(now),
-    settings: { music: true, sfx: true, haptics: true },
+    settings: { music: true, sfx: true, haptics: true, notify: true },
     city: city.id,
     world: freshWorld(),
     waveEnd: 0,
@@ -271,6 +281,8 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.daily = { lastDay: typeof d.lastDay === "string" ? d.lastDay : "", streak: Math.max(0, num(d.streak, 0)) };
   m.achievements = Array.isArray(r.achievements) ? r.achievements.filter((x): x is string => typeof x === "string") : [];
   m.tutorial = Math.max(0, num(r.tutorial, 0));
+  m.league = migrateLeague(r.league);
+  m.shop = migrateShop(r.shop);
   return m;
 }
 
@@ -299,7 +311,7 @@ export function migrate(raw: unknown, now = Date.now()): GameState {
   else if (v.scene === "city") s.view = { scene: "city" };
   s.meta = migrateMeta(r.meta, now);
   const set = obj(r.settings);
-  s.settings = { music: set.music !== false, sfx: set.sfx !== false, haptics: set.haptics !== false };
+  s.settings = { music: set.music !== false, sfx: set.sfx !== false, haptics: set.haptics !== false, notify: set.notify !== false };
   const ads = obj(r.ads);
   s.ads = {
     total: num(ads.total, 0),

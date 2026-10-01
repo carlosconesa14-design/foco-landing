@@ -16,7 +16,9 @@
     "@capacitor/app": "^8.0.0",
     "@capacitor/core": "^8.0.0",
     "@capacitor/haptics": "^8.0.2",
+    "@capacitor/local-notifications": "^8.3.1",
     "@capacitor/preferences": "^8.0.0",
+    "@capgo/native-purchases": "^8.8.1",
     "phaser": "^3.90.0"
   },
   "devDependencies": {

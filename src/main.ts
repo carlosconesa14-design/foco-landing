@@ -11,6 +11,9 @@ import { nextGoal } from "./game/goal";
 import * as meta from "./game/meta";
 import { freshState, migrate, type GameState, type View } from "./game/state";
 import { haptics } from "./platform/haptics";
+import { notifications } from "./platform/notifications";
+import { planNotifications } from "./game/notify";
+import { analytics, daysSinceInstall, minutesSinceInstall } from "./platform/analytics";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
@@ -23,6 +26,13 @@ import { openIpoSheet, openPlotSheet, openStationSheet, openUnlockSheet, type Pa
 import { openAchievements, openDaily, openExecs, openMissions, openSettings } from "./ui/metaPanels";
 import { activeSheet, closeSheet } from "./ui/sheet";
 import { openWorld } from "./ui/worldPanels";
+import { openEmpire } from "./ui/empirePanel";
+import { openShop } from "./ui/shopPanel";
+import { isVip, grantProduct } from "./game/shop";
+import { store } from "./platform/store";
+import { leagueHasPrize, openLeague, syncLeague } from "./ui/leaguePanel";
+import { leagueJoined } from "./game/league";
+import { loadIcons } from "./ui/icons";
 import "./styles.css";
 import { decorateIcons } from "./ui/icons";
 
@@ -69,12 +79,18 @@ root.addEventListener("click", (e) => {
 /* ---------- Anuncios ---------- */
 
 async function watchAd(placement: Placement): Promise<boolean> {
+  // VIP: la recompensa llega al momento, sin vídeo
+  if (isVip(S)) {
+    fx("gems", true);
+    return true;
+  }
   // El vídeo trae su propio sonido: silenciamos el juego mientras dura.
   sound.duck(true);
   const ok = await ads.showRewarded(placement).finally(() => sound.duck(false));
   if (ok) {
     fx("gems", true);
     act.recordAd(S, placement);
+    analytics.track("ad_watched", { placement });
     save();
   } else {
     say("Anuncio no disponible. Inténtalo en un momento.");
@@ -124,9 +140,11 @@ game.events.once("art-ready", () => {
 function startView(): void {
   if (!artReady || !saveLoaded) return;
   for (const sc of game.scene.getScenes(true)) game.scene.stop(sc.scene.key);
+  // La barra va antes: la escena lee su altura al crearse.
+  renderBar(S);
+  updateBar(S, Date.now());
   if (S.view.scene === "business") game.scene.start("business", { id: S.view.id });
   else game.scene.start("city");
-  renderBar(S);
   document.body.classList.remove("loading");
   document.getElementById("loading-screen")?.remove();
 }
@@ -172,14 +190,21 @@ const ctx: PanelCtx = {
   },
   banner: (icon, text) => banner(root, icon, text),
   floatAt,
+  testAd: () => ads.showRewarded("boost_x2"),
 };
 
 document.getElementById("bar")!.addEventListener("click", async (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>("button");
   if (!b) return;
+  if (b.dataset.st && S.view.scene === "business") {
+    const st = b.dataset.st;
+    openStationSheet(ctx, S.view.id, st.startsWith("floor:") ? { kind: "floor", index: Number(st.slice(6)) } : { kind: st as "transport" | "sale" });
+    return;
+  }
   if (b.dataset.nav === "city") goTo({ scene: "city" });
   else if (b.dataset.nav === "home") goTo({ scene: "business", id: bizList(S)[0].id });
   else if (b.dataset.nav === "world") openWorld(ctx);
+  else if (b.dataset.nav === "empire") openEmpire(ctx);
   else if (b.dataset.nav === "ipo") openIpoSheet(ctx);
   else if (b.dataset.rush && (await watchAd("rush"))) {
     act.startRush(S, b.dataset.rush, Date.now());
@@ -216,9 +241,10 @@ root.addEventListener("click", (e) => {
   else if (which === "daily") openDaily(ctx);
   else if (which === "execs") openExecs(ctx, S.meta.execs.length ? "execs" : "chests");
   else if (which === "achievements") openAchievements(ctx);
+  else if (which === "league") openLeague(ctx);
   else if (which === "settings") openSettings(ctx);
 });
-document.getElementById("gems")!.addEventListener("click", () => openExecs(ctx, "chests"));
+document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
 function updateMeta(now: number): void {
   meta.ensureDay(S, now);
@@ -230,14 +256,18 @@ function updateMeta(now: number): void {
     daily: meta.dailyStatus(S, now).canClaim,
     execs: meta.freeChestReady(S, now),
     achievements: meta.achievementsToClaim(S) > 0,
+    league: leagueHasPrize() || (!leagueJoined(S) && meta.tutorialStep(S) === null),
   };
   for (const [name, available] of Object.entries(ready)) {
     const dot = root.querySelector<HTMLElement>(`[data-open="${name}"] .dot`);
     if (dot) dot.hidden = !available;
   }
-  document.getElementById("menuDot")!.hidden = !ready.daily && !ready.execs && !ready.achievements;
+  const menuDot = document.getElementById("menuDot");
+  if (menuDot) menuDot.hidden = !ready.daily && !ready.execs && !ready.achievements && !ready.league;
 
   const adv = meta.advanceTutorial(S);
+  if (adv) analytics.track(adv.done ? "tutorial_done" : "tutorial_step", { step: S.meta.tutorial, minutes: minutesSinceInstall() });
+  if (adv?.done) setTimeout(askNotificationsOnce, 3500);
   if (adv?.done)
     void ctx.celebrate({
       icon: "🎓",
@@ -392,13 +422,53 @@ function offerOffline(): void {
         label: `Cobrar x3 (${fmt(amount * 3)} €)`,
         run: async () => {
           const ok = await watchAd("offline_x3");
+          analytics.track("offline_collect", { minutes: Math.round(seconds / 60), tripled: ok });
           earn(S, ok ? amount * 3 : amount);
           say(ok ? "¡Triplicado!" : "Cobrado");
         },
       },
-      { label: "Cobrar sin anuncio", run: () => earn(S, amount) },
+      {
+        label: "Cobrar sin anuncio",
+        run: () => {
+          earn(S, amount);
+          analytics.track("offline_collect", { minutes: Math.round(seconds / 60), tripled: false });
+        },
+      },
     ],
   });
+}
+
+/* ---------- Avisos en el móvil ---------- */
+
+/** Al salir: guardar y programar los avisos (caja llena, maletín, premio diario). */
+let sessionStart = Date.now();
+
+function leaving(): void {
+  save();
+  analytics.track("session_end", { seconds: Math.round((Date.now() - sessionStart) / 1000) });
+  void analytics.flush(true);
+  void syncLeague(S);
+  void notifications.schedule(planNotifications(S, Date.now()));
+}
+
+/** Al volver: ya no hacen falta los avisos; se ofrecen las ganancias offline. */
+function returning(): void {
+  sessionStart = Date.now();
+  analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial });
+  void notifications.cancelAll();
+  offerOffline();
+}
+
+/** El permiso se pide una sola vez, cuando el jugador ya ha visto el juego (al acabar el tutorial). */
+function askNotificationsOnce(): void {
+  if (!notifications.supported || !S.settings.notify) return;
+  try {
+    if (localStorage.getItem("notifyAsked")) return;
+    localStorage.setItem("notifyAsked", "1");
+  } catch {
+    /* sin almacenamiento: se pregunta igualmente */
+  }
+  void notifications.ask();
 }
 
 /* ---------- Bucle ---------- */
@@ -455,6 +525,7 @@ game.events.on("step", (time: number) => {
 });
 
 async function boot(): Promise<void> {
+  await loadIcons();
   S = migrate(await loadSave());
   applySettings();
   updateHeader(S, Date.now());
@@ -464,20 +535,32 @@ async function boot(): Promise<void> {
   startView();
   offerOffline();
   setInterval(save, 5000);
+  analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial });
+  setInterval(() => void analytics.flush(), 30_000);
+  // Liga: envía los puntos pendientes cada 20 s (si no hay conexión, esperan en la cola)
+  setInterval(() => {
+    void syncLeague(S).then((added) => {
+      if (added > 0) banner(root, "🏅", `+${added} puntos de Liga`);
+    });
+  }, 20_000);
   document.addEventListener("visibilitychange", () => {
     sound.setHidden(document.hidden);
-    if (document.hidden) save();
-    else offerOffline();
+    if (document.hidden) leaving();
+    else returning();
   });
-  window.addEventListener("pagehide", save);
+  window.addEventListener("pagehide", leaving);
   void App.addListener("appStateChange", ({ isActive }) => {
     sound.setHidden(!isActive);
-    if (isActive) offerOffline();
-    else save();
+    if (isActive) returning();
+    else leaving();
   }).catch(() => {});
+  // A quien ya terminó el tutorial (partidas anteriores) se le piden los avisos una vez.
+  if (meta.tutorialStep(S) === null) setTimeout(askNotificationsOnce, 4000);
   ads.init().catch(() => {});
+  // Compras únicas ya hechas (móvil nuevo o reinstalación): se entregan solas
+  void store.owned().then((owned) => owned.forEach((o) => grantProduct(S, o.id, o.order, Date.now())));
 }
 
 void boot();
 // Para depurar desde la consola del navegador.
-Object.assign(window, { __game: { get state() { return S; }, game, sound, setLuck } });
+Object.assign(window, { __game: { get state() { return S; }, game, sound, setLuck, analytics } });
