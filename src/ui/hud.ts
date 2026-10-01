@@ -64,12 +64,12 @@ export function renderBar(s: GameState): void {
     bar.innerHTML = `
       <div class="chain" id="chain"></div>
       <button class="navbtn" data-nav="city"><span class="ic">${icon("ic_city", "🏙️")}</span>Ciudad</button>
-      <div class="barmid"><b>${bizIcon(def)} ${def.name}</b><span id="barRate"></span></div>
+      <button class="barmid tap" data-nav="empire" aria-label="Ver tu imperio"><b>${bizIcon(def)} ${def.name} <span class="more">▸</span></b><span id="barRate"></span></button>
       <button class="ad-btn rushbtn" data-rush="${def.id}" id="rushBtn"><span class="play"></span><span id="rushTxt">x${CONFIG.rushMult}</span></button>`;
   } else {
     bar.innerHTML = `
       <button class="navbtn" data-nav="ipo"><span class="ic">${icon("ic_ipo", "📈")}</span>Bolsa</button>
-      <div class="barmid"><b>${flagIcon(city)} ${city.name}</b><span>Toca un edificio para entrar</span></div>
+      <button class="barmid tap" data-nav="empire" aria-label="Ver tu imperio"><b>${flagIcon(city)} ${city.name}</b><span class="more">Ver tu imperio ▸</span></button>
       <button class="navbtn" data-nav="world"><span class="ic">${icon("ic_world", "🌍")}</span>Mundo<i class="dot" id="worldDot" hidden></i></button>`;
   }
 }

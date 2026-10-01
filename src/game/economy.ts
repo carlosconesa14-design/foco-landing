@@ -39,6 +39,9 @@ export const rushActive = (b: BusinessState, now: number) => b.rushEnd > now;
 /** Negocios de la ciudad en la que estás. */
 export const bizList = (s: GameState): BusinessDef[] => cityDef(s.city).businesses;
 
+/** Categoría del negocio según sus puestos: 1 (1–2 puestos), 2 (3–5) o 3 estrellas (6–8). El edificio crece con ella. */
+export const bizTier = (b: BusinessState) => (b.floors.length >= 6 ? 3 : b.floors.length >= 3 ? 2 : 1);
+
 export function saleMult(s: GameState, id: string, now: number, live = true): number {
   const boost = live && boostActive(s, now) ? 2 : 1;
   const rush = live && rushActive(s.biz[id], now) ? CONFIG.rushMult : 1;

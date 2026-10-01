@@ -11,6 +11,8 @@ import { nextGoal } from "./game/goal";
 import * as meta from "./game/meta";
 import { freshState, migrate, type GameState, type View } from "./game/state";
 import { haptics } from "./platform/haptics";
+import { notifications } from "./platform/notifications";
+import { planNotifications } from "./game/notify";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
@@ -23,6 +25,7 @@ import { openIpoSheet, openPlotSheet, openStationSheet, openUnlockSheet, type Pa
 import { openAchievements, openDaily, openExecs, openMissions, openSettings } from "./ui/metaPanels";
 import { activeSheet, closeSheet } from "./ui/sheet";
 import { openWorld } from "./ui/worldPanels";
+import { openEmpire } from "./ui/empirePanel";
 import { loadIcons } from "./ui/icons";
 import "./styles.css";
 
@@ -184,6 +187,7 @@ document.getElementById("bar")!.addEventListener("click", async (e) => {
   if (b.dataset.nav === "city") goTo({ scene: "city" });
   else if (b.dataset.nav === "home") goTo({ scene: "business", id: bizList(S)[0].id });
   else if (b.dataset.nav === "world") openWorld(ctx);
+  else if (b.dataset.nav === "empire") openEmpire(ctx);
   else if (b.dataset.nav === "ipo") openIpoSheet(ctx);
   else if (b.dataset.rush && (await watchAd("rush"))) {
     act.startRush(S, b.dataset.rush, Date.now());
@@ -241,6 +245,7 @@ function updateMeta(now: number): void {
   rail.querySelector<HTMLElement>(".tdot")!.hidden = !rail.classList.contains("collapsed") || [...dots].every((d) => d.hidden);
 
   const adv = meta.advanceTutorial(S);
+  if (adv?.done) setTimeout(askNotificationsOnce, 3500);
   if (adv?.done)
     void ctx.celebrate({
       icon: "🎓",
@@ -402,6 +407,32 @@ function offerOffline(): void {
   });
 }
 
+/* ---------- Avisos en el móvil ---------- */
+
+/** Al salir: guardar y programar los avisos (caja llena, maletín, premio diario). */
+function leaving(): void {
+  save();
+  void notifications.schedule(planNotifications(S, Date.now()));
+}
+
+/** Al volver: ya no hacen falta los avisos; se ofrecen las ganancias offline. */
+function returning(): void {
+  void notifications.cancelAll();
+  offerOffline();
+}
+
+/** El permiso se pide una sola vez, cuando el jugador ya ha visto el juego (al acabar el tutorial). */
+function askNotificationsOnce(): void {
+  if (!notifications.supported || !S.settings.notify) return;
+  try {
+    if (localStorage.getItem("notifyAsked")) return;
+    localStorage.setItem("notifyAsked", "1");
+  } catch {
+    /* sin almacenamiento: se pregunta igualmente */
+  }
+  void notifications.ask();
+}
+
 /* ---------- Bucle ---------- */
 
 let lastUi = 0;
@@ -468,15 +499,17 @@ async function boot(): Promise<void> {
   setInterval(save, 5000);
   document.addEventListener("visibilitychange", () => {
     sound.setHidden(document.hidden);
-    if (document.hidden) save();
-    else offerOffline();
+    if (document.hidden) leaving();
+    else returning();
   });
-  window.addEventListener("pagehide", save);
+  window.addEventListener("pagehide", leaving);
   void App.addListener("appStateChange", ({ isActive }) => {
     sound.setHidden(!isActive);
-    if (isActive) offerOffline();
-    else save();
+    if (isActive) returning();
+    else leaving();
   }).catch(() => {});
+  // A quien ya terminó el tutorial (partidas anteriores) se le piden los avisos una vez.
+  if (meta.tutorialStep(S) === null) setTimeout(askNotificationsOnce, 4000);
   ads.init().catch(() => {});
 }
 

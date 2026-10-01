@@ -7,6 +7,7 @@ import { modal } from "./overlays";
 import type { PanelCtx } from "./panels";
 import { bizIcon, chestIcon, execFace, gem } from "./icons";
 import { openSheet } from "./sheet";
+import { notifications } from "../platform/notifications";
 
 /** Paneles de la fase 2: misiones, premio diario, ejecutivos y maletines, logros. */
 
@@ -266,10 +267,11 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
 /* ---------- Ajustes ---------- */
 
 export function openSettings(ctx: PanelCtx): void {
-  const rows: { key: "music" | "sfx" | "haptics"; icon: string; name: string; desc: string }[] = [
+  const rows: { key: "music" | "sfx" | "haptics" | "notify"; icon: string; name: string; desc: string }[] = [
     { key: "music", icon: "🎵", name: "Música", desc: "Música de fondo relajada" },
     { key: "sfx", icon: "🔊", name: "Sonidos", desc: "Monedas, mejoras, maletines…" },
     { key: "haptics", icon: "📳", name: "Vibración", desc: "Al tocar y al comprar (en el móvil)" },
+    { key: "notify", icon: "🔔", name: "Avisos", desc: "Caja llena, maletín gratis y premio diario (en el móvil)" },
   ];
   openSheet(
     ctx.root,
@@ -290,6 +292,7 @@ export function openSettings(ctx: PanelCtx): void {
             const s = ctx.state().settings;
             const key = b.dataset.set as keyof typeof s;
             s[key] = !s[key];
+            if (key === "notify" && s.notify) void notifications.ask();
             ctx.applySettings();
             ctx.fx("click");
           };

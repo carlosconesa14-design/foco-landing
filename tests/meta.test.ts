@@ -192,13 +192,13 @@ describe("logros, tienda y tutorial", () => {
 
   it("los ajustes de sonido se guardan y sobreviven a la bolsa", () => {
     const s = freshState(NOW);
-    expect(s.settings).toEqual({ music: true, sfx: true, haptics: true });
+    expect(s.settings).toEqual({ music: true, sfx: true, haptics: true, notify: true });
     s.settings.music = false;
     s.runEarned = CONFIG.shareDivisor;
     const res = act.ipo(s, 1, NOW)!;
     expect(res.state.settings.music).toBe(false);
     const loaded = migrate(JSON.parse(JSON.stringify(res.state)), NOW);
-    expect(loaded.settings).toEqual({ music: false, sfx: true, haptics: true });
+    expect(loaded.settings).toEqual({ music: false, sfx: true, haptics: true, notify: true });
   });
 
   it("diamantes y ejecutivos se conservan al salir a bolsa y al guardar", () => {

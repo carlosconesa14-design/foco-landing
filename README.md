@@ -99,6 +99,8 @@ docs/GDD.md           documento de diseño y hoja de ruta
 3. Copia `.env.example` a `.env` y pon tus IDs de bloque de anuncios bonificados. Deja `VITE_ADMOB_TESTING=true` hasta el build final: hacer clic en tus propios anuncios reales puede suspenderte la cuenta de AdMob.
 4. `npm run cap:sync` y abre el proyecto con `npx cap open android` o `npx cap open ios`.
 
+**Avisos en el móvil** (`@capacitor/local-notifications`): al salir de la app se programan tres avisos: caja llena, maletín gratis y premio diario. Nunca suenan entre las 22:00 y las 9:00, y se cancelan al volver. El permiso se pide una vez, al acabar el tutorial, y el jugador puede desactivarlos en Ajustes. La lógica está en `src/game/notify.ts` (con tests) y la entrega en `src/platform/notifications.ts`. Al añadir Android, revisa en la documentación del plugin los permisos de Android 13+ y de alarmas exactas; sin alarma exacta, el aviso puede llegar unos minutos tarde.
+
 El consentimiento GDPR (formulario UMP de Google) y el permiso ATT de iOS ya se piden en `AdMobAds.init()`. Solo tienes que crear el mensaje de consentimiento en la consola de AdMob, en **Privacidad y mensajes**.
 
 ## Próximos pasos

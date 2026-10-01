@@ -94,6 +94,8 @@ export interface Settings {
   music: boolean;
   sfx: boolean;
   haptics: boolean;
+  /** Avisos en el móvil (caja llena, maletín gratis, premio diario). */
+  notify: boolean;
 }
 
 /** Lo que se guarda de una ciudad mientras estás en otra. */
@@ -189,7 +191,7 @@ export function freshState(now = Date.now(), cityId = CITIES[0].id): GameState {
   return {
     version: 2,
     meta: freshMeta(now),
-    settings: { music: true, sfx: true, haptics: true },
+    settings: { music: true, sfx: true, haptics: true, notify: true },
     city: city.id,
     world: freshWorld(),
     waveEnd: 0,
@@ -299,7 +301,7 @@ export function migrate(raw: unknown, now = Date.now()): GameState {
   else if (v.scene === "city") s.view = { scene: "city" };
   s.meta = migrateMeta(r.meta, now);
   const set = obj(r.settings);
-  s.settings = { music: set.music !== false, sfx: set.sfx !== false, haptics: set.haptics !== false };
+  s.settings = { music: set.music !== false, sfx: set.sfx !== false, haptics: set.haptics !== false, notify: set.notify !== false };
   const ads = obj(r.ads);
   s.ads = {
     total: num(ads.total, 0),
