@@ -44,6 +44,7 @@ Cada negocio es un recinto isométrico vallado, con el edificio principal, camin
 - **Venta:** sale por el portón hacia la calle y vuelve con el dinero.
 - Sin gerente, cada parte hace un solo ciclo por toque. Con gerente, repite sola.
 - Cada 10/25/50/100… niveles, esa parte rinde el doble.
+- **Barra de la cadena:** abajo, fija, hay 3 tarjetas (producción · transporte · venta) con el nivel y los €/s de cada parte. La que frena el negocio sale en rojo ("Atasco"), y la que ya se puede mejorar o tiene gerente por contratar se ilumina en dorado. Tocarla abre su panel de mejora. Los puestos mantienen además su botón "Nv" sobre el mapa.
 - El mapa se arrastra y se acerca o aleja pellizcando la pantalla.
 
 ### Gerentes y ejecutivos

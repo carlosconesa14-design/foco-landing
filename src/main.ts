@@ -123,9 +123,11 @@ game.events.once("art-ready", () => {
 function startView(): void {
   if (!artReady || !saveLoaded) return;
   for (const sc of game.scene.getScenes(true)) game.scene.stop(sc.scene.key);
+  // La barra va antes: la escena lee su altura al crearse.
+  renderBar(S);
+  updateBar(S, Date.now());
   if (S.view.scene === "business") game.scene.start("business", { id: S.view.id });
   else game.scene.start("city");
-  renderBar(S);
 }
 
 function goTo(view: View): void {
@@ -174,6 +176,11 @@ const ctx: PanelCtx = {
 document.getElementById("bar")!.addEventListener("click", async (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>("button");
   if (!b) return;
+  if (b.dataset.st && S.view.scene === "business") {
+    const st = b.dataset.st;
+    openStationSheet(ctx, S.view.id, st.startsWith("floor:") ? { kind: "floor", index: Number(st.slice(6)) } : { kind: st as "transport" | "sale" });
+    return;
+  }
   if (b.dataset.nav === "city") goTo({ scene: "city" });
   else if (b.dataset.nav === "home") goTo({ scene: "business", id: bizList(S)[0].id });
   else if (b.dataset.nav === "world") openWorld(ctx);

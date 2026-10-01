@@ -304,3 +304,24 @@ header { gap: 6px; padding-bottom: 8px; }
 .sicon .ico, .face .ico, .ic .ico, .em .ico, .flag .ico { width: 1.1em; height: 1.1em; vertical-align: middle; }
 .rail button { width: 56px; font-size: 8px; }
 .goal, .tut { right: 76px; }
+
+/* ---------- Barra de la cadena en cada negocio ---------- */
+#bar.has-chain { row-gap: 8px; }
+.chain { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.link-card { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6px; padding: 6px 7px; border-radius: 12px; background: var(--panel-2); border: 1.5px solid var(--line); text-align: left; min-height: 46px; }
+.link-card .lc-ic { font-size: 20px; line-height: 1; }
+.link-card .lc-txt { display: grid; min-width: 0; line-height: 1.15; }
+.link-card .lc-txt b { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.link-card .lc-txt small { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.link-card .lc-tag:empty { display: none; }
+.link-card .lc-tag { position: absolute; top: -8px; right: 6px; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: var(--gold); color: var(--gold-ink); box-shadow: 0 2px 0 var(--gold-dark); }
+.link-card.slow { border-color: var(--red); background: linear-gradient(180deg, rgba(255, 107, 91, 0.22), var(--panel-2)); }
+.link-card.slow .lc-tag { background: var(--red); color: #fff; box-shadow: 0 2px 0 var(--red-dark); }
+.link-card.can { border-color: var(--gold); }
+.link-card.can:not(.slow) .lc-tag { animation: ready 1.2s ease-in-out infinite; }
+.link-card:active { transform: translateY(1px); }
+@media (prefers-reduced-motion: reduce) { .link-card .lc-tag { animation: none !important; } }
+.link-card { grid-template-columns: minmax(0, 1fr); padding: 6px 7px 5px; gap: 0; }
+.link-card .lc-ic { font-size: 13px; margin-right: 3px; }
+.link-card .lc-txt b { font-size: 11.5px; letter-spacing: -0.1px; }
+.link-card .lc-txt small { font-size: 10.5px; margin-top: 2px; }

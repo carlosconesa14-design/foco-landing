@@ -109,10 +109,6 @@ export class BusinessScene extends Phaser.Scene {
   private sellerItem!: Phaser.GameObjects.Image;
   private sellerCarry!: Phaser.GameObjects.Text;
   private sellerHint!: Phaser.GameObjects.Text;
-  private transportPill!: Pill;
-  private transportMgr!: Phaser.GameObjects.Text;
-  private salePill!: Pill;
-  private saleMgr!: Phaser.GameObjects.Text;
   private topPile: Phaser.GameObjects.Image[] = [];
   private topStock!: Phaser.GameObjects.Text;
   private unlockPill: Pill | null = null;
@@ -311,17 +307,7 @@ export class BusinessScene extends Phaser.Scene {
     this.topPile = this.pile(pileAt.x, pileAt.y, pileAt.y + 2);
     this.topStock = label(this, pileAt.x, pileAt.y - 44, "", 12, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
 
-    const def = bizDef(this.bizId);
-    const tp = this.iso(6.9, 1.0);
-    this.plaque(tp.x, tp.y - 26, def.transportName);
-    this.transportPill = this.pill(tp.x, tp.y + 4, { kind: "transport" });
-    this.transportMgr = emoji(this, tp.x + 40, tp.y + 4, "👔", 16).setDepth(9.2e4);
-
-    const sp = this.iso(5.9, 8.8);
-    this.plaque(sp.x, sp.y - 26, def.saleName);
-    this.salePill = this.pill(sp.x, sp.y + 4, { kind: "sale" });
-    this.saleMgr = emoji(this, sp.x + 40, sp.y + 4, "👔", 16).setDepth(9.2e4);
-
+    // El nivel y la mejora del transporte y la venta están en la barra de la cadena (abajo, fija).
     // Zonas de toque: puerta (transporte) y portón (venta)
     const door = this.iso(DOOR[0], DOOR[1]);
     this.tapZone(door.x - 60, door.y - 60, 120, 80, { kind: "transport" });
@@ -451,11 +437,6 @@ export class BusinessScene extends Phaser.Scene {
     return p;
   }
 
-  private plaque(x: number, y: number, text: string): void {
-    const t = label(this, x, y, text, 11, "#ffffff", { bold: true }).setDepth(9.1e4);
-    const g = this.add.graphics().setDepth(9.05e4);
-    g.fillStyle(0x14202f, 0.85).fillRoundedRect(x - t.width / 2 - 9, y - 10, t.width + 18, 20, 10);
-  }
 
   private pile(x: number, y: number, depth: number, scale = 0.85): Phaser.GameObjects.Image[] {
     const spots: Pt[] = [
@@ -573,15 +554,10 @@ export class BusinessScene extends Phaser.Scene {
     this.moverCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "").setPosition(mp.x, carryY - 18).setDepth(9e4);
     this.moverHint.setVisible(tutorial && tr.phase === "idle" && !tr.managed && b.floors.some((f) => f.stock > 0));
     this.moverHint.setPosition(mp.x, mp.y - 64 + Math.sin(t * 8) * 4).setDepth(9.4e4);
-    this.transportMgr.setVisible(tr.managed);
     if (tr.level > this.levels.transport) {
       this.sparks.explode(14, mp.x, mp.y - 20);
       this.levels.transport = tr.level;
     }
-    const tq = upgradeQuote(s, this.bizId, { kind: "transport" });
-    this.transportPill
-      .setText(`Nv ${tr.level}`)
-      .setAlert(s.cash >= tq.cost || (!tr.managed && s.cash >= managerCost(def, { kind: "transport" })));
 
     // Venta: sale por el portón hacia la calle y vuelve
     const sl = b.sale;
@@ -596,13 +572,10 @@ export class BusinessScene extends Phaser.Scene {
     this.sellerHint.setPosition(sp.x, sp.y - 64 + Math.sin(t * 8) * 4).setDepth(9.4e4);
     this.showPile(this.topPile, b.topStock, unit);
     this.topStock.setText(b.topStock > 0 ? fmt(b.topStock) : "");
-    this.saleMgr.setVisible(sl.managed);
     if (sl.level > this.levels.sale) {
       this.sparks.explode(14, sp.x, sp.y - 20);
       this.levels.sale = sl.level;
     }
-    const sq = upgradeQuote(s, this.bizId, { kind: "sale" });
-    this.salePill.setText(`Nv ${sl.level}`).setAlert(s.cash >= sq.cost || (!sl.managed && s.cash >= managerCost(def, { kind: "sale" })));
 
     if (this.unlockPill) {
       const cost = floorUnlockCost(def, b.floors.length);
@@ -621,8 +594,6 @@ export class BusinessScene extends Phaser.Scene {
     const rates = chainRates(def, b, false);
     const auto = tr.managed || sl.managed || b.floors.some((f) => f.managed);
     this.slots.forEach((v) => v.pill.setWarn(auto && rates.bottleneck === "production"));
-    this.transportPill.setWarn(auto && rates.bottleneck === "transport");
-    this.salePill.setWarn(auto && rates.bottleneck === "sale");
 
     for (const sale of this.bridge.drainSales(this.bizId)) {
       const gate = this.iso(4.5, 9.3);

@@ -1,7 +1,7 @@
-import { CONFIG, LIFE } from "../game/data";
-import { bizDef, businessRate, chainRates, lifeIndex, passiveRate } from "../game/economy";
+import { CONFIG, LIFE, type BusinessDef } from "../game/data";
+import { bizDef, businessRate, chainRates, floorNextCost, lifeIndex, logisticsNextCost, managerCost, passiveRate, saleMult, type Station } from "../game/economy";
 import { fmt, fmtTime } from "../game/format";
-import { boostHours, canExpand } from "../game/world";
+import { boostHours, canExpand, upgradeDiscount } from "../game/world";
 import { cityDef, type GameState } from "../game/state";
 import { bizIcon, flagIcon, gem, icon, lifeIcon } from "./icons";
 
@@ -58,9 +58,11 @@ export function renderBar(s: GameState): void {
   if (key === barKey) return;
   barKey = key;
   const bar = $("bar");
+  bar.classList.toggle("has-chain", s.view.scene === "business");
   if (s.view.scene === "business") {
     const def = bizDef(s.view.id);
     bar.innerHTML = `
+      <div class="chain" id="chain"></div>
       <button class="navbtn" data-nav="city"><span class="ic">${icon("ic_city", "🏙️")}</span>Ciudad</button>
       <div class="barmid"><b>${bizIcon(def)} ${def.name}</b><span id="barRate"></span></div>
       <button class="ad-btn rushbtn" data-rush="${def.id}" id="rushBtn"><span class="play"></span><span id="rushTxt">x${CONFIG.rushMult}</span></button>`;
@@ -82,6 +84,8 @@ export function updateBar(s: GameState, now: number): void {
   const names = { production: "producción", transport: "transporte", sale: "venta" };
   const rate = document.getElementById("barRate");
   if (rate) rate.textContent = `+${fmt(businessRate(s, id, now))}/s · atasco: ${names[r.bottleneck]}`;
+  const chain = document.getElementById("chain");
+  if (chain) setHtml(chain, chainCards(s, id, now));
   const rushLeft = (b.rushEnd - now) / 1000;
   const btn = document.getElementById("rushBtn") as HTMLButtonElement | null;
   const txt = document.getElementById("rushTxt");
@@ -89,4 +93,67 @@ export function updateBar(s: GameState, now: number): void {
     btn.disabled = rushLeft > 0;
     txt.textContent = rushLeft > 0 ? fmtTime(rushLeft) : `Hora punta x${CONFIG.rushMult}`;
   }
+}
+
+/* ---------- Barra de la cadena: producción · transporte · venta ---------- */
+
+/** Coste de subir un solo nivel (para saber si ya se puede mejorar). */
+function nextLevelCost(s: GameState, def: BusinessDef, st: Station, level: number): number {
+  return (st.kind === "floor" ? floorNextCost(def, st.index, level) : logisticsNextCost(def, level)) * upgradeDiscount(s);
+}
+
+/** El puesto que conviene abrir al tocar «Producción»: uno sin gerente o la mejora más barata. */
+export function productionTarget(s: GameState, id: string): number {
+  const def = bizDef(id);
+  const b = s.biz[id];
+  const unmanaged = b.floors.findIndex((f) => !f.managed);
+  if (unmanaged >= 0) return unmanaged;
+  let best = 0;
+  let bestCost = Infinity;
+  b.floors.forEach((f, i) => {
+    const c = nextLevelCost(s, def, { kind: "floor", index: i }, f.level);
+    if (c < bestCost) {
+      bestCost = c;
+      best = i;
+    }
+  });
+  return best;
+}
+
+/**
+ * Tres tarjetas fijas encima de la barra: cada parte de la cadena con su nivel y su ritmo.
+ * La que frena el negocio sale en rojo; la que se puede mejorar ya, con una flecha dorada.
+ */
+function chainCards(s: GameState, id: string, now: number): string {
+  const def = bizDef(id);
+  const b = s.biz[id];
+  const r = chainRates(def, b, false);
+  const m = saleMult(s, id, now);
+  const floorIdx = productionTarget(s, id);
+  const floorSt: Station = { kind: "floor", index: floorIdx };
+  const canFloor = b.floors.some((f, i) => s.cash >= nextLevelCost(s, def, { kind: "floor", index: i }, f.level));
+  const card = (
+    key: "production" | "transport" | "sale",
+    st: string,
+    ico: string,
+    name: string,
+    level: string,
+    rate: number,
+    managed: boolean,
+    canUp: boolean,
+    mgrCost: number,
+  ) => {
+    const slow = r.bottleneck === key;
+    const hire = !managed && s.cash >= mgrCost;
+    return `<button class="link-card ${slow ? "slow" : ""} ${canUp || hire ? "can" : ""}" data-st="${st}" aria-label="Mejorar ${name}">
+      <span class="lc-txt"><b><span class="lc-ic">${ico}</span>${name}</b><small>${level} · ${fmt(rate * m)}/s</small></span>
+      <span class="lc-tag">${slow ? "Atasco" : hire ? "👔 Contratar" : canUp ? "▲ Mejorar" : ""}</span>
+    </button>`;
+  };
+  const allManaged = b.floors.every((f) => f.managed);
+  return (
+    card("production", `floor:${floorIdx}`, def.worker, "Producción", `${b.floors.length} ${b.floors.length === 1 ? "puesto" : "puest."}`, r.production, allManaged, canFloor, managerCost(def, floorSt)) +
+    card("transport", "transport", def.transportIcon, def.transportName, `Nv ${b.transport.level}`, r.transport, b.transport.managed, s.cash >= nextLevelCost(s, def, { kind: "transport" }, b.transport.level), managerCost(def, { kind: "transport" })) +
+    card("sale", "sale", def.saleWorker, def.saleName, `Nv ${b.sale.level}`, r.sale, b.sale.managed, s.cash >= nextLevelCost(s, def, { kind: "sale" }, b.sale.level), managerCost(def, { kind: "sale" }))
+  );
 }
