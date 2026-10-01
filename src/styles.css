@@ -458,3 +458,6 @@ button:enabled:active { filter:brightness(1.12); }.buy:disabled,.claim:disabled,
 /* Generated logistics icons match the actual actors on the map. */
 .link-card .lc-ic .game-icon { width:21px; height:21px; vertical-align:middle; }
 @media (max-width:359px) { .link-card .lc-ic .game-icon { width:16px; height:18px; } .link-card .lc-txt b { font-size:10px; } }
+.legal-frame { width: 100%; height: 62vh; border: 0; border-radius: 12px; background: #0e1a2b; }
+.legal-links { text-align: center; margin-top: 8px; }
+.legal-links a, .lg-how a { color: var(--gold); }

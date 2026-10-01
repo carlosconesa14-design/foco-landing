@@ -6,6 +6,7 @@ import { leagueApi, type LeagueStatus, type Payout } from "../platform/league";
 import { gem } from "./icons";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
+import { openLegal } from "./legal";
 import { analytics, minutesSinceInstall } from "../platform/analytics";
 
 /**
@@ -82,6 +83,12 @@ export function openLeague(ctx: PanelCtx): void {
      <div data-body><p class="muted">Cargando…</p></div>`,
   );
   const body = $(sheet.el, "[data-body]");
+  body.addEventListener("click", (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>("[data-legal]");
+    if (!a) return;
+    e.preventDefault();
+    openLegal(ctx, "bases-liga");
+  });
 
   const how = () => `<details class="lg-how"><summary>¿Cómo se ganan puntos?</summary>
       <div class="lg-table">${ACTIONS.map((a) => `<span>${a.text}</span><b>+${LEAGUE_POINTS[a.kind]}</b>`).join("")}</div>
@@ -100,6 +107,7 @@ export function openLeague(ctx: PanelCtx): void {
           ? "Los premios en dinero solo pueden cobrarlos mayores de 18 años: se pide un email de contacto, se revisa la partida y se pagan con tarjeta regalo o PayPal. Las bases completas están publicadas en la web del juego."
           : "Ahora mismo los premios son dentro del juego (diamantes). Si hay premios en dinero, se publicarán unas bases completas antes de empezar la semana."
       } Apple y Google no patrocinan ni participan en esta Liga.</p>
+      <p class="small"><a href="#" data-legal="bases-liga">Leer las bases completas</a></p>
     </details>`;
 
   /* --- Aún no apuntado --- */
