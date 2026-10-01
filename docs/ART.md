@@ -185,7 +185,7 @@ Estas piezas ya se pueden sustituir por PNG igual que el resto: se dejan en `pub
 | `ic_gem` | 💎 | Cabecera, precios y premios |
 | `ic_star` | ⭐ | Estrellas de franquicia |
 | `ic_city`, `ic_ipo`, `ic_world` | 🏙️ 📈 🌍 | Barra inferior |
-| `ic_missions`, `ic_daily`, `ic_execs`, `ic_trophy`, `ic_settings` | 📋 🎁 💼 🏆 ⚙️ | Menú lateral |
+| `ic_missions`, `ic_daily`, `ic_execs`, `ic_trophy`, `ic_league`, `ic_settings` | 📋 🎁 💼 🏆 🏅 ⚙️ | Menú lateral |
 | `ic_biz_<id>` (`ic_biz_dropship`, `ic_biz_restaurant`, `ic_biz_tiktok`, `ic_biz_ai`, `ic_biz_foodtruck`, `ic_biz_beachclub`, `ic_biz_yachts`, `ic_biz_realestate`, `ic_biz_crypto`) | 📦 🍝 📱 🤖 🌮 🏖️ 🛥️ 🏘️ 🪙 | Barra, paneles y ejecutivos |
 | `ic_life_0` … `ic_life_9` | 🛏️ 🏚️ 🏠 🏢 🌆 🏡 🏰 🛥️ 🏝️ 🚀 | Estilo de vida en la cabecera |
 | `ic_office_<id>` (`brand`, `team`, `floors`, `suppliers`, `offline`, `hustle`, `luck`) | 🌍 👔 🏗️ 🤝 🌙 ⚡ 🔥 | Oficina central |

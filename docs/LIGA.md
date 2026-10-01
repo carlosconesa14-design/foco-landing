@@ -1,5 +1,7 @@
 # Liga Millonario: modelo de premios reales
 
+> **Estado:** fase 0 en marcha, con premios dentro del juego (diamantes). La sección [«Cómo se opera»](#cómo-se-opera) explica cómo funciona y cómo se gestiona.
+
 Objetivo: usar **premios reales** como gancho principal para atraer y retener jugadores, sin perder la cuenta de AdMob, sin entrar en la ley del juego y sin que se lo lleven los tramposos. El bote lo pone primero el dueño del juego (gasto de marketing) y, cuando haya ingresos, sale de un % de ellos.
 
 > Este documento es un diseño. Antes de pagar el primer euro, un asesor tiene que revisar las bases legales y los impuestos.
@@ -141,3 +143,41 @@ Clave: con **puntos con tope diario**, el máximo que puede sacar un tramposo es
 | 3. Escala | Más premios (no más grandes); ligas por país si se traduce el juego | 10 % de los ingresos |
 
 **Qué medir en la fase 1:** descargas que trae el mensaje de "premios reales" frente a la publicidad normal, retención a 1 y 7 días de quien juega la Liga frente a quien no, y coste del bote frente a lo que costaría traer esos jugadores con anuncios.
+
+---
+
+## Cómo se opera
+
+**Dónde está cada cosa**
+- **Supabase** (proyecto `de-rider-a-millonario`, región París): las tablas `league_*`, las funciones SQL y la Edge Function `league`. El código está en `supabase/` (migraciones y función).
+- **Juego:**
+  - `src/game/league.ts`: qué acciones se informan;
+  - `src/platform/league.ts`: cliente de la API;
+  - `src/ui/leaguePanel.ts`: pantalla y sincronización cada 20 s.
+
+**Seguridad**
+- Las tablas tienen RLS **sin políticas**: con la clave pública no se puede leer nada ni llamar a las funciones (comprobado).
+- Solo la Edge Function accede, con la clave de servicio.
+- Cada jugador se identifica con un id y una clave secreta que se guarda en su partida. El servidor solo guarda el hash de esa clave.
+- Altas limitadas a 20 por IP y día; de la IP solo se guarda el hash.
+
+**Cierre semanal:** automático cada hora con `pg_cron` (`league_close_due`). El cierre de la semana del lunes a las 00:00 (Madrid) se ejecuta a las 00:07 o a la hora siguiente.
+
+**Cambiar premios o reglas:** en el panel de Supabase, tabla `league_config` (una sola fila):
+- `draw_prize_gems` / `draw_prize_cents`: premio de cada ganador del sorteo (`draw_prize_cents = 500` son 5 €);
+- `top_prize_gems` / `top_prize_cents`: premio del primero de cada división, por ejemplo `{"bronce":700,"plata":700,"oro":600}`;
+- `draw_winners`, `daily_cap`, `ticket_points`, `max_tickets`, `plata_from`, `oro_from`.
+
+Los cambios se aplican en el siguiente cierre. Para respetar las bases, cámbialos antes de que empiece la semana.
+
+**Pagar premios en dinero (fase 1):** en `league_winners` están los ganadores con `prize_cents > 0` y `paid_at` vacío. Tras pagar, se rellena `paid_at`.
+
+**Expulsar a un tramposo:** `update league_players set banned = true where id = '…'`. Deja de puntuar y no entra en el cierre.
+
+**Comprobar un sorteo:** `sha256(semilla)` tiene que coincidir con el hash que se publicó al empezar la semana. Con la semilla se puede repetir el sorteo (`league_close_week`).
+
+**Pendiente para la fase 1 (dinero):**
+- Play Integrity / App Attest;
+- verificación de email o teléfono del ganador y de su edad;
+- bases revisadas por un asesor;
+- panel interno de pagos.

@@ -26,6 +26,8 @@ import { openAchievements, openDaily, openExecs, openMissions, openSettings } fr
 import { activeSheet, closeSheet } from "./ui/sheet";
 import { openWorld } from "./ui/worldPanels";
 import { openEmpire } from "./ui/empirePanel";
+import { leagueHasPrize, openLeague, syncLeague } from "./ui/leaguePanel";
+import { leagueJoined } from "./game/league";
 import { loadIcons } from "./ui/icons";
 import "./styles.css";
 
@@ -205,6 +207,7 @@ document.getElementById("rail")!.addEventListener("click", (e) => {
   else if (which === "daily") openDaily(ctx);
   else if (which === "execs") openExecs(ctx, S.meta.execs.length ? "execs" : "chests");
   else if (which === "achievements") openAchievements(ctx);
+  else if (which === "league") openLeague(ctx);
   else if (which === "settings") openSettings(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openExecs(ctx, "chests"));
@@ -241,6 +244,8 @@ function updateMeta(now: number): void {
   dots[1].hidden = !meta.dailyStatus(S, now).canClaim;
   dots[2].hidden = !meta.freeChestReady(S, now);
   dots[3].hidden = meta.achievementsToClaim(S) === 0;
+  // Liga: premio por cobrar, o invitación a apuntarse una vez terminado el tutorial
+  dots[4].hidden = !(leagueHasPrize() || (!leagueJoined(S) && meta.tutorialStep(S) === null));
   // Con el menú plegado, un punto en el botón de desplegar avisa de que hay algo pendiente.
   rail.querySelector<HTMLElement>(".tdot")!.hidden = !rail.classList.contains("collapsed") || [...dots].every((d) => d.hidden);
 
@@ -412,6 +417,7 @@ function offerOffline(): void {
 /** Al salir: guardar y programar los avisos (caja llena, maletín, premio diario). */
 function leaving(): void {
   save();
+  void syncLeague(S);
   void notifications.schedule(planNotifications(S, Date.now()));
 }
 
@@ -497,6 +503,12 @@ async function boot(): Promise<void> {
   startView();
   offerOffline();
   setInterval(save, 5000);
+  // Liga: envía los puntos pendientes cada 20 s (si no hay conexión, esperan en la cola)
+  setInterval(() => {
+    void syncLeague(S).then((added) => {
+      if (added > 0) banner(root, "🏅", `+${added} puntos de Liga`);
+    });
+  }, 20_000);
   document.addEventListener("visibilitychange", () => {
     sound.setHidden(document.hidden);
     if (document.hidden) leaving();

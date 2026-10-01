@@ -1,3 +1,4 @@
+import { freshLeague, migrateLeague, type LeagueState } from "./league";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
@@ -88,6 +89,8 @@ export interface MetaState {
   achievements: string[];
   /** Paso actual del tutorial; igual a TUTORIAL.length cuando se ha completado. */
   tutorial: number;
+  /** Liga Millonario: credenciales y eventos pendientes de enviar. */
+  league: LeagueState;
 }
 
 export interface Settings {
@@ -172,6 +175,7 @@ export function freshMeta(now = Date.now()): MetaState {
     daily: { lastDay: "", streak: 0 },
     achievements: [],
     tutorial: 0,
+    league: freshLeague(),
   };
 }
 
@@ -273,6 +277,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.daily = { lastDay: typeof d.lastDay === "string" ? d.lastDay : "", streak: Math.max(0, num(d.streak, 0)) };
   m.achievements = Array.isArray(r.achievements) ? r.achievements.filter((x): x is string => typeof x === "string") : [];
   m.tutorial = Math.max(0, num(r.tutorial, 0));
+  m.league = migrateLeague(r.league);
   return m;
 }
 

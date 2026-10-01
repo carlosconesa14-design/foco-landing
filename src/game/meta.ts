@@ -17,6 +17,7 @@ import {
 } from "./data";
 import { bizList, earn, passiveRate } from "./economy";
 import { bump, type Exec, type GameState, type Mission } from "./state";
+import { leagueEvent } from "./league";
 
 /** Diamantes, ejecutivos y maletines, misiones diarias, racha diaria, logros y tutorial. */
 
@@ -78,6 +79,7 @@ export function claimMission(s: GameState, index: number): number | null {
   const mi = s.meta.missions.list[index];
   if (!mi || mi.claimed || !missionDone(s, mi)) return null;
   mi.claimed = true;
+  leagueEvent(s, "mission", mi.id);
   const gems = MISSIONS[mi.id].gems;
   s.meta.gems += gems;
   return gems;
@@ -88,6 +90,7 @@ export const allMissionsClaimed = (s: GameState) => s.meta.missions.list.length 
 export function claimMissionBonus(s: GameState): number | null {
   if (s.meta.missions.bonusClaimed || !allMissionsClaimed(s)) return null;
   s.meta.missions.bonusClaimed = true;
+  leagueEvent(s, "missions_all", s.meta.missions.day);
   s.meta.gems += META.missionBonusGems;
   return META.missionBonusGems;
 }
