@@ -176,8 +176,14 @@ Los cambios se aplican en el siguiente cierre. Para respetar las bases, cámbial
 
 **Comprobar un sorteo:** `sha256(semilla)` tiene que coincidir con el hash que se publicó al empezar la semana. Con la semilla se puede repetir el sorteo (`league_close_week`).
 
-**Pendiente para la fase 1 (dinero):**
-- Play Integrity / App Attest;
-- verificación de email o teléfono del ganador y de su edad;
-- bases revisadas por un asesor;
-- panel interno de pagos.
+**Pasar a premios en dinero (fase 1).** El código ya está preparado:
+1. Bases definitivas (borrador en [`BASES_LIGA.md`](BASES_LIGA.md)) y política de privacidad ([`PRIVACIDAD.md`](PRIVACIDAD.md)) revisadas por un asesor y publicadas en una web.
+2. En `league_config`, poner los importes antes del lunes, por ejemplo `draw_prize_cents = 500`, `draw_prize_gems = 0` y `top_prize_cents = {"bronce":700,"plata":700,"oro":600}`. Así salen 50 €/semana.
+3. Los ganadores ven en la app «¡Has ganado X €!» y dejan su email y la declaración de mayoría de edad.
+4. Pagos pendientes: `select * from league_payouts_pending;`
+5. Tras pagar: `update league_winners set paid_at = now(), payout_note = 'Amazon, código enviado' where week_id = '…' and player_id = '…';` El jugador lo ve como «✅ Premio pagado».
+
+**Antes de subir los premios** (más de 50 €/semana o muchos jugadores):
+- verificar el dispositivo con Play Integrity (necesita un proyecto de Google Cloud);
+- verificar el email del ganador con un código;
+- revisar a mano los historiales de los ganadores (`league_events`).

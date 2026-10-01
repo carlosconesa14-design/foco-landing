@@ -31,6 +31,12 @@ export interface LeagueStatus {
   unclaimed: { week: string; kind: string; gems: number; cents: number }[];
 }
 
+export interface Payout {
+  week: string;
+  cents: number;
+  state: "need_data" | "pending" | "paid";
+}
+
 export interface Creds {
   id: string;
   secret: string;
@@ -60,6 +66,10 @@ export const leagueApi = {
   events: (c: Creds, events: LeagueEvent[]) => call<{ added: number }>({ action: "events", ...c, events }),
   nickname: (c: Creds, nickname: string) => call<{ nickname: string }>({ action: "nickname", ...c, nickname }),
   claim: (c: Creds) => call<{ gems: number }>({ action: "claim", ...c }),
+  /** Premios en dinero del jugador (fase 1) y su estado. */
+  payouts: (c: Creds) => call<{ payouts: Payout[] }>({ action: "payouts", ...c }),
+  /** El ganador deja su email y declara ser mayor de 18 para cobrar. */
+  payout: (c: Creds, week: string, email: string, adult: boolean) => call<{ ok: boolean }>({ action: "payout", ...c, week, email, adult }),
   /** ¿Se llega al servidor? Unas credenciales falsas tienen que devolver «auth». */
   ping: async (): Promise<boolean> => {
     try {

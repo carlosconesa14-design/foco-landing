@@ -2,7 +2,7 @@ import { fmt, fmtTime } from "../game/format";
 import { LEAGUE_POINTS, leagueEvent, leagueJoined, type LeagueKind } from "../game/league";
 import { dayKey } from "../game/meta";
 import type { GameState } from "../game/state";
-import { leagueApi, type LeagueStatus } from "../platform/league";
+import { leagueApi, type LeagueStatus, type Payout } from "../platform/league";
 import { gem } from "./icons";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
@@ -41,7 +41,8 @@ function prize(cents: number, gems: number): string {
 
 /** Último estado conocido (para el punto rojo del botón lateral sin preguntar al servidor). */
 let lastStatus: LeagueStatus | null = null;
-export const leagueHasPrize = () => !!lastStatus?.unclaimed.length;
+let lastPayouts: Payout[] = [];
+export const leagueHasPrize = () => !!lastStatus?.unclaimed.some((u) => u.gems > 0) || lastPayouts.some((p) => p.state === "need_data");
 
 /* ---------- Sincronización: envía la cola de eventos ---------- */
 
@@ -94,8 +95,11 @@ export function openLeague(ctx: PanelCtx): void {
       ${lastStatus?.prizes.drawWinners ?? 6} premios entre todos los que tengan al menos una papeleta, con más opciones cuantas más papeletas.
       Un premio por persona y semana. El sorteo usa una semilla secreta cuyo resumen (hash) se publica al empezar la semana
       y que se revela al cerrar, para que cualquiera pueda comprobarlo. Las compras y los anuncios no influyen.
-      Ahora mismo los premios son dentro del juego (diamantes). Si en el futuro hay premios en dinero se publicarán
-      unas bases completas antes de empezar la semana. Apple y Google no patrocinan ni participan en esta Liga.</p>
+      ${
+        lastStatus && (lastStatus.prizes.drawCents > 0 || Object.values(lastStatus.prizes.topCents).some((c) => c > 0))
+          ? "Los premios en dinero solo pueden cobrarlos mayores de 18 años: se pide un email de contacto, se revisa la partida y se pagan con tarjeta regalo o PayPal. Las bases completas están publicadas en la web del juego."
+          : "Ahora mismo los premios son dentro del juego (diamantes). Si hay premios en dinero, se publicarán unas bases completas antes de empezar la semana."
+      } Apple y Google no patrocinan ni participan en esta Liga.</p>
     </details>`;
 
   /* --- Aún no apuntado --- */
@@ -129,16 +133,33 @@ export function openLeague(ctx: PanelCtx): void {
   };
 
   /* --- Apuntado --- */
-  const renderStatus = (st: LeagueStatus) => {
+  const euros = (c: number) => `${(c / 100).toLocaleString("es-ES", { maximumFractionDigits: 2 })} €`;
+  /** Premios en dinero (fase 1): pedir email y mayoría de edad, «en revisión» o «pagado». */
+  const payoutsHtml = (list: Payout[]) =>
+    list
+      .map((p) =>
+        p.state === "need_data"
+          ? `<div class="lg-pay" data-week="${esc(p.week)}"><b>💶 ¡Has ganado ${euros(p.cents)}!</b>
+              <span>Para recibirlo, déjanos un email de contacto. Revisaremos la partida y te lo enviaremos (tarjeta regalo o PayPal).</span>
+              <input type="email" data-email placeholder="tu@email.com" autocomplete="email">
+              <label class="lg-check"><input type="checkbox" data-adult> Soy mayor de 18 años y acepto las bases</label>
+              <button class="buy wide" data-pay><span>Pedir mi premio</span><b>${euros(p.cents)}</b></button></div>`
+          : `<div class="lg-pay ${p.state}"><b>${p.state === "paid" ? "✅ Premio pagado" : "⏳ Premio en revisión"} · ${euros(p.cents)}</b>
+              <span>${p.state === "paid" ? `Semana ${esc(p.week)}. ¡Enhorabuena!` : "Te escribiremos al email que nos diste en unos días."}</span></div>`,
+      )
+      .join("");
+
+  const renderStatus = (st: LeagueStatus, payouts: Payout[] = []) => {
     const me = st.me;
     const d = DIV[me.division];
     const left = Math.max(0, (new Date(st.week.endsAt).getTime() - Date.now()) / 1000);
     const toTicket = st.rules.ticketPoints - (me.points % st.rules.ticketPoints);
-    const won = st.unclaimed.reduce((a, u) => a + u.gems, 0);
+    const won = st.unclaimed.reduce((a, u) => a + u.gems, 0); // los premios en dinero van aparte (payouts)
     const closesIn = left >= 86400 ? `${Math.floor(left / 86400)} d ${Math.floor((left % 86400) / 3600)} h` : fmtTime(left);
     $(sheet.el, "[data-sub]").textContent = `Semana ${st.week.id.split("-W")[1]} · cierra en ${closesIn}`;
     const topPrize = prize(st.prizes.topCents[me.division] ?? 0, st.prizes.topGems[me.division] ?? 0);
     body.innerHTML = `
+      ${payoutsHtml(payouts)}
       ${won ? `<div class="lg-won"><b>🎉 ¡Has ganado en la Liga!</b><button class="claim" data-claim>Cobrar +${won} ${gem()}</button></div>` : ""}
       <div class="lg-prizes">
         <div><span>1.º de ${d.name}</span><b>${topPrize}</b></div>
@@ -161,6 +182,26 @@ export function openLeague(ctx: PanelCtx): void {
       <div class="lg-nick"><input data-nick maxlength="16" value="${esc(me.nickname)}" aria-label="Tu nombre en la Liga"><button class="btn ghost" data-save>Cambiar nombre</button></div>
       ${how()}${rules()}
       <p class="small muted lg-mono">Sorteo de esta semana sellado: ${esc(st.week.seedHash.slice(0, 16))}…</p>`;
+
+    body.querySelectorAll<HTMLElement>(".lg-pay[data-week]").forEach((box) => {
+      const btn = box.querySelector<HTMLButtonElement>("[data-pay]")!;
+      btn.onclick = async () => {
+        const s = ctx.state();
+        const email = box.querySelector<HTMLInputElement>("[data-email]")!.value;
+        const adult = box.querySelector<HTMLInputElement>("[data-adult]")!.checked;
+        if (!adult) return ctx.toast("Tienes que ser mayor de 18 años para cobrar premios en dinero");
+        btn.disabled = true;
+        try {
+          await leagueApi.payout({ id: s.meta.league.id!, secret: s.meta.league.secret! }, box.dataset.week!, email, adult);
+          ctx.fx("gems", true);
+          ctx.banner("💶", "¡Recibido! Revisaremos la partida y te escribiremos");
+          void load();
+        } catch (e) {
+          btn.disabled = false;
+          ctx.toast((e as Error).message === "email" ? "Ese email no parece válido" : "No hay conexión. Inténtalo en un momento.");
+        }
+      };
+    });
 
     const claim = body.querySelector<HTMLButtonElement>("[data-claim]");
     if (claim)
@@ -196,8 +237,11 @@ export function openLeague(ctx: PanelCtx): void {
     if (!leagueJoined(s)) return renderJoin();
     await syncLeague(s);
     try {
-      lastStatus = await leagueApi.status({ id: s.meta.league.id!, secret: s.meta.league.secret! });
-      renderStatus(lastStatus);
+      const creds = { id: s.meta.league.id!, secret: s.meta.league.secret! };
+      const [st, pay] = await Promise.all([leagueApi.status(creds), leagueApi.payouts(creds).catch(() => ({ payouts: [] as Payout[] }))]);
+      lastStatus = st;
+      lastPayouts = pay.payouts;
+      renderStatus(st, pay.payouts);
     } catch {
       body.innerHTML = `<p class="muted">No hay conexión con la Liga. Tus puntos se guardan en el móvil y se enviarán en cuanto vuelva la conexión.</p>${how()}`;
     }

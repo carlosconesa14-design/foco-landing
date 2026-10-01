@@ -30,7 +30,7 @@ async function rpc(fn: string, args: Record<string, unknown>) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "method" }, 405);
-  let body: { action?: string; id?: string; secret?: string; events?: unknown; nickname?: string };
+  let body: { action?: string; id?: string; secret?: string; events?: unknown; nickname?: string; week?: string; email?: string; adult?: boolean };
   try {
     body = await req.json();
   } catch {
@@ -60,6 +60,17 @@ Deno.serve(async (req) => {
         return json(await rpc("league_set_nickname", { p_player: body.id, p_nick: String(body.nickname ?? "") }));
       case "claim":
         return json(await rpc("league_claim", { p_player: body.id }));
+      case "payouts":
+        return json({ payouts: await rpc("league_payouts", { p_player: body.id }) });
+      case "payout":
+        return json(
+          await rpc("league_request_payout", {
+            p_player: body.id,
+            p_week: String(body.week ?? ""),
+            p_email: String(body.email ?? ""),
+            p_adult: body.adult === true,
+          }),
+        );
       default:
         return json({ error: "action" }, 400);
     }
