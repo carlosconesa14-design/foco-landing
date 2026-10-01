@@ -59,6 +59,13 @@ export const money = (n: number): string => (lang === "en" ? `$${fmt(n)}` : `${f
 export const euros = (cents: number): string =>
   new Intl.NumberFormat(lang === "en" ? "en-IE" : "es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 2, minimumFractionDigits: 0 }).format(cents / 100);
 
+/** Puesto: «3.º» / «3rd». */
+export function ordinal(n: number): string {
+  if (lang === "es") return `${n}.º`;
+  const s = n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] ?? "th";
+  return `${n}${s}`;
+}
+
 /** Traduce los textos fijos del HTML (index.html): nodos de texto y aria-label/title/placeholder. */
 export function localizeDom(root: HTMLElement | Document = document): void {
   if (lang === "es") return;

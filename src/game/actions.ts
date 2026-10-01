@@ -1,7 +1,6 @@
 import { CHAIN, CONFIG } from "./data";
 import {
   bizDef,
-  bizTier,
   floorUnlockCost,
   managerCost,
   milestonesReached,
@@ -12,7 +11,6 @@ import {
 } from "./economy";
 import { afterIpo, bump, freshFloor, type GameState } from "./state";
 import { applyStartPerks, boostHours } from "./world";
-import { leagueEvent, runRef } from "./league";
 import { t } from "../i18n";
 
 /** Acciones del jugador. Devuelven un mensaje para mostrar ("" si no hace falta), o null si no se pudo. */
@@ -35,8 +33,6 @@ export function upgrade(s: GameState, id: string, st: Station): string | null {
   else if (st.kind === "transport") b.transport.level += qty;
   else b.sale.level += qty;
   if (milestonesReached(stationLevel(b, st)) <= before) return "";
-  const stKey = st.kind === "floor" ? `f${st.index}` : st.kind;
-  leagueEvent(s, "milestone", runRef(s, id, stKey, milestonesReached(stationLevel(b, st))));
   return t("{name}: ¡rendimiento x2!", { name: stationName(id, st) });
 }
 
@@ -58,11 +54,8 @@ export function unlockFloor(s: GameState, id: string): string | null {
   const cost = floorUnlockCost(bizDef(id), i);
   if (s.cash < cost) return null;
   s.cash -= cost;
-  const tierBefore = bizTier(b);
   b.floors.push(freshFloor());
   bump(s, "floors");
-  leagueEvent(s, "floor", runRef(s, id, i));
-  if (bizTier(b) > tierBefore) leagueEvent(s, "tier", runRef(s, id, bizTier(b)));
   return t("¡Nuevo puesto: {name} {n}!", { name: bizDef(id).floorName, n: i + 1 });
 }
 
@@ -72,7 +65,6 @@ export function buyBusiness(s: GameState, id: string): string | null {
   if (b.owned || s.cash < def.price) return null;
   s.cash -= def.price;
   b.owned = true;
-  leagueEvent(s, "business", runRef(s, id));
   return t("¡Has comprado: {name}!", { name: def.name });
 }
 

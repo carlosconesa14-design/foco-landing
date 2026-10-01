@@ -19,7 +19,7 @@
 >
 > 🌴 **Expándete a Miami**: cuando domines Madrid, abre tu franquicia en Miami, con nuevos negocios y olas de turistas que disparan las ventas.
 >
-> 🏅 **Liga Millonario semanal**: gana puntos jugando cada día y compite en tu división (Bronce, Plata y Oro). Premios para los primeros de cada división y un sorteo entre todos los que juegan. Ver anuncios o comprar no da puntos: gana quien juega con constancia.
+> 🏅 **Liga Millonario semanal**: cada lunes todos empiezan de cero y gana quien más juega esa semana, lleve el tiempo que lleve en el juego. Premios para los 10 primeros y Muro de la fama. Ver anuncios o comprar no da puntos.
 >
 > 💼 **Ejecutivos y maletines**: colecciona ejecutivos de distintas rarezas con habilidades que multiplican tus ventas.
 >
@@ -113,7 +113,7 @@ El juego se muestra en inglés en los móviles que no están en español (ver `d
 >
 > 🌴 **Expand to Miami**: once you've conquered Madrid, open your franchise in Miami, with new businesses and tourist waves that send sales through the roof.
 >
-> 🏅 **Weekly Millionaire League**: earn points by playing every day and compete in your division (Bronze, Silver and Gold). Prizes for the top players in each division and a draw among everyone who plays. Watching ads or buying doesn't give points: consistent players win.
+> 🏅 **Weekly Millionaire League**: every Monday everyone starts from zero and whoever plays the most that week wins, no matter how long they've been playing. Prizes for the top 10 and a Hall of Fame. Watching ads or buying doesn't give points.
 >
 > 💼 **Executives and briefcases**: collect executives of different rarities with abilities that multiply your sales.
 >

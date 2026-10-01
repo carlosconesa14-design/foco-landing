@@ -11,24 +11,17 @@ const URL = env.VITE_LEAGUE_URL || "https://jpdvpbqiasyjzbdaiedh.supabase.co/fun
 const KEY = env.VITE_LEAGUE_KEY || "sb_publishable_y8GI8XKM5uuq1jrbPWULBA_v39TLLkE";
 
 export interface LeagueStatus {
-  week: { id: string; endsAt: string; seedHash: string };
-  prizes: {
-    drawWinners: number;
-    drawCents: number;
-    drawGems: number;
-    topCents: Record<string, number>;
-    topGems: Record<string, number>;
-  };
-  rules: { dailyCap: number; ticketPoints: number; maxTickets: number; plataFrom: number; oroFrom: number };
-  me: { nickname: string; division: "bronce" | "plata" | "oro"; points: number; tickets: number; rank: number | null; lifetime: number };
+  week: { id: string; endsAt: string };
+  /** Premio por puesto: dinero para los 3 primeros que pueden cobrarlo, diamantes del 1.º al 10.º. */
+  prizes: { cents: number[]; gems: number[] };
+  rules: { blockPoints: number; halfPoints: number; fullBlocks: number; halfBlocks: number; missionCap: number; cooldownWeeks: number };
+  /** `todayBlocks`: bloques de 5 min jugados hoy. `cashEligible`: false si descansa esta semana o es de la web. */
+  me: { nickname: string; points: number; rank: number | null; todayBlocks: number; cashEligible: boolean };
   top: { nickname: string; points: number; me: boolean }[];
   players: number;
-  lastWeek: null | {
-    id: string;
-    seed: string;
-    seedHash: string;
-    winners: { nickname: string; kind: "draw" | "top"; division: string; cents: number; gems: number }[];
-  };
+  lastWeek: null | { id: string; winners: { nickname: string; rank: number | null; cents: number; gems: number }[] };
+  /** Muro de la fama: el 1.º de cada una de las últimas semanas. */
+  fame: { week: string; nickname: string }[];
   unclaimed: { week: string; kind: string; gems: number; cents: number }[];
 }
 

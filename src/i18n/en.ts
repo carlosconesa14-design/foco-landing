@@ -476,4 +476,23 @@ export const EN: Record<string, string> = {
   "Estás jugando la versión web de prueba. Tu partida se guarda en este navegador: si borras sus datos o cambias de dispositivo, empezarás de cero. Muy pronto, en Google Play.":
     "You're playing the web test version. Your game is saved in this browser: if you clear its data or switch devices, you'll start from scratch. Coming soon to Google Play.",
   "¡A jugar!": "Let's play!",
+
+  /* ---------- Liga por esfuerzo ---------- */
+  "Cada 5 min jugando (primeras {h} h del día)": "Every 5 min played (first {h} h of the day)",
+  "Cada 5 min jugando (de {a} a {b} h)": "Every 5 min played (from {a} to {b} h)",
+  "Cada semana gana quien más juega. Todos empiezan de cero el lunes.": "Each week, whoever plays the most wins. Everyone starts from zero on Monday.",
+  "Cuenta el tiempo jugando de verdad: con el juego abierto y tocando la pantalla. Más de {h} h al día no suman.":
+    "Only real play time counts: with the game open and tapping the screen. More than {h} h a day doesn't add up.",
+  "Ver anuncios o comprar no da puntos, y el tiempo viendo un anuncio no cuenta.": "Watching ads or buying doesn't give points, and time spent watching an ad doesn't count.",
+  "Participación gratuita. La semana va de lunes 00:00 a domingo 23:59 (hora de Madrid) y todos empiezan de cero: gana quien más puntos consigue jugando esa semana, sin importar cuánto tiempo lleve en el juego. Hay premios del 1.º al 10.º. Quien gana un premio en dinero descansa {n} semana: puede ganar diamantes, pero el dinero pasa al siguiente. Se revisan las partidas ganadoras; las trampas dejan fuera de la Liga. Las compras y los anuncios no influyen.":
+    "Free to enter. The week runs from Monday 00:00 to Sunday 23:59 (Madrid time) and everyone starts from zero: whoever scores the most points playing that week wins, no matter how long they've been in the game. There are prizes from 1st to 10th. Whoever wins a cash prize sits out {n} week: they can win gems, but the cash goes to the next player. Winning games are reviewed; cheating gets you out of the League. Purchases and ads have no effect.",
+  "Para los 10 que más jueguen. Todos empiezan de cero cada lunes.": "For the 10 who play the most. Everyone starts from zero every Monday.",
+  "Del 4.º al {n}.º": "4th to {n}th",
+  "Esta semana descansas de premios en dinero porque ganaste uno: puedes ganar diamantes y salir en el Muro de la fama.":
+    "This week you sit out cash prizes because you won one: you can still win gems and make the Hall of Fame.",
+  hoy: "today",
+  "hoy · a mitad": "today · half points",
+  "hoy · máximo": "today · max",
+  "Muro de la fama": "Hall of Fame",
+  "Semana {n}": "Week {n}",
 };

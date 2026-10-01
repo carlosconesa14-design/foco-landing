@@ -89,10 +89,15 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
   - **Liga:** no da puntos de Liga.
 - **Más adelante:** eventos de temporada de 7 días con su propia ciudad (fase 3) y avatar u oficina personalizables.
 
-### Liga Millonario (diseñada, pendiente de servidor)
+### Liga Millonario (fase 0 en marcha)
 Torneo **semanal** gratuito con premios reales, pensado como gancho principal para atraer jugadores. El diseño completo está en [`LIGA.md`](LIGA.md):
-- **Puntos de Liga** por acciones con tope diario (misiones, hitos, puestos, negocios). Ni los anuncios ni las compras dan puntos.
-- **Reparto mixto:** sorteo con papeletas ganadas jugando (60 %) y top por división, Bronce/Plata/Oro (40 %).
+- **Liga por esfuerzo:** cada lunes todos empiezan a 0 y gana quien más juega esa semana.
+  - **Puntos:** tiempo de juego activo, entrar cada día y misiones diarias. Nada que dependa del tamaño del imperio, así que llevar más tiempo en el juego no da ventaja.
+  - **Horas:** 3 h al día a puntos completos, de 3 a 6 h a la mitad, y más de 6 h no suman.
+  - **Anuncios y compras:** no dan puntos, y el tiempo viendo un anuncio no cuenta.
+- **Premios del 1.º al 10.º:** dinero para los 3 primeros que pueden cobrarlo y diamantes para todos.
+  - **Descanso:** quien gana dinero descansa una semana.
+  - **Muro de la fama:** con los ganadores de cada semana.
 - **Bote** = el mayor de un mínimo garantizado (50 €/semana, lo pone el dueño) o el 10 % de los ingresos de la semana anterior.
 - Validación en el servidor (Supabase), mayores de 18, bases legales en la app y revisión de un asesor antes de dar dinero.
 

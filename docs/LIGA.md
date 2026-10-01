@@ -6,6 +6,29 @@ Objetivo: usar **premios reales** como gancho principal para atraer y retener ju
 
 > Este documento es un diseño. Antes de pagar el primer euro, un asesor tiene que revisar las bases legales y los impuestos.
 
+## Modelo actual: Liga por esfuerzo (migración 0007)
+
+Sustituye a las divisiones y al sorteo de las secciones 2 y 3, que quedan como historia del diseño. La idea es que **gana quien más juega esa semana, no quien empezó antes**.
+
+- **Todos empiezan cada lunes a 0.** Solo puntúa lo que es igual para todos:
+  - **tiempo de juego activo:** bloques de 5 min con el juego abierto y tocando la pantalla; cuenta si se juegan 3 de los 5 minutos;
+  - **entrar cada día:** 10;
+  - **misiones diarias:** 15 cada una, máximo 3 al día, sin la de ver anuncios;
+  - **completar las 3 misiones del día:** 20.
+
+  Nada depende del tamaño del imperio: los hitos, puestos y negocios ya no puntúan.
+- **Horas que valen cada vez menos, sin tope duro:** las 3 primeras horas del día valen 10 puntos por bloque, de 3 a 6 h valen 5, y a partir de 6 h, nada. Quien más juega gana, pero no compensa jugar sin límite, y los bots tienen techo.
+- **Ranking único, premios del 1.º al 10.º.** Diamantes por puesto (`prize_gems`). El dinero (`prize_cents`) va a los 3 primeros que pueden cobrarlo.
+- **Descanso:** quien cobró dinero en las últimas `cash_cooldown_weeks` semanas (1 por defecto) no puede cobrar dinero; el dinero pasa al siguiente. La web nunca cobra dinero.
+- **Muro de la fama:** el 1.º de cada una de las últimas 8 semanas.
+- **Anuncios, sin relación con la Liga:**
+  - ver anuncios o comprar no da puntos;
+  - el tiempo viendo un anuncio no cuenta: el juego lo descuenta y además exige volver a tocar la pantalla;
+  - el x2 con anuncio del evento del fin de semana solo afecta a los premios del evento (diamantes), que tampoco cuentan para la Liga.
+
+  Así los anuncios siguen siendo atractivos (avanzar más rápido y más premios en el juego), pero nunca hacen falta para ganar. Es lo que exigen la política de AdMob (sin premios de valor real a cambio de ver anuncios) y la de Google Play (concursos gratuitos).
+- **Tramposos:** como mucho igualan a quien juega 6 h al día de verdad. Antes de pagar se revisa `league_events` (bloques por día y su reparto horario).
+
 ---
 
 ## 1. Las 4 reglas que no se pueden romper
@@ -166,9 +189,13 @@ Clave: con **puntos con tope diario**, el máximo que puede sacar un tramposo es
 **Cierre semanal:** automático cada hora con `pg_cron` (`league_close_due`). El cierre de la semana del lunes a las 00:00 (Madrid) se ejecuta a las 00:07 o a la hora siguiente.
 
 **Cambiar premios o reglas:** en el panel de Supabase, tabla `league_config` (una sola fila):
-- `draw_prize_gems` / `draw_prize_cents`: premio de cada ganador del sorteo (`draw_prize_cents = 500` son 5 €);
-- `top_prize_gems` / `top_prize_cents`: premio del primero de cada división, por ejemplo `{"bronce":700,"plata":700,"oro":600}`;
-- `draw_winners`, `daily_cap`, `ticket_points`, `max_tickets`, `plata_from`, `oro_from`.
+- `prize_cents`: dinero para los 3 primeros que pueden cobrarlo, por ejemplo `[2500, 1500, 1000]` (25 €, 15 € y 10 €);
+- `prize_gems`: diamantes del 1.º al 10.º, por ejemplo `[300, 200, 150, 100, 100, 80, 80, 60, 60, 50]`;
+- `play_block_points` / `play_half_points`: puntos por bloque de 5 min (10 y 5);
+- `play_full_blocks` / `play_half_blocks`: bloques al día de cada tramo (36 y 36, es decir, 3 h y 3 h);
+- `mission_daily_cap` (3) y `cash_cooldown_weeks` (1).
+
+Las columnas antiguas (`draw_*`, `top_prize_*`, `daily_cap`, tickets y divisiones) ya no se usan.
 
 Los cambios se aplican en el siguiente cierre. Para respetar las bases, cámbialos antes de que empiece la semana.
 
@@ -176,11 +203,10 @@ Los cambios se aplican en el siguiente cierre. Para respetar las bases, cámbial
 
 **Expulsar a un tramposo:** `update league_players set banned = true where id = '…'`. Deja de puntuar y no entra en el cierre.
 
-**Comprobar un sorteo:** `sha256(semilla)` tiene que coincidir con el hash que se publicó al empezar la semana. Con la semilla se puede repetir el sorteo (`league_close_week`).
 
 **Pasar a premios en dinero (fase 1).** El código ya está preparado:
 1. Bases definitivas (borrador en [`BASES_LIGA.md`](BASES_LIGA.md)) y política de privacidad ([`PRIVACIDAD.md`](PRIVACIDAD.md)) revisadas por un asesor y publicadas en una web.
-2. En `league_config`, poner los importes antes del lunes, por ejemplo `draw_prize_cents = 500`, `draw_prize_gems = 0` y `top_prize_cents = {"bronce":700,"plata":700,"oro":600}`. Así salen 50 €/semana.
+2. En `league_config`, poner los importes antes del lunes, por ejemplo `prize_cents = [2500, 1500, 1000]`. Así salen 50 €/semana.
 3. Los ganadores ven en la app «¡Has ganado X €!» y dejan su email y la declaración de mayoría de edad.
 4. Pagos pendientes: `select * from league_payouts_pending;`
 5. Tras pagar: `update league_winners set paid_at = now(), payout_note = 'Amazon, código enviado' where week_id = '…' and player_id = '…';` El jugador lo ve como «✅ Premio pagado».

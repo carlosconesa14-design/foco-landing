@@ -21,32 +21,35 @@ Quedan excluidos los empleados y colaboradores del Organizador y sus familiares 
 Cada edición dura una semana: de **lunes a las 00:00 a domingo a las 23:59** (hora peninsular española). Las ediciones se repiten cada semana mientras el Organizador no anuncie lo contrario con al menos 7 días de antelación.
 
 ## 5. Cómo se consiguen puntos
-Los puntos se consiguen jugando, según esta tabla (máximo **150 puntos al día**):
+Es un **concurso por méritos**: gana quien más juega esa semana. **No es un sorteo.** Todos los participantes empiezan cada semana con **0 puntos**. Solo cuentan acciones que son iguales para todos, sin importar cuánto tiempo lleve cada uno en el juego ni su progreso dentro de él:
 
 | Acción | Puntos |
 | --- | --- |
+| Cada 5 minutos de juego activo, durante las primeras 3 horas del día | 10 |
+| Cada 5 minutos de juego activo, entre las 3 y las 6 horas del día | 5 |
 | Entrar en el juego (una vez al día) | 10 |
-| Cada misión diaria completada (salvo la de ver anuncios) | 15 |
+| Cada misión diaria completada (máximo 3 al día; no cuenta la de ver anuncios) | 15 |
 | Completar las 3 misiones del día | 20 |
-| Alcanzar un hito x2 de una parte de un negocio (máx. 6 al día) | 5 |
-| Abrir un puesto | 10 |
-| Subir de categoría un negocio | 25 |
-| Comprar un negocio | 40 |
 
-Los puntos los calculan los servidores del Organizador; los que figuren en ellos son los únicos válidos.
+- **Juego activo** es el tiempo con el juego abierto y en primer plano en el que el jugador toca la pantalla. Si no hay interacción durante más de un minuto, el tiempo deja de contar. Cada bloque de 5 minutos cuenta si se ha jugado activamente al menos 3 de ellos.
+- **A partir de 6 horas al día no se suman más puntos.**
+- **Ver anuncios o hacer compras no da puntos.** El tiempo viendo un anuncio no cuenta como juego activo. Las ventajas que dan los anuncios o las compras dentro del juego no influyen en la puntuación.
+- **Los puntos los calculan los servidores del Organizador;** los que figuren en ellos son los únicos válidos.
 
-## 6. Divisiones
-Cada jugador compite en una división según sus puntos acumulados desde que se apuntó: **Bronce** (menos de 1.000), **Plata** (de 1.000 a 3.999) y **Oro** (4.000 o más). La división se fija al empezar a puntuar cada semana.
+## 6. Clasificación
+Hay una única clasificación semanal. Ordena a los participantes por puntos. En caso de empate, queda por delante quien alcanzó antes esa puntuación.
 
 ## 7. Premios
 Cada semana se anuncian en la app, antes de que empiece, los premios de esa edición:
-- **Primero de cada división:** [IMPORTE] € para el primer clasificado de Bronce, Plata y Oro. El empate lo gana quien alcanzó antes esa puntuación.
-- **Sorteo:** [NÚMERO] premios de [IMPORTE] € entre todos los participantes con al menos una papeleta. Cada 100 puntos de la semana dan 1 papeleta, hasta un máximo de 10. Más papeletas dan más opciones.
+- **Del 1.º al 3.º:** [IMPORTE 1.º] €, [IMPORTE 2.º] € y [IMPORTE 3.º] €, además de diamantes del juego.
+- **Del 4.º al 10.º:** diamantes del juego.
 
-Para optar a cualquier premio hacen falta al menos 100 puntos en la semana. Cada persona puede ganar **un solo premio por semana**. Los premios no se pueden cambiar por otros ni ceder.
+Para optar a premio hay que tener al menos un punto en la semana. Los premios no se pueden cambiar por otros ni ceder.
 
-## 8. Cómo se hace el sorteo
-Al empezar cada semana se publica en la app el **resumen criptográfico (hash SHA-256)** de una semilla secreta. Al cerrar la semana, el sorteo se hace automáticamente con esa semilla, que se publica junto con los ganadores. Así cualquiera puede comprobar que la semilla no se cambió y repetir el sorteo.
+**Descanso:** quien haya ganado un premio en dinero no puede volver a ganar otro hasta pasadas [1] semana(s). Durante ese tiempo sigue participando y puede ganar diamantes. El premio en dinero pasa al siguiente clasificado que pueda cobrarlo. Esto también se aplica a quien juegue desde la **versión web** del juego, que no tiene premios en dinero.
+
+## 8. Muro de la fama
+El ganador de cada semana aparece en el «Muro de la fama» de la app, con su nombre de jugador.
 
 ## 9. Entrega de los premios
 - Los ganadores lo verán en la app y deberán dejar un **email de contacto** y declarar que son mayores de 18 años en un plazo de [30] días. Si no, el premio se pierde.
@@ -58,6 +61,7 @@ Al empezar cada semana se publica en la app el **resumen criptográfico (hash SH
 Se descalificará, sin derecho a premio, a quien:
 - use programas que modifiquen el juego, bots, emuladores para automatizar o cualquier otro sistema que altere la puntuación;
 - tenga varias cuentas;
+- use autoclickers o cualquier método para simular juego activo sin estar jugando;
 - aproveche errores del juego.
 
 El Organizador podrá suspender la cuenta de la Liga y anular puntos o premios obtenidos de forma fraudulenta.

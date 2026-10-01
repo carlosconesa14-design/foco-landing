@@ -33,7 +33,7 @@ import { openShop } from "./ui/shopPanel";
 import { isVip, grantProduct } from "./game/shop";
 import { store } from "./platform/store";
 import { leagueHasPrize, openLeague, syncLeague } from "./ui/leaguePanel";
-import { leagueJoined } from "./game/league";
+import { IDLE_MS, leagueJoined, trackPlay } from "./game/league";
 import { ensureEvent, eventTiersReached, eventToClaim, eventWindow } from "./game/event";
 import { fmtWait, openEvent } from "./ui/eventPanel";
 import { loadIcons } from "./ui/icons";
@@ -78,6 +78,14 @@ function applySettings(): void {
 
 // El audio solo puede empezar tras un gesto del jugador.
 document.addEventListener("pointerdown", () => sound.unlock(), { capture: true });
+
+/* ---------- Tiempo de juego activo (Liga) ---------- */
+
+// Solo cuenta jugando de verdad: tocando la pantalla y nunca mientras se ve un anuncio.
+let lastInput = 0;
+let adOnScreen = false;
+for (const ev of ["pointerdown", "keydown", "wheel"]) document.addEventListener(ev, () => (lastInput = Date.now()), { capture: true, passive: true });
+const playingNow = (now: number) => !document.hidden && !adOnScreen && now - lastInput < IDLE_MS;
 // Un "clic" suave en cualquier botón de la interfaz HTML.
 root.addEventListener("click", (e) => {
   if ((e.target as HTMLElement).closest("button")) sound.play("click", 0.7);
@@ -93,7 +101,12 @@ async function watchAd(placement: Placement): Promise<boolean> {
   }
   // El vídeo trae su propio sonido: silenciamos el juego mientras dura.
   sound.duck(true);
-  const ok = await ads.showRewarded(placement).finally(() => sound.duck(false));
+  adOnScreen = true;
+  const ok = await ads.showRewarded(placement).finally(() => {
+    sound.duck(false);
+    adOnScreen = false;
+    lastInput = 0; // tras el anuncio, el tiempo vuelve a contar al tocar de nuevo
+  });
   if (ok) {
     fx("gems", true);
     act.recordAd(S, placement);
@@ -197,7 +210,10 @@ const ctx: PanelCtx = {
   },
   banner: (icon, text) => banner(root, icon, text),
   floatAt,
-  testAd: () => ads.showRewarded("boost_x2"),
+  testAd: () => {
+    adOnScreen = true;
+    return ads.showRewarded("boost_x2").finally(() => (adOnScreen = false));
+  },
   reload: () => {
     save();
     location.reload();
@@ -522,6 +538,7 @@ game.events.on("step", (time: number) => {
   // Tras volver de segundo plano no se simula el hueco: lo paga offerOffline().
   const dt = elapsed > 2 ? 0 : elapsed;
   frameSales = tick(S, dt, now);
+  if (playingNow(now)) trackPlay(S, now, dt);
   // Monedas al vender: más fuerte en el negocio que estás viendo, suave desde la ciudad.
   if (frameSales.length) {
     const here = S.view.scene === "business" ? S.view.id : null;
