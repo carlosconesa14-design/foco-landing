@@ -37,5 +37,6 @@ Cada vez que se sube un cambio a la rama se compila un APK nuevo, con el número
 4. Si los números acompañan y el asesor ha revisado las bases (`docs/BASES_LIGA.md`): **premios en dinero** con 50 €/semana (ver `docs/LIGA.md`).
 
 ## 5. En paralelo
+- **TikTok:** 20 guiones listos y el calendario semanal en `docs/TIKTOK.md`. Empieza a publicar antes del lanzamiento, para llegar con seguidores.
 - **ChatGPT/Codex:** arte de Miami, carretilla y furgoneta, iconos, edificios ★★/★★★ (`docs/ART.md`).
 - **Asesor:** bases de la Liga, política de privacidad, alta de autónomo e impuestos de premios e ingresos.
