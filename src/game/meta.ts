@@ -79,6 +79,7 @@ export function claimMission(s: GameState, index: number): number | null {
   const mi = s.meta.missions.list[index];
   if (!mi || mi.claimed || !missionDone(s, mi)) return null;
   mi.claimed = true;
+  bump(s, "missions");
   leagueEvent(s, "mission", mi.id);
   const gems = MISSIONS[mi.id].gems;
   s.meta.gems += gems;

@@ -6,28 +6,24 @@ Objetivo: usar **premios reales** como gancho principal para atraer y retener ju
 
 > Este documento es un diseño. Antes de pagar el primer euro, un asesor tiene que revisar las bases legales y los impuestos.
 
-## Modelo actual: Liga por esfuerzo (migración 0007)
+## Modelo actual: Liga por esfuerzo y retos (migraciones 0007 y 0008)
 
-Sustituye a las divisiones y al sorteo de las secciones 2 y 3, que quedan como historia del diseño. La idea es que **gana quien más juega esa semana, no quien empezó antes**.
+Sustituye a las divisiones y al sorteo de las secciones 2 y 3, que quedan como historia del diseño. **Gana el jugador más completo de la semana, no quien empezó antes.** Todos empiezan cada lunes a 0, y solo puntúa lo que es igual para todos:
 
-- **Todos empiezan cada lunes a 0.** Solo puntúa lo que es igual para todos:
-  - **tiempo de juego activo:** bloques de 5 min con el juego abierto y tocando la pantalla; cuenta si se juegan 3 de los 5 minutos;
-  - **entrar cada día:** 10;
-  - **misiones diarias:** 15 cada una, máximo 3 al día, sin la de ver anuncios;
-  - **completar las 3 misiones del día:** 20.
+| Bloque | Puntos | Máx. aprox./semana |
+| --- | --- | --- |
+| Tiempo activo (bloques de 5 min jugando de verdad) | 4 en las 2 primeras h del día, 2 de 2 a 4 h, nada después | ~1.000 |
+| Constancia | 10 por día; +50 al 5.º día y +100 al 7.º | 220 |
+| Reto del día (igual para todos, sale de la fecha) | 40 | 280 |
+| Misiones diarias (máx. 3, sin la de anuncios) + las 3 | 15 cada una + 20 | 455 |
+| Retos de la semana (15 misiones, 300 mejoras, 2.000 ventas, 4 retos del día) + todos | 60 cada uno + 100 | 340 |
 
-  Nada depende del tamaño del imperio: los hitos, puestos y negocios ya no puntúan.
-- **Horas que valen cada vez menos, sin tope duro:** las 3 primeras horas del día valen 10 puntos por bloque, de 3 a 6 h valen 5, y a partir de 6 h, nada. Quien más juega gana, pero no compensa jugar sin límite, y los bots tienen techo.
-- **Ranking único, premios del 1.º al 10.º.** Diamantes por puesto (`prize_gems`). El dinero (`prize_cents`) va a los 3 primeros que pueden cobrarlo.
-- **Descanso:** quien cobró dinero en las últimas `cash_cooldown_weeks` semanas (1 por defecto) no puede cobrar dinero; el dinero pasa al siguiente. La web nunca cobra dinero.
-- **Muro de la fama:** el 1.º de cada una de las últimas 8 semanas.
-- **Anuncios, sin relación con la Liga:**
-  - ver anuncios o comprar no da puntos;
-  - el tiempo viendo un anuncio no cuenta: el juego lo descuenta y además exige volver a tocar la pantalla;
-  - el x2 con anuncio del evento del fin de semana solo afecta a los premios del evento (diamantes), que tampoco cuentan para la Liga.
-
-  Así los anuncios siguen siendo atractivos (avanzar más rápido y más premios en el juego), pero nunca hacen falta para ganar. Es lo que exigen la política de AdMob (sin premios de valor real a cambio de ver anuncios) y la de Google Play (concursos gratuitos).
-- **Tramposos:** como mucho igualan a quien juega 6 h al día de verdad. Antes de pagar se revisa `league_events` (bloques por día y su reparto horario).
+- **Sin ventaja de los veteranos:** nada depende del tamaño del imperio, y los hitos, puestos y negocios ya no puntúan.
+- **Retos que no se aceleran con anuncios:** se han dejado fuera los maletines gratis, las habilidades recargables y el evento.
+- **Ranking único, premios del 1.º al 10.º.** Diamantes por puesto (`prize_gems`); el dinero (`prize_cents`) va a los 3 primeros que pueden cobrarlo.
+- **Descanso:** quien cobró dinero en las últimas `cash_cooldown_weeks` semanas no cobra dinero. La web nunca cobra dinero.
+- **Muro de la fama** con el ganador de cada semana.
+- **Anuncios:** no dan puntos y el tiempo viendo uno no cuenta (política de AdMob y de Google Play). La Liga trae jugadores y los hace volver cada día; los ingresos salen de las ofertas de anuncio del juego que se encuentran al jugar.
 
 ---
 

@@ -10,6 +10,20 @@ import { openSheet } from "./sheet";
 import { openDiagnostics } from "./diagnostics";
 import { openLegal, type LegalPage } from "./legal";
 import { notifications } from "../platform/notifications";
+import {
+  DAILY_RETOS,
+  RETO_GEMS,
+  WEEKLY_RETOS,
+  allWeeklyClaimed,
+  claimDailyReto,
+  claimWeeklyAll,
+  claimWeeklyReto,
+  dailyProgress,
+  ensureRetos,
+  retoText,
+  weeklyProgress,
+  type WeeklyRetoId,
+} from "../game/challenges";
 import { LANGS, lang, money, saveLang, t, type Lang } from "../i18n";
 
 /** Paneles de la fase 2: misiones, premio diario, ejecutivos y maletines, logros. */
@@ -31,11 +45,19 @@ const pct = (v: number, t: number) => `${Math.min(100, (v / Math.max(1, t)) * 10
 export function openMissions(ctx: PanelCtx): void {
   openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">📋</span><div><h3>${t("Misiones del día")}</h3><p class="muted" data-left></p></div></div>
-     <div class="list" data-list style="display:grid;gap:8px"></div>`,
+    `<div class="sheet-head"><span class="sicon">📋</span><div><h3>${t("Misiones y retos")}</h3><p class="muted" data-left></p></div></div>
+     <h4 class="lg-h">🎯 ${t("Reto del día")}</h4>
+     <div class="list" data-daily style="display:grid;gap:8px"></div>
+     <h4 class="lg-h">📋 ${t("Misiones del día")}</h4>
+     <div class="list" data-list style="display:grid;gap:8px"></div>
+     <h4 class="lg-h">🏆 ${t("Retos de la semana")}</h4>
+     <div class="list" data-weekly style="display:grid;gap:8px"></div>
+     <p class="small muted">${t("Los retos dan diamantes y, si estás en la Liga, puntos de Liga.")}</p>`,
     (el) => {
       const s = ctx.state();
       meta.ensureDay(s, Date.now());
+      ensureRetos(s, Date.now());
+      paintRetos(ctx, el);
       const tomorrow = new Date(meta.dayKey(Date.now()) + "T00:00:00Z").getTime() + 86400e3;
       $(el, "[data-left]").textContent = t("Nuevas misiones en {time}", { time: fmtTime((tomorrow - Date.now()) / 1000) });
       const rows = s.meta.missions.list.map((mi, i) => {
@@ -73,6 +95,58 @@ export function openMissions(ctx: PanelCtx): void {
       }
     },
   );
+}
+
+/** Reto del día y retos de la semana (dentro del panel de misiones). */
+function paintRetos(ctx: PanelCtx, el: HTMLElement): void {
+  const s = ctx.state();
+  const r = s.meta.retos;
+  const row = (done: boolean, claimed: boolean, text: string, v: number, target: number, gems: number, attr: string) =>
+    `<div class="row ${claimed ? "done" : ""}"><span class="face">${claimed ? "✅" : "🎯"}</span>
+      <div><b>${text}</b><span class="sub">${fmt(v)} / ${fmt(target)}</span><div class="bar2"><i style="width:${pct(v, target)}"></i></div></div>
+      <button class="claim" ${attr} ${!done || claimed ? "disabled" : ""}>${claimed ? t("Hecho") : `+${gems} ${gem()}`}</button></div>`;
+  const dd = DAILY_RETOS[r.daily];
+  const dv = dailyProgress(s);
+  const dailyEl = $(el, "[data-daily]");
+  if (paint(dailyEl, row(dv >= dd.target, r.dailyClaimed, retoText("daily", r.daily, dd.target), dv, dd.target, RETO_GEMS.daily, "data-reto-day")))
+    dailyEl.querySelector<HTMLButtonElement>("[data-reto-day]")!.onclick = () => {
+      const g = claimDailyReto(ctx.state());
+      if (g) {
+        ctx.fx("gems", true);
+        ctx.toast(t("¡Reto del día completado! +{n} 💎", { n: g }));
+      }
+    };
+  const ids = Object.keys(WEEKLY_RETOS) as WeeklyRetoId[];
+  const rows = ids.map((id) => {
+    const def = WEEKLY_RETOS[id];
+    const v = weeklyProgress(s, id);
+    return row(v >= def.target, r.weeklyClaimed.includes(id), retoText("weekly", id, def.target), v, def.target, RETO_GEMS.weekly, `data-reto-week="${id}"`);
+  });
+  const all = allWeeklyClaimed(s);
+  rows.push(`<div class="row ${r.weeklyAll ? "done" : ""}"><span class="face">🏆</span>
+    <div><b>${t("Completa los 4 retos de la semana")}</b><span class="sub">${t("Premio extra de la semana")}</span></div>
+    <button class="claim" data-reto-all ${!all || r.weeklyAll ? "disabled" : ""}>${r.weeklyAll ? t("Hecho") : `+${RETO_GEMS.weeklyAll} ${gem()}`}</button></div>`);
+  const weekEl = $(el, "[data-weekly]");
+  if (paint(weekEl, rows.join(""))) {
+    weekEl.querySelectorAll<HTMLButtonElement>("[data-reto-week]").forEach((b) => {
+      b.onclick = () => {
+        const g = claimWeeklyReto(ctx.state(), b.dataset.retoWeek as WeeklyRetoId);
+        if (g) {
+          ctx.fx("gems", true);
+          ctx.toast(t("¡Reto de la semana completado! +{n} 💎", { n: g }));
+        }
+      };
+    });
+    const allBtn = weekEl.querySelector<HTMLButtonElement>("[data-reto-all]");
+    if (allBtn)
+      allBtn.onclick = () => {
+        const g = claimWeeklyAll(ctx.state());
+        if (g) {
+          ctx.fx("milestone", true);
+          ctx.banner("🏆", t("¡Todos los retos de la semana! +{n} 💎", { n: g }));
+        }
+      };
+  }
 }
 
 /* ---------- Premio diario ---------- */

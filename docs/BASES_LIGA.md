@@ -25,14 +25,19 @@ Es un **concurso por méritos**: gana quien más juega esa semana. **No es un so
 
 | Acción | Puntos |
 | --- | --- |
-| Cada 5 minutos de juego activo, durante las primeras 3 horas del día | 10 |
-| Cada 5 minutos de juego activo, entre las 3 y las 6 horas del día | 5 |
+| Cada 5 minutos de juego activo, durante las primeras 2 horas del día | 4 |
+| Cada 5 minutos de juego activo, entre las 2 y las 4 horas del día | 2 |
 | Entrar en el juego (una vez al día) | 10 |
+| Entrar 5 días distintos en la semana / los 7 días | 50 / 100 más |
+| Completar el reto del día (uno al día, igual para todos) | 40 |
 | Cada misión diaria completada (máximo 3 al día; no cuenta la de ver anuncios) | 15 |
 | Completar las 3 misiones del día | 20 |
+| Cada reto de la semana (4, iguales para todos) | 60 |
+| Completar los 4 retos de la semana | 100 |
 
 - **Juego activo** es el tiempo con el juego abierto y en primer plano en el que el jugador toca la pantalla. Si no hay interacción durante más de un minuto, el tiempo deja de contar. Cada bloque de 5 minutos cuenta si se ha jugado activamente al menos 3 de ellos.
-- **A partir de 6 horas al día no se suman más puntos.**
+- **A partir de 4 horas de juego al día no se suman más puntos por tiempo.**
+- Los retos son iguales para todos los participantes y no dependen del progreso de cada uno dentro del juego.
 - **Ver anuncios o hacer compras no da puntos.** El tiempo viendo un anuncio no cuenta como juego activo. Las ventajas que dan los anuncios o las compras dentro del juego no influyen en la puntuación.
 - **Los puntos los calculan los servidores del Organizador;** los que figuren en ellos son los únicos válidos.
 

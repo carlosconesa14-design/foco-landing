@@ -1,6 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { fmt, fmtTime } from "../game/format";
-import { LEAGUE_POINTS, PLAY, leagueEvent, leagueJoined } from "../game/league";
+import { LEAGUE_POINTS, PLAY, STREAK_POINTS, leagueEvent, leagueJoined } from "../game/league";
 import { dayKey } from "../game/meta";
 import type { GameState } from "../game/state";
 import { leagueApi, type LeagueStatus, type Payout } from "../platform/league";
@@ -23,8 +23,13 @@ const actions = (st: LeagueStatus | null): { text: string; pts: number }[] => [
   { text: t("Cada 5 min jugando (primeras {h} h del día)", { h: PLAY.fullHours }), pts: st?.rules.blockPoints ?? PLAY.blockPoints },
   { text: t("Cada 5 min jugando (de {a} a {b} h)", { a: PLAY.fullHours, b: PLAY.fullHours + PLAY.halfHours }), pts: st?.rules.halfPoints ?? PLAY.halfPoints },
   { text: t("Entrar cada día"), pts: LEAGUE_POINTS.login },
+  { text: t("Entrar 5 días distintos en la semana"), pts: STREAK_POINTS.five },
+  { text: t("Entrar los 7 días de la semana"), pts: STREAK_POINTS.seven },
+  { text: t("Reto del día"), pts: LEAGUE_POINTS.daily_reto },
   { text: t("Cada misión diaria (menos «mira anuncios»)"), pts: LEAGUE_POINTS.mission },
   { text: t("Completar las 3 misiones del día"), pts: LEAGUE_POINTS.missions_all },
+  { text: t("Cada reto de la semana"), pts: LEAGUE_POINTS.weekly_reto },
+  { text: t("Completar los 4 retos de la semana"), pts: LEAGUE_POINTS.weekly_all },
 ];
 
 /** «1 h 25 min» / «40 min». */

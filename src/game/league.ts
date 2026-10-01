@@ -8,7 +8,7 @@ import type { GameState } from "./state";
  * Ni ver anuncios ni comprar generan eventos, y el tiempo viendo un anuncio no cuenta.
  */
 
-export type LeagueKind = "login" | "mission" | "missions_all" | "play";
+export type LeagueKind = "login" | "mission" | "missions_all" | "play" | "daily_reto" | "weekly_reto" | "weekly_all";
 
 export interface LeagueEvent {
   kind: LeagueKind;
@@ -31,16 +31,22 @@ export const LEAGUE_POINTS: Record<Exclude<LeagueKind, "play">, number> = {
   login: 10,
   mission: 15,
   missions_all: 20,
+  daily_reto: 40,
+  weekly_reto: 60,
+  weekly_all: 100,
 };
 
+/** Constancia: extra al entrar 5 y 7 días distintos en la semana. */
+export const STREAK_POINTS = { five: 50, seven: 100 } as const;
+
 /** Tiempo de juego: bloques de 5 minutos; cuentan si se ha jugado activamente 3 de ellos. */
-export const PLAY = { blockMs: 300e3, activeSec: 180, blockPoints: 10, halfPoints: 5, fullHours: 3, halfHours: 3 } as const;
+export const PLAY = { blockMs: 300e3, activeSec: 180, blockPoints: 4, halfPoints: 2, fullHours: 2, halfHours: 2 } as const;
 
 /** Sin tocar la pantalla durante más de esto, el tiempo deja de contar. */
 export const IDLE_MS = 60e3;
 
 export const MAX_QUEUE = 200;
-const KINDS: LeagueKind[] = ["login", "mission", "missions_all", "play"];
+const KINDS: LeagueKind[] = ["login", "mission", "missions_all", "play", "daily_reto", "weekly_reto", "weekly_all"];
 
 export const freshLeague = (): LeagueState => ({ id: null, secret: null, nickname: "", queue: [], play: { block: 0, sec: 0 } });
 

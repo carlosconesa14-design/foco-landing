@@ -32,7 +32,9 @@ export function upgrade(s: GameState, id: string, st: Station): string | null {
   if (st.kind === "floor") b.floors[st.index].level += qty;
   else if (st.kind === "transport") b.transport.level += qty;
   else b.sale.level += qty;
-  if (milestonesReached(stationLevel(b, st)) <= before) return "";
+  const reached = milestonesReached(stationLevel(b, st)) - before;
+  if (reached <= 0) return "";
+  bump(s, "milestones", reached);
   return t("{name}: ¡rendimiento x2!", { name: stationName(id, st) });
 }
 

@@ -34,6 +34,9 @@ import { isVip, grantProduct } from "./game/shop";
 import { store } from "./platform/store";
 import { leagueHasPrize, openLeague, syncLeague } from "./ui/leaguePanel";
 import { IDLE_MS, leagueJoined, trackPlay } from "./game/league";
+import { ensureRetos, retosToClaim } from "./game/challenges";
+import { adLadderStep, nextAdStep } from "./game/adLadder";
+import { rewardLabel, showGrant } from "./ui/metaPanels";
 import { ensureEvent, eventTiersReached, eventToClaim, eventWindow } from "./game/event";
 import { fmtWait, openEvent } from "./ui/eventPanel";
 import { loadIcons } from "./ui/icons";
@@ -111,6 +114,14 @@ async function watchAd(placement: Placement): Promise<boolean> {
     fx("gems", true);
     act.recordAd(S, placement);
     analytics.track("ad_watched", { placement });
+    // Escalera diaria: a los 3, 6 y 10 anuncios del día, premio extra del juego.
+    for (const step of adLadderStep(S, Date.now())) {
+      setTimeout(() => {
+        fx("chest", true);
+        banner(root, "📺", t("¡{n} anuncios hoy! Premio extra", { n: S.ads.today }));
+        showGrant(ctx, step.grant);
+      }, 600);
+    }
     save();
   } else {
     say(t("Anuncio no disponible. Inténtalo en un momento."));
@@ -276,12 +287,14 @@ document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
 function updateMeta(now: number): void {
   meta.ensureDay(S, now);
+  ensureRetos(S, now);
+  updateAdLadder(now);
   updateEvent(now);
   const top = document.getElementById("hud")!.offsetHeight + 10;
   const rail = document.getElementById("rail")!;
   rail.style.top = `${top}px`;
   const ready: Record<string, boolean> = {
-    missions: meta.missionsToClaim(S) > 0,
+    missions: meta.missionsToClaim(S) + retosToClaim(S) > 0,
     daily: meta.dailyStatus(S, now).canClaim,
     execs: meta.freeChestReady(S, now),
     achievements: meta.achievementsToClaim(S) > 0,
@@ -316,6 +329,24 @@ function updateMeta(now: number): void {
     document.getElementById("tutText")!.textContent = step.text;
   }
   updateGoal(now, top, show);
+}
+
+/* ---------- Escalera diaria de anuncios ---------- */
+
+function updateAdLadder(now: number): void {
+  const el = document.getElementById("adLadder");
+  if (!el) return;
+  const today = new Date(now).toISOString().slice(0, 10);
+  const next = nextAdStep(S, today);
+  el.hidden = isVip(S);
+  const seen = S.ads.day === today ? S.ads.today : 0;
+  const html = next
+    ? `📺 ${t("Anuncios hoy: {n}", { n: seen })} · ${t("a los {n}: {reward}", { n: next.ads, reward: rewardLabel(next.reward).text })}`
+    : `📺 ${t("Anuncios hoy: {n}", { n: seen })} · ${t("¡todos los premios de hoy conseguidos!")}`;
+  if (el.dataset.html !== html) {
+    el.dataset.html = html;
+    el.innerHTML = html;
+  }
 }
 
 /* ---------- Evento del fin de semana ---------- */

@@ -152,6 +152,10 @@ Reglas:
 
 Anuncios bonificados, siempre opcionales:
 
+**Escalera diaria de anuncios** (`src/game/adLadder.ts`): al ver 3, 6 y 10 anuncios en el día se ganan un maletín, 40 💎 y un maletín de oro. El menú muestra cuántos llevas y cuál es el siguiente premio. Solo da premios del juego: nunca puntos de Liga ni nada de valor real (política de AdMob).
+
+**Retos del día y de la semana** (`src/game/challenges.ts`): iguales para todos, dan diamantes y puntos de Liga. Los retos que se aceleran directamente con anuncios (maletines gratis, habilidades, evento) no se usan en la Liga.
+
 | Ubicación | Recompensa | Fase |
 | --- | --- | --- |
 | `boost_x2` | Todo x2 durante 4 h (acumulable hasta 12 h) | 1 |

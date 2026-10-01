@@ -1,4 +1,6 @@
 import { freshEvent, migrateEvent, type EventState } from "./event";
+import { freshRetos, migrateRetos, type RetosState } from "./challenges";
+import { freshAdLadder, migrateAdLadder, type AdLadderState } from "./adLadder";
 import { freshShop, migrateShop, type ShopState } from "./shop";
 import { freshLeague, migrateLeague, type LeagueState } from "./league";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
@@ -97,6 +99,10 @@ export interface MetaState {
   shop: ShopState;
   /** Evento del fin de semana. */
   event: EventState;
+  /** Retos del día y de la semana. */
+  retos: RetosState;
+  /** Escalera diaria de anuncios. */
+  adLadder: AdLadderState;
 }
 
 export interface Settings {
@@ -184,6 +190,8 @@ export function freshMeta(now = Date.now()): MetaState {
     league: freshLeague(),
     shop: freshShop(),
     event: freshEvent(),
+    retos: freshRetos(),
+    adLadder: freshAdLadder(),
   };
 }
 
@@ -288,6 +296,8 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.league = migrateLeague(r.league);
   m.shop = migrateShop(r.shop);
   m.event = migrateEvent(r.event);
+  m.retos = migrateRetos(r.retos);
+  m.adLadder = migrateAdLadder(r.adLadder);
   return m;
 }
 

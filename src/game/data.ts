@@ -304,7 +304,7 @@ export const DAILY_REWARDS: DailyReward[] = [
   { chest: "premium" },
 ];
 
-export type StatKey = "tapFloor" | "tapTransport" | "sales" | "upgrades" | "hires" | "floors" | "ads" | "abilities" | "chests" | "earned";
+export type StatKey = "tapFloor" | "tapTransport" | "sales" | "upgrades" | "hires" | "floors" | "ads" | "abilities" | "chests" | "earned" | "missions" | "milestones";
 
 export interface AchievementDef {
   id: string;
