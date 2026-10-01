@@ -10,6 +10,8 @@ La Liga Millonario la organiza [NOMBRE Y APELLIDOS / RAZÓN SOCIAL], con NIF [NI
 ## 2. Carácter gratuito
 La participación es **gratuita**. No hace falta comprar nada ni ver anuncios para participar ni para ganar. Las compras dentro de la app y los anuncios **no** dan puntos, papeletas ni ninguna ventaja en la Liga.
 
+El dinero, los diamantes y el resto de objetos del juego son **ficticios**: no tienen valor real y no se pueden canjear por dinero ni por premios. Los premios de la Liga dependen solo de los puntos de Liga conseguidos jugando, según estas bases.
+
 ## 3. Quién puede participar
 Cualquier jugador del juego que se apunte desde la pantalla «Liga» y acepte estas bases. Para cobrar **premios en dinero** hay que ser **mayor de 18 años** y residir en [ESPAÑA / PAÍSES ADMITIDOS]. El Organizador podrá pedir que se acredite la edad y la identidad antes de pagar.
 

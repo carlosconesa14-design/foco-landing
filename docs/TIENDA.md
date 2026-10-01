@@ -29,6 +29,8 @@
 >
 > Gratis para siempre. Los anuncios son siempre opcionales: tú decides si ves uno para duplicar ganancias.
 >
+> El dinero del juego es ficticio: no tiene valor real y no se puede canjear.
+>
 > Las bases de la Liga están disponibles en la app y en nuestra web. Apple y Google no patrocinan ni participan en la Liga.
 
 **Categoría**: Juegos → Simulación. **Etiquetas**: idle, tycoon, magnate, simulación de negocios.
@@ -120,6 +122,8 @@ El juego se muestra en inglés en los móviles que no están en español (ver `d
 > 🎁 **Daily missions, daily rewards and achievements** so there's always something to go for.
 >
 > Free forever. Ads are always optional: you decide whether to watch one to double your earnings.
+>
+> In-game money is fictional: it has no real value and cannot be redeemed.
 >
 > The League rules are available in the app and on our website. Apple and Google do not sponsor or take part in the League.
 

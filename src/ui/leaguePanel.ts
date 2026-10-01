@@ -103,7 +103,7 @@ export function openLeague(ctx: PanelCtx): void {
         lastStatus && (lastStatus.prizes.drawCents > 0 || Object.values(lastStatus.prizes.topCents).some((c) => c > 0))
           ? t("Los premios en dinero solo pueden cobrarlos mayores de 18 años: se pide un email de contacto, se revisa la partida y se pagan con tarjeta regalo o PayPal. Las bases completas están publicadas en la web del juego.")
           : t("Ahora mismo los premios son dentro del juego (diamantes). Si hay premios en dinero, se publicarán unas bases completas antes de empezar la semana.")
-      } ${t("Apple y Google no patrocinan ni participan en esta Liga.")}</p>
+      } ${t("El dinero del juego es ficticio: no tiene valor real y no se puede canjear.")} ${t("Apple y Google no patrocinan ni participan en esta Liga.")}</p>
       <p class="small"><a href="#" data-legal="bases-liga">${t("Leer las bases completas")}</a></p>
     </details>`;
 

@@ -247,6 +247,7 @@ export const EN: Record<string, string> = {
     "Cash prizes can only be claimed by players aged 18 or over: we ask for a contact email, review the game and pay by gift card or PayPal. The full rules are published on the game's website.",
   "Ahora mismo los premios son dentro del juego (diamantes). Si hay premios en dinero, se publicarán unas bases completas antes de empezar la semana.":
     "Right now prizes are in-game (gems). If there are cash prizes, full rules will be published before the week starts.",
+  "El dinero del juego es ficticio: no tiene valor real y no se puede canjear.": "In-game money is fictional: it has no real value and cannot be redeemed.",
   "Apple y Google no patrocinan ni participan en esta Liga.": "Apple and Google do not sponsor or take part in this League.",
   "Leer las bases completas": "Read the full rules",
   "Premios cada semana": "Prizes every week",

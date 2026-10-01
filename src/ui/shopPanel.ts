@@ -15,7 +15,7 @@ export function openShop(ctx: PanelCtx): void {
      <div class="shop" data-list></div>
      <button class="btn ghost wide" data-chests style="margin-top:10px">💼 ${t("Maletines de ejecutivos")}</button>
      <button class="btn ghost wide" data-restore style="margin-top:8px">${t("Restaurar compras")}</button>
-     <p class="small muted" style="margin-top:10px">${store.simulated ? t("Versión web: las compras son simuladas y no se cobra nada.") : t("Pagos gestionados por Google Play / App Store.")} ${t("Las compras no dan puntos en la Liga.")}</p>`,
+     <p class="small muted" style="margin-top:10px">${store.simulated ? t("Versión web: las compras son simuladas y no se cobra nada.") : t("Pagos gestionados por Google Play / App Store.")} ${t("Las compras no dan puntos en la Liga.")} ${t("El dinero del juego es ficticio: no tiene valor real y no se puede canjear.")}</p>`,
     (el) => {
       const s = ctx.state();
       const list = el.querySelector<HTMLElement>("[data-list]")!;

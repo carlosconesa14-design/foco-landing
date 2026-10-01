@@ -1,10 +1,10 @@
 # Lanzamiento: lista de pasos
 
-Todo lo técnico está preparado. Esto es lo que queda, en orden.
+Todo el código está listo: juego en español e inglés, Liga, evento del fin de semana, analítica, compras, anuncios, avisos, APK automático y la versión firmada para Google Play. Lo que queda son **cuentas, datos y material** que solo puedes poner tú, en este orden.
 
-## 1. Probar la app en tu móvil Android (hoy)
-1. En GitHub: repositorio → pestaña **Actions** → **Android APK** → la última ejecución en verde → al final, **Artifacts** → `rider-millonario-apk`. Se descarga un .zip con el .apk dentro.
-2. Pásalo al móvil y ábrelo. Android pedirá permitir «instalar apps de origen desconocido» para tu navegador o gestor de archivos.
+## 1. Probar la app en tu móvil Android
+1. En GitHub: repositorio → **Actions** → **Android APK** → la última ejecución en verde → **Artifacts** → `rider-millonario-apk`. Se descarga un .zip con el .apk dentro.
+2. Pásalo al móvil y ábrelo. Android pedirá permitir «instalar apps de origen desconocido».
 3. En el juego: **Ajustes → Diagnóstico del móvil**. Comprueba:
    - **Guardado:** OK;
    - **Servidor de la Liga:** conectado;
@@ -13,30 +13,81 @@ Todo lo técnico está preparado. Esto es lo que queda, en orden.
    - **Vibración:** se nota.
 4. Juega un rato y apúntate a la Liga. En Supabase deberían aparecer tu jugador (`league_players`) y tus eventos (`analytics_events`).
 
-Cada vez que se sube un cambio a la rama se compila un APK nuevo, con el número de versión subiendo solo.
-
-## 2. Cuentas que tienes que crear tú
+## 2. Cuentas
 | Cuenta | Para qué | Coste | Notas |
 | --- | --- | --- | --- |
-| **Google Play Console** | Publicar la app | 25 $ (un solo pago) | La verificación de identidad tarda unos días: hazla ya |
-| **AdMob** | Ingresos por anuncios | Gratis | Crea la app y 1 bloque «Bonificado». Me pasas el App ID y el ID del bloque y los configuro (ver README) |
-| Apple Developer (opcional, después) | Publicar en iOS | 99 $/año | Necesita un Mac o compilar en la nube |
+| **Google Play Console** | Publicar la app | 25 $ (un solo pago) | La verificación de identidad tarda unos días: es lo primero |
+| **AdMob** | Ingresos por anuncios | Gratis | Crea la app (Android) y 1 bloque **Bonificado**. Necesitas el **App ID** (`ca-app-pub-…~…`) y el **ID del bloque** (`ca-app-pub-…/…`) |
 
-## 3. Antes de subir a Google Play
-- [ ] **Icono, gráfico destacado y capturas** (ChatGPT; tamaños en `docs/TIENDA.md`) y **textos de la ficha** (listos en `docs/TIENDA.md`)
-- [ ] **Política de privacidad** completada (`docs/PRIVACIDAD.md`) y publicada con GitHub Pages (`docs/TIENDA.md`, punto 4)
-- [ ] **AdMob real:** App ID e ID del bloque en `.env` / Gradle, y `VITE_ADMOB_TESTING=false` **solo** en la versión de la tienda
-- [ ] **Clave de subida y secretos de GitHub** → la versión para la tienda se compila sola (ver `docs/TIENDA.md`, punto 3)
-- [ ] **Productos de compra** creados con los ids de `docs/COMPRAS.md`
-- [ ] Formulario de **clasificación de contenido** y de **seguridad de los datos** en Play Console (con lo que dice `docs/PRIVACIDAD.md`)
+## 3. Datos legales (mínimo para Google Play)
+Rellena los [corchetes] de `docs/PRIVACIDAD.md`:
+- nombre o razón social;
+- NIF;
+- domicilio;
+- email;
+- fecha.
 
-## 4. Lanzamiento de prueba
-1. Publicar en **prueba cerrada o abierta** en un país barato (por ejemplo México o Colombia), o solo en España con TikTok orgánico.
-2. Liga con premios **dentro del juego** las primeras 1–2 semanas.
-3. Medir con `docs/ANALITICA.md`: retención a 1 día > 35 %, a 7 días > 12 %, tutorial completado > 80 %.
-4. Si los números acompañan y el asesor ha revisado las bases (`docs/BASES_LIGA.md`): **premios en dinero** con 50 €/semana (ver `docs/LIGA.md`).
+Con eso, la política de privacidad sirve para la tienda.
 
-## 5. En paralelo
-- **TikTok:** 20 guiones listos y el calendario semanal en `docs/TIKTOK.md`. Empieza a publicar antes del lanzamiento, para llegar con seguidores.
-- **ChatGPT/Codex:** arte de Miami, carretilla y furgoneta, iconos, edificios ★★/★★★ (`docs/ART.md`).
-- **Asesor:** bases de la Liga, política de privacidad, alta de autónomo e impuestos de premios e ingresos.
+Las bases de la Liga (`docs/BASES_LIGA.md`) solo hacen falta completas **antes de dar premios en dinero**, y conviene que las revise un asesor. Mientras los premios sean diamantes, basta con el borrador.
+
+## 4. Unir la PR a `main` (y activar la web)
+1. Repositorio → **Settings → Pages → Source: «GitHub Actions»** (una vez).
+2. Une la PR a `main`.
+
+Se publica la web con la portada, la política de privacidad y las bases de la Liga. La URL de privacidad (`…/legal/privacidad.html`) es la que pide Play Console.
+
+**Importante:** GitHub solo deja lanzar a mano los workflows que están en `main`. Hasta que unas la PR, no aparecerá «Android release (Google Play)» en Actions.
+
+## 5. Clave de firma y secretos de GitHub
+Sigue `docs/TIENDA.md`, punto 3:
+1. Crea la clave de subida (`upload.jks`).
+2. Añade los 6 secretos en GitHub: la clave en base64, sus contraseñas, el alias y los dos IDs de AdMob.
+
+Si prefieres, la clave la genero yo y tú solo guardas el archivo y la contraseña.
+
+Después: **Actions → Android release (Google Play) → Run workflow**. Sale el `.aab` firmado, con anuncios reales, en Artifacts.
+
+## 6. Play Console
+1. **Crear la app:** juego, gratis. Usa como nombre el de `docs/TIENDA.md`.
+2. **Ficha:** textos en español y en inglés (`docs/TIENDA.md`, puntos 1 y 6).
+3. **Material gráfico:** icono de 512 px, gráfico destacado de 1024×500 y de 4 a 8 capturas. Lo hace ChatGPT; los tamaños están en `docs/TIENDA.md`, punto 2.
+4. **Formularios:**
+   - clasificación de contenido;
+   - seguridad de los datos;
+   - anuncios: sí;
+   - público: mayores de 13.
+
+   Las respuestas están en `docs/TIENDA.md`, punto 5.
+5. **Productos de compra:** `vip`, `starter_pack`, `gems_200` y `gems_1200` (`docs/COMPRAS.md`). Hay que haber subido antes un `.aab`.
+6. **Política de privacidad:** la URL del paso 4.
+
+## 7. Prueba cerrada (obligatoria para cuentas personales nuevas)
+Google exige que las cuentas personales nuevas hagan una **prueba cerrada con al menos 12 probadores durante 14 días seguidos** antes de publicar en producción:
+1. Sube el `.aab` a **Prueba cerrada**.
+2. Añade los emails de los probadores: amigos, familia o seguidores de TikTok.
+3. Pídeles que la abran varios días. Sus partidas ya cuentan para la analítica y la Liga.
+
+Mientras tanto:
+- revisa los números en Supabase (`docs/ANALITICA.md`): retención al día 1 por encima del 35 % y tutorial completado por encima del 80 %;
+- corrige lo que salga.
+
+## 8. Producción
+Solicita el acceso a producción en Play Console (Google revisa la prueba) y publica.
+
+Recomendado:
+- empezar en España y Latinoamérica;
+- la Liga, con premios dentro del juego las primeras semanas;
+- **premios en dinero** solo cuando el asesor haya revisado las bases (ver `docs/LIGA.md`).
+
+## En paralelo
+- **TikTok** (`docs/TIKTOK.md`): empieza ya, para llegar al lanzamiento con seguidores. Los vídeos de `marketing/evolucion/` sirven para el primero.
+- **ChatGPT/Codex** (`docs/ART.md`):
+  - icono, gráfico destacado y capturas;
+  - arte de Miami;
+  - una moneda sin símbolo € para el juego en inglés.
+- **Asesor:**
+  - bases de la Liga y política de privacidad;
+  - alta como autónomo o empresa;
+  - impuestos de los ingresos y de los premios.
+- **iOS (más adelante):** cuenta de Apple Developer (99 $/año) y compilar en un Mac o en la nube.
