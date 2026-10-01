@@ -473,3 +473,40 @@ Imperio y servicio del restaurante. Sobre el build de producción a 390×844:
 tutorial con clics reales, ampliaciones de una a ocho cocinas, edificios de
 categorías 1/3 en la ciudad, controles de cámara y movimiento reducido, sin
 errores de consola. Esta comprobación no sustituye una prueba en Android físico.
+
+## Almacén: logística y vehículos propios
+
+`WarehouseRoom.ts` dibuja un almacén abierto con estanterías en dos filas,
+pasillos de carretilla conectados, señalización teal/amarilla y un muelle
+frontal de carga. La carretilla y la furgoneta aparcan por separado. Los palés
+visibles responden al stock; un paquete por estación avanza al ritmo del ciclo
+real de producción. Las ampliaciones añaden puestos y señalización de zonas.
+
+Atlas `public/sprites/generated/warehouse.png`, 1254×1254 RGBA, generado con
+ChatGPT Image Generation; recortes en `warehouse.json` y
+`src/art/warehouseFrames.ts`. El PNG original conserva sus píxeles. Los grupos
+vacío/cargado y abierto/cerrado comparten encuadre para evitar saltos de tamaño.
+
+| Clave | Caja lógica máxima |
+| --- | --- |
+| `veh_forklift`, `wh_forklift_loaded`, `wh_forklift_rear` | 68×64 |
+| `veh_van`, `wh_van_rear`, `wh_van_open` | 88×66 |
+| `wh_shelf` | 128×126 |
+| `wh_pallet` | 54×46 |
+| `wh_dock` | 140×100 |
+
+Prompt: «Original mobile isometric logistics tycoon transparent sprite atlas,
+3×3 cells, warm polished toy-like 3D, chunky readable silhouettes, orthographic
+2:1, orange/teal/cream palette. Orange forklift with driver: empty forks facing
+down-right, same carrying a shipping crate, rear view facing up-right. Cream
+and teal delivery van: front down-right, rear up-right closed doors, same rear
+view with doors open and parcels inside. Blue/orange warehouse shelving with
+short packing conveyor, wooden pallet with three cardboard boxes, freestanding
+teal loading canopy with orange supports and parcel scanner. No brands, words
+or background, separate fully visible objects with transparent gutters.»
+
+Los vehículos alternan vistas frontales/traseras al girar. La carretilla muestra
+la caja según su carga real; la furgoneta permanece brevemente en el muelle con
+las puertas abiertas al empezar el viaje. Es una interpolación visual de la
+fase de venta, sin cambiar su duración económica. Movimiento reducido omite
+balanceo y recorrido decorativo de cajas. Hay arte procedural de respaldo.

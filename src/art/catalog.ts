@@ -163,8 +163,13 @@ function drawVan(p: Pen): void {
 const CAR_COLORS = [0xe74c3c, 0x3498db, 0xf1c40f, 0x2ecc71];
 CAR_COLORS.forEach((_, i) => def(`car_${i}`, 44, 34));
 // Vehículos propios del almacén (solo PNG; sin PNG se usa un coche): carretilla elevadora y furgoneta de reparto.
-def("veh_forklift", 44, 40);
-def("veh_van", 52, 40);
+def("veh_forklift", 68, 64);
+for (const key of ["wh_forklift_loaded", "wh_forklift_rear"]) def(key, 68, 64);
+def("veh_van", 88, 66);
+for (const key of ["wh_van_rear", "wh_van_open"]) def(key, 88, 66);
+def("wh_shelf", 128, 126);
+def("wh_pallet", 54, 46);
+def("wh_dock", 140, 100);
 
 /** Coche isométrico orientado hacia abajo-derecha (eje de columnas). */
 function drawCar(p: Pen, color: number): void {
@@ -792,6 +797,13 @@ export function buildArt(scene: Phaser.Scene, k: number): void {
     p.fill(0xc68642).circle(20,15,11).fill(0x392b29).ellipse(20,7,23,12);
   });
   for (const [role, look] of Object.entries(LOOKS)) for (const f of [0, 1, 2]) make(scene, `ch_${role}_${f}`, k, (p) => drawChar(p, look, f));
+  make(scene, "wh_shelf", k, p => drawStation(p,"st_dropship"));
+  make(scene, "wh_pallet", k, p => drawItem(p,"item_box"));
+  make(scene, "wh_dock", k, p => { p.fill(0x287d86).poly([[8,28],[72,2],[132,32],[68,60]]);p.fill(0xecaa43).rect(12,35,5,60).rect(123,37,5,60); });
+  for (const key of ["veh_forklift","wh_forklift_loaded","wh_forklift_rear"]) make(scene,key,k,p=>{
+    p.fill(0xeea130).rrect(12,26,36,23,5);p.fill(0x263d4a).rect(17,9,4,24).rect(42,9,4,24).rect(17,7,29,4).circle(20,50,7).circle(43,50,7);p.fill(0xaebdc2).rect(48,46,18,4);
+  });
+  for (const key of ["veh_van","wh_van_rear","wh_van_open"]) make(scene,key,k,drawVan);
   make(scene, "van", k, drawVan);
   CAR_COLORS.forEach((c, i) => make(scene, `car_${i}`, k, (p) => drawCar(p, c)));
   for (const key of ["item_box", "item_dish", "item_clip", "item_chip", ...MIAMI_ITEMS]) make(scene, key, k, (p) => drawItem(p, key));

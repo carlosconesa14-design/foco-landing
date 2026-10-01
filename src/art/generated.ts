@@ -1,9 +1,10 @@
 import type Phaser from "phaser";
 import { GENERATED_FRAMES as BASE_FRAMES, GENERATED_SHEETS as BASE_SHEETS } from "./generatedFrames";
+import { WAREHOUSE_FRAMES } from "./warehouseFrames";
 import { RESTAURANT_FRAMES } from "./restaurantFrames";
 
-export const GENERATED_SHEETS = [...BASE_SHEETS, { key: "generated-restaurant", file: "restaurant" }];
-const GENERATED_FRAMES: typeof BASE_FRAMES = { ...BASE_FRAMES, ...RESTAURANT_FRAMES };
+export const GENERATED_SHEETS = [...BASE_SHEETS, { key: "generated-restaurant", file: "restaurant" }, { key: "generated-warehouse", file: "warehouse" }];
+const GENERATED_FRAMES: typeof BASE_FRAMES = { ...BASE_FRAMES, ...RESTAURANT_FRAMES, ...WAREHOUSE_FRAMES };
 type Spec = { w: number; h: number };
 const aliases: Record<string, string> = {};
 for (const key of Object.keys(GENERATED_FRAMES)) {
