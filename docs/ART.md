@@ -75,6 +75,8 @@ Para las poses de caminar (`_1` y `_2`), el prompt es el mismo con "walking, lef
 | `st_restaurant` | 100×86 | Side view professional kitchen stove with two steaming pots |
 | `st_tiktok` | 100×86 | Side view ring light on a tripod holding a smartphone, colorful props |
 | `st_ai` | 100×86 | Side view black server rack with glowing cyan and green LEDs |
+| `veh_forklift` | 44×40 | Isometric 2:1 small yellow warehouse forklift carrying nothing, driving toward the bottom-right (es la «Carretilla» del almacén; sin PNG se usa un coche) |
+| `veh_van` | 52×40 | Isometric 2:1 white delivery van with an orange stripe, driving toward the bottom-right (son las «Furgonetas» del almacén) |
 | `van` | 76×46 | Side view white delivery van with orange stripe, facing right (se usa en pantallas laterales) |
 | `item_box` | 26×26 | Small cardboard box with tape |
 | `item_dish` | 26×26 | Plate of spaghetti with tomato sauce |

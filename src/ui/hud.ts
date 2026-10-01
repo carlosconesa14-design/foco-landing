@@ -80,10 +80,8 @@ export function updateBar(s: GameState, now: number): void {
   if (s.view.scene !== "business") return;
   const id = s.view.id;
   const b = s.biz[id];
-  const r = chainRates(bizDef(id), b, false);
-  const names = { production: "producción", transport: "transporte", sale: "venta" };
   const rate = document.getElementById("barRate");
-  if (rate) rate.textContent = `+${fmt(businessRate(s, id, now))}/s · atasco: ${names[r.bottleneck]}`;
+  if (rate) rate.textContent = `+${fmt(businessRate(s, id, now))} €/s · tu imperio`;
   const chain = document.getElementById("chain");
   if (chain) setHtml(chain, chainCards(s, id, now));
   const rushLeft = (b.rushEnd - now) / 1000;
@@ -132,6 +130,10 @@ function chainCards(s: GameState, id: string, now: number): string {
   const floorIdx = productionTarget(s, id);
   const floorSt: Station = { kind: "floor", index: floorIdx };
   const canFloor = b.floors.some((f, i) => s.cash >= nextLevelCost(s, def, { kind: "floor", index: i }, f.level));
+  // El atasco solo tiene sentido con algo automatizado; y en los 3 primeros pasos del tutorial
+  // (tocar puesto, carretilla y venta) las etiquetas distraen: el jugador aún está aprendiendo a tocar.
+  const auto = b.transport.managed || b.sale.managed || b.floors.some((f) => f.managed);
+  const quiet = s.meta.tutorial < 3;
   const card = (
     key: "production" | "transport" | "sale",
     st: string,
@@ -143,8 +145,9 @@ function chainCards(s: GameState, id: string, now: number): string {
     canUp: boolean,
     mgrCost: number,
   ) => {
-    const slow = r.bottleneck === key;
-    const hire = !managed && s.cash >= mgrCost;
+    const slow = !quiet && auto && r.bottleneck === key;
+    const hire = !quiet && !managed && s.cash >= mgrCost;
+    canUp = canUp && !quiet;
     return `<button class="link-card ${slow ? "slow" : ""} ${canUp || hire ? "can" : ""}" data-st="${st}" aria-label="Mejorar ${name}">
       <span class="lc-txt"><b><span class="lc-ic">${ico}</span>${name}</b><small>${level} · ${fmt(rate * m)}/s</small></span>
       <span class="lc-tag">${slow ? "Atasco" : hire ? "👔 Contratar" : canUp ? "▲ Mejorar" : ""}</span>

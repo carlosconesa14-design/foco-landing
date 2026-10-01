@@ -57,7 +57,7 @@ export const LOOKS: Record<string, Look> = {
  * y `seller` sale a vender; si empiezan por "car_" son vehículos, si no, personajes.
  */
 export const BIZ_ART: Record<string, { worker: string; mover: string; seller: string; item: string; station: string }> = {
-  dropship: { worker: "packer", mover: "car_3", seller: "car_2", item: "item_box", station: "st_dropship" },
+  dropship: { worker: "packer", mover: "veh_forklift", seller: "veh_van", item: "item_box", station: "st_dropship" },
   restaurant: { worker: "cook", mover: "waiter", seller: "rider", item: "item_dish", station: "st_restaurant" },
   tiktok: { worker: "creator", mover: "editor", seller: "brand", item: "item_clip", station: "st_tiktok" },
   ai: { worker: "engineer", mover: "tech", seller: "sales", item: "item_chip", station: "st_ai" },
@@ -147,6 +147,9 @@ function drawVan(p: Pen): void {
 
 const CAR_COLORS = [0xe74c3c, 0x3498db, 0xf1c40f, 0x2ecc71];
 CAR_COLORS.forEach((_, i) => def(`car_${i}`, 44, 34));
+// Vehículos propios del almacén (solo PNG; sin PNG se usa un coche): carretilla elevadora y furgoneta de reparto.
+def("veh_forklift", 44, 40);
+def("veh_van", 52, 40);
 
 /** Coche isométrico orientado hacia abajo-derecha (eje de columnas). */
 function drawCar(p: Pen, color: number): void {

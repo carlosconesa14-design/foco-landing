@@ -72,7 +72,10 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
 - **Siguientes ciudades:** Dubái (mecánica: petróleo que sube y baja de precio), Tokio (tecnología, turnos de noche)… Solo hay que añadir un `CityDef` en `src/game/data.ts` y su arte.
 
 ### Retención (fase 2 ✅)
-- **Tutorial guiado** de 6 pasos, con premio en diamantes al terminar.
+- **Tutorial guiado** de 6 pasos, con premio en diamantes al terminar. En cada paso solo se señala lo que hay que tocar: mano, aro dorado en el suelo y cartel con el nombre (Carretilla, Furgonetas). Las etiquetas de la barra de la cadena no aparecen hasta el paso 4.
+- **Panel Imperio** (tocar el centro de la barra inferior): todos los negocios de la ciudad con sus €/s, atasco y gerentes que faltan, y un botón para ir a cada uno.
+- **Avisos en el móvil:** caja llena, maletín gratis y premio diario. Se programan al salir de la app, nunca de noche, y se pueden desactivar en Ajustes.
+- **Edificios que crecen:** ★★ con 3 puestos y ★★★ con 6. Se celebra y el edificio cambia de imagen (si existe `bld_<id>_2/_3`).
 - **3 misiones diarias** elegidas al azar cada día, con un premio extra por completar las tres.
 - **Premio diario** con racha de 7 días (diamantes, dinero, maletines). Se puede duplicar viendo un anuncio. Si te saltas un día, la racha vuelve a empezar.
 - **13 logros** con diamantes.
