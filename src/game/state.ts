@@ -1,3 +1,4 @@
+import { freshShop, migrateShop, type ShopState } from "./shop";
 import { freshLeague, migrateLeague, type LeagueState } from "./league";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
@@ -91,6 +92,8 @@ export interface MetaState {
   tutorial: number;
   /** Liga Millonario: credenciales y eventos pendientes de enviar. */
   league: LeagueState;
+  /** Compras dentro de la app. */
+  shop: ShopState;
 }
 
 export interface Settings {
@@ -176,6 +179,7 @@ export function freshMeta(now = Date.now()): MetaState {
     achievements: [],
     tutorial: 0,
     league: freshLeague(),
+    shop: freshShop(),
   };
 }
 
@@ -278,6 +282,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.achievements = Array.isArray(r.achievements) ? r.achievements.filter((x): x is string => typeof x === "string") : [];
   m.tutorial = Math.max(0, num(r.tutorial, 0));
   m.league = migrateLeague(r.league);
+  m.shop = migrateShop(r.shop);
   return m;
 }
 

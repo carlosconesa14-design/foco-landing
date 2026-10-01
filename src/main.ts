@@ -27,6 +27,9 @@ import { openAchievements, openDaily, openExecs, openMissions, openSettings } fr
 import { activeSheet, closeSheet } from "./ui/sheet";
 import { openWorld } from "./ui/worldPanels";
 import { openEmpire } from "./ui/empirePanel";
+import { openShop } from "./ui/shopPanel";
+import { isVip, grantProduct } from "./game/shop";
+import { store } from "./platform/store";
 import { leagueHasPrize, openLeague, syncLeague } from "./ui/leaguePanel";
 import { leagueJoined } from "./game/league";
 import { loadIcons } from "./ui/icons";
@@ -74,6 +77,11 @@ root.addEventListener("click", (e) => {
 /* ---------- Anuncios ---------- */
 
 async function watchAd(placement: Placement): Promise<boolean> {
+  // VIP: la recompensa llega al momento, sin vídeo
+  if (isVip(S)) {
+    fx("gems", true);
+    return true;
+  }
   // El vídeo trae su propio sonido: silenciamos el juego mientras dura.
   sound.duck(true);
   const ok = await ads.showRewarded(placement).finally(() => sound.duck(false));
@@ -213,7 +221,7 @@ document.getElementById("rail")!.addEventListener("click", (e) => {
   else if (which === "league") openLeague(ctx);
   else if (which === "settings") openSettings(ctx);
 });
-document.getElementById("gems")!.addEventListener("click", () => openExecs(ctx, "chests"));
+document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
 /* Menú lateral plegable: deja ver más mapa. Se recuerda en este dispositivo. */
 function setRail(collapsed: boolean): void {
@@ -542,6 +550,8 @@ async function boot(): Promise<void> {
   // A quien ya terminó el tutorial (partidas anteriores) se le piden los avisos una vez.
   if (meta.tutorialStep(S) === null) setTimeout(askNotificationsOnce, 4000);
   ads.init().catch(() => {});
+  // Compras únicas ya hechas (móvil nuevo o reinstalación): se entregan solas
+  void store.owned().then((owned) => owned.forEach((o) => grantProduct(S, o.id, o.order, Date.now())));
 }
 
 void boot();

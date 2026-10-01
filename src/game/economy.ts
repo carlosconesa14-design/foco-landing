@@ -51,7 +51,8 @@ export function saleMult(s: GameState, id: string, now: number, live = true): nu
     (1 + CONFIG.shareBonus * s.shares) *
     execMults(s, id, now, live).sale *
     worldIncomeMult(s) *
-    tourismMult(s, now, live)
+    tourismMult(s, now, live) *
+    (s.meta.shop.vip ? 2 : 1) // VIP: x2 permanente (también offline)
   );
 }
 
