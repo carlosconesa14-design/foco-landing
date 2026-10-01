@@ -17,21 +17,24 @@
           <button class="gems" id="gems" aria-label="Diamantes y maletines"></button>
           <div class="rate" id="rate"></div>
         </div>
+        <div class="row2">
         <div class="life" id="life"></div>
         <div class="boost" id="boost">
           <div class="x2">x2</div>
           <div class="txt" id="boostTxt"></div>
           <button class="ad-btn" id="boostBtn"><span class="play"></span>+4 h</button>
         </div>
+        </div>
       </header>
       <button class="goal" id="goal" hidden aria-label="Próximo objetivo"><span class="gicon" id="goalIcon"></span><span class="gtext"><small>Objetivo</small><span id="goalText"></span></span><span class="gbar"><i id="goalBar"></i></span></button>
       <div class="tut" id="tut" hidden><span class="tut-step" id="tutStep"></span><span id="tutText"></span></div>
       <div class="rail" id="rail">
-        <button data-open="missions" aria-label="Misiones"><span class="ic">📋</span>Misiones<i class="dot" hidden></i></button>
-        <button data-open="daily" aria-label="Premio diario"><span class="ic">🎁</span>Diario<i class="dot" hidden></i></button>
-        <button data-open="execs" aria-label="Ejecutivos y maletines"><span class="ic">💼</span>Ejecutivos<i class="dot" hidden></i></button>
-        <button data-open="achievements" aria-label="Logros"><span class="ic">🏆</span>Logros<i class="dot" hidden></i></button>
-        <button data-open="settings" aria-label="Ajustes"><span class="ic">⚙️</span>Ajustes</button>
+        <button class="rail-toggle" id="railToggle" aria-label="Mostrar u ocultar menú" aria-expanded="true"><span class="ic">◂</span><i class="tdot" hidden></i></button>
+        <button data-open="missions" aria-label="Misiones"><span class="ic" data-icon="ic_missions">📋</span>Misiones<i class="dot" hidden></i></button>
+        <button data-open="daily" aria-label="Premio diario"><span class="ic" data-icon="ic_daily">🎁</span>Diario<i class="dot" hidden></i></button>
+        <button data-open="execs" aria-label="Ejecutivos y maletines"><span class="ic" data-icon="ic_execs">💼</span>Ejecutivos<i class="dot" hidden></i></button>
+        <button data-open="achievements" aria-label="Logros"><span class="ic" data-icon="ic_trophy">🏆</span>Logros<i class="dot" hidden></i></button>
+        <button data-open="settings" aria-label="Ajustes"><span class="ic" data-icon="ic_settings">⚙️</span>Ajustes</button>
       </div>
       <div class="wave" id="wave" hidden><span class="txt" id="waveTxt"></span><button class="ad-btn" id="waveBtn"><span class="play"></span>Atraer ya</button></div>
       <footer id="bar"></footer>

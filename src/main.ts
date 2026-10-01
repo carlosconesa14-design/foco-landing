@@ -23,6 +23,7 @@ import { openIpoSheet, openPlotSheet, openStationSheet, openUnlockSheet, type Pa
 import { openAchievements, openDaily, openExecs, openMissions, openSettings } from "./ui/metaPanels";
 import { activeSheet, closeSheet } from "./ui/sheet";
 import { openWorld } from "./ui/worldPanels";
+import { loadIcons } from "./ui/icons";
 import "./styles.css";
 
 const root = document.getElementById("app")!;
@@ -197,16 +198,40 @@ document.getElementById("rail")!.addEventListener("click", (e) => {
 });
 document.getElementById("gems")!.addEventListener("click", () => openExecs(ctx, "chests"));
 
+/* Menú lateral plegable: deja ver más mapa. Se recuerda en este dispositivo. */
+function setRail(collapsed: boolean): void {
+  const rail = document.getElementById("rail")!;
+  rail.classList.toggle("collapsed", collapsed);
+  const t = document.getElementById("railToggle")!;
+  t.setAttribute("aria-expanded", String(!collapsed));
+  t.querySelector(".ic")!.textContent = collapsed ? "☰" : "▸";
+  try {
+    localStorage.setItem("railCollapsed", collapsed ? "1" : "0");
+  } catch {
+    /* sin almacenamiento: no pasa nada */
+  }
+}
+let railStart = false;
+try {
+  railStart = localStorage.getItem("railCollapsed") === "1";
+} catch {
+  /* sin almacenamiento */
+}
+setRail(railStart);
+document.getElementById("railToggle")!.addEventListener("click", () => setRail(!document.getElementById("rail")!.classList.contains("collapsed")));
+
 function updateMeta(now: number): void {
   meta.ensureDay(S, now);
   const top = document.getElementById("hud")!.offsetHeight + 10;
   const rail = document.getElementById("rail")!;
   rail.style.top = `${top}px`;
-  const dots = rail.querySelectorAll<HTMLElement>(".dot");
+  const dots = rail.querySelectorAll<HTMLElement>("[data-open] .dot");
   dots[0].hidden = meta.missionsToClaim(S) === 0;
   dots[1].hidden = !meta.dailyStatus(S, now).canClaim;
   dots[2].hidden = !meta.freeChestReady(S, now);
   dots[3].hidden = meta.achievementsToClaim(S) === 0;
+  // Con el menú plegado, un punto en el botón de desplegar avisa de que hay algo pendiente.
+  rail.querySelector<HTMLElement>(".tdot")!.hidden = !rail.classList.contains("collapsed") || [...dots].every((d) => d.hidden);
 
   const adv = meta.advanceTutorial(S);
   if (adv?.done)
@@ -424,6 +449,7 @@ game.events.on("step", (time: number) => {
 });
 
 async function boot(): Promise<void> {
+  await loadIcons();
   S = migrate(await loadSave());
   applySettings();
   updateHeader(S, Date.now());

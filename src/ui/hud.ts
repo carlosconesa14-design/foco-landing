@@ -3,10 +3,18 @@ import { bizDef, businessRate, chainRates, lifeIndex, passiveRate } from "../gam
 import { fmt, fmtTime } from "../game/format";
 import { boostHours, canExpand } from "../game/world";
 import { cityDef, type GameState } from "../game/state";
+import { bizIcon, flagIcon, gem, icon, lifeIcon } from "./icons";
 
 /** Cabecera (dinero, estilo de vida, modo hustle) y barra inferior según la escena. */
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+
+/** Solo reescribe el HTML si cambia: así las imágenes de los iconos no parpadean. */
+function setHtml(el: HTMLElement, html: string): void {
+  if (el.dataset.html === html) return;
+  el.dataset.html = html;
+  el.innerHTML = html;
+}
 
 /** Dinero mostrado: sube contando hacia el real en vez de saltar (micro-recompensa constante). */
 let shownCash = 0;
@@ -24,20 +32,20 @@ export function updateHeader(s: GameState, now: number): void {
     setTimeout(() => cash.classList.remove("bump"), 350);
   }
   $("rate").innerHTML = `+${fmt(passiveRate(s, now))} /s<span>ingresos pasivos</span>`;
-  $("gems").textContent = `💎 ${fmt(s.meta.gems)}`;
+  setHtml($("gems"), `${gem()} ${fmt(s.meta.gems)}`);
 
   const li = lifeIndex(s.totalEarned);
   const L = LIFE[li];
   const N = LIFE[li + 1];
   const pct = N ? (Math.log10(Math.max(1, s.totalEarned) / Math.max(1, L.min)) / Math.log10(N.min / Math.max(1, L.min))) * 100 : 100;
-  $("life").innerHTML = `<span class="em">${L.icon}</span><b>${L.name}</b><span class="nx">${N ? `Siguiente: ${N.icon} ${fmt(N.min)} €` : "Lo has conseguido"}</span><span class="track"><i style="width:${Math.max(0, Math.min(100, pct))}%"></i></span>`;
+  setHtml($("life"), `<span class="em">${lifeIcon(li)}</span><b>${L.name}</b><span class="nx">${N ? `${lifeIcon(li + 1)} ${fmt(N.min)}` : "🏁"}</span><span class="track"><i style="width:${Math.max(0, Math.min(100, pct)).toFixed(1)}%"></i></span>`);
 
   const rem = (s.boostEnd - now) / 1000;
   $("boost").classList.toggle("on", rem > 0);
   $("boostTxt").innerHTML =
     rem > 0
-      ? `<b>Modo hustle x2 · ${fmtTime(rem)}</b>Acumulable hasta ${CONFIG.boostMaxHours} h`
-      : `<b>Modo hustle</b>Anuncio: todo x2 durante ${boostHours(s)} h`;
+      ? `<b>${fmtTime(rem)}</b>Todo x2`
+      : `<b>Todo x2</b>Modo hustle`;
   $<HTMLButtonElement>("boostBtn").disabled = rem > (CONFIG.boostMaxHours - boostHours(s)) * 3600;
   $("boostBtn").lastChild!.textContent = `+${boostHours(s)} h`;
 }
@@ -53,14 +61,14 @@ export function renderBar(s: GameState): void {
   if (s.view.scene === "business") {
     const def = bizDef(s.view.id);
     bar.innerHTML = `
-      <button class="navbtn" data-nav="city"><span class="ic">🏙️</span>Ciudad</button>
-      <div class="barmid"><b>${def.icon} ${def.name}</b><span id="barRate"></span></div>
+      <button class="navbtn" data-nav="city"><span class="ic">${icon("ic_city", "🏙️")}</span>Ciudad</button>
+      <div class="barmid"><b>${bizIcon(def)} ${def.name}</b><span id="barRate"></span></div>
       <button class="ad-btn rushbtn" data-rush="${def.id}" id="rushBtn"><span class="play"></span><span id="rushTxt">x${CONFIG.rushMult}</span></button>`;
   } else {
     bar.innerHTML = `
-      <button class="navbtn" data-nav="ipo"><span class="ic">📈</span>Bolsa</button>
-      <div class="barmid"><b>${city.flag} ${city.name}</b><span>Toca un edificio para entrar</span></div>
-      <button class="navbtn" data-nav="world"><span class="ic">🌍</span>Mundo<i class="dot" id="worldDot" hidden></i></button>`;
+      <button class="navbtn" data-nav="ipo"><span class="ic">${icon("ic_ipo", "📈")}</span>Bolsa</button>
+      <div class="barmid"><b>${flagIcon(city)} ${city.name}</b><span>Toca un edificio para entrar</span></div>
+      <button class="navbtn" data-nav="world"><span class="ic">${icon("ic_world", "🌍")}</span>Mundo<i class="dot" id="worldDot" hidden></i></button>`;
   }
 }
 

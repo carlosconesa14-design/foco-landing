@@ -3,6 +3,7 @@ import { earn, passiveRate } from "../game/economy";
 import { fmt, fmtTime } from "../game/format";
 import * as world from "../game/world";
 import type { PanelCtx } from "./panels";
+import { flagIcon, icon, officeIcon, star } from "./icons";
 import { openSheet } from "./sheet";
 
 /** Expansión mundial: mapa de ciudades, expandirse, viajar y la Oficina central. */
@@ -25,14 +26,14 @@ export function openWorld(ctx: PanelCtx): void {
   let expandArmed = false;
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">🌍</span><div><h3>Expansión mundial</h3><p class="muted" data-sub></p></div></div>
+    `<div class="sheet-head"><span class="sicon">${icon("ic_world", "🌍")}</span><div><h3>Expansión mundial</h3><p class="muted" data-sub></p></div></div>
      <div class="worldmap" data-map></div>
      <button class="btn wide office-btn" data-office><span>🏛️ Oficina central</span><b data-stars></b></button>`,
     (el) => {
       const s = ctx.state();
       const bonus = world.worldIncomeMult(s);
       $(el, "[data-sub]").textContent = `Franquicias: x${fmt(bonus)} a todos tus ingresos`;
-      $(el, "[data-stars]").textContent = `${s.world.stars} ⭐`;
+      $(el, "[data-stars]").innerHTML = `${s.world.stars} ${star()}`;
       const p = world.cityProgress(s);
       const cards = CITIES.map((c, i) => {
         const here = c.id === s.city;
@@ -47,10 +48,10 @@ export function openWorld(ctx: PanelCtx): void {
           if (world.canExpand(s)) {
             const next = world.nextCity(s)!;
             const st = world.starsToGain(s);
-            body += `<p class="small good">¡Ciudad completada! Abre ${next.flag} ${next.name} y gana ${st} ⭐</p>
+            body += `<p class="small good">¡Ciudad completada! Abre ${flagIcon(next)} ${next.name} y gana ${st} ${star()}</p>
               <div class="actions col">
-                <button class="ad-btn wide" data-expand="2"><span class="play"></span>Expandirse con x2 estrellas (${st * 2} ⭐)</button>
-                <button class="btn" data-expand="1">${expandArmed ? "Toca otra vez para confirmar" : `Expandirse (${st} ⭐)`}</button>
+                <button class="ad-btn wide" data-expand="2"><span class="play"></span>Expandirse con x2 estrellas (${st * 2} ${star()})</button>
+                <button class="btn" data-expand="1">${expandArmed ? "Toca otra vez para confirmar" : `Expandirse (${st} ${star()})`}</button>
               </div>`;
           } else if (done) {
             body += `<p class="small muted">Completada: da +${FRANCHISE.cityBonus * 100} % de ingresos en todas partes.</p>`;
@@ -66,7 +67,7 @@ export function openWorld(ctx: PanelCtx): void {
         }
         const extra = c.mechanic === "tourism" ? `<span class="tag">🌊 Olas turísticas: ventas x${TOURISM.mult}</span>` : "";
         return `<div class="city-card ${here ? "here" : ""} ${locked ? "locked" : ""}">
-          <div class="city-top"><span class="flag">${c.flag}</span><div><b>${c.name}</b>${here ? `<span class="tag here">Estás aquí</span>` : ""}<p class="small muted">${c.blurb}</p>${extra}</div></div>
+          <div class="city-top"><span class="flag">${flagIcon(c)}</span><div><b>${c.name}</b>${here ? `<span class="tag here">Estás aquí</span>` : ""}<p class="small muted">${c.blurb}</p>${extra}</div></div>
           <div class="city-body">${body}</div></div>`;
       });
       cards.push(`<div class="city-card locked"><div class="city-top"><span class="flag">🗺️</span><div><b>Próximamente</b><p class="small muted">Dubái, Tokio… nuevas ciudades con sus propias reglas.</p></div></div></div>`);
@@ -126,14 +127,14 @@ export function openOffice(ctx: PanelCtx): void {
      <div class="list" data-list style="display:grid;gap:8px"></div>`,
     (el) => {
       const s = ctx.state();
-      $(el, "[data-stars]").textContent = `Tienes ${s.world.stars} ⭐`;
+      $(el, "[data-stars]").innerHTML = `Tienes ${s.world.stars} ${star()}`;
       const rows = OFFICE.map((o) => {
         const lvl = world.officeLevel(s, o.id);
         const max = lvl >= o.max;
         const cost = o.cost(lvl);
-        return `<div class="row ${max ? "done" : ""}"><span class="face">${o.icon}</span>
+        return `<div class="row ${max ? "done" : ""}"><span class="face">${officeIcon(o)}</span>
           <div><b>${o.name}</b><span class="sub">${o.desc} · Nivel ${lvl}/${o.max}</span></div>
-          <button class="claim" data-office="${o.id}" ${max || s.world.stars < cost ? "disabled" : ""}>${max ? "Máx" : `${cost} ⭐`}</button></div>`;
+          <button class="claim" data-office="${o.id}" ${max || s.world.stars < cost ? "disabled" : ""}>${max ? "Máx" : `${cost} ${star()}`}</button></div>`;
       });
       const list = $(el, "[data-list]");
       if (paint(list, rows.join("")))

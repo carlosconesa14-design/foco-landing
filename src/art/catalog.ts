@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { EMOJI_FONT } from "../scenes/common";
+import { ALL_BUSINESSES, CITIES } from "../game/data";
 import { Pen, faceQuad, isoBox, leftFace, rightFace, shade } from "./pen";
 
 /**
@@ -427,7 +428,7 @@ function drawLampPost(p: Pen): void {
 
 /* ---------- Edificios isométricos ---------- */
 
-const BLD_W = 172;
+export const BLD_W = 172;
 const BLD: Record<string, number> = {
   dropship: 150, restaurant: 164, tiktok: 236, ai: 270, soon: 170,
   foodtruck: 140, beachclub: 170, yachts: 180, realestate: 260, crypto: 300,
@@ -595,6 +596,37 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
     p.stroke(1.5, 0x2d3436).line(cx - 30, by - 150, cx - 30, by - 110);
     p.fill(0xc68b4f).rrect(cx - 38, by - 112, 16, 12, 2);
   }
+}
+
+/* ---------- Baldosas del suelo (solo PNG; sin PNG el suelo se dibuja por código) ---------- */
+
+/**
+ * Claves de baldosa. Cada una admite variantes `_1`, `_2` y `_3` que se reparten al azar.
+ * Rombo de 88×44 (más alto si la baldosa tiene grosor: se apoya por el vértice de arriba).
+ */
+export const TILE_KEYS = [
+  ...CITIES.map((c) => `tile_${c.id}_ground`),
+  "tile_lot",
+  "tile_road_c",
+  "tile_road_r",
+  "tile_cross",
+  "tile_path",
+  ...ALL_BUSINESSES.map((b) => `tile_biz_${b.id}`),
+];
+for (const key of TILE_KEYS) for (const v of ["", "_1", "_2", "_3"]) def(key + v, 88, 44);
+
+/**
+ * Pone la baldosa en PNG de esa clave (o una de sus variantes) con el vértice de arriba en (x, yTop).
+ * Devuelve false si no hay PNG, para que la escena dibuje el suelo por código.
+ */
+export function placeTile(scene: Phaser.Scene, x: number, yTop: number, key: string, rand: () => number): boolean {
+  const options = [key, `${key}_1`, `${key}_2`, `${key}_3`].filter((k) => scene.textures.exists(k));
+  if (!options.length) return false;
+  const k = options[Math.floor(rand() * options.length)];
+  const src = scene.textures.get(k).getSourceImage() as { width: number; height: number };
+  const img = scene.add.image(x, yTop, k).setOrigin(0.5, 0).setDepth(-10);
+  img.setDisplaySize(88, (88 * src.height) / src.width);
+  return true;
 }
 
 /* ---------- Generación ---------- */

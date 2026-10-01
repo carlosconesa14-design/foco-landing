@@ -276,3 +276,31 @@ footer {
 .btn.wide { width: 100%; }
 .office-btn { background: #4aa8ff; box-shadow: 0 3px 0 #2a6fb0; }
 .wave.on .txt { color: #fff; }
+
+/* ---------- Cabecera compacta y menú lateral plegable ---------- */
+header { gap: 6px; padding-bottom: 8px; }
+.cash { font-size: clamp(26px, 7.5vw, 34px); }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.life { grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 8px; font-size: 12px; }
+.life .em { font-size: 20px; }
+.life .nx { font-size: 10.5px; }
+.life .track { height: 4px; }
+.boost { gap: 7px; padding: 4px 4px 4px 9px; border-radius: 12px; }
+.boost .x2 { font-size: 18px; }
+.boost .txt { font-size: 10.5px; line-height: 1.15; flex: none; }
+.boost .txt b { font-size: 12px; }
+.boost .ad-btn { padding: 7px 9px; font-size: 12px; }
+.rail { gap: 5px; }
+.rail button { width: 50px; padding: 3px 0; border-radius: 12px; font-size: 8.5px; }
+.rail .ic { font-size: 18px; }
+.rail-toggle { min-height: 30px; align-content: center; }
+.rail-toggle .ic { font-size: 14px !important; }
+.rail .tdot { position: absolute; top: 3px; right: 5px; width: 9px; height: 9px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 2px var(--bg); }
+.rail.collapsed [data-open] { display: none; }
+.goal, .tut { right: 70px; }
+
+/* Iconos en imagen (sustituyen a los emojis cuando hay PNG) */
+.ico { display: inline-block; width: 1.25em; height: 1.25em; object-fit: contain; vertical-align: -0.28em; pointer-events: none; }
+.sicon .ico, .face .ico, .ic .ico, .em .ico, .flag .ico { width: 1.1em; height: 1.1em; vertical-align: middle; }
+.rail button { width: 56px; font-size: 8px; }
+.goal, .tut { right: 76px; }

@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { ART, BIZ_ART, art, artScale } from "../art/catalog";
+import { ART, BIZ_ART, art, artScale, placeTile } from "../art/catalog";
 import { mix, shade } from "../art/pen";
 import { CHAIN } from "../game/data";
 import { bizDef, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
@@ -217,12 +217,16 @@ export class BusinessScene extends Phaser.Scene {
     g.fillStyle(0x4e7f3f, 1).fillPoints([new Phaser.Math.Vector2(L.x, L.y), new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(B.x, B.y + 14), new Phaser.Math.Vector2(L.x, L.y + 14)], true);
     g.fillStyle(0x5a9148, 1).fillPoints([new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(R.x, R.y), new Phaser.Math.Vector2(R.x, R.y + 14), new Phaser.Math.Vector2(B.x, B.y + 14)], true);
 
+    let seed = 17;
+    const tileRand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
     for (let r = 0; r <= ROAD_ROW; r++)
       for (let c = 0; c < COLS; c++) {
         const kind = this.tileKind(c, r);
         const t = this.iso(c, r);
         const cx = t.x;
         const cy = t.y + TH / 2;
+        const tileKey = kind === "road" ? "tile_road_c" : kind === "path" ? "tile_path" : `tile_biz_${this.bizId}`;
+        if (placeTile(this, cx, t.y, tileKey, tileRand)) continue;
         if (kind === "road") {
           g.fillStyle(0xbfc5cc, 1).fillPoints(this.diamond(c, r), true);
           g.fillStyle(0x4a5160, 1).fillPoints(this.diamond(c, r, 8), true);

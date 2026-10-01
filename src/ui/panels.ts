@@ -23,6 +23,7 @@ import {
 import { fmt } from "../game/format";
 import { cityDef, type BuyMode, type GameState, type View } from "../game/state";
 import type { Celebration } from "./celebrate";
+import { bizIcon, icon } from "./icons";
 import { closeSheet, openSheet } from "./sheet";
 
 /** Lo que los paneles necesitan del controlador del juego. */
@@ -181,7 +182,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
   const def = bizDef(id);
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">${def.icon}</span><div><h3>${def.name}</h3><p class="muted">${def.blurb}</p></div></div>
+    `<div class="sheet-head"><span class="sicon">${bizIcon(def)}</span><div><h3>${def.name}</h3><p class="muted">${def.blurb}</p></div></div>
      <div class="stat"><span>Puestos</span><b>${def.floorName} ${def.worker}</b></div>
      <div class="stat"><span>Transporte</span><b>${def.transportName} ${def.transportIcon}</b></div>
      <div class="stat"><span>Venta</span><b>${def.saleName} ${def.saleWorker}</b></div>
@@ -217,7 +218,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
   const li = lifeIndex(s0.totalEarned);
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">📈</span><div><h3>Salir a bolsa</h3><p class="muted">Tienes <b class="gold">${fmt(s0.shares)} acciones</b>: +${fmt(s0.shares * CONFIG.shareBonus * 100)}% a todo lo que ganas.</p></div></div>
+    `<div class="sheet-head"><span class="sicon">${icon("ic_ipo", "📈")}</span><div><h3>Salir a bolsa</h3><p class="muted">Tienes <b class="gold">${fmt(s0.shares)} acciones</b>: +${fmt(s0.shares * CONFIG.shareBonus * 100)}% a todo lo que ganas.</p></div></div>
      <p class="muted">Vendes todos los negocios de esta ciudad y vuelves a empezar con el primero, pero cada acción suma un +${CONFIG.shareBonus * 100}% para siempre. Tu estilo de vida (${LIFE[li].icon} ${LIFE[li].name}) se mantiene.</p>
      <div class="stat"><span>Recibirías ahora</span><b class="gold" data-gain></b></div>
      <p class="small muted" data-need></p>

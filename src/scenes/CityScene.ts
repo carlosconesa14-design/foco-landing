@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { ART, art, artScale } from "../art/catalog";
+import { ART, art, artScale, placeTile } from "../art/catalog";
 import { mix } from "../art/pen";
 import { ALL_BUSINESSES, type CityDef } from "../game/data";
 import { cityDef } from "../game/state";
@@ -173,6 +173,8 @@ export class CityScene extends Phaser.Scene {
         const t = this.iso(c, r);
         const cx = t.x;
         const cy = t.y + TH / 2;
+        const tileKey = kind === "grass" ? `tile_${this.city.id}_ground` : kind === "lot" ? "tile_lot" : `tile_${kind}`;
+        if (placeTile(this, cx, t.y, tileKey, rand)) continue;
         if (kind === "grass") {
           const base = (c + r) % 2 ? this.city.ground.grass : this.city.ground.grassAlt;
           g.fillStyle(mix(base, 0xffffff, rand() * 0.12), 1).fillPoints(diamond(c, r), true);

@@ -125,12 +125,12 @@ Revisión del juego actual, ordenada por impacto: lo que más se nota en pantall
 ### 1. Edificios de la ciudad (máximo impacto)
 Es lo primero que ve el jugador y lo que más "vende" en las capturas de la tienda. Hoy son cajas isométricas dibujadas por código, con un emoji encima en un recuadro blanco.
 - Genera los 9 `bld_*` y `bld_soon` con las tablas de arriba.
-- **Sin emoji encima:** el edificio tiene que reconocerse solo por su forma (un cartel de pasta, un aro de luz…). Cuando haya PNG, quitaremos el recuadro del emoji.
+- **Sin emoji encima:** el edificio tiene que reconocerse solo por su forma (un cartel de pasta, un aro de luz…). Ya hay PNG de Madrid; el recuadro del emoji solo sale con el arte por código.
 - **Idea que requiere código:** 3 versiones por edificio según sus puestos (`bld_x_1`, `_2`, `_3`). Por ejemplo, un almacén pequeño que se vuelve nave logística y luego centro de distribución con camiones. Es la recompensa visual más fuerte de un tycoon: ver crecer lo que compras.
 
 ### 2. Suelo de la ciudad y del recinto
 El suelo son rombos de color plano: carreteras, césped, aceras y arena. Se ve vacío.
-- **Requiere código:** baldosas isométricas 88×44 como `tile_grass`, `tile_sand`, `tile_road_h`, `tile_road_v`, `tile_cross`, `tile_sidewalk`, `tile_lot` y `tile_water`. Con 2–3 variantes de césped y arena ya no se nota la repetición.
+- ✅ **Enganche listo** (ver más abajo): baldosas isométricas 88×44 (`tile_madrid_ground`, `tile_miami_ground`, carreteras, solares y suelo de cada recinto), con hasta 4 variantes por clave para que no se note la repetición.
 - El borde de tierra de la isla (`island_edge`) y el agua animada del mar.
 
 ### 3. Personajes
@@ -144,14 +144,14 @@ Son los 9 `st_*` y los 9 `item_*`. Se ven de cerca y mucho rato, así que merece
 
 ### 5. Iconos de la interfaz (hoy son emojis)
 Los emojis cambian según el móvil (Apple, Samsung, Google), se ven poco profesionales y no siguen el estilo del juego.
-- **Requiere código:** iconos PNG de 64×64 para sustituirlos. Por prioridad:
+- ✅ **Enganche listo** (ver más abajo): iconos PNG de 64×64. Por prioridad:
   - dinero `ic_cash`, diamante `ic_gem`, estrella de franquicia `ic_star`;
   - botones laterales: misiones, diario, ejecutivos, logros y ajustes (`ic_missions`, `ic_daily`, `ic_execs`, `ic_trophy`, `ic_settings`);
   - barra inferior: ciudad, bolsa y mundo (`ic_city`, `ic_ipo`, `ic_world`);
   - un icono por negocio (`ic_biz_<id>`), uno por estilo de vida (`ic_life_0` a `ic_life_9`) y uno por mejora de la Oficina central (`ic_office_<id>`);
   - maletines: normal, oro y gratis (`chest_normal`, `chest_premium`, `chest_free`);
   - banderas de ciudad (`flag_madrid`, `flag_miami`).
-- **Retratos de ejecutivos** (hoy son emojis 💼): 8 caras de 96×96 (`exec_0` a `exec_7`), con un marco de color por rareza (gris, azul, morado y dorado).
+- ✅ **Retratos de ejecutivos** (hoy son emojis): 8 caras de 96×96 (`exec_0` a `exec_7`). Sin marco: el juego ya pone el borde del color de la rareza.
 
 ### 6. Interfaz (marcos y botones)
 Los paneles son rectángulos azul marino, limpios pero genéricos.
@@ -170,8 +170,43 @@ Todo esto es código más que sprites. ChatGPT solo tendría que dibujar la piez
 - Icono de la app (1024×1024), pantalla de carga (splash) y logotipo "De Rider a Millonario".
 - 5 capturas para la tienda con textos grandes; se pueden montar sobre capturas reales del juego.
 
+### Enganches ya preparados en el código
+
+Estas piezas ya se pueden sustituir por PNG igual que el resto: se dejan en `public/sprites/` y se añaden a `manifest.json`. Mientras no exista el PNG, el juego sigue con el emoji o el dibujo por código.
+
+**Edificios (`bld_*`):** al cargar se recorta solo el margen transparente y se escalan para que la base ocupe la parcela. No hace falta encuadrarlos con precisión, solo que la base (el rombo de suelo) sea lo más ancho del dibujo.
+
+**Iconos de la interfaz** (64×64, o 3 veces más grandes, con fondo transparente, sin texto):
+
+| Clave | Sustituye a | Dónde sale |
+| --- | --- | --- |
+| `ic_gem` | 💎 | Cabecera, precios y premios |
+| `ic_star` | ⭐ | Estrellas de franquicia |
+| `ic_city`, `ic_ipo`, `ic_world` | 🏙️ 📈 🌍 | Barra inferior |
+| `ic_missions`, `ic_daily`, `ic_execs`, `ic_trophy`, `ic_settings` | 📋 🎁 💼 🏆 ⚙️ | Menú lateral |
+| `ic_biz_<id>` (`ic_biz_dropship`, `ic_biz_restaurant`, `ic_biz_tiktok`, `ic_biz_ai`, `ic_biz_foodtruck`, `ic_biz_beachclub`, `ic_biz_yachts`, `ic_biz_realestate`, `ic_biz_crypto`) | 📦 🍝 📱 🤖 🌮 🏖️ 🛥️ 🏘️ 🪙 | Barra, paneles y ejecutivos |
+| `ic_life_0` … `ic_life_9` | 🛏️ 🏚️ 🏠 🏢 🌆 🏡 🏰 🛥️ 🏝️ 🚀 | Estilo de vida en la cabecera |
+| `ic_office_<id>` (`brand`, `team`, `floors`, `suppliers`, `offline`, `hustle`, `luck`) | 🌍 👔 🏗️ 🤝 🌙 ⚡ 🔥 | Oficina central |
+| `chest_free`, `chest_normal`, `chest_premium` | 💼 👜 | Maletines |
+| `flag_madrid`, `flag_miami` | 🇪🇸 🇺🇸 | Barra y mapa del mundo |
+| `exec_0` … `exec_7` (96×96) | Caras de los ejecutivos | Panel de ejecutivos |
+
+Prompt base para iconos: "Game UI icon of <objeto>, glossy cartoon style matching the buildings, bold shapes, subtle dark outline, centered, transparent background, no text."
+
+**Baldosas del suelo** (rombo isométrico de 88×44, o 264×132 a 3x; si tiene grosor puede ser más alto: se apoya por el vértice de arriba). Cada clave admite variantes `_1`, `_2` y `_3`, que el juego reparte al azar para que no se note la repetición:
+
+| Clave | Qué es |
+| --- | --- |
+| `tile_madrid_ground`, `tile_miami_ground` | Césped de Madrid y arena de Miami |
+| `tile_lot` | Solar pavimentado bajo los edificios |
+| `tile_road_c`, `tile_road_r`, `tile_cross` | Carretera en cada dirección y cruce con paso de cebra |
+| `tile_path` | Camino peatonal dentro de los recintos |
+| `tile_biz_<id>` | Suelo del recinto de cada negocio (por ejemplo, `tile_biz_restaurant` con terraza de baldosas) |
+
+Prompt base para baldosas: "Seamless isometric 2:1 ground tile, top face only, <material>, flat even lighting, edges must tile perfectly with copies of itself, transparent outside the diamond."
+
 ### Qué ya funciona sin tocar código
-Cualquier clave de las tablas de arriba: se deja el PNG en `public/sprites/` y se añade al `manifest.json`. Para los puntos marcados como **requiere código** hay que añadir antes el enganche. Es una tarea pequeña que se puede hacer antes de pasarle el proyecto a ChatGPT, para que sus imágenes entren directamente.
+Cualquier clave de las tablas de arriba: se deja el PNG en `public/sprites/` y se añade al `manifest.json`. Lo único que aún **requiere código** son las 3 versiones de cada edificio según sus puestos.
 
 ## Consejos para generar con ChatGPT
 
