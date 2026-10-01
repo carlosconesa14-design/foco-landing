@@ -23,10 +23,10 @@ Cada vez que se sube un cambio a la rama se compila un APK nuevo, con el número
 | Apple Developer (opcional, después) | Publicar en iOS | 99 $/año | Necesita un Mac o compilar en la nube |
 
 ## 3. Antes de subir a Google Play
-- [ ] **Icono, pantalla de carga y capturas** (ChatGPT, ver `docs/ART.md`)
-- [ ] **Política de privacidad** publicada en una URL (borrador en `docs/PRIVACIDAD.md`)
+- [ ] **Icono, gráfico destacado y capturas** (ChatGPT; tamaños en `docs/TIENDA.md`) y **textos de la ficha** (listos en `docs/TIENDA.md`)
+- [ ] **Política de privacidad** completada (`docs/PRIVACIDAD.md`) y publicada con GitHub Pages (`docs/TIENDA.md`, punto 4)
 - [ ] **AdMob real:** App ID e ID del bloque en `.env` / Gradle, y `VITE_ADMOB_TESTING=false` **solo** en la versión de la tienda
-- [ ] **Firma de la app:** generar la clave de subida (*upload key*). Lo preparo cuando tengas Play Console
+- [ ] **Clave de subida y secretos de GitHub** → la versión para la tienda se compila sola (ver `docs/TIENDA.md`, punto 3)
 - [ ] **Productos de compra** creados con los ids de `docs/COMPRAS.md`
 - [ ] Formulario de **clasificación de contenido** y de **seguridad de los datos** en Play Console (con lo que dice `docs/PRIVACIDAD.md`)
 

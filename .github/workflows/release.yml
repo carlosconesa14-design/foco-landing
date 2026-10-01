@@ -1,0 +1,67 @@
+# Versión para Google Play (AAB firmado, anuncios REALES). Se lanza a mano:
+# pestaña «Actions» → «Android release (Google Play)» → «Run workflow».
+# Necesita estos secretos (Settings → Secrets and variables → Actions), ver docs/TIENDA.md:
+#   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD,
+#   ADMOB_APP_ID, ADMOB_REWARDED_ANDROID
+name: Android release (Google Play)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  aab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Comprobar secretos
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          APPID: ${{ secrets.ADMOB_APP_ID }}
+          UNIT: ${{ secrets.ADMOB_REWARDED_ANDROID }}
+        run: |
+          missing=""
+          [ -z "$KS" ] && missing="$missing ANDROID_KEYSTORE_BASE64"
+          [ -z "$APPID" ] && missing="$missing ADMOB_APP_ID"
+          [ -z "$UNIT" ] && missing="$missing ADMOB_REWARDED_ANDROID"
+          if [ -n "$missing" ]; then echo "::error::Faltan secretos:$missing (ver docs/TIENDA.md)"; exit 1; fi
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+      - name: Build web (anuncios reales)
+        env:
+          VITE_ADMOB_TESTING: "false"
+          VITE_ADMOB_REWARDED_ANDROID: ${{ secrets.ADMOB_REWARDED_ANDROID }}
+        run: npm run build
+
+      - run: npx cap sync android
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Compilar AAB firmado
+        working-directory: android
+        env:
+          VERSION_CODE: ${{ github.run_number }}0
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/upload.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$ANDROID_KEYSTORE_PATH"
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon -PADMOB_APP_ID="${{ secrets.ADMOB_APP_ID }}"
+          rm -f "$ANDROID_KEYSTORE_PATH"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rider-millonario-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          retention-days: 30
