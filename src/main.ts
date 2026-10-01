@@ -13,6 +13,7 @@ import { freshState, migrate, type GameState, type View } from "./game/state";
 import { haptics } from "./platform/haptics";
 import { notifications } from "./platform/notifications";
 import { planNotifications } from "./game/notify";
+import { analytics, daysSinceInstall, minutesSinceInstall } from "./platform/analytics";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
@@ -79,6 +80,7 @@ async function watchAd(placement: Placement): Promise<boolean> {
   if (ok) {
     fx("gems", true);
     act.recordAd(S, placement);
+    analytics.track("ad_watched", { placement });
     save();
   } else {
     say("Anuncio no disponible. Inténtalo en un momento.");
@@ -251,6 +253,7 @@ function updateMeta(now: number): void {
   rail.querySelector<HTMLElement>(".tdot")!.hidden = !rail.classList.contains("collapsed") || [...dots].every((d) => d.hidden);
 
   const adv = meta.advanceTutorial(S);
+  if (adv) analytics.track(adv.done ? "tutorial_done" : "tutorial_step", { step: S.meta.tutorial, minutes: minutesSinceInstall() });
   if (adv?.done) setTimeout(askNotificationsOnce, 3500);
   if (adv?.done)
     void ctx.celebrate({
@@ -404,11 +407,18 @@ function offerOffline(): void {
         label: `Cobrar x3 (${fmt(amount * 3)} €)`,
         run: async () => {
           const ok = await watchAd("offline_x3");
+          analytics.track("offline_collect", { minutes: Math.round(seconds / 60), tripled: ok });
           earn(S, ok ? amount * 3 : amount);
           say(ok ? "¡Triplicado!" : "Cobrado");
         },
       },
-      { label: "Cobrar sin anuncio", run: () => earn(S, amount) },
+      {
+        label: "Cobrar sin anuncio",
+        run: () => {
+          earn(S, amount);
+          analytics.track("offline_collect", { minutes: Math.round(seconds / 60), tripled: false });
+        },
+      },
     ],
   });
 }
@@ -416,14 +426,20 @@ function offerOffline(): void {
 /* ---------- Avisos en el móvil ---------- */
 
 /** Al salir: guardar y programar los avisos (caja llena, maletín, premio diario). */
+let sessionStart = Date.now();
+
 function leaving(): void {
   save();
+  analytics.track("session_end", { seconds: Math.round((Date.now() - sessionStart) / 1000) });
+  void analytics.flush(true);
   void syncLeague(S);
   void notifications.schedule(planNotifications(S, Date.now()));
 }
 
 /** Al volver: ya no hacen falta los avisos; se ofrecen las ganancias offline. */
 function returning(): void {
+  sessionStart = Date.now();
+  analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial });
   void notifications.cancelAll();
   offerOffline();
 }
@@ -504,6 +520,8 @@ async function boot(): Promise<void> {
   startView();
   offerOffline();
   setInterval(save, 5000);
+  analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial });
+  setInterval(() => void analytics.flush(), 30_000);
   // Liga: envía los puntos pendientes cada 20 s (si no hay conexión, esperan en la cola)
   setInterval(() => {
     void syncLeague(S).then((added) => {
@@ -528,4 +546,4 @@ async function boot(): Promise<void> {
 
 void boot();
 // Para depurar desde la consola del navegador.
-Object.assign(window, { __game: { get state() { return S; }, game, sound, setLuck } });
+Object.assign(window, { __game: { get state() { return S; }, game, sound, setLuck, analytics } });

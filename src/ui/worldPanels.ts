@@ -5,6 +5,7 @@ import * as world from "../game/world";
 import type { PanelCtx } from "./panels";
 import { flagIcon, icon, officeIcon, star } from "./icons";
 import { openSheet } from "./sheet";
+import { analytics, minutesSinceInstall } from "../platform/analytics";
 
 /** Expansión mundial: mapa de ciudades, expandirse, viajar y la Oficina central. */
 
@@ -84,6 +85,7 @@ export function openWorld(ctx: PanelCtx): void {
           if (double && !(await ctx.watchAd("expand_x2"))) return;
           const res = world.expand(ctx.state(), Date.now(), double);
           if (!res) return;
+          analytics.track("city_expand", { city: res.city, stars: res.stars, minutes: minutesSinceInstall() });
           const city = CITIES.find((c) => c.id === res.city)!;
           ctx.replaceState(res.state);
           ctx.goTo({ scene: "city" });

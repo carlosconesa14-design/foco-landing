@@ -6,6 +6,7 @@ import { leagueApi, type LeagueStatus } from "../platform/league";
 import { gem } from "./icons";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
+import { analytics, minutesSinceInstall } from "../platform/analytics";
 
 /**
  * Pantalla de la Liga Millonario (fase 0: premios dentro del juego).
@@ -116,6 +117,7 @@ export function openLeague(ctx: PanelCtx): void {
         L.id = r.id;
         L.secret = r.secret;
         L.nickname = r.nickname;
+        analytics.track("league_join", { minutes: minutesSinceInstall() });
         ctx.fx("unlock", true);
         ctx.banner("🏅", "¡Ya estás en la Liga!");
         await syncLeague(ctx.state());

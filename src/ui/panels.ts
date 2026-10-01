@@ -25,6 +25,7 @@ import { fmt } from "../game/format";
 import { cityDef, type BuyMode, type GameState, type View } from "../game/state";
 import type { Celebration } from "./celebrate";
 import { bizIcon, icon } from "./icons";
+import { analytics, minutesSinceInstall } from "../platform/analytics";
 import { closeSheet, openSheet } from "./sheet";
 
 /** Lo que los paneles necesitan del controlador del juego. */
@@ -174,6 +175,7 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
     const before = bizTier(ctx.state().biz[id]);
     const msg = act.unlockFloor(ctx.state(), id);
     if (!msg) return ctx.fx("error");
+    analytics.track("floor_opened", { biz: id, floors: ctx.state().biz[id].floors.length });
     closeSheet();
     const tier = bizTier(ctx.state().biz[id]);
     if (tier > before) {
@@ -210,6 +212,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
   $<HTMLButtonElement>(sheet.el, "[data-buyplot]").onclick = () => {
     const msg = act.buyBusiness(ctx.state(), id);
     if (!msg) return ctx.fx("error");
+    analytics.track("business_bought", { biz: id, minutes: minutesSinceInstall() });
     closeSheet();
     ctx.goTo({ scene: "business", id });
     void ctx.celebrate({
@@ -266,6 +269,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
       if (mult === 2 && !(await ctx.watchAd("ipo_x2"))) return;
       const res = act.ipo(ctx.state(), mult, Date.now());
       if (!res) return;
+      analytics.track("ipo", { shares: Math.round(res.gained), withAd: mult === 2, minutes: minutesSinceInstall() });
       ctx.replaceState(res.state);
       closeSheet();
       void ctx.celebrate({
