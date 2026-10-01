@@ -15,6 +15,7 @@ Analítica propia en Supabase, sin cuentas externas. Es **anónima**: cada insta
 | `city_expand` | Expandirse a otra ciudad | Ciudad, estrellas, minutos |
 | `league_join` | Apuntarse a la Liga | Minutos |
 | `offline_collect` | Cobrar lo ganado offline | Minutos fuera, si se triplicó |
+| `event_claim` / `event_boost` | Cobrar un premio del evento del fin de semana / x2 con anuncio | Semana y número de premio |
 
 Los eventos se guardan en el móvil y se envían cada 30 s y al salir. Si no hay conexión, se reintenta después.
 
@@ -28,6 +29,7 @@ select * from analytics_dau;              -- jugadores activos y sesiones por d�
 select * from analytics_tutorial_funnel;  -- cuántos llegan a cada paso del tutorial
 select * from analytics_ads;              -- anuncios por día y ubicación, y por jugador activo
 select * from analytics_progress;         -- minutos (mediana) hasta comprar cada negocio
+select * from analytics_weekend_event;    -- por semana: jugadores que cobran cada premio (tier 0 = anuncios x2)
 ```
 
 ## Objetivos para el lanzamiento de prueba

@@ -79,6 +79,14 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
 - **3 misiones diarias** elegidas al azar cada día, con un premio extra por completar las tres.
 - **Premio diario** con racha de 7 días (diamantes, dinero, maletines). Se puede duplicar viendo un anuncio. Si te saltas un día, la racha vuelve a empezar.
 - **13 logros** con diamantes.
+- **Evento del fin de semana** (`src/game/event.ts`): de viernes 00:00 a lunes 00:00, hora del móvil. Jugar da puntos y con ellos se desbloquean **10 premios**: diamantes, horas de ingresos, maletines y, al final, un maletín de oro.
+  - **Puntos:** 1 por cada 10 ventas, 1 por nivel de mejora, 15 por gerente, 25 por puesto y 10 por maletín o por habilidad.
+  - **Tema semanal:** rota entre tres (Black Friday del reparto, Semana de reformas y Feria del talento), y cada uno hace valer el doble un tipo de acción.
+  - **Anuncio:** «Puntos x2 durante 30 min», acumulable hasta 2 h.
+  - **Ritmo:** calibrado con el bot en unos 800 puntos por hora de juego activo. El primer premio llega en unos minutos y el último pide unas 3 horas de juego en el fin de semana.
+  - **Cobro:** los premios se pueden cobrar hasta que empieza el siguiente evento.
+  - **Avisos:** uno al empezar (viernes 9:30) y otro el domingo a las 18:00 si quedan premios.
+  - **Liga:** no da puntos de Liga.
 - **Más adelante:** eventos de temporada de 7 días con su propia ciudad (fase 3) y avatar u oficina personalizables.
 
 ### Liga Millonario (diseñada, pendiente de servidor)

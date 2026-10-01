@@ -117,7 +117,8 @@ export interface Grant {
   exec?: Exec;
 }
 
-function grant(s: GameState, reward: DailyReward, now: number, rand: Rand, double = false): Grant {
+/** Entrega una recompensa (premio diario, evento…). Con `double`, el doble. */
+export function grantReward(s: GameState, reward: DailyReward, now: number, rand: Rand, double = false): Grant {
   const k = double ? 2 : 1;
   if ("gems" in reward) {
     s.meta.gems += reward.gems * k;
@@ -137,7 +138,7 @@ export function claimDaily(s: GameState, now: number, double = false, rand: Rand
   if (!st.canClaim) return null;
   const reward = DAILY_REWARDS[st.index];
   s.meta.daily = { lastDay: dayKey(now), streak: st.streak + 1 };
-  return grant(s, reward, now, rand, double);
+  return grantReward(s, reward, now, rand, double);
 }
 
 /* ---------- Maletines y ejecutivos ---------- */

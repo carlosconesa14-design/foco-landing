@@ -27,7 +27,9 @@ export type AnalyticsName =
   | "city_expand"
   | "league_join"
   | "purchase"
-  | "offline_collect";
+  | "offline_collect"
+  | "event_claim"
+  | "event_boost";
 
 interface Ev {
   name: AnalyticsName;

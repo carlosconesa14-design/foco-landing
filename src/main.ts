@@ -34,6 +34,8 @@ import { isVip, grantProduct } from "./game/shop";
 import { store } from "./platform/store";
 import { leagueHasPrize, openLeague, syncLeague } from "./ui/leaguePanel";
 import { leagueJoined } from "./game/league";
+import { ensureEvent, eventTiersReached, eventToClaim, eventWindow } from "./game/event";
+import { fmtWait, openEvent } from "./ui/eventPanel";
 import { loadIcons } from "./ui/icons";
 import "./styles.css";
 import { decorateIcons } from "./ui/icons";
@@ -250,12 +252,14 @@ root.addEventListener("click", (e) => {
   else if (which === "execs") openExecs(ctx, S.meta.execs.length ? "execs" : "chests");
   else if (which === "achievements") openAchievements(ctx);
   else if (which === "league") openLeague(ctx);
+  else if (which === "event") openEvent(ctx);
   else if (which === "settings") openSettings(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
 function updateMeta(now: number): void {
   meta.ensureDay(S, now);
+  updateEvent(now);
   const top = document.getElementById("hud")!.offsetHeight + 10;
   const rail = document.getElementById("rail")!;
   rail.style.top = `${top}px`;
@@ -265,13 +269,13 @@ function updateMeta(now: number): void {
     execs: meta.freeChestReady(S, now),
     achievements: meta.achievementsToClaim(S) > 0,
     league: leagueHasPrize() || (!leagueJoined(S) && meta.tutorialStep(S) === null),
+    event: eventToClaim(S) > 0,
   };
   for (const [name, available] of Object.entries(ready)) {
-    const dot = root.querySelector<HTMLElement>(`[data-open="${name}"] .dot`);
-    if (dot) dot.hidden = !available;
+    root.querySelectorAll<HTMLElement>(`[data-open="${name}"] .dot`).forEach((dot) => (dot.hidden = !available));
   }
   const menuDot = document.getElementById("menuDot");
-  if (menuDot) menuDot.hidden = !ready.daily && !ready.execs && !ready.achievements && !ready.league;
+  if (menuDot) menuDot.hidden = !ready.daily && !ready.execs && !ready.achievements && !ready.league && !ready.event;
 
   const adv = meta.advanceTutorial(S);
   if (adv) analytics.track(adv.done ? "tutorial_done" : "tutorial_step", { step: S.meta.tutorial, minutes: minutesSinceInstall() });
@@ -295,6 +299,29 @@ function updateMeta(now: number): void {
     document.getElementById("tutText")!.textContent = step.text;
   }
   updateGoal(now, top, show);
+}
+
+/* ---------- Evento del fin de semana ---------- */
+
+let eventReached = -1;
+
+function updateEvent(now: number): void {
+  ensureEvent(S, now);
+  const w = eventWindow(now);
+  const claim = eventToClaim(S);
+  const started = meta.tutorialStep(S) === null;
+  // Botón lateral solo mientras dura el evento (o si quedan premios por cobrar).
+  document.getElementById("eventBtn")!.hidden = !started || (!(w.active && S.meta.event.week === w.week) && claim === 0);
+  document.getElementById("eventMenuSub")!.textContent = w.active
+    ? t("En marcha · termina en {time}", { time: fmtWait(w.end - now) })
+    : t("Próximo en {time}", { time: fmtWait(w.next - now) });
+  // Premio nuevo desbloqueado: banda dorada (no al cargar la partida).
+  const reached = eventTiersReached(S);
+  if (eventReached >= 0 && reached > eventReached && started) {
+    fx("milestone", true);
+    banner(root, "🎉", t("¡Premio del evento desbloqueado!"));
+  }
+  eventReached = reached;
 }
 
 /* ---------- Próximo objetivo ---------- */

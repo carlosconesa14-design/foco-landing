@@ -77,7 +77,7 @@ export function openMissions(ctx: PanelCtx): void {
 
 /* ---------- Premio diario ---------- */
 
-function rewardLabel(r: DailyReward): { icon: string; text: string } {
+export function rewardLabel(r: DailyReward): { icon: string; text: string } {
   if ("gems" in r) return { icon: gem(), text: `${r.gems} ${gem()}` };
   if ("cashHours" in r) return { icon: "💶", text: r.cashHours >= 1 ? t("{n} h de ingresos", { n: r.cashHours }) : t("{n} min de ingresos", { n: r.cashHours * 60 }) };
   return { icon: chestIcon(r.chest), text: CHESTS[r.chest].name };
@@ -89,6 +89,12 @@ function describeGrant(g: meta.Grant): string {
   if (g.gems) parts.push(`${g.gems} 💎`);
   if (g.cash) parts.push(money(g.cash));
   return parts.join(" · ");
+}
+
+/** Muestra lo recibido: el ejecutivo con su maletín, o un aviso con diamantes o dinero. */
+export function showGrant(ctx: PanelCtx, g: meta.Grant): void {
+  if (g.exec) void showExec(ctx, g.exec, g);
+  else ctx.toast(`🎁 ${describeGrant(g)}`);
 }
 
 export function openDaily(ctx: PanelCtx): void {

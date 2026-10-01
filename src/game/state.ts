@@ -1,3 +1,4 @@
+import { freshEvent, migrateEvent, type EventState } from "./event";
 import { freshShop, migrateShop, type ShopState } from "./shop";
 import { freshLeague, migrateLeague, type LeagueState } from "./league";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
@@ -94,6 +95,8 @@ export interface MetaState {
   league: LeagueState;
   /** Compras dentro de la app. */
   shop: ShopState;
+  /** Evento del fin de semana. */
+  event: EventState;
 }
 
 export interface Settings {
@@ -180,6 +183,7 @@ export function freshMeta(now = Date.now()): MetaState {
     tutorial: 0,
     league: freshLeague(),
     shop: freshShop(),
+    event: freshEvent(),
   };
 }
 
@@ -283,6 +287,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.tutorial = Math.max(0, num(r.tutorial, 0));
   m.league = migrateLeague(r.league);
   m.shop = migrateShop(r.shop);
+  m.event = migrateEvent(r.event);
   return m;
 }
 

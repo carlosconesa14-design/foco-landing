@@ -4,6 +4,7 @@ import { money, t } from "../i18n";
 import { dailyStatus } from "./meta";
 import type { GameState } from "./state";
 import { offlineCapHours } from "./world";
+import { eventThemeText, eventUnfinished, eventWindow } from "./event";
 
 /**
  * Avisos locales que se programan al salir de la app. Son lo que más hace volver al
@@ -19,7 +20,7 @@ export interface PlannedNote {
   body: string;
 }
 
-export const NOTE_IDS = { cashFull: 1, freeChest: 2, daily: 3 } as const;
+export const NOTE_IDS = { cashFull: 1, freeChest: 2, daily: 3, eventStart: 4, eventLast: 5 } as const;
 
 /** Nunca de noche: lo que caiga entre las 22:00 y las 9:00 (hora local) pasa a las 9:30. */
 export function outsideQuietHours(at: number): number {
@@ -88,6 +89,27 @@ export function planNotifications(s: GameState, now: number): PlannedNote[] {
     title: t("🎁 Tu premio diario te espera"),
     body: d.streak > 1 ? t("Llevas {n} días seguidos. ¡No pierdas la racha!", { n: d.streak }) : t("Entra a cobrarlo y empieza una racha de premios."),
   });
+
+  // 4) Evento del fin de semana: aviso al empezar y, el domingo por la tarde, si quedan premios.
+  const w = eventWindow(now);
+  if (w.active) {
+    const sundayEvening = w.end - 6 * 3600e3;
+    if (eventUnfinished(s) && sundayEvening - now > 3600e3)
+      notes.push({
+        id: NOTE_IDS.eventLast,
+        at: sundayEvening,
+        title: t("⏳ Últimas horas del evento"),
+        body: t("Termina esta noche y aún te quedan premios por conseguir."),
+      });
+  } else {
+    const next = eventWindow(w.next);
+    notes.push({
+      id: NOTE_IDS.eventStart,
+      at: outsideQuietHours(w.next),
+      title: t("🎉 ¡Empieza el evento del fin de semana!"),
+      body: `${next.theme.icon} ${eventThemeText(next.theme).name}: ${t("10 premios hasta el domingo.")}`,
+    });
+  }
 
   return notes.filter((n) => n.at > now).sort((a, b) => a.at - b.at);
 }

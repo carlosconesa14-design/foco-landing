@@ -32,6 +32,7 @@
       <div class="tut" id="tut" hidden><span class="tut-step" id="tutStep"></span><span id="tutText"></span></div>
       <div class="rail" id="rail">
         <button data-open="missions" aria-label="Misiones"><span class="ic" data-icon="ic_missions">📋</span>Misiones<i class="dot" hidden></i></button>
+        <button data-open="event" id="eventBtn" class="event-btn" hidden aria-label="Evento del fin de semana"><span class="ic">🎉</span>Evento<i class="dot" hidden></i></button>
         <button id="menuToggle" aria-label="Menú y recompensas" aria-haspopup="dialog" aria-controls="moreMenu" aria-expanded="false"><span class="menu-symbol" aria-hidden="true">☰</span>Menú<i class="dot" id="menuDot" hidden></i></button>
       </div>
       <dialog id="moreMenu" class="more-menu" aria-labelledby="menuTitle">
@@ -46,6 +47,7 @@
           <button data-open="execs"><span class="ic">💼</span><b>Ejecutivos</b><small>Equipo y maletines</small><i class="dot" hidden></i></button>
           <button data-open="achievements"><span class="ic">🏆</span><b>Logros</b><small>Celebra tus hitos</small><i class="dot" hidden></i></button>
           <button data-open="league"><span class="ic">🏅</span><b>Liga Millonario</b><small>Compite y reclama premios</small><i class="dot" hidden></i></button>
+          <button data-open="event"><span class="ic">🎉</span><b>Evento del finde</b><small id="eventMenuSub">Premios cada fin de semana</small><i class="dot" hidden></i></button>
           <button data-open="settings"><span class="ic">⚙️</span><b>Ajustes</b><small>Sonido y vibración</small></button>
         </div>
       </dialog>
