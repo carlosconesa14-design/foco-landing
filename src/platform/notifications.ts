@@ -1,6 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import type { PlannedNote } from "../game/notify";
+import { t } from "../i18n";
 
 /**
  * Entrega de avisos locales con @capacitor/local-notifications. Solo en el móvil:
@@ -41,7 +42,7 @@ export const notifications = {
 
   /** Estado del permiso, para el diagnóstico. */
   async permission(): Promise<string> {
-    if (!this.supported) return "solo en el móvil";
+    if (!this.supported) return t("solo en el móvil");
     try {
       return (await LocalNotifications.checkPermissions()).display;
     } catch {
@@ -54,7 +55,7 @@ export const notifications = {
     if (!(await this.ask())) return false;
     try {
       await LocalNotifications.schedule({
-        notifications: [{ id: 99, title: "🔔 Aviso de prueba", body: "Si ves esto, los avisos funcionan.", schedule: { at: new Date(Date.now() + seconds * 1000), allowWhileIdle: true } }],
+        notifications: [{ id: 99, title: t("🔔 Aviso de prueba"), body: t("Si ves esto, los avisos funcionan."), schedule: { at: new Date(Date.now() + seconds * 1000), allowWhileIdle: true } }],
       });
       return true;
     } catch {

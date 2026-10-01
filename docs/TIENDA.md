@@ -89,3 +89,38 @@ Mientras los documentos tengan campos [entre corchetes], las páginas muestran e
   - el usuario puede pedir que se borren sus datos.
 - **Anuncios:** sí, contiene anuncios.
 - **Público objetivo:** mayores de 13 años (recomendado por los premios de la Liga y la publicidad).
+
+## 6. Ficha en inglés (resto del mundo)
+
+El juego se muestra en inglés en los móviles que no están en español (ver `docs/IDIOMAS.md`). En Play Console → Presencia en Google Play → Ficha de Play Store → **Gestionar traducciones → Añadir tus propias traducciones → Inglés (Estados Unidos) – en-US**, y pega esto:
+
+**App name** (máx. 30): `From Rider to Millionaire`
+
+**Short description** (máx. 80):
+> Start as a delivery rider and build a business empire. Weekly League with prizes!
+
+**Full description:**
+
+> Ever dreamed of going from delivery rider to owner of a business empire? In **From Rider to Millionaire** you start at the bottom and build your own city, one business at a time.
+>
+> 📦 **Start your first business**: a dropshipping warehouse with shelves, a forklift and delivery vans. Upgrade every part of the chain: production, transport and sales. If one jams, everything stops!
+>
+> 🍝 **Keep growing**: open a restaurant, a TikTok studio and an AI agency. Each business has its own animated site with workers you can watch in action.
+>
+> 👔 **Hire managers** and your businesses run themselves, even with your phone off. Come back and collect what you've earned.
+>
+> 🌴 **Expand to Miami**: once you've conquered Madrid, open your franchise in Miami, with new businesses and tourist waves that send sales through the roof.
+>
+> 🏅 **Weekly Millionaire League**: earn points by playing every day and compete in your division (Bronze, Silver and Gold). Prizes for the top players in each division and a draw among everyone who plays. Watching ads or buying doesn't give points: consistent players win.
+>
+> 💼 **Executives and briefcases**: collect executives of different rarities with abilities that multiply your sales.
+>
+> 📈 **Go public**: sell your empire for shares that boost your earnings forever, and start again stronger.
+>
+> 🎁 **Daily missions, daily rewards and achievements** so there's always something to go for.
+>
+> Free forever. Ads are always optional: you decide whether to watch one to double your earnings.
+>
+> The League rules are available in the app and on our website. Apple and Google do not sponsor or take part in the League.
+
+**Capturas:** las mismas que en español, pero hechas con el juego en inglés (Ajustes → Idioma → English) y con los textos de arriba en inglés: «Build your empire», «Your businesses run themselves», «Expand to Miami», «Weekly League with prizes».

@@ -3,6 +3,7 @@ import { bizDef, businessRate, chainRates, floorNextCost, lifeIndex, logisticsNe
 import { fmt, fmtTime } from "../game/format";
 import { boostHours, canExpand, upgradeDiscount } from "../game/world";
 import { cityDef, type GameState } from "../game/state";
+import { CUR, money, t } from "../i18n";
 import { bizIcon, decorateIcons, flagIcon, gem, icon, lifeIcon } from "./icons";
 
 /** Cabecera (dinero, estilo de vida, modo hustle) y barra inferior según la escena. */
@@ -25,13 +26,13 @@ export function updateHeader(s: GameState, now: number): void {
   // Si baja (una compra) se muestra al instante; si sube, se acerca poco a poco.
   shownCash = target < shownCash || Math.abs(target - shownCash) < 1 ? target : shownCash + (target - shownCash) * 0.35;
   const cash = $("cash");
-  cash.innerHTML = `<small class="cash-symbol">€</small>${fmt(shownCash)}`;
+  cash.innerHTML = `<small class="cash-symbol">${CUR}</small>${fmt(shownCash)}`;
   // Pequeño salto visual cuando entra un buen pellizco (más de un 5 %)
   if (target > prev * 1.05 && prev > 0 && !cash.classList.contains("bump")) {
     cash.classList.add("bump");
     setTimeout(() => cash.classList.remove("bump"), 350);
   }
-  $("rate").innerHTML = `+${fmt(passiveRate(s, now))} /s<span>ingresos pasivos</span>`;
+  $("rate").innerHTML = `+${fmt(passiveRate(s, now))} /s<span>${t("ingresos pasivos")}</span>`;
   setHtml($("gems"), `${gem()} ${fmt(s.meta.gems)}`);
 
   const li = lifeIndex(s.totalEarned);
@@ -40,15 +41,15 @@ export function updateHeader(s: GameState, now: number): void {
   const pct = N ? (Math.log10(Math.max(1, s.totalEarned) / Math.max(1, L.min)) / Math.log10(N.min / Math.max(1, L.min))) * 100 : 100;
   setHtml($("life"), `<span class="em">${lifeIcon(li)}</span><b>${L.name}</b><span class="nx">${N ? `${lifeIcon(li + 1)} ${fmt(N.min)}` : "🏁"}</span><span class="track"><i style="width:${Math.max(0, Math.min(100, pct)).toFixed(1)}%"></i></span>`);
 
-  $("lifeDetail").textContent = `${L.name} · ${N ? `Siguiente: ${N.name} (${fmt(N.min)} €)` : "Has llegado a la cima"}`;
+  $("lifeDetail").textContent = `${L.name} · ${N ? t("Siguiente: {name} ({m})", { name: N.name, m: money(N.min) }) : t("Has llegado a la cima")}`;
   const rem = (s.boostEnd - now) / 1000;
   $("hustleShortcut").classList.toggle("on", rem > 0);
-  $("hustleShortcut").setAttribute("aria-label", rem > 0 ? `Hustle x2 activo: ${fmtTime(rem)}. Abrir menú` : "Activar modo hustle x2. Abrir menú");
+  $("hustleShortcut").setAttribute("aria-label", rem > 0 ? t("Hustle x2 activo: {time}. Abrir menú", { time: fmtTime(rem) }) : t("Activar modo hustle x2. Abrir menú"));
   $("boost").classList.toggle("on", rem > 0);
   $("boostTxt").innerHTML =
     rem > 0
-      ? `<b>${fmtTime(rem)}</b>Todo x2`
-      : `<b>Todo x2</b>Modo hustle`;
+      ? `<b>${fmtTime(rem)}</b>${t("Todo x2")}`
+      : `<b>${t("Todo x2")}</b>${t("Modo hustle")}`;
   $<HTMLButtonElement>("boostBtn").disabled = rem > (CONFIG.boostMaxHours - boostHours(s)) * 3600;
   $("boostBtn").lastChild!.textContent = `+${boostHours(s)} h`;
 }
@@ -66,14 +67,14 @@ export function renderBar(s: GameState): void {
     const def = bizDef(s.view.id);
     bar.innerHTML = `
       <div class="chain" id="chain"></div>
-      <button class="navbtn" data-nav="city"><span class="ic">${icon("ic_city", "🏙️")}</span>Ciudad</button>
-      <button class="barmid tap" data-nav="empire" aria-label="Ver tu imperio"><b>${bizIcon(def)} ${def.id === "dropship" ? "Almacén" : def.name} <span class="more">▸</span></b><span id="barRate"></span></button>
+      <button class="navbtn" data-nav="city"><span class="ic">${icon("ic_city", "🏙️")}</span>${t("Ciudad")}</button>
+      <button class="barmid tap" data-nav="empire" aria-label="${t("Ver tu imperio")}"><b>${bizIcon(def)} ${def.id === "dropship" ? t("Almacén") : def.name} <span class="more">▸</span></b><span id="barRate"></span></button>
       <button class="ad-btn rushbtn" data-rush="${def.id}" id="rushBtn"><span class="play"></span><span id="rushTxt">x${CONFIG.rushMult}</span></button>`;
   } else {
     bar.innerHTML = `
-      <button class="navbtn" data-nav="ipo"><span class="ic">${icon("ic_ipo", "📈")}</span>Bolsa</button>
-      <button class="barmid tap" data-nav="empire" aria-label="Ver tu imperio"><b>${flagIcon(city)} ${city.name}</b><span class="more">Ver tu imperio ▸</span></button>
-      <button class="navbtn" data-nav="world"><span class="ic">${icon("ic_world", "🌍")}</span>Mundo<i class="dot" id="worldDot" hidden></i></button>`;
+      <button class="navbtn" data-nav="ipo"><span class="ic">${icon("ic_ipo", "📈")}</span>${t("Bolsa")}</button>
+      <button class="barmid tap" data-nav="empire" aria-label="${t("Ver tu imperio")}"><b>${flagIcon(city)} ${city.name}</b><span class="more">${t("Ver tu imperio")} ▸</span></button>
+      <button class="navbtn" data-nav="world"><span class="ic">${icon("ic_world", "🌍")}</span>${t("Mundo")}<i class="dot" id="worldDot" hidden></i></button>`;
   }
   decorateIcons(bar);
 }
@@ -85,7 +86,7 @@ export function updateBar(s: GameState, now: number): void {
   const id = s.view.id;
   const b = s.biz[id];
   const rate = document.getElementById("barRate");
-  if (rate) rate.textContent = `+${fmt(businessRate(s, id, now))} €/s · tu imperio`;
+  if (rate) rate.textContent = `+${money(businessRate(s, id, now))}/s · ${t("tu imperio")}`;
   const chain = document.getElementById("chain");
   if (chain) setHtml(chain, chainCards(s, id, now));
   const rushLeft = (b.rushEnd - now) / 1000;
@@ -93,7 +94,7 @@ export function updateBar(s: GameState, now: number): void {
   const txt = document.getElementById("rushTxt");
   if (btn && txt) {
     btn.disabled = rushLeft > 0;
-    txt.textContent = rushLeft > 0 ? fmtTime(rushLeft) : `Hora punta x${CONFIG.rushMult}`;
+    txt.textContent = rushLeft > 0 ? fmtTime(rushLeft) : t("Hora punta x{n}", { n: CONFIG.rushMult });
   }
 }
 
@@ -152,15 +153,15 @@ function chainCards(s: GameState, id: string, now: number): string {
     const slow = !quiet && auto && r.bottleneck === key;
     const hire = !quiet && !managed && s.cash >= mgrCost;
     canUp = canUp && !quiet;
-    return `<button class="link-card ${slow ? "slow" : ""} ${canUp || hire ? "can" : ""}" data-st="${st}" aria-label="Mejorar ${name}">
+    return `<button class="link-card ${slow ? "slow" : ""} ${canUp || hire ? "can" : ""}" data-st="${st}" aria-label="${t("Mejorar {name}", { name })}">
       <span class="lc-txt"><b><span class="lc-ic">${ico}</span>${name}</b><small>${level} · ${fmt(rate * m)}/s</small></span>
-      <span class="lc-tag">${slow ? "Atasco" : hire ? "👔 Contratar" : canUp ? "▲ Mejorar" : ""}</span>
+      <span class="lc-tag">${slow ? t("Atasco") : hire ? "👔 " + t("Contratar") : canUp ? "▲ " + t("Mejorar") : ""}</span>
     </button>`;
   };
   const allManaged = b.floors.every((f) => f.managed);
   return (
-    card("production", `floor:${floorIdx}`, id === "dropship" ? icon("wh_shelf") : def.worker, "Producción", `${b.floors.length} ${b.floors.length === 1 ? "puesto" : "puest."}`, r.production, allManaged, canFloor, managerCost(def, floorSt)) +
-    card("transport", "transport", id === "dropship" ? icon("veh_forklift") : def.transportIcon, def.transportName, `Nv ${b.transport.level}`, r.transport, b.transport.managed, s.cash >= nextLevelCost(s, def, { kind: "transport" }, b.transport.level), managerCost(def, { kind: "transport" })) +
-    card("sale", "sale", id === "dropship" ? icon("veh_van") : def.saleWorker, def.saleName, `Nv ${b.sale.level}`, r.sale, b.sale.managed, s.cash >= nextLevelCost(s, def, { kind: "sale" }, b.sale.level), managerCost(def, { kind: "sale" }))
+    card("production", `floor:${floorIdx}`, id === "dropship" ? icon("wh_shelf") : def.worker, t("Producción"), `${b.floors.length} ${b.floors.length === 1 ? t("puesto") : t("puest.")}`, r.production, allManaged, canFloor, managerCost(def, floorSt)) +
+    card("transport", "transport", id === "dropship" ? icon("veh_forklift") : def.transportIcon, def.transportName, `${t("Nv")} ${b.transport.level}`, r.transport, b.transport.managed, s.cash >= nextLevelCost(s, def, { kind: "transport" }, b.transport.level), managerCost(def, { kind: "transport" })) +
+    card("sale", "sale", id === "dropship" ? icon("veh_van") : def.saleWorker, def.saleName, `${t("Nv")} ${b.sale.level}`, r.sale, b.sale.managed, s.cash >= nextLevelCost(s, def, { kind: "sale" }, b.sale.level), managerCost(def, { kind: "sale" }))
   );
 }

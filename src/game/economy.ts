@@ -1,6 +1,7 @@
 import { ALL_BUSINESSES, CHAIN, CONFIG, LIFE, MILESTONES, type BusinessDef } from "./data";
 import { NO_MULTS, execMults, type Mults } from "./execs";
 import { bump, cityDef, type BusinessState, type BuyMode, type GameState } from "./state";
+import { t } from "../i18n";
 import { luckyChance, offlineCapHours, tourismMult, upgradeDiscount, worldIncomeMult } from "./world";
 
 /* ---------- Utilidades ---------- */
@@ -342,7 +343,7 @@ export function tapStation(s: GameState, id: string, st: Station): string | null
     return null;
   }
   if (b.sale.phase !== "idle") return null;
-  if (b.topStock <= 0) return "Aún no hay nada que vender arriba";
+  if (b.topStock <= 0) return t("Aún no hay nada que vender arriba");
   startSale(bizDef(id), b, execMults(s, id, Date.now()).log);
   return null;
 }

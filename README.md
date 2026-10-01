@@ -6,6 +6,8 @@ Hecho con **TypeScript + Phaser 3 + Vite**, empaquetado para Android e iOS con *
 
 **Arte:** ciudad y recintos en isométrico 2.5D, con arrastre y zoom pellizcando. Combina atlas propios generados con ChatGPT, poses de personajes en PNG y geometrías de suelo (`src/art/`). Las piezas admiten sustituciones mediante el manifiesto de sprites. Los tamaños y los prompts para generarlas con IA están en [`docs/ART.md`](docs/ART.md).
 
+**Idiomas:** español e inglés, según el idioma del móvil o desde Ajustes. Ver [`docs/IDIOMAS.md`](docs/IDIOMAS.md).
+
 ## Cómo se juega
 
 - **Recinto de un negocio:** puestos de producción → transporte → venta.

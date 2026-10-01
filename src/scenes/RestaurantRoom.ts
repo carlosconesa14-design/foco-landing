@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import Phaser from "phaser";
 import { art, ART } from "../art/catalog";
 import { swapArt } from "../art/generated";
@@ -66,9 +67,9 @@ export class RestaurantRoom {
       wall.fillStyle(col%2?0xfff4d7:0xbc5347).fillPoints([{x:p.x-22,y:p.y-46},{x:p.x+22,y:p.y-24},{x:p.x+22,y:p.y-15},{x:p.x-22,y:p.y-37}].map(v=>new Phaser.Math.Vector2(v.x,v.y)),true);
     }
     const sign=this.iso(4.4,0);
-    label(this.scene,sign.x,sign.y-57,"LA TERRAZA",17,"#fff4d3",{display:true,stroke:"#763e37"}).setDepth(0);
+    label(this.scene,sign.x,sign.y-57,t("LA TERRAZA"),17,"#fff4d3",{display:true,stroke:"#763e37"}).setDepth(0);
     const kitchen=this.iso(0.6,1.0);
-    label(this.scene,kitchen.x,kitchen.y-47,"COCINA ABIERTA",9,"#70443b",{bold:true}).setDepth(0);
+    label(this.scene,kitchen.x,kitchen.y-47,t("COCINA ABIERTA"),9,"#70443b",{bold:true}).setDepth(0);
 
     for(let i=0;i<this.dining.tableCount;i++) {
       const p=this.iso(...TABLES[i]);
@@ -83,7 +84,7 @@ export class RestaurantRoom {
     this.status=label(this.scene,pass.x,pass.y+18,"",12,"#fff2d1",{bold:true,stroke:"#4e3029"}).setDepth(9e4);
     const host=this.iso(...HOST);
     art(this.scene,host.x+20,host.y-3,"rest_host").setOrigin(0.5,1).setDepth(host.y-2);
-    label(this.scene,host.x+23,host.y+10,"Recepción",9,"#fff1d6",{bold:true,stroke:"#4e3029"}).setDepth(host.y+12);
+    label(this.scene,host.x+23,host.y+10,t("Recepción"),9,"#fff1d6",{bold:true,stroke:"#4e3029"}).setDepth(host.y+12);
     for (const [col,row] of [[0.2,5.2],[8.8,5.2],[0.2,7],[8.8,7],[0.2,8.8],[8.8,8.8]] as Grid[]) {
       const p=this.iso(col,row);
       this.scene.add.ellipse(p.x,p.y+2,30,12,0x8d6652).setDepth(p.y-2);
@@ -147,15 +148,15 @@ export class RestaurantRoom {
     const server=this.dining.server;
     const target=TABLES[server.table];
     const route: Grid[]=[[3.5,5.0],[4.5,target[1]],[target[0]+0.3,target[1]+0.1]];
-    const t=server.phase==="idle" ? 0 : calm ? (server.phase==="out" ? 1 : 0) : server.phase==="out" ? server.progress : 1-server.progress;
-    const pos=this.path(route,t),p=this.iso(...pos);
+    const pt=server.phase==="idle" ? 0 : calm ? (server.phase==="out" ? 1 : 0) : server.phase==="out" ? server.progress : 1-server.progress;
+    const pos=this.path(route,pt),p=this.iso(...pos);
     swapArt(this.server,server.phase!=="idle" && !calm && Math.floor(this.clock*6)%2 ? "rest_waiter_b" : "rest_waiter_a");
     this.server.setPosition(p.x,p.y).setDepth(p.y+3).setFlipX(target[0]<4.5);
     gait(this.server,p.y,this.clock,server.phase!=="idle" && !calm);
     this.serverShadow.setPosition(p.x,p.y).setDepth(p.y-1);
     const stock=business.floors.some(f=>f.stock>0);
     const waiting=business.topStock>0 && business.sale.phase==="idle";
-    this.status.setText(waiting && !business.sale.managed ? "Activa el reparto" : stock && business.transport.phase==="idle" && !business.transport.managed ? "Activa el camarero" : business.sale.phase!=="idle" ? "Reparto en marcha" : stock ? "Recogiendo platos" : business.floors.some(f=>f.running) ? "Cocinando…" : "Activa una cocina");
+    this.status.setText(waiting && !business.sale.managed ? t("Activa el reparto") : stock && business.transport.phase==="idle" && !business.transport.managed ? t("Activa el camarero") : business.sale.phase!=="idle" ? t("Reparto en marcha") : stock ? t("Recogiendo platos") : business.floors.some(f=>f.running) ? t("Cocinando…") : t("Activa una cocina"));
     this.readyGlow.setVisible(waiting || stock).setAlpha(calm ? 0.65 : 0.5+Math.sin(this.clock*3)*0.15);
   }
 

@@ -1,3 +1,4 @@
+import { money, t } from "../i18n";
 import { WarehouseRoom, WAREHOUSE_SLOTS, WAREHOUSE_DOOR, WAREHOUSE_ROUTE, WAREHOUSE_STOPS } from "./WarehouseRoom";
 import { RestaurantRoom, RESTAURANT_SLOTS, RESTAURANT_DOOR, RESTAURANT_ROUTE, RESTAURANT_STOPS } from "./RestaurantRoom";
 import { constructionPop, revealScene, transferProduct, upgradePop } from "./feedback";
@@ -352,7 +353,7 @@ export class BusinessScene extends Phaser.Scene {
     const bottom = this.iso(HUB.c + 2, HUB.r + 2);
     if (!this.restaurant && !this.warehouse) {
       const hub=art(this, bottom.x, bottom.y + 2, key).setOrigin(0.5, hasGeneratedArt(this, key) ? 1 : (spec.h - 6) / spec.h).setDepth(bottom.y);
-      if (this.previousFloors && buildingKey(this.bizId,this.previousFloors)!==key) constructionPop(this,hub,"¡Nueva sede!");
+      if (this.previousFloors && buildingKey(this.bizId,this.previousFloors)!==key) constructionPop(this,hub,t("¡Nueva sede!"));
     }
 
     // Pila de producto listo para vender, junto a la puerta
@@ -408,7 +409,7 @@ export class BusinessScene extends Phaser.Scene {
 
     const station = art(this, center.x + 10, center.y + 4, this.look.station).setOrigin(0.5, 1);
     station.setDisplaySize(ART[this.look.station].w * 0.62, ART[this.look.station].h * 0.62).setDepth(center.y + 4);
-    if(this.previousFloors && i>=this.previousFloors) constructionPop(this,station,"¡Puesto nuevo!");
+    if(this.previousFloors && i>=this.previousFloors) constructionPop(this,station,t("¡Puesto nuevo!"));
     const workerKey = this.restaurant ? "rest_chef_a" : `ch_${this.look.worker}_0`;
     const worker = art(this, center.x - 24, center.y + 12, workerKey).setOrigin(0.5, 0.95);
     worker.setDisplaySize(ART[workerKey].w * 0.8, ART[workerKey].h * 0.8).setDepth(center.y + 12);
@@ -509,7 +510,7 @@ export class BusinessScene extends Phaser.Scene {
   }
 
   private pill(x: number, y: number, st: Station): Pill {
-    const p = new Pill(this, x, y, "Nv 1").setDepth(9.3e4);
+    const p = new Pill(this, x, y, `${t("Nv")} 1`).setDepth(9.3e4);
     p.setInteractive({ useHandCursor: true });
     p.on("pointerup", () => {
       if (!this.drag.wasDrag()) this.bridge.openStation(this.bizId, st);
@@ -591,9 +592,9 @@ export class BusinessScene extends Phaser.Scene {
       return;
     }
     const def = bizDef(this.bizId);
-    const t = this.time.now / 1000;
+    const clk = this.time.now / 1000;
     const dt = Math.min(dtMs, 100) / 1000;
-    const walkFrame = reducedMotion() ? 0 : Math.floor(t * WALK_FPS) % 2 ? 1 : 2;
+    const walkFrame = reducedMotion() ? 0 : Math.floor(clk * WALK_FPS) % 2 ? 1 : 2;
     const tutorial = s.totalEarned < 30;
     // Paso del tutorial en curso: las pistas siguen al paso, no al stock (así nunca falta la mano).
     const tutStat = s.meta.tutorial < TUTORIAL.length && this.bizId === bizList(s)[0].id ? TUTORIAL[s.meta.tutorial].stat : null;
@@ -608,10 +609,10 @@ export class BusinessScene extends Phaser.Scene {
       const p = f.running ? f.prog / CHAIN.floorCycle : 0;
       const working = f.running;
       const active=working && !reducedMotion();
-      if (this.restaurant) swapArt(v.worker, active && Math.floor(t*4+i)%2 ? "rest_chef_b" : "rest_chef_a");
-      v.worker.setY(v.y + 12 - (active ? Math.abs(Math.sin(t * 6 + i)) * 1.8 : 0));
-      v.worker.setAngle(active ? Math.sin(t * 6 + i) * 3 : 0);
-      v.shadow.setAlpha(active ? 0.13 + Math.abs(Math.sin(t*6+i))*0.05 : 0.18);
+      if (this.restaurant) swapArt(v.worker, active && Math.floor(clk*4+i)%2 ? "rest_chef_b" : "rest_chef_a");
+      v.worker.setY(v.y + 12 - (active ? Math.abs(Math.sin(clk * 6 + i)) * 1.8 : 0));
+      v.worker.setAngle(active ? Math.sin(clk * 6 + i) * 3 : 0);
+      v.shadow.setAlpha(active ? 0.13 + Math.abs(Math.sin(clk*6+i))*0.05 : 0.18);
       if (working && puffNow && !reducedMotion()) {
         if (this.bizId === "restaurant") this.puffs.emitParticleAt(v.station.x + (Math.random() - 0.5) * 20, v.station.y - 40);
         else this.sparks.emitParticleAt(v.station.x + (Math.random() - 0.5) * 30, v.station.y - 30 - Math.random() * 20, 1);
@@ -632,7 +633,7 @@ export class BusinessScene extends Phaser.Scene {
         v.level = f.level;
       }
       const q = upgradeQuote(s, this.bizId, { kind: "floor", index: i });
-      v.pill.setText(`Nv ${f.level}`).setAlert(s.cash >= q.cost || (!f.managed && s.cash >= managerCost(def, { kind: "floor", index: i })));
+      v.pill.setText(`${t("Nv")} ${f.level}`).setAlert(s.cash >= q.cost || (!f.managed && s.cash >= managerCost(def, { kind: "floor", index: i })));
     });
 
     this.restaurant?.update(dt,b);
@@ -649,14 +650,14 @@ export class BusinessScene extends Phaser.Scene {
     const carryY = this.mover.y - (isVehicle(this.look.mover) ? 34 : 50);
     this.moverItem.setVisible(tr.carry > 0 && !(this.warehouse && this.mover.frame.name === "wh_forklift_loaded")).setPosition(mp.x, carryY).setDepth(mp.y + 3);
     this.moverCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "").setPosition(mp.x, carryY - 18).setDepth(9e4);
-    const ringScale = reducedMotion() ? 1 : 1 + Math.sin(t * 5) * 0.075;
+    const ringScale = reducedMotion() ? 1 : 1 + Math.sin(clk * 5) * 0.075;
     this.moverRing.setScale(ringScale);
     this.sellerRing.setScale(ringScale);
     const moverStep = tutStat === "tapTransport";
     // En el tutorial solo señala lo que pide el paso actual; fuera de él, lo que está listo para tocar.
     this.moverHint.setVisible((tutStat ? moverStep : tutorial && b.floors.some((f) => f.stock > 0)) && tr.phase === "idle" && !tr.managed);
     const mvLift = isVehicle(this.look.mover) ? 22 : 0; // los vehículos son más bajos que una persona
-    this.moverHint.setPosition(mp.x, mp.y - 64 + mvLift + (reducedMotion() ? 0 : Math.sin(t * 8) * 4)).setDepth(9.4e4);
+    this.moverHint.setPosition(mp.x, mp.y - 64 + mvLift + (reducedMotion() ? 0 : Math.sin(clk * 8) * 4)).setDepth(9.4e4);
     this.moverTag.setVisible(moverStep).setPosition(mp.x, mp.y - 92 + mvLift).setDepth(9.4e4);
     this.moverRing.setVisible(moverStep).setPosition(mp.x, mp.y).setDepth(mp.y - 0.5);
     if (tr.level > this.levels.transport) {
@@ -681,7 +682,7 @@ export class BusinessScene extends Phaser.Scene {
     const sellerStep = tutStat === "sales";
     this.sellerHint.setVisible((tutStat ? sellerStep : tutorial && b.topStock > 0) && sl.phase === "idle" && !sl.managed);
     const slLift = isVehicle(this.look.seller) ? 22 : 0;
-    this.sellerHint.setPosition(sp.x, sp.y - 64 + slLift + (reducedMotion() ? 0 : Math.sin(t * 8) * 4)).setDepth(9.4e4);
+    this.sellerHint.setPosition(sp.x, sp.y - 64 + slLift + (reducedMotion() ? 0 : Math.sin(clk * 8) * 4)).setDepth(9.4e4);
     // El cartel va debajo: encima suele estar el otro vehículo aparcado.
     this.sellerTag.setAlpha(deliveryVisibility).setVisible(sellerStep).setPosition(sp.x, sp.y + 26).setDepth(9.4e4);
     this.sellerRing.setAlpha(deliveryVisibility).setVisible(sellerStep).setPosition(sp.x, sp.y).setDepth(sp.y - 0.5);
@@ -699,7 +700,7 @@ export class BusinessScene extends Phaser.Scene {
 
     if (this.unlockPill) {
       const cost = floorUnlockCost(def, b.floors.length);
-      this.unlockPill.setText(`Abrir · ${fmt(cost)} €`).setAlert(s.cash >= cost).setAlpha(s.cash >= cost ? 1 : 0.65);
+      this.unlockPill.setText(`${t("Abrir")} · ${money(cost)}`).setAlert(s.cash >= cost).setAlpha(s.cash >= cost ? 1 : 0.65);
     }
 
     // Tráfico
@@ -710,7 +711,7 @@ export class BusinessScene extends Phaser.Scene {
       car.obj.setPosition(p.x, p.y).setDepth(p.y + 1);
       const visible=Phaser.Math.Clamp(Math.min(car.c+2,COLS+2-car.c),0,1);
       car.obj.setAlpha(visible);
-      gait(car.obj,p.y,t+car.speed,!reducedMotion(),true);
+      gait(car.obj,p.y,clk+car.speed,!reducedMotion(),true);
       car.shadow.setPosition(p.x,p.y+1).setDepth(p.y-1).setAlpha(0.18*visible);
     }
 
@@ -727,7 +728,7 @@ export class BusinessScene extends Phaser.Scene {
         // Venta viral: lluvia de monedas y texto dorado grande
         if (!reducedMotion()) this.coins.explode(12, gate.x, gate.y - 20);
         if (!reducedMotion()) this.sparks.explode(10, gate.x, gate.y - 40);
-        floatText(this, gate.x, gate.y - 90, `🔥 ¡VIRAL! +${fmt(sale.amount)}`, "#f5c542");
+        floatText(this, gate.x, gate.y - 90, `🔥 ${t("¡VIRAL!")} +${fmt(sale.amount)}`, "#f5c542");
         if (!reducedMotion()) this.cameras.main.shake(180, 0.004);
       } else {
         if (!reducedMotion()) this.coins.explode(4, gate.x, gate.y - 20);

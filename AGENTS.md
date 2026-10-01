@@ -41,7 +41,7 @@ Cosas que hay que saber:
 - **Antes de dar algo por terminado:** `npm test` y `npm run build` sin errores. Prueba en el navegador a 390×844 (móvil) sin errores en la consola.
 - **Rendimiento:** tiene que ir fluido en móviles de gama media. Nada de miles de partículas ni de texturas de 4K.
 - **Accesibilidad:** respeta `prefers-reduced-motion` y mantén un contraste legible.
-- **Textos del juego en español.**
+- **Textos del juego en español, siempre con `t()`** (`src/i18n.ts`): `t("Nivel {n}", { n })`. Añade la traducción al inglés en `src/i18n/en.ts`; `npm test` avisa si falta alguna. Para dinero usa `money(n)` (€ o $ según el idioma), no `${fmt(n)} €`. Detalles en `docs/IDIOMAS.md`.
 - **Arte propio o con licencia libre**, sin marcas ni logotipos reales.
 - **Si añades piezas de arte nuevas, documéntalas en `docs/ART.md`** (clave, tamaño y prompt).
 

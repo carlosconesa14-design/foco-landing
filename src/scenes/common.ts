@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { flyCoins } from "../ui/rewards";
 import Phaser from "phaser";
 import type { Station } from "../game/economy";
@@ -286,8 +287,8 @@ export class DragScroll {
     const root = document.createElement("div");
     root.className = "map-tools";
     root.setAttribute("role", "group");
-    root.setAttribute("aria-label", "Cámara del mapa");
-    root.innerHTML = `<button data-map="home" aria-label="Centrar mapa" title="Centrar mapa">⌖</button><button data-map="overview" aria-label="Ver mapa completo" title="Ver mapa completo">▦</button><span class="map-zoom"><button data-map="out" aria-label="Alejar mapa">−</button><button data-map="in" aria-label="Acercar mapa">+</button></span>`;
+    root.setAttribute("aria-label", t("Cámara del mapa"));
+    root.innerHTML = `<button data-map="home" aria-label="${t("Centrar mapa")}" title="${t("Centrar mapa")}">⌖</button><button data-map="overview" aria-label="${t("Ver mapa completo")}" title="${t("Ver mapa completo")}">▦</button><span class="map-zoom"><button data-map="out" aria-label="${t("Alejar mapa")}">−</button><button data-map="in" aria-label="${t("Acercar mapa")}">+</button></span>`;
     let lastBottom = -1;
     const position = () => {
       const wave = document.getElementById("wave");

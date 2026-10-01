@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { decorateIcons } from "./icons";
 /** Panel inferior (bottom sheet) para mejoras, compras y la bolsa. Solo hay uno abierto a la vez. */
 
@@ -21,8 +22,8 @@ export function openSheet(root: HTMLElement, html: string, update?: (el: HTMLEle
   el.className = "sheet";
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-modal", "true");
-  el.innerHTML = `<div class="grab" aria-hidden="true"></div><button class="sheet-close" aria-label="Cerrar">✕</button>${html}`;
-  el.setAttribute("aria-label", el.querySelector("h3")?.textContent ?? "Panel del juego");
+  el.innerHTML = `<div class="grab" aria-hidden="true"></div><button class="sheet-close" aria-label="${t("Cerrar")}">✕</button>${html}`;
+  el.setAttribute("aria-label", el.querySelector("h3")?.textContent ?? t("Panel del juego"));
   scrim.appendChild(el);
   root.appendChild(scrim);
   const sheet: Sheet = {

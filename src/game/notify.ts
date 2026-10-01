@@ -1,6 +1,6 @@
 import { META } from "./data";
 import { passiveRate } from "./economy";
-import { fmt } from "./format";
+import { money, t } from "../i18n";
 import { dailyStatus } from "./meta";
 import type { GameState } from "./state";
 import { offlineCapHours } from "./world";
@@ -57,8 +57,8 @@ export function planNotifications(s: GameState, now: number): PlannedNote[] {
     notes.push({
       id: NOTE_IDS.cashFull,
       at: outsideQuietHours(now + capMs),
-      title: "💰 Tus gerentes han llenado la caja",
-      body: `Tienes unos ${fmt((rate * capMs) / 1000)} € esperando. Entra a cobrarlos: a partir de ahora ya no suman más.`,
+      title: t("💰 Tus gerentes han llenado la caja"),
+      body: t("Tienes unos {m} esperando. Entra a cobrarlos: a partir de ahora ya no suman más.", { m: money((rate * capMs) / 1000) }),
     });
   }
 
@@ -67,8 +67,8 @@ export function planNotifications(s: GameState, now: number): PlannedNote[] {
     notes.push({
       id: NOTE_IDS.freeChest,
       at: outsideQuietHours(s.meta.freeChestAt),
-      title: "💼 Maletín gratis listo",
-      body: `Ábrelo y descubre a tu próximo ejecutivo. Vuelve a estar disponible cada ${META.freeChestHours} h.`,
+      title: t("💼 Maletín gratis listo"),
+      body: t("Ábrelo y descubre a tu próximo ejecutivo. Vuelve a estar disponible cada {h} h.", { h: META.freeChestHours }),
     });
   }
 
@@ -85,8 +85,8 @@ export function planNotifications(s: GameState, now: number): PlannedNote[] {
   notes.push({
     id: NOTE_IDS.daily,
     at: outsideQuietHours(at),
-    title: "🎁 Tu premio diario te espera",
-    body: d.streak > 1 ? `Llevas ${d.streak} días seguidos. ¡No pierdas la racha!` : "Entra a cobrarlo y empieza una racha de premios.",
+    title: t("🎁 Tu premio diario te espera"),
+    body: d.streak > 1 ? t("Llevas {n} días seguidos. ¡No pierdas la racha!", { n: d.streak }) : t("Entra a cobrarlo y empieza una racha de premios."),
   });
 
   return notes.filter((n) => n.at > now).sort((a, b) => a.at - b.at);

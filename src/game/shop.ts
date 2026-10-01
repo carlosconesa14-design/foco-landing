@@ -1,6 +1,7 @@
 import { CONFIG } from "./data";
 import { newExec } from "./meta";
 import { bump, type GameState } from "./state";
+import { t } from "../i18n";
 
 /**
  * Tienda (compras dentro de la app). Aquí solo está qué da cada producto; el cobro lo hace
@@ -78,7 +79,7 @@ export function grantProduct(s: GameState, id: ProductId, order: string, now: nu
     case "vip":
       if (shop.vip) break;
       shop.vip = true;
-      msg = "¡Ya eres VIP! Sin anuncios y todo x2 para siempre";
+      msg = t("¡Ya eres VIP! Sin anuncios y todo x2 para siempre");
       break;
     case "starter_pack": {
       if (shop.starter) break;
@@ -87,7 +88,7 @@ export function grantProduct(s: GameState, id: ProductId, order: string, now: nu
       s.meta.execs.push(newExec(2, rand));
       s.boostEnd = Math.min(Math.max(now, s.boostEnd) + 4 * 3600e3, now + CONFIG.boostMaxHours * 3600e3);
       bump(s, "chests");
-      msg = "¡Pack de inicio! +300 💎, un ejecutivo Épico y 4 h x2";
+      msg = t("¡Pack de inicio! +300 💎, un ejecutivo Épico y 4 h x2");
       break;
     }
     case "gems_200":
@@ -96,7 +97,7 @@ export function grantProduct(s: GameState, id: ProductId, order: string, now: nu
       break;
     case "gems_1200":
       s.meta.gems += 1200;
-      msg = "+1.200 💎";
+      msg = t("+1.200 💎");
       break;
   }
   if (msg && order) shop.orders.push(order);

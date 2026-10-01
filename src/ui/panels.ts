@@ -27,6 +27,7 @@ import type { Celebration } from "./celebrate";
 import { bizIcon, icon } from "./icons";
 import { analytics, minutesSinceInstall } from "../platform/analytics";
 import { closeSheet, openSheet } from "./sheet";
+import { money, t } from "../i18n";
 
 /** Lo que los paneles necesitan del controlador del juego. */
 export interface PanelCtx {
@@ -49,13 +50,15 @@ export interface PanelCtx {
   floatAt(anchor: Element, text: string): void;
   /** Anuncio de prueba sin recompensa (diagnóstico). */
   testAd(): Promise<boolean>;
+  /** Guarda y recarga la app (cambio de idioma). */
+  reload(): void;
 }
 
 const $ = <T extends HTMLElement>(el: HTMLElement, sel: string) => el.querySelector<T>(sel)!;
 
 const buyModes = (s: GameState) =>
   `<div class="seg" data-seg>${([1, 10, 50, "max"] as BuyMode[])
-    .map((m) => `<button data-mode="${m}" aria-pressed="${s.buyMode === m}">${m === "max" ? "Máx" : "x" + m}</button>`)
+    .map((m) => `<button data-mode="${m}" aria-pressed="${s.buyMode === m}">${m === "max" ? t("Máx") : "x" + m}</button>`)
     .join("")}</div>`;
 
 function wireBuyModes(el: HTMLElement, ctx: PanelCtx): void {
@@ -76,24 +79,24 @@ function statRows(s: GameState, id: string, st: Station, qty: number): string {
   const row = (name: string, now: string, next: string) =>
     `<div class="stat"><span>${name}</span><b>${now} <i class="up">→ ${next}</i></b></div>`;
   if (st.kind === "floor")
-    return row("Producción", `${fmt(floorRate(def, st.index, lvl))} €/s`, `${fmt(floorRate(def, st.index, lvl + qty))} €/s`);
+    return row(t("Producción"), `${money(floorRate(def, st.index, lvl))}/s`, `${money(floorRate(def, st.index, lvl + qty))}/s`);
   if (st.kind === "transport")
     return (
-      row("Capacidad por viaje", `${fmt(transportCap(def, lvl))} €`, `${fmt(transportCap(def, lvl + qty))} €`) +
-      row("Velocidad", `${transportSpeed(lvl).toFixed(2)} plantas/s`, `${transportSpeed(lvl + qty).toFixed(2)}`)
+      row(t("Capacidad por viaje"), money(transportCap(def, lvl)), money(transportCap(def, lvl + qty))) +
+      row(t("Velocidad"), `${transportSpeed(lvl).toFixed(2)} ${t("plantas/s")}`, `${transportSpeed(lvl + qty).toFixed(2)}`)
     );
   return (
-    row("Capacidad por viaje", `${fmt(saleCap(def, lvl))} €`, `${fmt(saleCap(def, lvl + qty))} €`) +
-    row("Tiempo de ida", `${saleWalk(lvl).toFixed(2)} s`, `${saleWalk(lvl + qty).toFixed(2)} s`)
+    row(t("Capacidad por viaje"), money(saleCap(def, lvl)), money(saleCap(def, lvl + qty))) +
+    row(t("Tiempo de ida"), `${saleWalk(lvl).toFixed(2)} s`, `${saleWalk(lvl + qty).toFixed(2)} s`)
   );
 }
 
 function chainSummary(s: GameState, id: string): string {
   const r = chainRates(bizDef(id), s.biz[id], false);
   const cell = (key: typeof r.bottleneck, name: string, v: number) =>
-    `<div class="link ${r.bottleneck === key ? "slow" : ""}"><span>${name}</span><b>${fmt(v)} €/s</b></div>`;
-  return `<div class="chainsum">${cell("production", "Producción", r.production)}<i>›</i>${cell("transport", "Transporte", r.transport)}<i>›</i>${cell("sale", "Venta", r.sale)}</div>
-    <p class="small muted">Tu negocio vende al ritmo de la parte en rojo. Mejórala primero.</p>`;
+    `<div class="link ${r.bottleneck === key ? "slow" : ""}"><span>${name}</span><b>${money(v)}/s</b></div>`;
+  return `<div class="chainsum">${cell("production", t("Producción"), r.production)}<i>›</i>${cell("transport", t("Transporte"), r.transport)}<i>›</i>${cell("sale", t("Venta"), r.sale)}</div>
+    <p class="small muted">${t("Tu negocio vende al ritmo de la parte en rojo. Mejórala primero.")}</p>`;
 }
 
 export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
@@ -113,19 +116,19 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
       const b = s.biz[id];
       const lvl = stationLevel(b, st);
       const q = upgradeQuote(s, id, st);
-      $(el, "[data-lvl]").textContent = `Nivel ${lvl}`;
+      $(el, "[data-lvl]").textContent = t("Nivel {n}", { n: lvl });
       $(el, "[data-stats]").innerHTML = statRows(s, id, st, q.qty);
       const nm = nextMilestone(lvl);
-      $(el, "[data-ms]").textContent = nm ? `Nivel ${nm}: rendimiento x2 (te faltan ${nm - lvl})` : "Rendimiento máximo";
-      $(el, "[data-uq]").textContent = `Mejorar x${q.qty}`;
-      $(el, "[data-uc]").textContent = `${fmt(q.cost)} €`;
+      $(el, "[data-ms]").textContent = nm ? t("Nivel {n}: rendimiento x2 (te faltan {left})", { n: nm, left: nm - lvl }) : t("Rendimiento máximo");
+      $(el, "[data-uq]").textContent = t("Mejorar x{n}", { n: q.qty });
+      $(el, "[data-uc]").textContent = money(q.cost);
       $<HTMLButtonElement>(el, "[data-up]").disabled = s.cash < q.cost;
       const target = st.kind === "floor" ? b.floors[st.index] : st.kind === "transport" ? b.transport : b.sale;
       const mc = managerCost(def, st);
       const mgr = $(el, "[data-mgr]");
       const html = target.managed
-        ? `<span class="mface">👔</span><div><b>Gerente contratado</b><p class="small muted">Trabaja solo, también con la app cerrada.</p></div>`
-        : `<span class="mface">👔</span><div><b>Contrata un gerente</b><p class="small muted">Sin gerente tienes que tocar para cada viaje.</p></div><button class="buy" data-hire ${s.cash < mc ? "disabled" : ""}><span>Contratar</span><b>${fmt(mc)} €</b></button>`;
+        ? `<span class="mface">👔</span><div><b>${t("Gerente contratado")}</b><p class="small muted">${t("Trabaja solo, también con la app cerrada.")}</p></div>`
+        : `<span class="mface">👔</span><div><b>${t("Contrata un gerente")}</b><p class="small muted">${t("Sin gerente tienes que tocar para cada viaje.")}</p></div><button class="buy" data-hire ${s.cash < mc ? "disabled" : ""}><span>${t("Contratar")}</span><b>${money(mc)}</b></button>`;
       if (mgr.dataset.html !== html) {
         mgr.innerHTML = html;
         mgr.dataset.html = html;
@@ -134,7 +137,7 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
           hire.onclick = () => {
             const msg = act.hireManager(ctx.state(), id, st);
             ctx.fx(msg ? "hire" : "error", !!msg);
-            ctx.toast(msg ?? "No tienes suficiente dinero");
+            ctx.toast(msg ?? t("No tienes suficiente dinero"));
           };
       }
       $(el, "[data-chain]").innerHTML = chainSummary(s, id);
@@ -148,7 +151,7 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
     const after = businessRate(s, id, Date.now()) || chainRates(bizDef(id), s.biz[id], false).total;
     ctx.fx(msg ? "milestone" : "upgrade", !!msg);
     // Recompensa inmediata y visible: cuánto más ganas con esta mejora.
-    if (after > before) ctx.floatAt($(sheet.el, "[data-up]"), `+${fmt(after - before)} €/s`);
+    if (after > before) ctx.floatAt($(sheet.el, "[data-up]"), `+${money(after - before)}/s`);
     if (msg) ctx.banner("⚡", msg);
   };
   wireBuyModes(sheet.el, ctx);
@@ -163,10 +166,10 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
   const cost = floorUnlockCost(def, i);
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">🔓</span><div><h3>${def.floorName} ${i + 1}</h3><p class="muted">Nuevo puesto de producción</p></div></div>
-     <div class="stat"><span>Producción inicial</span><b class="good">+${fmt(floorRate(def, i, 1))} €/s</b></div>
-     <p class="small muted">Cada puesto nuevo produce ${CHAIN.floorGrowth} veces más que el anterior. Recuerda mejorar el transporte y la venta para que no se atasque.</p>
-     <button class="buy big wide" data-unlock><span>Abrir puesto</span><b>${fmt(cost)} €</b></button>`,
+    `<div class="sheet-head"><span class="sicon">🔓</span><div><h3>${def.floorName} ${i + 1}</h3><p class="muted">${t("Nuevo puesto de producción")}</p></div></div>
+     <div class="stat"><span>${t("Producción inicial")}</span><b class="good">+${money(floorRate(def, i, 1))}/s</b></div>
+     <p class="small muted">${t("Cada puesto nuevo produce {n} veces más que el anterior. Recuerda mejorar el transporte y la venta para que no se atasque.", { n: CHAIN.floorGrowth })}</p>
+     <button class="buy big wide" data-unlock><span>${t("Abrir puesto")}</span><b>${money(cost)}</b></button>`,
     (el) => {
       $<HTMLButtonElement>(el, "[data-unlock]").disabled = ctx.state().cash < cost;
     },
@@ -182,8 +185,8 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
       // Sube de categoría: el edificio crece en el mapa. Es un hito grande, se celebra a lo grande.
       void ctx.celebrate({
         icon: def.icon,
-        title: `¡${def.name} sube de categoría!`,
-        subtitle: tier === 3 ? "Ya es de los grandes: el edificio luce su versión de lujo." : "El negocio crece y el edificio se amplía.",
+        title: t("¡{name} sube de categoría!", { name: def.name }),
+        subtitle: tier === 3 ? t("Ya es de los grandes: el edificio luce su versión de lujo.") : t("El negocio crece y el edificio se amplía."),
         highlight: "★".repeat(tier),
       });
       return;
@@ -200,11 +203,11 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
   const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">${bizIcon(def)}</span><div><h3>${def.name}</h3><p class="muted">${def.blurb}</p></div></div>
-     <div class="stat"><span>Puestos</span><b>${def.floorName} ${def.worker}</b></div>
-     <div class="stat"><span>Transporte</span><b>${def.transportName} ${def.transportIcon}</b></div>
-     <div class="stat"><span>Venta</span><b>${def.saleName} ${def.saleWorker}</b></div>
-     <div class="stat"><span>Rentabilidad</span><b class="good">x${fmt(def.mult)} frente a tu primer negocio</b></div>
-     <button class="buy big wide" data-buyplot><span>Comprar</span><b>${fmt(def.price)} €</b></button>`,
+     <div class="stat"><span>${t("Puestos")}</span><b>${def.floorName} ${def.worker}</b></div>
+     <div class="stat"><span>${t("Transporte")}</span><b>${def.transportName} ${def.transportIcon}</b></div>
+     <div class="stat"><span>${t("Venta")}</span><b>${def.saleName} ${def.saleWorker}</b></div>
+     <div class="stat"><span>${t("Rentabilidad")}</span><b class="good">${t("x{n} frente a tu primer negocio", { n: fmt(def.mult) })}</b></div>
+     <button class="buy big wide" data-buyplot><span>${t("Comprar")}</span><b>${money(def.price)}</b></button>`,
     (el) => {
       $<HTMLButtonElement>(el, "[data-buyplot]").disabled = ctx.state().cash < def.price;
     },
@@ -217,8 +220,8 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
     ctx.goTo({ scene: "business", id });
     void ctx.celebrate({
       icon: def.icon,
-      title: "¡Nuevo negocio!",
-      subtitle: `Ya eres dueño de: ${def.name}. Contrata gerentes para que funcione solo.`,
+      title: t("¡Nuevo negocio!"),
+      subtitle: t("Ya eres dueño de: {name}. Contrata gerentes para que funcione solo.", { name: def.name }),
       highlight: def.blurb,
     });
   };
@@ -236,25 +239,25 @@ export function openIpoSheet(ctx: PanelCtx): void {
   const li = lifeIndex(s0.totalEarned);
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">${icon("ic_ipo", "📈")}</span><div><h3>Salir a bolsa</h3><p class="muted">Tienes <b class="gold">${fmt(s0.shares)} acciones</b>: +${fmt(s0.shares * CONFIG.shareBonus * 100)}% a todo lo que ganas.</p></div></div>
-     <p class="muted">Vendes todos los negocios de esta ciudad y vuelves a empezar con el primero, pero cada acción suma un +${CONFIG.shareBonus * 100}% para siempre. Tu estilo de vida (${LIFE[li].icon} ${LIFE[li].name}) se mantiene.</p>
-     <div class="stat"><span>Recibirías ahora</span><b class="gold" data-gain></b></div>
+    `<div class="sheet-head"><span class="sicon">${icon("ic_ipo", "📈")}</span><div><h3>${t("Salir a bolsa")}</h3><p class="muted">${t("Tienes {shares} acciones: +{pct}% a todo lo que ganas.", { shares: `<b class="gold">${fmt(s0.shares)}</b>`, pct: fmt(s0.shares * CONFIG.shareBonus * 100) })}</p></div></div>
+     <p class="muted">${t("Vendes todos los negocios de esta ciudad y vuelves a empezar con el primero, pero cada acción suma un +{pct}% para siempre. Tu estilo de vida ({life}) se mantiene.", { pct: CONFIG.shareBonus * 100, life: `${LIFE[li].icon} ${LIFE[li].name}` })}</p>
+     <div class="stat"><span>${t("Recibirías ahora")}</span><b class="gold" data-gain></b></div>
      <p class="small muted" data-need></p>
      <div class="actions col">
-       <button class="ad-btn wide" data-ipo="2"><span class="play"></span>Salir con x2 acciones</button>
-       <button class="btn" data-ipo="1">Salir a bolsa</button>
+       <button class="ad-btn wide" data-ipo="2"><span class="play"></span>${t("Salir con x2 acciones")}</button>
+       <button class="btn" data-ipo="1">${t("Salir a bolsa")}</button>
      </div>
      <details class="dev"><summary>Panel de desarrollo</summary>
        <div class="stat"><span>Anuncios hoy / total</span><b>${s0.ads.today} / ${s0.ads.total}</b></div>
        <div class="stat"><span>Ingreso estimado (eCPM 10 €)</span><b>${((s0.ads.total * 10) / 1000).toFixed(3)} €</b></div>
        <div class="stat"><span>Por ubicación</span><b>${by || "—"}</b></div>
        <div class="stat"><span>Salidas a bolsa</span><b>${s0.ipos}</b></div>
-       <button class="btn ghost" data-wipe>Borrar partida</button>
+       <button class="btn ghost" data-wipe>${t("Borrar partida")}</button>
      </details>`,
     (el) => {
       const g = sharesToGain(ctx.state());
-      $(el, "[data-gain]").textContent = `${fmt(g)} acciones`;
-      $(el, "[data-need]").textContent = g < 1 ? `Necesitas ganar ${fmt(cityDef(ctx.state().city).shareDivisor)} € en esta partida para tu primera acción.` : "";
+      $(el, "[data-gain]").textContent = t("{n} acciones", { n: fmt(g) });
+      $(el, "[data-need]").textContent = g < 1 ? t("Necesitas ganar {m} en esta partida para tu primera acción.", { m: money(cityDef(ctx.state().city).shareDivisor) }) : "";
       el.querySelectorAll<HTMLButtonElement>("[data-ipo]").forEach((b) => (b.disabled = g < 1));
     },
   );
@@ -263,7 +266,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
       const mult = b.dataset.ipo === "2" ? 2 : 1;
       if (mult === 1 && !armed) {
         armed = true;
-        b.textContent = "Toca otra vez para confirmar";
+        b.textContent = t("Toca otra vez para confirmar");
         return;
       }
       if (mult === 2 && !(await ctx.watchAd("ipo_x2"))) return;
@@ -274,9 +277,9 @@ export function openIpoSheet(ctx: PanelCtx): void {
       closeSheet();
       void ctx.celebrate({
         icon: "🔔",
-        title: "¡Has salido a bolsa!",
-        subtitle: "Vuelves a empezar con tu primer negocio, pero ahora todo rinde más.",
-        highlight: `+${fmt(res.gained)} acciones · +${fmt(res.gained * CONFIG.shareBonus * 100)} % para siempre`,
+        title: t("¡Has salido a bolsa!"),
+        subtitle: t("Vuelves a empezar con tu primer negocio, pero ahora todo rinde más."),
+        highlight: t("+{n} acciones · +{pct} % para siempre", { n: fmt(res.gained), pct: fmt(res.gained * CONFIG.shareBonus * 100) }),
         color: "#4aa8ff",
       });
     };
@@ -285,7 +288,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
     const b = e.currentTarget as HTMLButtonElement;
     if (!wipeArmed) {
       wipeArmed = true;
-      b.textContent = "Toca otra vez para borrar todo";
+      b.textContent = t("Toca otra vez para borrar todo");
       return;
     }
     closeSheet();

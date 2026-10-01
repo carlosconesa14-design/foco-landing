@@ -1,4 +1,5 @@
 import { decorateIcons } from "./icons";
+import { t } from "../i18n";
 /**
  * Recompensas visuales escalonadas (la "dopamina" del juego):
  * - banner(): banda dorada para logros medianos (hito x2, puesto nuevo, misiones completadas).
@@ -84,7 +85,7 @@ export function celebrate(root: HTMLElement, c: Celebration): Promise<void> {
     el.querySelector(".csub")!.textContent = c.subtitle;
     if (c.highlight) el.querySelector(".chigh")!.textContent = c.highlight;
     const btn = el.querySelector<HTMLButtonElement>(".cbtn")!;
-    btn.textContent = c.button ?? "¡Genial!";
+    btn.textContent = c.button ?? t("¡Genial!");
     confetti(el);
     root.appendChild(el);
   decorateIcons(el);

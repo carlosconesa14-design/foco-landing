@@ -16,6 +16,7 @@ import {
 import { stationName } from "./actions";
 import type { GameState } from "./state";
 import { canExpand, nextCity } from "./world";
+import { t } from "../i18n";
 
 /**
  * "Próximo objetivo": la siguiente meta con sentido y cuánto falta.
@@ -44,7 +45,7 @@ export function nextGoal(s: GameState, now: number): Goal | null {
   // 0) Ciudad completada: lo siguiente es expandirse
   if (canExpand(s)) {
     const next = nextCity(s)!;
-    return { icon: next.flag, text: `¡Expándete a ${next.name}!`, cost: 0, progress: 1, action: { kind: "world" } };
+    return { icon: next.flag, text: t("¡Expándete a {city}!", { city: next.name }), cost: 0, progress: 1, action: { kind: "world" } };
   }
 
   // 1) Gerentes que faltan: lo más valioso al principio
@@ -52,8 +53,8 @@ export function nextGoal(s: GameState, now: number): Goal | null {
     const b = s.biz[d.id];
     const sts: Station[] = [...b.floors.map((_, i) => ({ kind: "floor", index: i }) as Station), { kind: "transport" }, { kind: "sale" }];
     for (const st of sts) {
-      const t = st.kind === "floor" ? b.floors[st.index] : st.kind === "transport" ? b.transport : b.sale;
-      if (!t.managed) goals.push(make("👔", `Contrata gerente: ${stationName(d.id, st)}`, managerCost(d, st), { kind: "station", bizId: d.id, station: st }));
+      const part = st.kind === "floor" ? b.floors[st.index] : st.kind === "transport" ? b.transport : b.sale;
+      if (!part.managed) goals.push(make("👔", t("Contrata gerente: {name}", { name: stationName(d.id, st) }), managerCost(d, st), { kind: "station", bizId: d.id, station: st }));
     }
   }
   if (goals.length) return goals.reduce((a, g) => (g.cost < a.cost ? g : a));
@@ -62,7 +63,7 @@ export function nextGoal(s: GameState, now: number): Goal | null {
   const next = bizList(s).find((d) => !s.biz[d.id].owned);
   const rate = passiveRate(s, now);
   if (next && rate > 0 && (next.price - s.cash) / rate < 3 * 3600) {
-    return make(next.icon, `Compra ${next.name}`, next.price, { kind: "business", bizId: next.id });
+    return make(next.icon, t("Compra {name}", { name: next.name }), next.price, { kind: "business", bizId: next.id });
   }
 
   if (!here) return null;
@@ -83,17 +84,17 @@ export function nextGoal(s: GameState, now: number): Goal | null {
     if (!ms) return null;
     const first = st.kind === "floor" ? floorNextCost(def, st.index, lvl) : logisticsNextCost(def, lvl);
     const k = st.kind === "floor" ? CHAIN.floorUpgradeK : CHAIN.logisticsCostK;
-    return make("⚡", `${stationName(here, st)} a Nv ${ms} (x2)`, geomCost(first, k, ms - lvl), { kind: "station", bizId: here, station: st });
+    return make("⚡", t("{name} a Nv {lv} (x2)", { name: stationName(here, st), lv: ms }), geomCost(first, k, ms - lvl), { kind: "station", bizId: here, station: st });
   })();
 
   // 4) Abrir el siguiente puesto
   const floor =
     b.floors.length < CHAIN.maxFloors
-      ? make("🔓", `Abre ${def.floorName} ${b.floors.length + 1}`, floorUnlockCost(def, b.floors.length), { kind: "floor", bizId: here })
+      ? make("🔓", t("Abre {name} {n}", { name: def.floorName, n: b.floors.length + 1 }), floorUnlockCost(def, b.floors.length), { kind: "floor", bizId: here })
       : null;
 
   // El más cercano de los dos
   const options = [upg, floor].filter((g): g is Goal => !!g);
-  if (!options.length) return next ? make(next.icon, `Compra ${next.name}`, next.price, { kind: "business", bizId: next.id }) : null;
+  if (!options.length) return next ? make(next.icon, t("Compra {name}", { name: next.name }), next.price, { kind: "business", bizId: next.id }) : null;
   return options.reduce((a, g) => (g.cost < a.cost ? g : a));
 }

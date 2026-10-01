@@ -4,28 +4,29 @@ import { store } from "../platform/store";
 import { openExecs } from "./metaPanels";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
+import { t } from "../i18n";
 
 /** Tienda: VIP, pack de inicio y diamantes. Se abre tocando los diamantes de la cabecera. */
 export function openShop(ctx: PanelCtx): void {
   let busy = false;
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">🛍️</span><div><h3>Tienda</h3><p class="muted">Apoya el juego y avanza más rápido</p></div></div>
+    `<div class="sheet-head"><span class="sicon">🛍️</span><div><h3>${t("Tienda")}</h3><p class="muted">${t("Apoya el juego y avanza más rápido")}</p></div></div>
      <div class="shop" data-list></div>
-     <button class="btn ghost wide" data-chests style="margin-top:10px">💼 Maletines de ejecutivos</button>
-     <button class="btn ghost wide" data-restore style="margin-top:8px">Restaurar compras</button>
-     <p class="small muted" style="margin-top:10px">${store.simulated ? "Versión web: las compras son simuladas y no se cobra nada." : "Pagos gestionados por Google Play / App Store."} Las compras no dan puntos en la Liga.</p>`,
+     <button class="btn ghost wide" data-chests style="margin-top:10px">💼 ${t("Maletines de ejecutivos")}</button>
+     <button class="btn ghost wide" data-restore style="margin-top:8px">${t("Restaurar compras")}</button>
+     <p class="small muted" style="margin-top:10px">${store.simulated ? t("Versión web: las compras son simuladas y no se cobra nada.") : t("Pagos gestionados por Google Play / App Store.")} ${t("Las compras no dan puntos en la Liga.")}</p>`,
     (el) => {
       const s = ctx.state();
       const list = el.querySelector<HTMLElement>("[data-list]")!;
-      const html = (isVip(s) ? `<div class="shop-vip">👑 <b>Eres VIP</b><span>Sin anuncios y todo x2 para siempre. ¡Gracias!</span></div>` : "") +
+      const html = (isVip(s) ? `<div class="shop-vip">👑 <b>${t("Eres VIP")}</b><span>${t("Sin anuncios y todo x2 para siempre. ¡Gracias!")}</span></div>` : "") +
         PRODUCTS.filter((p) => canBuy(s, p.id))
           .map(
             (p) => `<div class="shop-card ${p.highlight ? "hot" : ""}">
               ${p.highlight ? `<span class="shop-tag">${p.highlight}</span>` : ""}
               <span class="shop-ic">${p.icon}</span>
               <div><b>${p.name}</b><span class="sub">${p.desc}</span></div>
-              <button class="buy" data-buy="${p.id}"><span>Comprar</span><b>${store.price(p.id)}</b></button>
+              <button class="buy" data-buy="${p.id}"><span>${t("Comprar")}</span><b>${store.price(p.id)}</b></button>
             </div>`,
           )
           .join("");
@@ -42,7 +43,7 @@ export function openShop(ctx: PanelCtx): void {
           busy = false;
           b.disabled = false;
           if (!res.ok) {
-            if (res.error !== "cancelled") ctx.toast("La compra no se ha completado");
+            if (res.error !== "cancelled") ctx.toast(t("La compra no se ha completado"));
             return;
           }
           const msg = grantProduct(ctx.state(), id, res.order ?? "", Date.now());
@@ -50,7 +51,7 @@ export function openShop(ctx: PanelCtx): void {
           analytics.track("purchase", { product: id, minutes: minutesSinceInstall() });
           void ctx.celebrate({
             icon: PRODUCTS.find((p) => p.id === id)!.icon,
-            title: "¡Gracias por tu compra!",
+            title: t("¡Gracias por tu compra!"),
             subtitle: msg,
             color: "#f5c542",
           });
@@ -62,7 +63,7 @@ export function openShop(ctx: PanelCtx): void {
   sheet.el.querySelector<HTMLButtonElement>("[data-restore]")!.onclick = async () => {
     const owned = await store.owned();
     const got = owned.map((o) => grantProduct(ctx.state(), o.id, o.order, Date.now())).filter(Boolean);
-    ctx.toast(got.length ? `Restaurado: ${got.length} compra(s)` : store.simulated ? "En la web no hay compras que restaurar" : "No hay compras que restaurar");
+    ctx.toast(got.length ? t("Restaurado: {n} compra(s)", { n: got.length }) : store.simulated ? t("En la web no hay compras que restaurar") : t("No hay compras que restaurar"));
   };
   void store.loadPrices().then(() => sheet.update?.());
 }

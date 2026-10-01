@@ -1,4 +1,5 @@
 import type { AdService, Placement } from "./types";
+import { t } from "../i18n";
 
 /** Anuncio simulado para el navegador: 5 s de espera y se puede cerrar sin recompensa. */
 export class MockAds implements AdService {
@@ -11,9 +12,9 @@ export class MockAds implements AdService {
       const el = document.createElement("div");
       el.className = "adscreen";
       el.innerHTML = `
-        <div class="top"><span>Anuncio de prueba · ${placement}</span><button class="close" hidden>Cerrar sin recompensa</button></div>
-        <div class="fake"><div>Aquí se mostrará un vídeo de AdMob</div><div class="cd">5</div><div class="small">La recompensa se entrega al terminar</div></div>
-        <button class="ad-btn wide" disabled>Espera…</button>`;
+        <div class="top"><span>${t("Anuncio de prueba")} · ${placement}</span><button class="close" hidden>${t("Cerrar sin recompensa")}</button></div>
+        <div class="fake"><div>${t("Aquí se mostrará un vídeo de AdMob")}</div><div class="cd">5</div><div class="small">${t("La recompensa se entrega al terminar")}</div></div>
+        <button class="ad-btn wide" disabled>${t("Espera…")}</button>`;
       this.root.appendChild(el);
       const done = el.querySelector<HTMLButtonElement>(".ad-btn")!;
       const cd = el.querySelector<HTMLElement>(".cd")!;
@@ -26,7 +27,7 @@ export class MockAds implements AdService {
         if (left <= 0) {
           clearInterval(iv);
           done.disabled = false;
-          done.textContent = "Recibir recompensa";
+          done.textContent = t("Recibir recompensa");
         }
       }, 1000);
       const finish = (ok: boolean) => {

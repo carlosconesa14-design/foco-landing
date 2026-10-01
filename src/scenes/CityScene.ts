@@ -1,3 +1,4 @@
+import { money, t } from "../i18n";
 import { constructionPop, revealScene } from "./feedback";
 import { actorShadow, gait, loopPosition, streetLoop, type StreetLoop } from "./motion";
 import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
@@ -31,16 +32,16 @@ const LOT_POSITIONS: { c: number; r: number }[] = [
   { c: 1, r: 9 },
   { c: 6, r: 9 },
 ];
-const SOON_LABELS: Record<string, string[]> = {
-  madrid: ["🏋️ Gimnasio", "🏨 Hotel"],
-  miami: ["🏨 Resort"],
-};
+const SOON_LABELS = (): Record<string, string[]> => ({
+  madrid: ["🏋️ " + t("Gimnasio"), "🏨 " + t("Hotel")],
+  miami: ["🏨 " + t("Resort")],
+});
 
 function lotsFor(city: CityDef): { c: number; r: number; kind: LotKind }[] {
-  const soon = SOON_LABELS[city.id] ?? [];
+  const soon = SOON_LABELS()[city.id] ?? [];
   return LOT_POSITIONS.map((p, i) => ({
     ...p,
-    kind: i < city.businesses.length ? { id: city.businesses[i].id } : { soon: soon[i - city.businesses.length] ?? "🏗️ Solar" },
+    kind: i < city.businesses.length ? { id: city.businesses[i].id } : { soon: soon[i - city.businesses.length] ?? "🏗️ " + t("Solar") },
   }));
 }
 
@@ -328,7 +329,7 @@ export class CityScene extends Phaser.Scene {
     if ("soon" in kind) {
       const img = art(this, bottom.x, bottom.y + 2, "bld_soon");
       img.setOrigin(0.5, hasGeneratedArt(this, "bld_soon") ? 1 : (ART.bld_soon.h - 6) / ART.bld_soon.h).setDepth(bottom.y);
-      label(this, bottom.x, bottom.y + 14, `${kind.soon} · Próximamente`, 12, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
+      label(this, bottom.x, bottom.y + 14, `${kind.soon} · ${t("Próximamente")}`, 12, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
       return;
     }
     const id = kind.id;
@@ -341,7 +342,7 @@ export class CityScene extends Phaser.Scene {
       const spec = ART[key];
       const img = art(this, bottom.x, bottom.y + 2, key);
       img.setOrigin(0.5, hasGeneratedArt(this, key) ? 1 : (spec.h - 6) / spec.h).setDepth(bottom.y);
-      if (this.growing.has(id)) constructionPop(this,img,"¡Negocio ampliado!");
+      if (this.growing.has(id)) constructionPop(this,img,t("¡Negocio ampliado!"));
       topY = bottom.y - spec.h + 10;
       const bg = this.add.graphics();
       bg.fillStyle(0x14202f, 0.92).fillRoundedRect(-46, -14, 92, 28, 14);
@@ -359,7 +360,7 @@ export class CityScene extends Phaser.Scene {
       g.fillStyle(0xc19a6b, 1).fillPoints(pts, true);
       g.lineStyle(3, 0xffffff, 0.8).strokePoints(pts, true);
       view.sign = art(this, center.x, center.y + 10, "sign_sale").setOrigin(0.5, 0.95).setDepth(center.y + 10);
-      const price = label(this, center.x, center.y - 46, `${fmt(def.price)} €`, 17, "#14202f", { display: true }).setDepth(center.y + 11);
+      const price = label(this, center.x, center.y - 46, money(def.price), 17, "#14202f", { display: true }).setDepth(center.y + 11);
       const priceWidth = view.sign.displayWidth * 0.78;
       if (price.width > priceWidth) price.setFontSize(Math.floor(17 * priceWidth / price.width));
       if (!reducedMotion()) this.tweens.add({ targets: price, scale: 1.08, yoyo: true, repeat: -1, duration: 700 });
@@ -484,7 +485,7 @@ export class CityScene extends Phaser.Scene {
     for (const p of this.plots) {
       if (p.owned && p.bubbleText) {
         const rate = businessRate(s, p.id, now);
-        p.bubbleText.setText(rate > 0 ? `+${fmt(rate)}/s` : "Entrar ▶");
+        p.bubbleText.setText(rate > 0 ? `+${fmt(rate)}/s` : t("Entrar") + " ▶");
       } else if (p.sign) {
         const def = ALL_BUSINESSES.find((b) => b.id === p.id)!;
         p.sign.setTint(s.cash >= def.price ? 0xffffff : mix(0xffffff, 0x999999, 0.5));

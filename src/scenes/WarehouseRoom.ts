@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import Phaser from "phaser";
 import { art } from "../art/catalog";
 import type { BusinessState } from "../game/state";
@@ -71,16 +72,16 @@ export class WarehouseRoom {
     }
     const sign=this.iso(4.5,0);
     wall.fillStyle(0x204d4c).fillRoundedRect(sign.x-68,sign.y-57,136,23,5);
-    label(this.scene,sign.x,sign.y-45,"CARGA Y REPARTO",11,"#fff5d8",{bold:true}).setDepth(0);
+    label(this.scene,sign.x,sign.y-45,t("CARGA Y REPARTO"),11,"#fff5d8",{bold:true}).setDepth(0);
     if(this.floors>=3) {
       const badge=this.iso(8.25,.55);
       wall.fillStyle(0x315c59).fillRoundedRect(badge.x-32,badge.y-15,64,20,5);
-      label(this.scene,badge.x,badge.y-5,"★  ZONA B",9,"#ffe08a",{bold:true}).setDepth(0);
+      label(this.scene,badge.x,badge.y-5,"★  " + t("ZONA B"),9,"#ffe08a",{bold:true}).setDepth(0);
     }
     if(this.floors>=6) {
       const badge=this.iso(.75,1.0);
       wall.fillStyle(0x315c59).fillRoundedRect(badge.x-32,badge.y-15,64,20,5);
-      label(this.scene,badge.x,badge.y-5,"★  ZONA C",9,"#ffe08a",{bold:true}).setDepth(0);
+      label(this.scene,badge.x,badge.y-5,"★  " + t("ZONA C"),9,"#ffe08a",{bold:true}).setDepth(0);
     }
 
     const dock=this.iso(4.5,7.6);
@@ -101,7 +102,7 @@ export class WarehouseRoom {
     const calm=reducedMotion();
     const anyStock=business.topStock>0;
     this.piles.forEach((pile,i)=>pile.setVisible(anyStock && i<Math.min(3,Math.ceil(business.topStock/CHAIN.floorCycle))));
-    this.status.setVisible(showStatus).setText(business.sale.phase!=="idle" ? "Reparto en marcha" : business.transport.phase!=="idle" ? (business.transport.phase==="unload" ? "Descargando pedidos" : "Recogida en curso") : anyStock ? "Listo para repartir" : business.floors.some(f=>f.running) ? "Preparando paquetes…" : "Muelle de carga");
+    this.status.setVisible(showStatus).setText(business.sale.phase!=="idle" ? t("Reparto en marcha") : business.transport.phase!=="idle" ? (business.transport.phase==="unload" ? t("Descargando pedidos") : t("Recogida en curso")) : anyStock ? t("Listo para repartir") : business.floors.some(f=>f.running) ? t("Preparando paquetes…") : t("Muelle de carga"));
     this.boxes.forEach((box,index)=>{
       const slot=business.floors[index];
       if(!slot?.running) { box.setVisible(false); return; }

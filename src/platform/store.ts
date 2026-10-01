@@ -1,6 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { NativePurchases, PURCHASE_TYPE } from "@capgo/native-purchases";
 import { PRODUCTS, productDef, type ProductId } from "../game/shop";
+import { t } from "../i18n";
 
 /**
  * Cobro de las compras: Google Play Billing / StoreKit con @capgo/native-purchases.
@@ -43,7 +44,7 @@ export const store = {
   async buy(id: ProductId): Promise<StoreResult> {
     if (!native()) {
       // Tienda simulada: confirma con el navegador, no cobra nada.
-      const ok = window.confirm(`Compra simulada (no se cobra nada):\n${productDef(id).name} · ${productDef(id).price}`);
+      const ok = window.confirm(`${t("Compra simulada (no se cobra nada):")}\n${productDef(id).name} · ${productDef(id).price}`);
       return ok ? { ok: true, order: `sim-${id}-${Date.now()}` } : { ok: false, error: "cancelled" };
     }
     try {
