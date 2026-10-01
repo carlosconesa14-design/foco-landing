@@ -466,7 +466,7 @@ export class BusinessScene extends Phaser.Scene {
     this.sellerTag = label(this, 0, 0, bizDef(this.bizId).saleName, 12, "#14202f", { bold: true }).setBackgroundColor("#f5c542").setPadding(6, 2, 6, 2).setVisible(false);
 
     // Tráfico por la calle de delante
-    for (let k = 0; k < 2; k++) {
+    for (let k = 0; k < (this.warehouse ? 0 : 2); k++) {
       const obj = art(this, 0, 0, `car_${k}`).setOrigin(0.5, 0.7);
       this.traffic.push({ obj, shadow: actorShadow(this,obj.displayWidth), c: k * 5, speed: 0.9 + k * 0.3 });
     }
@@ -480,12 +480,13 @@ export class BusinessScene extends Phaser.Scene {
       if (this.warehouse && (key === "veh_forklift" || key === "veh_van")) {
         const rear = dc + dr < 0;
         const b = this.biz();
-        const loading = key === "veh_van" && (b.sale.phase === "idle" || (b.sale.phase === "out" && b.sale.prog < 0.1));
+        const parked = key === "veh_van" && (b.sale.phase === "idle" || (b.sale.phase === "out" && b.sale.prog < 0.1));
+        const loading = parked && (b.topStock > 0 || b.sale.carry > 0);
         const pose = key === "veh_forklift"
           ? (rear ? "wh_forklift_rear" : b.transport.carry > 0 ? "wh_forklift_loaded" : "veh_forklift")
-          : loading ? "wh_van_open" : rear ? "wh_van_rear" : "veh_van";
+          : loading ? "wh_van_open" : parked || rear ? "wh_van_rear" : "veh_van";
         swapArt(img,pose);
-        img.setFlipX(loading ? false : dc-dr < 0);
+        img.setFlipX(parked ? false : dc-dr < 0);
       } else img.setFlipX(Math.abs(dr) > Math.abs(dc));
     } else {
       swapArt(img, this.restaurant && key === "waiter" ? (frame === 2 ? "rest_waiter_b" : "rest_waiter_a") : `ch_${key}_${frame}`);
@@ -635,7 +636,7 @@ export class BusinessScene extends Phaser.Scene {
     });
 
     this.restaurant?.update(dt,b);
-    this.warehouse?.update(dt,b);
+    this.warehouse?.update(dt,b,tutStat === null);
 
     // Transporte: recorre la ruta parando en cada puesto
     const tr = b.transport;
@@ -671,16 +672,19 @@ export class BusinessScene extends Phaser.Scene {
     const sv = along(this.layout.saleRoute, st);
     const sBack = sl.phase === "back";
     const sp = this.place(this.seller, this.look.seller, sv.c, sv.r, sBack ? -sv.dc : sv.dc, sBack ? -sv.dr : sv.dr, sl.phase !== "idle" && !(this.warehouse && sl.phase === "out" && sl.prog < 0.1) ? walkFrame : 0);
+    const deliveryVisibility = this.warehouse ? 1 - Phaser.Math.Clamp(sv.c - 8.5, 0, 1) : 1;
+    this.seller.setAlpha(deliveryVisibility);
+    (this.seller.getData("groundShadow") as Phaser.GameObjects.Ellipse).setAlpha(deliveryVisibility);
     const sCarryY = this.seller.y - (isVehicle(this.look.seller) ? 34 : 50);
     this.sellerItem.setVisible(sl.carry > 0 && !this.warehouse).setPosition(sp.x, sCarryY).setDepth(sp.y + 3);
-    this.sellerCarry.setText(sl.carry > 0 ? fmt(sl.carry) : "").setPosition(sp.x, sCarryY - 18).setDepth(9e4);
+    this.sellerCarry.setAlpha(deliveryVisibility).setText(sl.carry > 0 ? fmt(sl.carry) : "").setPosition(sp.x, sCarryY - 18).setDepth(9e4);
     const sellerStep = tutStat === "sales";
     this.sellerHint.setVisible((tutStat ? sellerStep : tutorial && b.topStock > 0) && sl.phase === "idle" && !sl.managed);
     const slLift = isVehicle(this.look.seller) ? 22 : 0;
     this.sellerHint.setPosition(sp.x, sp.y - 64 + slLift + (reducedMotion() ? 0 : Math.sin(t * 8) * 4)).setDepth(9.4e4);
     // El cartel va debajo: encima suele estar el otro vehículo aparcado.
-    this.sellerTag.setVisible(sellerStep).setPosition(sp.x, sp.y + 26).setDepth(9.4e4);
-    this.sellerRing.setVisible(sellerStep).setPosition(sp.x, sp.y).setDepth(sp.y - 0.5);
+    this.sellerTag.setAlpha(deliveryVisibility).setVisible(sellerStep).setPosition(sp.x, sp.y + 26).setDepth(9.4e4);
+    this.sellerRing.setAlpha(deliveryVisibility).setVisible(sellerStep).setPosition(sp.x, sp.y).setDepth(sp.y - 0.5);
     if(b.topStock>this.lastTopStock) {
       const door=this.iso(...this.layout.pile);
       transferProduct(this,this.look.item,{x:mp.x,y:carryY}, {x:door.x,y:door.y-12});

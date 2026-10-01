@@ -67,7 +67,7 @@ export function renderBar(s: GameState): void {
     bar.innerHTML = `
       <div class="chain" id="chain"></div>
       <button class="navbtn" data-nav="city"><span class="ic">${icon("ic_city", "🏙️")}</span>Ciudad</button>
-      <button class="barmid tap" data-nav="empire" aria-label="Ver tu imperio"><b>${bizIcon(def)} ${def.name} <span class="more">▸</span></b><span id="barRate"></span></button>
+      <button class="barmid tap" data-nav="empire" aria-label="Ver tu imperio"><b>${bizIcon(def)} ${def.id === "dropship" ? "Almacén" : def.name} <span class="more">▸</span></b><span id="barRate"></span></button>
       <button class="ad-btn rushbtn" data-rush="${def.id}" id="rushBtn"><span class="play"></span><span id="rushTxt">x${CONFIG.rushMult}</span></button>`;
   } else {
     bar.innerHTML = `
@@ -159,8 +159,8 @@ function chainCards(s: GameState, id: string, now: number): string {
   };
   const allManaged = b.floors.every((f) => f.managed);
   return (
-    card("production", `floor:${floorIdx}`, def.worker, "Producción", `${b.floors.length} ${b.floors.length === 1 ? "puesto" : "puest."}`, r.production, allManaged, canFloor, managerCost(def, floorSt)) +
-    card("transport", "transport", def.transportIcon, def.transportName, `Nv ${b.transport.level}`, r.transport, b.transport.managed, s.cash >= nextLevelCost(s, def, { kind: "transport" }, b.transport.level), managerCost(def, { kind: "transport" })) +
-    card("sale", "sale", def.saleWorker, def.saleName, `Nv ${b.sale.level}`, r.sale, b.sale.managed, s.cash >= nextLevelCost(s, def, { kind: "sale" }, b.sale.level), managerCost(def, { kind: "sale" }))
+    card("production", `floor:${floorIdx}`, id === "dropship" ? icon("wh_shelf") : def.worker, "Producción", `${b.floors.length} ${b.floors.length === 1 ? "puesto" : "puest."}`, r.production, allManaged, canFloor, managerCost(def, floorSt)) +
+    card("transport", "transport", id === "dropship" ? icon("veh_forklift") : def.transportIcon, def.transportName, `Nv ${b.transport.level}`, r.transport, b.transport.managed, s.cash >= nextLevelCost(s, def, { kind: "transport" }, b.transport.level), managerCost(def, { kind: "transport" })) +
+    card("sale", "sale", id === "dropship" ? icon("veh_van") : def.saleWorker, def.saleName, `Nv ${b.sale.level}`, r.sale, b.sale.managed, s.cash >= nextLevelCost(s, def, { kind: "sale" }, b.sale.level), managerCost(def, { kind: "sale" }))
   );
 }

@@ -97,11 +97,11 @@ export class WarehouseRoom {
     }
   }
 
-  update(_dt: number, business: BusinessState): void {
+  update(_dt: number, business: BusinessState, showStatus = true): void {
     const calm=reducedMotion();
     const anyStock=business.topStock>0;
     this.piles.forEach((pile,i)=>pile.setVisible(anyStock && i<Math.min(3,Math.ceil(business.topStock/CHAIN.floorCycle))));
-    this.status.setText(business.sale.phase!=="idle" ? "Reparto en marcha" : business.transport.phase!=="idle" ? (business.transport.phase==="unload" ? "Descargando pedidos" : "Recogida en curso") : anyStock ? "Pedidos listos para salir" : business.floors.some(f=>f.running) ? "Preparando paquetes…" : "Esperando producción");
+    this.status.setVisible(showStatus).setText(business.sale.phase!=="idle" ? "Reparto en marcha" : business.transport.phase!=="idle" ? (business.transport.phase==="unload" ? "Descargando pedidos" : "Recogida en curso") : anyStock ? "Listo para repartir" : business.floors.some(f=>f.running) ? "Preparando paquetes…" : "Muelle de carga");
     this.boxes.forEach((box,index)=>{
       const slot=business.floors[index];
       if(!slot?.running) { box.setVisible(false); return; }

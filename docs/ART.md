@@ -510,3 +510,19 @@ la caja según su carga real; la furgoneta permanece brevemente en el muelle con
 las puertas abiertas al empezar el viaje. Es una interpolación visual de la
 fase de venta, sin cambiar su duración económica. Movimiento reducido omite
 balanceo y recorrido decorativo de cajas. Hay arte procedural de respaldo.
+
+Revisión de primera partida: la furgoneta espera cerrada sin pedidos y abre
+puertas al disponer de carga; el texto del muelle se oculta mientras el tutorial
+señala a los actores. La barra usa los mismos sprites de estantería, carretilla
+y furgoneta, y el título compacto «Almacén» evita el truncado del nombre.
+
+Validación: 88 tests y build correctos en ambos bloques; tutorial manual con
+clics en trabajador, carretilla y furgoneta; contratación de gerentes y ocho
+puestos. El paquete final se revisa a 320/390/560 px, con carga/puertas ligadas
+al estado y movimiento reducido. Las capturas/grabación están en
+`/workspace/visual-review/almacen/`. La ejecución local no dispone de un Android
+físico conectado; esa prueba sigue pendiente.
+
+El patio del almacén queda reservado a su logística: los coches decorativos
+se mantienen en los demás recintos. La furgoneta se desvanece al salir de la
+calzada del almacén, junto con su sombra y rótulos, para no circular por el vacío.
