@@ -1,3 +1,4 @@
+import { decorateIcons } from "./icons";
 /**
  * Recompensas visuales escalonadas (la "dopamina" del juego):
  * - banner(): banda dorada para logros medianos (hito x2, puesto nuevo, misiones completadas).
@@ -30,6 +31,7 @@ function nextBanner(root: HTMLElement): void {
   el.innerHTML = `<span class="bicon">${item.icon}</span><span></span>`;
   el.lastElementChild!.textContent = item.text;
   root.appendChild(el);
+  decorateIcons(el);
   setTimeout(() => el.classList.add("out"), 1900);
   setTimeout(() => {
     el.remove();
@@ -85,6 +87,7 @@ export function celebrate(root: HTMLElement, c: Celebration): Promise<void> {
     btn.textContent = c.button ?? "¡Genial!";
     confetti(el);
     root.appendChild(el);
+  decorateIcons(el);
     const close = () => {
       el.classList.add("out");
       setTimeout(() => el.remove(), 250);
@@ -106,6 +109,7 @@ export function revealChest(root: HTMLElement, chestIcon: string, rarityColor: s
     el.style.setProperty("--glow", rarityColor);
     el.innerHTML = `<div class="rays" aria-hidden="true"></div><div class="bigchest">${chestIcon}</div>`;
     root.appendChild(el);
+  decorateIcons(el);
     const shake = reduced() ? 0 : 1000;
     setTimeout(() => {
       el.classList.add("open");

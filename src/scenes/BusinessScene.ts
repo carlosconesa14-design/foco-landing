@@ -1,11 +1,16 @@
+import { RestaurantRoom, RESTAURANT_SLOTS, RESTAURANT_DOOR, RESTAURANT_ROUTE, RESTAURANT_STOPS } from "./RestaurantRoom";
+import { constructionPop, revealScene, transferProduct, upgradePop } from "./feedback";
+import { actorShadow, gait } from "./motion";
+import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
+import { groundDetail } from "../art/ground";
 import Phaser from "phaser";
-import { ART, BIZ_ART, art, artScale } from "../art/catalog";
+import { buildingKey, ART, BIZ_ART, art, artScale } from "../art/catalog";
 import { mix, shade } from "../art/pen";
 import { CHAIN } from "../game/data";
 import { bizDef, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
 import { fmt } from "../game/format";
 import { cityDef, type BusinessState } from "../game/state";
-import { COLORS, DPR, DragScroll, Pill, bridgeOf, emoji, floatText, label, setupCamera, type Bridge } from "./common";
+import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, emoji, floatText, label, setupCamera, type Bridge } from "./common";
 
 /* Rejilla isométrica del recinto */
 const TW = 88;
@@ -33,6 +38,11 @@ const STOPS = [0, 1, 2, 3, 4, 7, 8, 9, 10];
 /** Ruta de venta: aparcamiento junto al camino → portón → calle. */
 const SALE_ROUTE: Pt[] = [[4.5, 3.4], [4.5, 8.6], [4.5, 9.5], [10.5, 9.5]];
 const WALK_FPS = 8;
+const DEFAULT_LAYOUT = { slots: SLOTS, door: DOOR, route: ROUTE, stops: STOPS, saleRoute: SALE_ROUTE,
+  pile: [3.2,2.35] as Pt, transportBadge: [6.9,1.0] as Pt, saleBadge: [5.9,8.8] as Pt, focus: [3,4.5] as Pt };
+const RESTAURANT_LAYOUT = { slots: RESTAURANT_SLOTS, door: RESTAURANT_DOOR, route: RESTAURANT_ROUTE, stops: RESTAURANT_STOPS,
+  saleRoute: [[4.5,5],[4.5,8.6],[4.5,9.5],[10.5,9.5]] as Pt[], pile: [4.5,4.8] as Pt,
+  transportBadge: [8.2,4.8] as Pt, saleBadge: [4.0,8.9] as Pt, focus: [4.5,4.5] as Pt };
 
 /** Suelo del recinto de cada negocio. */
 const GROUND: Record<string, { a: number; b: number; path: number; pad: number }> = {
@@ -49,6 +59,7 @@ const GROUND: Record<string, { a: number; b: number; path: number; pad: number }
 
 interface SlotView {
   worker: Phaser.GameObjects.Image;
+  shadow: Phaser.GameObjects.Ellipse;
   pile: Phaser.GameObjects.Image[];
   stock: Phaser.GameObjects.Text;
   barBg: Phaser.GameObjects.Rectangle;
@@ -60,6 +71,7 @@ interface SlotView {
   x: number;
   y: number;
   level: number;
+  lastStock: number;
 }
 
 function rng(seed: number) {
@@ -94,6 +106,8 @@ const isVehicle = (key: string) => key.startsWith("car_");
  */
 export class BusinessScene extends Phaser.Scene {
   private bridge!: Bridge;
+  private restaurant: RestaurantRoom | null = null;
+  private get layout() { return this.bizId === "restaurant" ? RESTAURANT_LAYOUT : DEFAULT_LAYOUT; }
   private bizId = "";
   private start: { x: number; y: number; z?: number } = { x: -1, y: -1 };
   private ox = 0;
@@ -116,25 +130,30 @@ export class BusinessScene extends Phaser.Scene {
   private topPile: Phaser.GameObjects.Image[] = [];
   private topStock!: Phaser.GameObjects.Text;
   private unlockPill: Pill | null = null;
-  private traffic: { obj: Phaser.GameObjects.Image; c: number; speed: number }[] = [];
+  private traffic: { obj: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Ellipse; c: number; speed: number }[] = [];
   private coins!: Phaser.GameObjects.Particles.ParticleEmitter;
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
   private puffs!: Phaser.GameObjects.Particles.ParticleEmitter;
   private drag!: DragScroll;
   private levels = { transport: 0, sale: 0 };
   private puffClock = 0;
+  private previousFloors = 0;
+  private lastTopStock = 0;
 
   constructor() {
     super("business");
   }
 
-  init(data: { id: string; scrollX?: number; scrollY?: number; zoom?: number }): void {
+  init(data: { id: string; scrollX?: number; scrollY?: number; zoom?: number; previousFloors?: number }): void {
     this.bizId = data.id;
+    this.previousFloors = data.previousFloors ?? 0;
+    this.puffClock=0;
     this.start = { x: data.scrollX ?? -1, y: data.scrollY ?? -1, z: data.zoom };
     this.slots = [];
     this.topPile = [];
     this.traffic = [];
     this.unlockPill = null;
+    this.restaurant = null;
   }
 
   private get look() {
@@ -155,31 +174,40 @@ export class BusinessScene extends Phaser.Scene {
     const insets = this.bridge.insets();
     const b = this.biz();
     this.floorCount = b.floors.length;
+    this.lastTopStock=b.topStock;
     this.levels = { transport: b.transport.level, sale: b.sale.level };
 
-    const hubKey = `bld_${this.bizId}`;
+    const hubKey = buildingKey(this.bizId, b.floors.length);
     const margin = 70;
     this.ox = (ROWS * TW) / 2 + margin;
-    this.oy = insets.top + Math.max(120, ART[hubKey].h - 40);
+    this.oy = insets.top + (this.bizId === "restaurant" ? 90 : Math.max(120, ART[hubKey].h - 40));
     this.worldW = ((COLS + ROWS) * TW) / 2 + margin * 2;
     const worldH = this.oy + ((COLS + ROWS + 2) * TH) / 2 + 40 + insets.bottom;
 
     this.cameras.main.setBackgroundColor(mix(cityDef(this.bridge.state().city).ground.grass, 0x000000, 0.06));
-    this.drawGround();
-    this.drawFence();
-    this.drawDecor();
+    if (this.bizId === "restaurant") {
+      this.restaurant = new RestaurantRoom(this,(c,r)=>this.iso(c,r),this.floorCount);
+      this.restaurant.create();
+    } else {
+      this.drawGround();
+      this.drawFence();
+      this.drawDecor();
+    }
     this.drawHub();
-    SLOTS.forEach((_, i) => this.drawSlot(i));
+    this.layout.slots.forEach((_, i) => this.drawSlot(i));
     this.makeActors();
     this.makeParticles();
 
-    this.drag = new DragScroll(this, this.worldW, worldH, { zoom: this.start.z ?? 0.75, minZoom: 0.5, maxZoom: 1.4 });
+    this.drag = new DragScroll(this, this.worldW, worldH, { zoom: this.start.z ?? 0.75, minZoom: 0.3, maxZoom: 1.4, memoryKey: `business:${this.bridge.state().city}:${this.bizId}` });
     if (this.start.x >= 0) this.drag.scrollTo(this.start.x, this.start.y);
-    else {
+    else if (!this.drag.restore()) {
       // Arrancar viendo el edificio principal y la primera fila de puestos
-      const focus = this.iso(4, 3);
+      const focus = this.iso(...this.layout.focus);
       this.drag.centerOn(focus.x, focus.y);
     }
+    const focus = this.iso(...this.layout.focus);
+    this.drag.addControls(focus, { left: margin - TW / 2 - 40, top: this.oy - (this.restaurant ? 75 : ART[hubKey].h), right: this.worldW - margin + 40, bottom: this.oy + (COLS + ROWS + 1) * TH / 2 + 20 });
+    revealScene(this);
   }
 
   /* ---------- Suelo, caminos y calle ---------- */
@@ -187,7 +215,7 @@ export class BusinessScene extends Phaser.Scene {
   private tileKind(c: number, r: number): "road" | "path" | "hub" | "slot" | "ground" {
     if (r === ROAD_ROW) return "road";
     if (c >= HUB.c && c < HUB.c + 2 && r >= HUB.r && r < HUB.r + 2) return "hub";
-    if (SLOTS.some(([sc, sr]) => sc === c && sr === r)) return "slot";
+    if (this.layout.slots.some(([sc, sr]) => sc === c && sr === r)) return "slot";
     if (r === 2 || r === 5) return "path";
     if (c === 8 && r >= 2 && r <= 5) return "path";
     if (c === 4 && r >= 2 && r < ROAD_ROW) return "path";
@@ -224,17 +252,20 @@ export class BusinessScene extends Phaser.Scene {
         const cx = t.x;
         const cy = t.y + TH / 2;
         if (kind === "road") {
-          g.fillStyle(0xbfc5cc, 1).fillPoints(this.diamond(c, r), true);
-          g.fillStyle(0x4a5160, 1).fillPoints(this.diamond(c, r, 8), true);
-          g.lineStyle(2, 0xf5f5f5, 0.9).lineBetween(cx - TW / 8, cy - TH / 8, cx + TW / 8, cy + TH / 8);
+          g.fillStyle(0x46586a, 1).fillPoints(this.diamond(c, r), true);
+          const quad=(r0:number,r1:number) => [this.iso(c,r0),this.iso(c+1,r0),this.iso(c+1,r1),this.iso(c,r1)].map(p=>new Phaser.Math.Vector2(p.x,p.y));
+          g.fillStyle(0xe5ded0).fillPoints(quad(r,r+0.14),true).fillPoints(quad(r+0.86,r+1),true);
+          const a=this.iso(c+0.28,r+0.5),b=this.iso(c+0.72,r+0.5);
+          g.lineStyle(2,0xffedb0,0.9).lineBetween(a.x,a.y,b.x,b.y);
         } else if (kind === "path") {
-          g.fillStyle(0x9aa1ab, 1).fillPoints(this.diamond(c, r), true);
-          g.fillStyle(0xb8bec6, 1).fillPoints(this.diamond(c, r, 4), true);
+          g.fillStyle(0xb8bec6, 1).fillPoints(this.diamond(c, r), true);
+          g.lineStyle(1,0x8c9baa,0.28).strokePoints(this.diamond(c, r),true);
           g.fillStyle(theme.path, 0.55).fillCircle(cx, cy, 2.2);
         } else {
           g.fillStyle((c + r) % 2 ? theme.a : theme.b, 1).fillPoints(this.diamond(c, r), true);
           g.lineStyle(1, shade(theme.a, -0.08), 0.6).strokePoints(this.diamond(c, r), true);
         }
+        if(kind!=="road") groundDetail(g, cx, cy, "paving", c + r * COLS);
       }
   }
 
@@ -297,29 +328,32 @@ export class BusinessScene extends Phaser.Scene {
   /* ---------- Edificio principal ---------- */
 
   private drawHub(): void {
-    const key = `bld_${this.bizId}`;
+    const key = buildingKey(this.bizId, this.biz().floors.length);
     const spec = ART[key];
     const bottom = this.iso(HUB.c + 2, HUB.r + 2);
-    art(this, bottom.x, bottom.y + 2, key).setOrigin(0.5, (spec.h - 6) / spec.h).setDepth(bottom.y);
+    if (!this.restaurant) {
+      const hub=art(this, bottom.x, bottom.y + 2, key).setOrigin(0.5, hasGeneratedArt(this, key) ? 1 : (spec.h - 6) / spec.h).setDepth(bottom.y);
+      if (this.previousFloors && buildingKey(this.bizId,this.previousFloors)!==key) constructionPop(this,hub,"¡Nueva sede!");
+    }
 
     // Pila de producto listo para vender, junto a la puerta
-    const pileAt = this.iso(3.2, 2.35);
+    const pileAt = this.iso(...this.layout.pile);
     this.topPile = this.pile(pileAt.x, pileAt.y, pileAt.y + 2);
     this.topStock = label(this, pileAt.x, pileAt.y - 44, "", 12, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
 
     const def = bizDef(this.bizId);
-    const tp = this.iso(6.9, 1.0);
+    const tp = this.iso(...this.layout.transportBadge);
     this.plaque(tp.x, tp.y - 26, def.transportName);
     this.transportPill = this.pill(tp.x, tp.y + 4, { kind: "transport" });
     this.transportMgr = emoji(this, tp.x + 40, tp.y + 4, "👔", 16).setDepth(9.2e4);
 
-    const sp = this.iso(5.9, 8.8);
+    const sp = this.iso(...this.layout.saleBadge);
     this.plaque(sp.x, sp.y - 26, def.saleName);
     this.salePill = this.pill(sp.x, sp.y + 4, { kind: "sale" });
     this.saleMgr = emoji(this, sp.x + 40, sp.y + 4, "👔", 16).setDepth(9.2e4);
 
     // Zonas de toque: puerta (transporte) y portón (venta)
-    const door = this.iso(DOOR[0], DOOR[1]);
+    const door = this.iso(this.layout.door[0], this.layout.door[1]);
     this.tapZone(door.x - 60, door.y - 60, 120, 80, { kind: "transport" });
     const gate = this.iso(4.5, 8.8);
     this.tapZone(gate.x - 50, gate.y - 50, 100, 70, { kind: "sale" });
@@ -328,7 +362,7 @@ export class BusinessScene extends Phaser.Scene {
   /* ---------- Puestos ---------- */
 
   private drawSlot(i: number): void {
-    const [c, r] = SLOTS[i];
+    const [c, r] = this.layout.slots[i];
     const theme = GROUND[this.bizId] ?? GROUND.dropship;
     const center = this.iso(c + 0.5, r + 0.5);
     const g = this.add.graphics().setDepth(-5);
@@ -365,28 +399,32 @@ export class BusinessScene extends Phaser.Scene {
 
     const station = art(this, center.x + 10, center.y + 4, this.look.station).setOrigin(0.5, 1);
     station.setDisplaySize(ART[this.look.station].w * 0.62, ART[this.look.station].h * 0.62).setDepth(center.y + 4);
-    const worker = art(this, center.x - 24, center.y + 12, `ch_${this.look.worker}_0`).setOrigin(0.5, 0.95);
-    worker.setDisplaySize(ART[`ch_${this.look.worker}_0`].w * 0.8, ART[`ch_${this.look.worker}_0`].h * 0.8).setDepth(center.y + 12);
+    if(this.previousFloors && i>=this.previousFloors) constructionPop(this,station,"¡Puesto nuevo!");
+    const workerKey = this.restaurant ? "rest_chef_a" : `ch_${this.look.worker}_0`;
+    const worker = art(this, center.x - 24, center.y + 12, workerKey).setOrigin(0.5, 0.95);
+    worker.setDisplaySize(ART[workerKey].w * 0.8, ART[workerKey].h * 0.8).setDepth(center.y + 12);
     const pile = this.pile(center.x - 2, center.y + 20, center.y + 20, 0.7);
     const stock = label(this, center.x - 4, center.y - 8, "", 11, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
     const barBg = this.add.rectangle(center.x, center.y + 26, 44, 5, 0x14202f, 0.6).setDepth(center.y + 30);
     const bar = this.add.rectangle(center.x - 22, center.y + 26, 0, 5, COLORS.green).setOrigin(0, 0.5).setDepth(center.y + 31);
     const hint = emoji(this, center.x - 24, center.y - 44, "👆", 22).setDepth(9.4e4);
-    this.tweens.add({ targets: hint, y: center.y - 36, yoyo: true, repeat: -1, duration: 500 });
+    if (!reducedMotion()) this.tweens.add({ targets: hint, y: center.y - 36, yoyo: true, repeat: -1, duration: 500 });
     const pill = this.pill(center.x, center.y - 62, { kind: "floor", index: i });
     const manager = emoji(this, center.x + 38, center.y - 62, "👔", 14).setDepth(9.2e4);
     const nameTag = label(this, center.x, center.y + 40, `${def.floorName} ${i + 1}`, 10, "#ffffff", { bold: true, stroke: "#14202f" });
     nameTag.setDepth(9e4);
     this.tapZone(center.x - TW / 2, center.y - 46, TW, 80, { kind: "floor", index: i });
-    this.slots[i] = { worker, pile, stock, barBg, bar, hint, pill, manager, station, x: center.x, y: center.y, level: this.biz().floors[i].level };
+    const shadow = actorShadow(this,worker.displayWidth).setPosition(worker.x,center.y+13).setDepth(center.y+10);
+    this.slots[i] = { worker, shadow, pile, stock, barBg, bar, hint, pill, manager, station, x: center.x, y: center.y, level: this.biz().floors[i].level, lastStock: this.biz().floors[i].stock };
   }
 
   /* ---------- Transporte y venta ---------- */
 
   private actor(key: string, depthY: number): Phaser.GameObjects.Image {
-    const k = isVehicle(key) ? key : `ch_${key}_0`;
+    const k = this.restaurant && key === "waiter" ? "rest_waiter_a" : isVehicle(key) ? key : `ch_${key}_0`;
     const img = art(this, 0, 0, k).setOrigin(0.5, isVehicle(key) ? 0.7 : 0.95).setDepth(depthY);
     if (!isVehicle(key)) img.setDisplaySize(ART[k].w * 0.85, ART[k].h * 0.85);
+    img.setData("groundShadow",actorShadow(this,img.displayWidth));
     return img;
   }
 
@@ -410,7 +448,7 @@ export class BusinessScene extends Phaser.Scene {
     // Tráfico por la calle de delante
     for (let k = 0; k < 2; k++) {
       const obj = art(this, 0, 0, `car_${k}`).setOrigin(0.5, 0.7);
-      this.traffic.push({ obj, c: k * 5, speed: 0.9 + k * 0.3 });
+      this.traffic.push({ obj, shadow: actorShadow(this,obj.displayWidth), c: k * 5, speed: 0.9 + k * 0.3 });
     }
   }
 
@@ -422,10 +460,13 @@ export class BusinessScene extends Phaser.Scene {
       // El coche está dibujado hacia abajo-derecha (eje de columnas); el otro eje, volteado.
       img.setFlipX(Math.abs(dr) > Math.abs(dc));
     } else {
-      img.setTexture(`ch_${key}_${frame}`);
+      swapArt(img, this.restaurant && key === "waiter" ? (frame === 2 ? "rest_waiter_b" : "rest_waiter_a") : `ch_${key}_${frame}`);
       const screenDx = dc - dr;
       if (screenDx !== 0) img.setFlipX(screenDx < 0);
     }
+    gait(img,p.y,this.time.now / 1000,frame!==0,isVehicle(key));
+    const shadow=img.getData("groundShadow") as Phaser.GameObjects.Ellipse;
+    shadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
     return p;
   }
 
@@ -478,8 +519,10 @@ export class BusinessScene extends Phaser.Scene {
 
   private makeParticles(): void {
     const cs = artScale(this, "coin");
+    const coinRef = artRef(this, "coin");
     this.coins = this.add
-      .particles(0, 0, "coin", {
+      .particles(0, 0, coinRef.texture, {
+        frame: coinRef.frame,
         speed: { min: 80, max: 160 },
         angle: { min: 225, max: 315 },
         gravityY: 400,
@@ -520,13 +563,13 @@ export class BusinessScene extends Phaser.Scene {
     if (!b) return;
     if (b.floors.length !== this.floorCount) {
       const cam = this.cameras.main;
-      this.scene.restart({ id: this.bizId, scrollX: cam.scrollX, scrollY: cam.scrollY, zoom: cam.zoom / DPR });
+      this.scene.restart({ id: this.bizId, scrollX: cam.scrollX, scrollY: cam.scrollY, zoom: cam.zoom / DPR, previousFloors: this.floorCount });
       return;
     }
     const def = bizDef(this.bizId);
     const t = this.time.now / 1000;
     const dt = Math.min(dtMs, 100) / 1000;
-    const walkFrame = Math.floor(t * WALK_FPS) % 2 ? 1 : 2;
+    const walkFrame = reducedMotion() ? 0 : Math.floor(t * WALK_FPS) % 2 ? 1 : 2;
     const tutorial = s.totalEarned < 30;
     const unit = CHAIN.floorCycle * def.mult;
 
@@ -538,40 +581,52 @@ export class BusinessScene extends Phaser.Scene {
       const v = this.slots[i];
       const p = f.running ? f.prog / CHAIN.floorCycle : 0;
       const working = f.running;
-      v.worker.setY(v.y + 12 - (working ? Math.abs(Math.sin(t * 12)) * 3 : 0));
-      if (working && puffNow) {
+      const active=working && !reducedMotion();
+      if (this.restaurant) swapArt(v.worker, active && Math.floor(t*4+i)%2 ? "rest_chef_b" : "rest_chef_a");
+      v.worker.setY(v.y + 12 - (active ? Math.abs(Math.sin(t * 6 + i)) * 1.8 : 0));
+      v.worker.setAngle(active ? Math.sin(t * 6 + i) * 3 : 0);
+      v.shadow.setAlpha(active ? 0.13 + Math.abs(Math.sin(t*6+i))*0.05 : 0.18);
+      if (working && puffNow && !reducedMotion()) {
         if (this.bizId === "restaurant") this.puffs.emitParticleAt(v.station.x + (Math.random() - 0.5) * 20, v.station.y - 40);
         else this.sparks.emitParticleAt(v.station.x + (Math.random() - 0.5) * 30, v.station.y - 30 - Math.random() * 20, 1);
       }
+      if(f.stock>v.lastStock) {
+        transferProduct(this,this.look.item,{x:v.station.x,y:v.station.y-24},{x:v.x-2,y:v.y+13});
+        upgradePop(this,v.station);
+      } else if(f.stock<v.lastStock) transferProduct(this,this.look.item,{x:v.x-2,y:v.y+13},{x:this.mover.x,y:this.mover.y-34});
+      v.lastStock=f.stock;
       this.showPile(v.pile, f.stock, unit);
       v.stock.setText(f.stock > 0 ? fmt(f.stock) : "");
       v.bar.width = 44 * p;
       v.hint.setVisible(tutorial && !f.managed && !f.running);
       v.manager.setVisible(f.managed);
       if (f.level > v.level) {
-        this.sparks.explode(14, v.station.x, v.station.y - 30);
+        if (!reducedMotion()) this.sparks.explode(14, v.station.x, v.station.y - 30);
+        upgradePop(this,v.station);
         v.level = f.level;
       }
       const q = upgradeQuote(s, this.bizId, { kind: "floor", index: i });
       v.pill.setText(`Nv ${f.level}`).setAlert(s.cash >= q.cost || (!f.managed && s.cash >= managerCost(def, { kind: "floor", index: i })));
     });
 
+    this.restaurant?.update(dt,b);
+
     // Transporte: recorre la ruta parando en cada puesto
     const tr = b.transport;
-    const seg = Math.min(Math.floor(tr.pos), STOPS.length - 2);
-    const sub = ROUTE.slice(STOPS[seg], STOPS[seg + 1] + 1);
+    const seg = Math.min(Math.floor(tr.pos), this.layout.stops.length - 2);
+    const sub = this.layout.route.slice(this.layout.stops[seg], this.layout.stops[seg + 1] + 1);
     const mv = along(sub, tr.pos - seg);
     const back = tr.phase === "up";
     const moving = tr.phase === "down" || tr.phase === "up";
     const mp = this.place(this.mover, this.look.mover, mv.c, mv.r, back ? -mv.dc : mv.dc, back ? -mv.dr : mv.dr, moving ? walkFrame : 0);
-    const carryY = mp.y - (isVehicle(this.look.mover) ? 34 : 50);
+    const carryY = this.mover.y - (isVehicle(this.look.mover) ? 34 : 50);
     this.moverItem.setVisible(tr.carry > 0).setPosition(mp.x, carryY).setDepth(mp.y + 3);
     this.moverCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "").setPosition(mp.x, carryY - 18).setDepth(9e4);
     this.moverHint.setVisible(tutorial && tr.phase === "idle" && !tr.managed && b.floors.some((f) => f.stock > 0));
-    this.moverHint.setPosition(mp.x, mp.y - 64 + Math.sin(t * 8) * 4).setDepth(9.4e4);
+    this.moverHint.setPosition(mp.x, mp.y - 64 + (reducedMotion() ? 0 : Math.sin(t * 8) * 4)).setDepth(9.4e4);
     this.transportMgr.setVisible(tr.managed);
     if (tr.level > this.levels.transport) {
-      this.sparks.explode(14, mp.x, mp.y - 20);
+      if (!reducedMotion()) this.sparks.explode(14, mp.x, mp.y - 20);
       this.levels.transport = tr.level;
     }
     const tq = upgradeQuote(s, this.bizId, { kind: "transport" });
@@ -582,19 +637,24 @@ export class BusinessScene extends Phaser.Scene {
     // Venta: sale por el portón hacia la calle y vuelve
     const sl = b.sale;
     const st = sl.phase === "out" ? sl.prog : sl.phase === "back" ? 1 - sl.prog : 0;
-    const sv = along(SALE_ROUTE, st);
+    const sv = along(this.layout.saleRoute, st);
     const sBack = sl.phase === "back";
     const sp = this.place(this.seller, this.look.seller, sv.c, sv.r, sBack ? -sv.dc : sv.dc, sBack ? -sv.dr : sv.dr, sl.phase !== "idle" ? walkFrame : 0);
-    const sCarryY = sp.y - (isVehicle(this.look.seller) ? 34 : 50);
+    const sCarryY = this.seller.y - (isVehicle(this.look.seller) ? 34 : 50);
     this.sellerItem.setVisible(sl.carry > 0).setPosition(sp.x, sCarryY).setDepth(sp.y + 3);
     this.sellerCarry.setText(sl.carry > 0 ? fmt(sl.carry) : "").setPosition(sp.x, sCarryY - 18).setDepth(9e4);
     this.sellerHint.setVisible(tutorial && sl.phase === "idle" && !sl.managed && b.topStock > 0);
-    this.sellerHint.setPosition(sp.x, sp.y - 64 + Math.sin(t * 8) * 4).setDepth(9.4e4);
+    this.sellerHint.setPosition(sp.x, sp.y - 64 + (reducedMotion() ? 0 : Math.sin(t * 8) * 4)).setDepth(9.4e4);
+    if(b.topStock>this.lastTopStock) {
+      const door=this.iso(...this.layout.pile);
+      transferProduct(this,this.look.item,{x:mp.x,y:carryY}, {x:door.x,y:door.y-12});
+    }
+    this.lastTopStock=b.topStock;
     this.showPile(this.topPile, b.topStock, unit);
     this.topStock.setText(b.topStock > 0 ? fmt(b.topStock) : "");
     this.saleMgr.setVisible(sl.managed);
     if (sl.level > this.levels.sale) {
-      this.sparks.explode(14, sp.x, sp.y - 20);
+      if (!reducedMotion()) this.sparks.explode(14, sp.x, sp.y - 20);
       this.levels.sale = sl.level;
     }
     const sq = upgradeQuote(s, this.bizId, { kind: "sale" });
@@ -607,10 +667,14 @@ export class BusinessScene extends Phaser.Scene {
 
     // Tráfico
     for (const car of this.traffic) {
-      car.c += car.speed * dt;
+      if (!reducedMotion()) car.c += car.speed * dt;
       if (car.c > COLS + 2) car.c = -2;
       const p = this.iso(car.c, ROAD_ROW + 0.35);
       car.obj.setPosition(p.x, p.y).setDepth(p.y + 1);
+      const visible=Phaser.Math.Clamp(Math.min(car.c+2,COLS+2-car.c),0,1);
+      car.obj.setAlpha(visible);
+      gait(car.obj,p.y,t+car.speed,!reducedMotion(),true);
+      car.shadow.setPosition(p.x,p.y+1).setDepth(p.y-1).setAlpha(0.18*visible);
     }
 
     // La parte que limita la cadena, en rojo (cuando ya hay algo automatizado)
@@ -621,15 +685,17 @@ export class BusinessScene extends Phaser.Scene {
     this.salePill.setWarn(auto && rates.bottleneck === "sale");
 
     for (const sale of this.bridge.drainSales(this.bizId)) {
+      this.restaurant?.onSale();
       const gate = this.iso(4.5, 9.3);
+      rewardCoins(this, gate.x, gate.y - 20, sale.lucky);
       if (sale.lucky) {
         // Venta viral: lluvia de monedas y texto dorado grande
-        this.coins.explode(24, gate.x, gate.y - 20);
-        this.sparks.explode(20, gate.x, gate.y - 40);
+        if (!reducedMotion()) this.coins.explode(12, gate.x, gate.y - 20);
+        if (!reducedMotion()) this.sparks.explode(10, gate.x, gate.y - 40);
         floatText(this, gate.x, gate.y - 90, `🔥 ¡VIRAL! +${fmt(sale.amount)}`, "#f5c542");
-        this.cameras.main.shake(180, 0.004);
+        if (!reducedMotion()) this.cameras.main.shake(180, 0.004);
       } else {
-        this.coins.explode(7, gate.x, gate.y - 20);
+        if (!reducedMotion()) this.coins.explode(4, gate.x, gate.y - 20);
         floatText(this, gate.x, gate.y - 60, `+${fmt(sale.amount)}`);
       }
     }

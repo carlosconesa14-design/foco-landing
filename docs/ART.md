@@ -1,6 +1,6 @@
 # Guía de arte
 
-Todo el arte del juego (ciudad y recintos isométricos) está en `src/art/catalog.ts` y se dibuja por código. Cada pieza tiene un **nombre (clave)** y un **tamaño lógico**. Si le das al juego un PNG con esa clave, lo usa en lugar del dibujo por código. Así puedes cambiar el arte pieza a pieza sin tocar nada más.
+El catálogo `src/art/catalog.ts` define las claves y tamaños lógicos. El juego carga primero los PNG individuales del manifest, después los atlas generados con ChatGPT y, como respaldo, los dibujos por código. Así puedes cambiar el arte pieza a pieza sin tocar la simulación.
 
 ## Cómo añadir una imagen
 
@@ -178,3 +178,218 @@ Cualquier clave de las tablas de arriba: se deja el PNG en `public/sprites/` y s
 - Pide **una pieza por imagen** y di explícitamente "transparent background". Si el fondo sale blanco, quítalo con cualquier herramienta de recorte.
 - Genera primero un edificio y un personaje. Cuando te guste el resultado, pide el resto "in exactly the same style as the previous image" para que todo sea coherente.
 - Mantén siempre la misma **vista**: isométrica 2:1 para edificios, coches y árboles. Los personajes y los puestos van de frente, en vista 3/4.
+
+## Primera pasada visual: edificios evolutivos
+
+Arte original vectorial generado por código (sin dependencias ni licencias externas).
+`bld_<id>_1`, `bld_<id>_2` y `bld_<id>_3` están disponibles para los nueve negocios.
+La etapa depende exclusivamente de los puestos abiertos: 1–2 / 3–5 / 6–8;
+no modifica economía ni guardados. Tamaños: 172×H, 172×(H+24), 172×(H+48),
+donde H es la altura de la tabla original. La base permanece anclada al suelo.
+Se pueden sustituir en el manifiesto por PNG, igual que las claves originales.
+Un PNG original sin variantes sigue siendo prioritario como arte de las tres etapas.
+
+Dirección de arte / prompt de las variantes: «Mobile idle tycoon, original cartoon
+isometric 2:1 business building, warm top-left light, navy outline, bespoke rooftop
+business pictogram, planted entrance; stage 1 small local business, stage 2 expanded
+building with utility annex, stage 3 taller flagship with gold pennant; transparent
+background, no emoji, no brand logo». Los emblemas (caja, plato, móvil, chip,
+cóctel, vela, casa y moneda) se dibujan con geometría propia dentro de la textura.
+
+## Kit de interfaz y ambiente (primera pasada)
+
+- `src/ui/icons.ts`: 15 iconos SVG originales (48×48 lógicos): cash, gem,
+  missions, daily, execs, premium, trophy, settings, city, ipo, world, star,
+  lock, manager, check. Se usan como decoración con `aria-hidden`, conservando
+  los nombres accesibles de los botones. Dirección / prompt: «Original mobile
+  tycoon UI icon, warm gold / ice blue / mint enamel, rounded navy outlines,
+  compact readable silhouette, subtle lower shadow, transparent background».
+- El kit CSS comparte marcos azul esmalte, botones con relieve, cabeceras
+  doradas y tarjetas de recompensa; día 7 y maletín de oro tienen marco propio.
+- `src/art/ground.ts`: detalle original de césped, arena, juntas de pavimento,
+  desagües y bordillos. Se dibuja en el Graphics existente, sin objetos por
+  baldosa ni nuevas texturas. Tamaño de referencia: baldosa 88×44.
+  Dirección / prompt: «Isometric 2:1 miniature city paving, subtle seams and
+  curbstones, sparse grass tufts, warm sand flecks, low visual noise».
+- Costa con plataforma turquesa y sombra; ondulación suave del agua.
+- `src/ui/rewards.ts`: monedas vectoriales del punto de venta al contador.
+  Máximo 12 monedas simultáneas, con intervalo mínimo de 250 ms entre ventas.
+  No modifica ni retrasa ingresos. Con movimiento reducido se omite el vuelo,
+  el confeti, las partículas, la sacudida y los rebotes decorativos; se mantienen
+  barras y desplazamientos que explican el estado de producción y transporte.
+
+## Acabado, retratos y marca
+
+- Personajes (`ch_*`, mismos 44×60): contorno de silueta, luz cálida en cara y
+  ropa, manteniendo las tres poses y el lenguaje de vestuario de las tablas.
+- Puestos (`st_*`, mismos 100×86): base esmaltada; estanterías con etiquetas,
+  cocina con mandos y metal iluminado, set de grabación con luz secundaria.
+- `src/ui/portraits.ts`: ocho apariencias originales de ejecutivo,
+  96×96, elegidas de forma estable por nombre; no cambia sus estadísticas ni
+  guardados. La tarjeta muestra marco y brillo según la rareza real.
+  Prompt / dirección: «Friendly chibi mobile tycoon executive portrait, navy
+  outlined face, diverse skin tones, warm light, tailored teal / blue / purple
+  / ochre suit, gold tie, some with glasses or bun, rounded 96px square».
+- `public/icon.svg`: marca propia, cuadrado lógico 128×128 escalable, moneda
+  dorada sobre tres edificios crecientes. La pantalla de carga comparte esa
+  composición y el título. Dirección: «Original idle tycoon app mark, rising
+  ice blue city skyline, oversized warm gold euro coin, navy rounded square».
+- Fuentes locales: Lilita One y Rubik 400/500/700 (subconjunto latino, incluye
+  acentos españoles), obtenidas de los paquetes Fontsource 5.3.0. Licencias
+  SIL OFL completas en `public/fonts/*-LICENSE.txt`. No hay descarga de Google
+  Fonts durante el juego. Boot espera las fuentes antes de generar texto canvas.
+
+Validación de esta pasada: `npm test` (62 tests), `npm run build`, navegador
+390×844 con los nueve recintos y las 27 variantes, paneles de retención, bolsa
+y mundo, compras y gerentes reales, salto de etapa al abrir el tercer puesto,
+ventas y movimiento reducido. Revisados también paneles a 320 y 560 px.
+
+## Arte generado con ChatGPT (atlas integrados)
+
+97 piezas originales con transparencia, repartidas en nueve láminas PNG en
+`public/sprites/generated/`. `sources.json` registra el archivo original,
+resolución, peso y número de piezas. Se conservan los píxeles de las imágenes
+entregadas por ChatGPT; los JSON delimitan cada objeto sin retocar el arte.
+`src/art/generatedFrames.ts` comparte esos límites con la interfaz SVG.
+Phaser carga una textura por lámina, evitando duplicar cada PNG por personaje.
+Los nueve PNG suman 16,8 MiB; el lado máximo es 1774 px, sin texturas 4K.
+
+| Lámina / claves | Piezas | Tamaño lógico / uso |
+| --- | --- | --- |
+| `buildings-1/2/3`: `bld_<negocio>_1/2/3` | 27 | Ancho 156 / 172 / 172, altura proporcional; puestos 1–2 / 3–5 / 6–8 |
+| `stations`: `st_<negocio>` | 9 | Dentro de 100×86, sin estirar |
+| `workers-1/2`: `ch_<rol>_0` | 25 | Dentro de 44×60; caminar reutiliza la pose con movimiento procedural |
+| `decor`: `tree_0/1`, `bush`, `palm`, `cloud`, `lamp_post`, `sign_sale`, `bld_soon`, `car_0/1/2/3`, `van`, `coin`, `bench`, `recycling_bin` | 16 | Cajas lógicas del catálogo; banco 44×36, papelera 26×40 |
+| `items`: `item_box/dish/clip/chip/taco/cocktail/ticket/key/token`, `ic_gem`, `chest_normal/premium` | 12 | Productos según catálogo; gema 64×64, cofres 96×96 |
+| `portraits`: `exec_0`…`exec_7` | 8 | Dentro de 96×96, asignación estable por nombre |
+
+Negocios: dropship, restaurant, tiktok, ai, foodtruck, beachclub, yachts,
+realestate y crypto. Roles: packer, cook, waiter, creator, brand, engineer,
+sales, rider, editor, tech, taquero, skater, vendor, bartender, promoter,
+captain, sailor, agent, broker, clerk, coder, trader y ped0/1/2.
+Las claves base de edificio resuelven la segunda etapa; `_1/_2` de personajes
+reutilizan `_0`. Los PNG individuales mantienen prioridad. Si falla un atlas,
+el catálogo conserva su respaldo procedural.
+
+Dirección común de generación: «Original premium mobile idle tycoon game
+asset, polished toy-like 3D cartoon, warm soft lighting, rounded navy contours,
+rich colorful materials, readable silhouette at small size, transparent
+background, no text, no watermark, no real brand or cryptocurrency logos».
+
+Prompts por familia (añadir la dirección común):
+
+- Edificios: «Isometric 2:1 standalone buildings, separate grid cells with
+  generous transparent gutters, complete diamond pavement base; nine businesses
+  in order: delivery warehouse, Italian restaurant, content studio, AI office,
+  taco food truck, tropical beach club, yacht marina, real estate office, crypto
+  trading office. Stage 1 modest starter shop; stage 2 prosperous business;
+  stage 3 impressive flagship with distinctive roof landmark».
+- Puestos: «Nine separate isometric workstations: packing conveyor, restaurant
+  kitchen, recording set, AI desk, taco grill, cocktail bar, marina ticket desk,
+  property desk, trading terminals with a fictional gold star coin».
+- Personajes: «Full body friendly chibi workers, diverse skin tones, distinct
+  role clothing and props, facing isometric front, separate transparent cells;
+  plain unbranded clothing, feet fully visible».
+- Ambiente: «Separate miniature city props: leafy tree, pine, bush, palm,
+  cloud, street lamp, blank sale sign, construction site, four cars, delivery
+  van, gold euro coin, wooden bench, blue recycling bin».
+- Productos: «Readable toy-like reward icons: parcel, pasta dish, video clip,
+  microchip, taco, tropical drink, marina ticket, house key, fictional star
+  token, blue gem, modest executive case, luxurious gold executive case».
+- Retratos: «Eight distinct friendly executive busts in tailored colorful
+  suits, diverse skin tones and hairstyles, some with glasses; transparent
+  background, no rectangular backdrop, warm expressive faces».
+
+Los iconos de dinero, gema y cofres y los retratos usan el mismo arte en HTML.
+Los demás controles conservan SVG legibles y nombres accesibles. No cambia
+precios, ingresos, tiempos, estadísticas, guardados ni desbloqueos.
+
+## Ciudad, movimiento y respuesta de juego
+
+- Red urbana continua: calles exteriores y avenida central, dos carriles,
+  aceras claras y pasos de peatones. Se dibuja en Graphics, sin una textura ni
+  un objeto por baldosa. Los recintos también tienen calle y caminos continuos.
+- Boulevard peatonal con tres plazas: fuentes de piedra en Madrid, sombrillas
+  y tumbonas en Miami. Borde costero rematado con piedra / arena, espuma y
+  chorros de fuente. Dirección: «Miniature isometric 2:1 mobile tycoon city,
+  continuous navy asphalt, warm cream pavements, pocket plazas, stone fountain
+  with turquoise water in Madrid, striped beach parasols in Miami, clean curb
+  outlines and bright pedestrian crossings». Son geometrías originales, no PNG.
+- `src/scenes/streets.ts`: rutas cerradas, medidas por longitud y con esquinas
+  redondeadas dentro de los carriles. Ocho coches en ambos sentidos y ocho
+  peatones sobre las aceras. Los coches mantienen distancia con el vehículo
+  anterior y esperan brevemente en cruces; ninguno
+  sale al agua ni se teletransporta al cerrar una vuelta.
+- `src/scenes/motion.ts`: sombras de contacto y pasos con balanceo y elevación
+  sutil, orientación según el movimiento; el transporte conserva las posiciones
+  de la simulación. Trabajadores se inclinan al producir; productos y carga
+  siguen a sus portadores. No se han generado nuevas poses de piernas.
+- Cámara: conserva posición y zoom por ciudad / negocio durante la sesión,
+  centra el contenido entre cabecera, objetivo, barra y botones laterales,
+  y tiene controles accesibles de centrar, vista general y acercar / alejar.
+  La inercia considera el tiempo entre frames; listeners y controles se limpian
+  al cerrar la escena. Los controles se desplazan cuando aparece la ola turística.
+- `src/scenes/feedback.ts`: transiciones de 180 ms con el color de fondo,
+  construcción anclada a la parcela, halo y ocho destellos por construcción;
+  rebote breve al mejorar y un producto por entrega observada. Estos efectos
+  nunca cambian dinero, stock, tiempos ni datos guardados.
+- Costa y fuentes se actualizan en un único Graphics a 10 Hz. Nubes discretas
+  fuera del barrio, detrás de edificios y rótulos. Sin nuevas texturas grandes.
+- Movimiento reducido: se detienen tráfico, peatones y ambiente; se omiten
+  construcción, vuelos de productos, balanceo y transiciones. Transporte, venta
+  y barras siguen mostrando la producción real. Cambiar la preferencia durante
+  la sesión termina los efectos decorativos pendientes.
+
+Validación: `npm test` y `npm run build` por cada bloque; 64 tests al final,
+incluidos límites, continuidad y velocidad de rutas. Navegador 390×844,
+Madrid y Miami, cuatro minutos simulados de tráfico, cámara al navegar y
+redimensionar, controles a 320/560 px, compras/gerentes/apertura reales,
+movimiento reducido y consola. No se ha cambiado `src/game/*`.
+
+## Restaurante abierto y cabecera compacta
+
+La cabecera ocupa 89 px a 390 px de ancho. Misiones permanece visible y Menú
+agrupa premios, ejecutivos, logros, ajustes y el anuncio opcional de Hustle.
+El diálogo tiene foco nativo, cierre con Escape y nombres accesibles.
+
+`RestaurantRoom.ts` sustituye el edificio cerrado del restaurante por una
+cocina abierta y terraza: azulejos, toldo, luces cálidas, pasillo de servicio,
+recepción y dos/cuatro/seis mesas según los puestos construidos. El suelo y
+las paredes se dibujan con geometrías originales de isometría 2:1.
+
+Nuevo atlas propio generado con ChatGPT Image Generation:
+`public/sprites/generated/restaurant.png` (1448×1086, RGBA), con recortes en
+`restaurant.json` y `src/art/restaurantFrames.ts`. Los pares animados comparten
+encuadre y anclaje de pies; el PNG original se conserva sin repintar.
+
+| Claves | Caja lógica máxima |
+| --- | --- |
+| `rest_table_empty`, `rest_table_served` | 100×84 |
+| `rest_counter` | 120×86 |
+| `rest_host` | 42×55 |
+| `rest_chef_a`, `rest_chef_b` | 44×60 |
+| `rest_waiter_a`, `rest_waiter_b` | 44×60 |
+| `rest_guest_a`, `rest_guest_b` | 44×60 |
+| `rest_seated_man`, `rest_seated_woman` | 40×50 |
+
+Prompt de dirección: «Original polished mobile tycoon restaurant sprite atlas,
+transparent background, warm toy-like 3D isometric style, twelve separate cells:
+empty bistro table with two red chairs, same table with pasta dishes, cream and
+wood serving counter with gold cloches, host lectern with reservation book;
+chef tossing a pan and stirring; waiter carrying a tray in two distinct walking
+poses; teal-shirt customer walking in two poses; seated man and woman eating.
+Consistent lighting and scale, no brands, no text, fully visible feet.»
+Corrección de poses: «Keep every other asset unchanged; waiter and customer
+pose B must be a distinct passing step with one knee lifted, unlike stride A;
+keep identical character design, tray, lighting and transparent background.»
+
+`dining.ts` limita clientes y pedidos pendientes. Cada venta observada permite
+un servicio; los clientes llegan, esperan mesa, se sientan, comen y salen.
+Las mesas muestran comida solo al servir. Cocineros y caminantes alternan
+poses reales. Movimiento reducido omite pasos y balanceos y muestra las
+posiciones finales. Son estados de presentación, sin alterar el guardado ni
+la economía. Hay texturas procedurales de respaldo si el atlas no carga.
+
+Validación de este bloque: 67 tests, compilación y navegador móvil 390×844;
+apertura, contratación real, servicio tras ventas y ampliaciones de una a ocho
+cocinas. Cabecera y menú comprobados también a 320 y 560 px.

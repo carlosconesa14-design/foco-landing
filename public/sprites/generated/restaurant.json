@@ -1,0 +1,252 @@
+{
+  "frames": {
+    "rest_table_empty": {
+      "frame": {
+        "x": 20,
+        "y": 76,
+        "w": 326,
+        "h": 240
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 326,
+        "h": 240
+      },
+      "sourceSize": {
+        "w": 326,
+        "h": 240
+      }
+    },
+    "rest_table_served": {
+      "frame": {
+        "x": 382,
+        "y": 76,
+        "w": 326,
+        "h": 240
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 326,
+        "h": 240
+      },
+      "sourceSize": {
+        "w": 326,
+        "h": 240
+      }
+    },
+    "rest_counter": {
+      "frame": {
+        "x": 734,
+        "y": 52,
+        "w": 392,
+        "h": 280
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 392,
+        "h": 280
+      },
+      "sourceSize": {
+        "w": 392,
+        "h": 280
+      }
+    },
+    "rest_host": {
+      "frame": {
+        "x": 1184,
+        "y": 52,
+        "w": 238,
+        "h": 265
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 238,
+        "h": 265
+      },
+      "sourceSize": {
+        "w": 238,
+        "h": 265
+      }
+    },
+    "rest_chef_a": {
+      "frame": {
+        "x": 41,
+        "y": 328,
+        "w": 246,
+        "h": 354
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 246,
+        "h": 354
+      },
+      "sourceSize": {
+        "w": 246,
+        "h": 354
+      }
+    },
+    "rest_chef_b": {
+      "frame": {
+        "x": 403,
+        "y": 328,
+        "w": 246,
+        "h": 354
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 246,
+        "h": 354
+      },
+      "sourceSize": {
+        "w": 246,
+        "h": 354
+      }
+    },
+    "rest_waiter_a": {
+      "frame": {
+        "x": 826,
+        "y": 336,
+        "w": 233,
+        "h": 356
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 233,
+        "h": 356
+      },
+      "sourceSize": {
+        "w": 233,
+        "h": 356
+      }
+    },
+    "rest_waiter_b": {
+      "frame": {
+        "x": 1188,
+        "y": 336,
+        "w": 233,
+        "h": 356
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 233,
+        "h": 356
+      },
+      "sourceSize": {
+        "w": 233,
+        "h": 356
+      }
+    },
+    "rest_guest_a": {
+      "frame": {
+        "x": 83,
+        "y": 683,
+        "w": 197,
+        "h": 363
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 197,
+        "h": 363
+      },
+      "sourceSize": {
+        "w": 197,
+        "h": 363
+      }
+    },
+    "rest_guest_b": {
+      "frame": {
+        "x": 445,
+        "y": 683,
+        "w": 197,
+        "h": 363
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 197,
+        "h": 363
+      },
+      "sourceSize": {
+        "w": 197,
+        "h": 363
+      }
+    },
+    "rest_seated_man": {
+      "frame": {
+        "x": 807,
+        "y": 690,
+        "w": 215,
+        "h": 353
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 215,
+        "h": 353
+      },
+      "sourceSize": {
+        "w": 215,
+        "h": 353
+      }
+    },
+    "rest_seated_woman": {
+      "frame": {
+        "x": 1158,
+        "y": 693,
+        "w": 190,
+        "h": 348
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 190,
+        "h": 348
+      },
+      "sourceSize": {
+        "w": 190,
+        "h": 348
+      }
+    }
+  },
+  "meta": {
+    "image": "restaurant.png",
+    "size": {
+      "w": 1448,
+      "h": 1086
+    },
+    "scale": "1"
+  }
+}

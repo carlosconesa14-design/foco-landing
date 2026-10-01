@@ -24,8 +24,10 @@ import { openAchievements, openDaily, openExecs, openMissions, openSettings } fr
 import { activeSheet, closeSheet } from "./ui/sheet";
 import { openWorld } from "./ui/worldPanels";
 import "./styles.css";
+import { decorateIcons } from "./ui/icons";
 
 const root = document.getElementById("app")!;
+decorateIcons(root);
 const stage = document.getElementById("stage")!;
 const ads = createAds(root);
 
@@ -125,6 +127,8 @@ function startView(): void {
   if (S.view.scene === "business") game.scene.start("business", { id: S.view.id });
   else game.scene.start("city");
   renderBar(S);
+  document.body.classList.remove("loading");
+  document.getElementById("loading-screen")?.remove();
 }
 
 function goTo(view: View): void {
@@ -185,9 +189,28 @@ document.getElementById("bar")!.addEventListener("click", async (e) => {
 
 /* ---------- Botones laterales, diamantes y tutorial ---------- */
 
-document.getElementById("rail")!.addEventListener("click", (e) => {
+const moreMenu = document.getElementById("moreMenu") as HTMLDialogElement;
+const menuToggle = document.getElementById("menuToggle")!;
+const openMenu = () => {
+  closeSheet();
+  moreMenu.showModal();
+  menuToggle.setAttribute("aria-expanded", "true");
+};
+menuToggle.addEventListener("click", openMenu);
+document.getElementById("hustleShortcut")!.addEventListener("click", () => {
+  openMenu();
+  document.getElementById("boostBtn")!.focus();
+});
+document.getElementById("menuClose")!.addEventListener("click", () => moreMenu.close());
+moreMenu.addEventListener("close", () => menuToggle.setAttribute("aria-expanded", "false"));
+moreMenu.addEventListener("click", e => {
+  const box = moreMenu.getBoundingClientRect();
+  if (e.target === moreMenu && (e.clientX < box.left || e.clientX > box.right || e.clientY < box.top || e.clientY > box.bottom)) moreMenu.close();
+});
+root.addEventListener("click", (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>("[data-open]");
   if (!b) return;
+  if (moreMenu.open) { moreMenu.close(); menuToggle.focus(); }
   const which = b.dataset.open;
   if (which === "missions") openMissions(ctx);
   else if (which === "daily") openDaily(ctx);
@@ -202,11 +225,17 @@ function updateMeta(now: number): void {
   const top = document.getElementById("hud")!.offsetHeight + 10;
   const rail = document.getElementById("rail")!;
   rail.style.top = `${top}px`;
-  const dots = rail.querySelectorAll<HTMLElement>(".dot");
-  dots[0].hidden = meta.missionsToClaim(S) === 0;
-  dots[1].hidden = !meta.dailyStatus(S, now).canClaim;
-  dots[2].hidden = !meta.freeChestReady(S, now);
-  dots[3].hidden = meta.achievementsToClaim(S) === 0;
+  const ready: Record<string, boolean> = {
+    missions: meta.missionsToClaim(S) > 0,
+    daily: meta.dailyStatus(S, now).canClaim,
+    execs: meta.freeChestReady(S, now),
+    achievements: meta.achievementsToClaim(S) > 0,
+  };
+  for (const [name, available] of Object.entries(ready)) {
+    const dot = root.querySelector<HTMLElement>(`[data-open="${name}"] .dot`);
+    if (dot) dot.hidden = !available;
+  }
+  document.getElementById("menuDot")!.hidden = !ready.daily && !ready.execs && !ready.achievements;
 
   const adv = meta.advanceTutorial(S);
   if (adv?.done)
@@ -242,6 +271,7 @@ function updateGoal(now: number, top: number, tutorialShown: boolean): void {
   if (!g) return;
   el.style.top = `${top}px`;
   document.getElementById("goalIcon")!.textContent = g.icon;
+  decorateIcons(document.getElementById("goal")!);
   document.getElementById("goalText")!.textContent = g.cost > 0 ? `${g.text} · ${fmt(g.cost)} €` : g.text;
   document.getElementById("goalBar")!.style.width = `${g.progress * 100}%`;
   el.classList.toggle("ready", g.progress >= 1);
@@ -267,6 +297,7 @@ document.getElementById("goal")!.addEventListener("click", () => {
 });
 
 document.getElementById("boostBtn")!.addEventListener("click", async () => {
+  moreMenu.close();
   if (await watchAd("boost_x2")) {
     act.addBoost(S, Date.now());
     say(`Modo hustle: +${boostHours(S)} h ganando el doble`);

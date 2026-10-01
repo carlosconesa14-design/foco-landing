@@ -1,3 +1,4 @@
+import { executivePortrait } from "./portraits";
 import { ACHIEVEMENTS, ALL_BUSINESSES, CHESTS, DAILY_REWARDS, EXEC_KINDS, META, MISSIONS, RARITIES, type ChestType, type DailyReward } from "../game/data";
 import { fmt, fmtTime } from "../game/format";
 import * as meta from "../game/meta";
@@ -160,7 +161,7 @@ function execRow(e: Exec, here: string | null, now: number): string {
     else if (ready) buttons += `<button class="claim" data-ability="${e.id}">⚡ x${r.ability} ventas</button>`;
     else buttons += `<button class="ad-btn" data-recharge="${e.id}"><span class="play"></span>${fmtTime((e.readyAt - now) / 1000)}</button>`;
   }
-  return `<div class="row"><span class="face" style="box-shadow:inset 0 0 0 2px ${r.color}">${e.face}</span>
+  return `<div class="row"><span class="face" style="border:2px solid ${r.color};box-shadow:0 0 8px ${r.color}44">${executivePortrait(e.name)}</span>
     <div><b>${e.name} <span class="rar" style="color:${r.color}">${r.name}</span></b>
     <span class="sub">+${r.bonus * 100}% ${EXEC_KINDS[e.kind].desc} · ${at ? `en ${at.icon} ${at.name}` : "sin asignar"}</span></div>
     <div class="btnrow">${buttons}</div></div>`;

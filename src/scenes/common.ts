@@ -1,3 +1,4 @@
+import { flyCoins } from "../ui/rewards";
 import Phaser from "phaser";
 import type { Station } from "../game/economy";
 import type { GameState } from "../game/state";
@@ -6,6 +7,8 @@ import type { GameState } from "../game/state";
  * Las escenas trabajan en píxeles CSS. El canvas se crea a resolución física (DPR)
  * y la cámara hace zoom, así el texto y los gráficos se ven nítidos en el móvil.
  */
+export const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 export const DPR = Math.min(window.devicePixelRatio || 1, 3);
 export const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
 export const UI_FONT = '"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif';
@@ -54,6 +57,20 @@ export function setupCamera(scene: Phaser.Scene): { w: number; h: number } {
   const cam = scene.cameras.main;
   cam.setZoom(DPR);
   cam.setOrigin(0, 0);
+  const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const onMotionChange = () => {
+    // Existing looping hints must also stop if the preference changes mid-session.
+    if (motion.matches) {
+      for (const tween of scene.tweens.getTweens()) {
+        if (tween.isInfinite) tween.stop();
+        else tween.complete();
+      }
+      cam.fadeEffect.reset();
+      cam.shakeEffect.reset();
+    }
+  };
+  motion.addEventListener("change", onMotionChange);
+  scene.events.once("shutdown", () => motion.removeEventListener("change", onMotionChange));
   return { w: scene.scale.width / DPR, h: scene.scale.height / DPR };
 }
 
@@ -141,6 +158,8 @@ export class Pill extends Phaser.GameObjects.Container {
  * Cámara del mapa: arrastrar para moverse, pellizcar (o rueda del ratón) para hacer zoom,
  * distinguiendo un arrastre de un toque. Los objetos deben comprobar `wasDrag()` en su `pointerup`.
  */
+const rememberedViews = new Map<string, { x: number; y: number; z: number }>();
+
 export class DragScroll {
   private start = { x: 0, y: 0, sx: 0, sy: 0 };
   private last = { x: 0, y: 0 };
@@ -157,14 +176,14 @@ export class DragScroll {
     private scene: Phaser.Scene,
     private worldW: number,
     private worldH: number,
-    opts: { zoom?: number; minZoom?: number; maxZoom?: number } = {},
+    private opts: { zoom?: number; minZoom?: number; maxZoom?: number; memoryKey?: string } = {},
   ) {
     this.minZ = opts.minZoom ?? 1;
     this.maxZ = opts.maxZoom ?? 1;
     this.z = Phaser.Math.Clamp(opts.zoom ?? 1, this.minZ, this.maxZ);
     const cam = scene.cameras.main;
     cam.setZoom(DPR * this.z);
-    scene.input.addPointer(1);
+    if (scene.input.manager.pointers.length < 3) scene.input.addPointer(1);
     const input = scene.input;
 
     input.on("pointerdown", (p: Phaser.Input.Pointer) => {
@@ -206,12 +225,19 @@ export class DragScroll {
     input.on("wheel", (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
       this.zoomAround(p.x, p.y, this.z * (dy > 0 ? 0.9 : 1.1));
     });
-    scene.events.on("update", () => {
+    const coast = (_time: number, delta: number) => {
       if (this.down || Math.hypot(this.vel.x, this.vel.y) < 0.2) return;
-      cam.scrollX = this.clampX(cam.scrollX + this.vel.x);
-      cam.scrollY = this.clampY(cam.scrollY + this.vel.y);
-      this.vel.x *= 0.92;
-      this.vel.y *= 0.92;
+      const step = Math.min(delta, 50) / (1000 / 60);
+      cam.scrollX = this.clampX(cam.scrollX + this.vel.x * step);
+      cam.scrollY = this.clampY(cam.scrollY + this.vel.y * step);
+      const decay = Math.pow(reducedMotion() ? 0.65 : 0.92, step);
+      this.vel.x *= decay;
+      this.vel.y *= decay;
+    };
+    scene.events.on("update", coast);
+    scene.events.once("shutdown", () => {
+      scene.events.off("update", coast);
+      if (opts.memoryKey) rememberedViews.set(opts.memoryKey, { x: cam.scrollX, y: cam.scrollY, z: this.z });
     });
   }
 
@@ -232,9 +258,70 @@ export class DragScroll {
   /** Centra la vista en un punto del mundo. */
   centerOn(x: number, y: number): void {
     const cam = this.scene.cameras.main;
-    const v = this.view();
-    cam.scrollX = this.clampX(x - v.w / 2);
-    cam.scrollY = this.clampY(y - v.h / 2);
+    const safe = this.safeArea();
+    cam.scrollX = this.clampX(x - (safe.left + safe.w / 2) * DPR / cam.zoom);
+    cam.scrollY = this.clampY(y - (safe.top + safe.h / 2) * DPR / cam.zoom);
+  }
+
+  /** Place the subject in the space left by the header, goal, rail and bottom bar. */
+  private safeArea(): { left: number; top: number; w: number; h: number } {
+    const w = this.scene.scale.width / DPR, h = this.scene.scale.height / DPR;
+    const insets = bridgeOf(this.scene).insets();
+    const wave = document.getElementById("wave");
+    const bottom = insets.bottom + (wave && !wave.hidden ? wave.offsetHeight + 20 : 0) + 18;
+    const top = insets.top + 64;
+    return { left: 14, top, w: Math.max(150, w - 28), h: Math.max(130, h - top - bottom) };
+  }
+
+  restore(): boolean {
+    const saved = this.opts.memoryKey ? rememberedViews.get(this.opts.memoryKey) : undefined;
+    if (!saved) return false;
+    this.z = Phaser.Math.Clamp(saved.z, this.minZ, this.maxZ);
+    this.scene.cameras.main.setZoom(DPR * this.z);
+    this.scrollTo(saved.x, saved.y);
+    return true;
+  }
+
+  addControls(home: { x: number; y: number }, bounds: { left: number; top: number; right: number; bottom: number }): void {
+    const root = document.createElement("div");
+    root.className = "map-tools";
+    root.setAttribute("role", "group");
+    root.setAttribute("aria-label", "Cámara del mapa");
+    root.innerHTML = `<button data-map="home" aria-label="Centrar mapa" title="Centrar mapa">⌖</button><button data-map="overview" aria-label="Ver mapa completo" title="Ver mapa completo">▦</button><span class="map-zoom"><button data-map="out" aria-label="Alejar mapa">−</button><button data-map="in" aria-label="Acercar mapa">+</button></span>`;
+    let lastBottom = -1;
+    const position = () => {
+      const wave = document.getElementById("wave");
+      const bottom = bridgeOf(this.scene).insets().bottom + (wave && !wave.hidden ? wave.offsetHeight + 20 : 0) + 12;
+      if (bottom !== lastBottom) { root.style.bottom = `${bottom}px`; lastBottom = bottom; }
+    };
+    position();
+    const waveElement = document.getElementById("wave")!;
+    const visibility = new MutationObserver(position);
+    visibility.observe(waveElement, { attributes: true, attributeFilter: ["hidden"] });
+    const size = new ResizeObserver(position);
+    size.observe(waveElement);
+    size.observe(document.getElementById("bar")!);
+    root.addEventListener("click", e => {
+      const action = (e.target as HTMLElement).closest<HTMLButtonElement>("button")?.dataset.map;
+      if (!action) return;
+      this.vel = { x: 0, y: 0 };
+      const safe = this.safeArea();
+      if (action === "home") {
+        this.z = this.opts.zoom ?? 0.75;
+        this.scene.cameras.main.setZoom(DPR * this.z);
+        this.centerOn(home.x, home.y);
+      } else if (action === "overview") {
+        this.z = Phaser.Math.Clamp(Math.min(safe.w / (bounds.right - bounds.left), safe.h / (bounds.bottom - bounds.top)), this.minZ, this.maxZ);
+        this.scene.cameras.main.setZoom(DPR * this.z);
+        this.centerOn((bounds.left + bounds.right) / 2, (bounds.top + bounds.bottom) / 2);
+      } else this.zoomAround((safe.left + safe.w / 2) * DPR, (safe.top + safe.h / 2) * DPR, this.z * (action === "in" ? 1.18 : 1 / 1.18));
+    });
+    document.getElementById("app")!.appendChild(root);
+    this.scene.events.once("shutdown", () => {
+      visibility.disconnect();
+      size.disconnect();
+      root.remove();
+    });
   }
 
   scrollTo(x: number, y: number): void {
@@ -254,21 +341,27 @@ export class DragScroll {
     cam.scrollY = this.clampY(wy - py / cam.zoom);
   }
 
-  // Si el mapa cabe entero en pantalla, se centra en lugar de pegarse arriba a la izquierda.
+  // Allow enough margin to frame the map inside the space left by the HTML interface.
   private clampX(x: number): number {
     const free = this.worldW - this.view().w;
-    return free < 0 ? free / 2 : Phaser.Math.Clamp(x, 0, free);
+    return Phaser.Math.Clamp(x, -this.view().w * 0.1, Math.max(0, free) + this.view().w * 0.15);
   }
 
   private clampY(y: number): number {
     const free = this.worldH - this.view().h;
-    return free < 0 ? free / 2 : Phaser.Math.Clamp(y, 0, free);
+    return Phaser.Math.Clamp(y, -this.view().h * 0.55, Math.max(0, free) + this.view().h * 0.28);
   }
+}
+
+/** Project a world sale into CSS coordinates before sending coins to the HTML wallet. */
+export function rewardCoins(scene: Phaser.Scene, x: number, y: number, lucky = false): void {
+  const cam = scene.cameras.main;
+  flyCoins((x - cam.scrollX) * cam.zoom / DPR, (y - cam.scrollY) * cam.zoom / DPR, lucky);
 }
 
 /** Texto que sube y se desvanece (dinero ganado). */
 export function floatText(scene: Phaser.Scene, x: number, y: number, text: string, color = "#3ddc97"): void {
   const big = color !== "#3ddc97";
   const t = label(scene, x, y, text, big ? 24 : 18, color, { display: true, stroke: "#14202f" }).setDepth(9.9e4);
-  scene.tweens.add({ targets: t, y: y - (big ? 80 : 50), alpha: 0, duration: big ? 1600 : 1000, ease: "Cubic.easeOut", onComplete: () => t.destroy() });
+  scene.tweens.add({ targets: t, y: reducedMotion() ? y : y - (big ? 80 : 50), alpha: 0, duration: big ? 1600 : 1000, ease: "Cubic.easeOut", onComplete: () => t.destroy() });
 }

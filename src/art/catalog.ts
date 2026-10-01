@@ -1,3 +1,4 @@
+import { artRef, hasGeneratedArt } from "./generated";
 import Phaser from "phaser";
 import { EMOJI_FONT } from "../scenes/common";
 import { Pen, faceQuad, isoBox, leftFace, rightFace, shade } from "./pen";
@@ -10,6 +11,15 @@ import { Pen, faceQuad, isoBox, leftFace, rightFace, shade } from "./pen";
 export const ART: Record<string, { w: number; h: number }> = {};
 
 const def = (key: string, w: number, h: number) => (ART[key] = { w, h });
+
+/* Restaurant furnishings and distinct cooking / walking animation poses. */
+def("rest_table_empty", 100, 84);
+def("rest_table_served", 100, 84);
+def("rest_counter", 120, 86);
+def("rest_host", 42, 55);
+for (const role of ["chef", "waiter", "guest"]) for (const pose of ["a", "b"]) def(`rest_${role}_${pose}`, 44, 60);
+def("rest_seated_man", 40, 50);
+def("rest_seated_woman", 40, 50);
 
 /* ---------- Personajes ---------- */
 
@@ -79,6 +89,8 @@ function drawChar(p: Pen, o: Look, frame: number): void {
   // Brazos detrás del cuerpo
   p.fill(dark).rrect(8, 28 + swing, 6, 13, 3).rrect(30, 28 - swing, 6, 13, 3);
   p.fill(o.skin).circle(11, 42 + swing, 3).circle(33, 42 - swing, 3);
+  // Soft rim outline and warm highlights keep silhouettes readable at small sizes.
+  p.fill(0x203647).rrect(11, 25, 22, 19, 7);
   // Cuerpo
   p.fill(o.shirt).rrect(12, 26, 20, 17, 6);
   p.fill(dark, 0.6).rrect(26, 27, 6, 15, 3);
@@ -95,8 +107,11 @@ function drawChar(p: Pen, o: Look, frame: number): void {
     p.fill(0xffffff).poly([[18, 26], [26, 26], [22, 33]]);
     p.fill(o.extraColor!).poly([[21, 27], [23, 27], [24, 37], [22, 39], [20, 37]]);
   }
+  p.fill(shade(o.shirt, 0.4), 0.65).rrect(14, 28, 5, 3, 1.5);
   // Cabeza
+  p.fill(shade(o.skin, -0.35)).circle(22, 17.5, 11.8);
   p.fill(o.skin).circle(22, 17, 11).circle(11.5, 18, 2.6).circle(32.5, 18, 2.6);
+  p.fill(shade(o.skin, 0.4), 0.45).ellipse(18, 14, 8, 5);
   p.fill(0x2b1d14).circle(18, 18.5, 1.7).circle(26, 18.5, 1.7);
   p.fill(0xffffff).circle(18.6, 17.9, 0.6).circle(26.6, 17.9, 0.6);
   p.fill(0xe57373, 0.45).circle(15.5, 22, 2).circle(28.5, 22, 2);
@@ -253,9 +268,17 @@ for (const k of STATIONS) def(k, 100, 86);
 
 function drawStation(p: Pen, key: string): void {
   p.fill(0x000000, 0.18).ellipse(50, 82, 92, 8);
+  // Enamel bases and material highlights, common to the nine workstation sets.
+  p.fill(0x30485b).rrect(3, 77, 94, 8, 4);
+  p.fill(0xaac2d3).rrect(5, 76, 90, 5, 3);
   if (key === "st_dropship") {
     p.fill(0x6d4c41).rect(8, 6, 6, 78).rect(86, 6, 6, 78);
-    for (const y of [26, 52, 78]) p.fill(0x8d6e63).rect(6, y, 88, 5);
+    for (const y of [26, 52, 78]) {
+      p.fill(0x8d6e63).rect(6, y, 88, 5);
+      p.fill(0xd6aa78).rect(6, y, 88, 1.5);
+      p.fill(0xf6e5b4).rrect(8, y + 1, 11, 3, 1);
+    }
+    p.fill(0xcaae86).rect(9, 8, 1.5, 66).rect(87, 8, 1.5, 66);
     const box = (x: number, y: number, w: number, h: number, c: number) => {
       p.fill(c).rrect(x, y, w, h, 2);
       p.fill(shade(c, -0.15)).rect(x, y, w, 3);
@@ -267,6 +290,11 @@ function drawStation(p: Pen, key: string): void {
   } else if (key === "st_restaurant") {
     p.fill(0x95a5a6).rrect(6, 40, 88, 44, 6);
     p.fill(0xbdc3c7).rrect(6, 36, 88, 10, 4);
+    p.fill(0xecf7fb).rrect(8, 36, 84, 2, 1);
+    for (const x of [16, 34, 52, 70, 86]) {
+      p.fill(0x273f51).circle(x, 49, 3);
+      p.fill(0xf5cc72).circle(x - 0.5, 48.5, 1.2);
+    }
     p.fill(0x2c3e50).rrect(22, 56, 56, 22, 4);
     p.fill(0xe67e22, 0.8).rrect(26, 60, 48, 14, 3);
     for (const x of [30, 70]) {
@@ -282,6 +310,9 @@ function drawStation(p: Pen, key: string): void {
     p.fill(0x2d3436).rrect(42, 16, 16, 28, 4);
     p.fill(0x00cec9).rrect(44, 19, 12, 22, 2);
     p.fill(0xff6fb5).circle(50, 30, 3);
+    p.fill(0x293749).rrect(7, 27, 11, 17, 3);
+    p.fill(0x64e5e4).rrect(9, 29, 7, 12, 2);
+    p.stroke(2, 0x293749).line(12, 44, 12, 64).line(12, 64, 5, 75).line(12, 64, 20, 75);
     p.fill(0xffeaa7).rrect(78, 58, 16, 24, 3);
     p.fill(0xfd79a8).rrect(4, 60, 20, 22, 3);
   } else if (key === "st_foodtruck") {
@@ -357,6 +388,12 @@ def("palm", 60, 84);
 def("cloud", 150, 64);
 def("sign_sale", 112, 92);
 def("lamp_post", 16, 56);
+def("bench", 44, 36);
+def("recycling_bin", 26, 40);
+for (let i = 0; i < 8; i++) def(`exec_${i}`, 96, 96);
+def("ic_gem", 64, 64);
+def("chest_normal", 96, 96);
+def("chest_premium", 96, 96);
 
 function drawTree(p: Pen, variant: number): void {
   if (variant === 0) {
@@ -418,6 +455,12 @@ function drawSaleSign(p: Pen): void {
 }
 
 def("lamp_post", 16, 56);
+def("bench", 44, 36);
+def("recycling_bin", 26, 40);
+for (let i = 0; i < 8; i++) def(`exec_${i}`, 96, 96);
+def("ic_gem", 64, 64);
+def("chest_normal", 96, 96);
+def("chest_premium", 96, 96);
 function drawLampPost(p: Pen): void {
   p.fill(0x000000, 0.2).ellipse(8, 53, 12, 4);
   p.fill(0x34495e).rect(7, 10, 2.5, 44);
@@ -432,10 +475,56 @@ const BLD: Record<string, number> = {
   dropship: 150, restaurant: 164, tiktok: 236, ai: 270, soon: 170,
   foodtruck: 140, beachclub: 170, yachts: 180, realestate: 260, crypto: 300,
 };
-for (const [id, h] of Object.entries(BLD)) def(`bld_${id}`, BLD_W, h);
+for (const [id, h] of Object.entries(BLD)) {
+  def(`bld_${id}`, BLD_W, h);
+  if (id !== "soon") for (const tier of [1, 2, 3]) def(`bld_${id}_${tier}`, BLD_W, h + (tier - 1) * 24);
+}
 
-function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: string, s: number) => void): void {
-  const h = BLD[id];
+/** Visual growth only: 1–2, 3–5 and 6–8 open stations. */
+export const buildingTier = (floors: number): number => floors >= 6 ? 3 : floors >= 3 ? 2 : 1;
+export const buildingKey = (id: string, floors: number): string => `bld_${id}_${buildingTier(floors)}`;
+
+/** Small bespoke rooftop signs, independent of system emoji fonts. */
+function buildingEmblem(p: Pen, x: number, y: number, id: string): void {
+  p.fill(0x132c43).rrect(x - 19, y - 15, 38, 30, 8);
+  p.stroke(1.5, 0xffffff, 0.5).srrect(x - 19, y - 15, 38, 30, 8);
+  if (id === "dropship") {
+    isoBox(p, x, y + 10, 13, 6, 13, 0xffb64c, 0xffde95);
+    p.stroke(2, 0xfff4cc).line(x, y - 9, x, y + 9);
+  } else if (id === "restaurant" || id === "foodtruck") {
+    p.fill(0xffdf81).ellipse(x, y + 2, 26, 15);
+    p.fill(0xff775b).circle(x - 4, y, 3).circle(x + 5, y + 2, 3);
+    p.fill(0x65d69d).ellipse(x + 2, y - 4, 9, 4);
+    p.stroke(2, 0xffffff).line(x - 10, y - 10, x - 10, y - 6).line(x, y - 12, x, y - 8);
+  } else if (id === "tiktok") {
+    p.fill(0x69f0ed).rrect(x - 7, y - 12, 14, 24, 3);
+    p.fill(0x20314c).rrect(x - 5, y - 9, 10, 16, 2);
+    p.fill(0xff79bd).poly([[x - 2, y - 5], [x + 4, y], [x - 2, y + 5]]);
+  } else if (id === "ai") {
+    p.fill(0x56e4bf).rrect(x - 9, y - 9, 18, 18, 4);
+    p.stroke(2, 0x56e4bf);
+    for (const i of [-6, 0, 6]) p.line(x + i, y - 13, x + i, y + 13).line(x - 13, y + i, x + 13, y + i);
+    p.fill(0x132c43).rrect(x - 5, y - 5, 10, 10, 2);
+  } else if (id === "beachclub") {
+    p.fill(0xff83bb).poly([[x - 12, y - 8], [x + 12, y - 8], [x, y + 4]]);
+    p.stroke(2, 0xffffff).line(x, y + 3, x, y + 11).line(x - 7, y + 11, x + 7, y + 11);
+    p.fill(0xffd45e).circle(x + 10, y - 8, 4);
+  } else if (id === "yachts") {
+    p.fill(0xffffff).poly([[x - 14, y + 3], [x + 14, y + 3], [x + 8, y + 10], [x - 8, y + 10]]);
+    p.fill(0x8de5f8).poly([[x, y - 12], [x, y + 1], [x + 12, y + 1]]);
+    p.stroke(2, 0xffffff).line(x, y - 12, x, y + 3);
+  } else if (id === "realestate") {
+    p.fill(0xffdb72).poly([[x - 13, y], [x, y - 12], [x + 13, y], [x + 9, y], [x + 9, y + 10], [x - 9, y + 10], [x - 9, y]]);
+    p.fill(0x132c43).rect(x - 3, y + 2, 6, 8);
+  } else {
+    p.fill(0xffd56b).circle(x, y, 12);
+    p.stroke(2, 0xc38b25).scircle(x, y, 9).line(x - 3, y - 6, x - 3, y + 6).line(x + 3, y - 6, x + 3, y + 6);
+  }
+}
+
+function drawBuilding(p: Pen, id: string, tier = 1): void {
+  const h = BLD[id] + (tier - 1) * 24;
+  const growth = (tier - 1) * 18;
   const cx = BLD_W / 2;
   const by = h - 6;
   const a = 74;
@@ -456,7 +545,7 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
   };
 
   if (id === "dropship") {
-    const H = 52, wall = 0xe8b04b;
+    const H = 52 + growth, wall = 0xe8b04b;
     isoBox(p, cx, by - 6, a - 8, b - 4, H, wall, 0xb0b6bf);
     const L = leftFace(cx, by - 6, a - 8, b - 4);
     const R = rightFace(cx, by - 6, a - 8, b - 4);
@@ -468,18 +557,35 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
     }
     win(L, 3, 1, 26, 44, 0x9fd6f5);
     p.fill(0xff9f1c).poly(faceQuad(L, 0, 1, 12, 16));
+    // Pallets, bay lamps and roof seams distinguish logistics from a plain cube.
+    for (const u of [0.12, 0.45]) {
+      p.fill(0xfff3b1).poly(faceQuad(R, u, u + 0.28, 32, 35));
+      p.fill(0x334b60).poly(faceQuad(R, u, u + 0.28, 36, 40));
+    }
+    isoBox(p, cx + 37, by - 5, 10, 5, 10, 0xba8042, 0xf0bd77);
+    isoBox(p, cx + 49, by - 11, 8, 4, 9, 0xcc9456, 0xffd28d);
+    p.stroke(1, 0xdce7ee, 0.6);
+    for (let i = 0; i < 4; i++) p.line(cx - 51 + i * 18, by - H - 38 + i * 9, cx - 20 + i * 18, by - H - 54 + i * 9);
     // Ventilaciones en el tejado
     p.fill(0x7f8c8d).rrect(cx - 30, by - 6 - H - 50, 14, 10, 3).rrect(cx + 10, by - 6 - H - 40, 14, 10, 3);
-    p.fill(0xffffff).rrect(cx - 26, by - H - 96, 52, 34, 9);
-    emoji(cx, by - H - 79, "📦", 22);
+    buildingEmblem(p, cx, by - H - 79, id);
   } else if (id === "restaurant") {
-    const H = 58, wall = 0xc0392b;
+    const H = 58 + growth, wall = 0xc0392b;
     isoBox(p, cx, by - 6, a - 8, b - 4, H, wall, 0x7b241c);
     const L = leftFace(cx, by - 6, a - 8, b - 4);
     const R = rightFace(cx, by - 6, a - 8, b - 4);
     win(L, 3, 1, 14, 40, 0xffe8a3, 5);
     win(R, 2, 1, 26, 44, 0xffe8a3, 5);
     p.fill(0x6d4c41).poly(faceQuad(R, 0.62, 0.84, 0, 24));
+    // Brick courses and outside dining reinforce the restaurant silhouette.
+    for (let v = 5; v < H; v += 9) {
+      p.stroke(1, 0xf79678, 0.3);
+      const q = faceQuad(L, 0, 1, v, v);
+      p.line(q[0][0], q[0][1], q[1][0], q[1][1]);
+    }
+    p.fill(0x473427).rect(cx + 37, by - 19, 3, 13);
+    p.fill(0xffdb8d).ellipse(cx + 39, by - 20, 19, 9);
+    p.fill(0xfff4cf).ellipse(cx + 39, by - 21, 7, 3);
     // Toldo de rayas
     for (let i = 0; i < 8; i++) {
       const u0 = i / 8, u1 = (i + 1) / 8;
@@ -487,10 +593,9 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
       p.fill(i % 2 ? 0xffffff : 0xe74c3c).poly([top[0], top[1], [top[1][0] + 8, top[1][1] + 12], [top[0][0] + 8, top[0][1] + 12]]);
     }
     p.fill(0x7f8c8d).rrect(cx + 18, by - H - 70, 12, 22, 2);
-    p.fill(0xffffff).rrect(cx - 30, by - H - 100, 60, 36, 10);
-    emoji(cx, by - H - 82, "🍝", 22);
+    buildingEmblem(p, cx, by - H - 82, id);
   } else if (id === "tiktok") {
-    const H = 140, wall = 0x6c5ce7;
+    const H = 140 + growth, wall = 0x6c5ce7;
     isoBox(p, cx, by - 6, a - 18, b - 9, H, wall, 0x4834d4);
     const L = leftFace(cx, by - 6, a - 18, b - 9);
     const R = rightFace(cx, by - 6, a - 18, b - 9);
@@ -499,9 +604,9 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
     p.stroke(6, 0xff6fb5, 0.4).scircle(cx, by - H - 50, 26);
     p.stroke(3, 0xffffff).scircle(cx, by - H - 50, 26);
     p.stroke(3, 0x00cec9).scircle(cx, by - H - 50, 20);
-    emoji(cx, by - H - 50, "📱", 20);
+    buildingEmblem(p, cx, by - H - 50, id);
   } else if (id === "ai") {
-    const H = 160, wall = 0x16a085;
+    const H = 160 + growth, wall = 0x16a085;
     isoBox(p, cx, by - 6, a - 16, b - 8, H, wall, 0x0e6655);
     const L = leftFace(cx, by - 6, a - 16, b - 8);
     const R = rightFace(cx, by - 6, a - 16, b - 8);
@@ -510,8 +615,7 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
     isoBox(p, cx, by - 6 - H - 2 + 20 - 20, a - 40, b - 20, 26, 0x1abc9c, 0x117a65);
     p.stroke(2, 0x2c3e50).line(cx, by - H - 70, cx, by - H - 100);
     p.fill(0xff4757).circle(cx, by - H - 101, 3.5);
-    p.fill(0xffffff).rrect(cx - 24, by - H - 64, 48, 30, 9);
-    emoji(cx, by - H - 49, "🤖", 20);
+    buildingEmblem(p, cx, by - H - 49, id);
   } else if (id === "foodtruck") {
     // Plaza con dos food trucks y un toldo
     p.fill(0xf8e2a5).poly([[cx - a, by - b], [cx, by], [cx + a, by - b], [cx, by - 2 * b]]);
@@ -526,10 +630,9 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
     truck(cx + 28, by - 20, 0x48dbfb, 0x0abde3);
     p.fill(0x6d4c41).rect(cx - 2, by - 70, 3, 44);
     for (let i = 0; i < 6; i++) p.fill(i % 2 ? 0xffffff : 0x10ac84).poly([[cx, by - 82], [cx - 30 + i * 10, by - 64], [cx - 20 + i * 10, by - 64]]);
-    p.fill(0xffffff).rrect(cx - 26, by - 136, 52, 34, 9);
-    emoji(cx, by - 119, "🌮", 22);
+    buildingEmblem(p, cx, by - 119, id);
   } else if (id === "beachclub") {
-    const H = 44, wall = 0xf5f6fa;
+    const H = 44 + growth, wall = 0xf5f6fa;
     p.fill(0xf8e2a5).poly([[cx - a, by - b], [cx, by], [cx + a, by - b], [cx, by - 2 * b]]);
     // Piscina
     p.fill(0x48dbfb).poly([[cx + 6, by - 12], [cx + 50, by - 34], [cx + 30, by - 44], [cx - 14, by - 22]]);
@@ -541,8 +644,7 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
       p.fill(0x6d4c41).rect(x - 1, y, 2, 22);
       p.fill(c).poly([[x - 16, y + 4], [x, y - 6], [x + 16, y + 4]]);
     }
-    p.fill(0xffffff).rrect(cx - 44, by - H - 90, 52, 34, 9);
-    emoji(cx - 18, by - H - 73, "🍹", 22);
+    buildingEmblem(p, cx - 18, by - H - 73, id);
   } else if (id === "yachts") {
     // Muelle sobre el agua con un yate
     p.fill(0x2ec4d6).poly([[cx - a, by - b], [cx, by], [cx + a, by - b], [cx, by - 2 * b]]);
@@ -556,10 +658,9 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
     p.fill(0xf5f6fa).rrect(yx - 22, yy - 52, 30, 18, 5);
     p.fill(0x0c2461).rrect(yx - 18, yy - 47, 22, 6, 2);
     p.stroke(2, 0x57606f).line(yx - 6, yy - 52, yx - 6, yy - 80);
-    p.fill(0xffffff).rrect(cx - 26, by - 170, 52, 34, 9);
-    emoji(cx, by - 153, "🛥️", 22);
+    buildingEmblem(p, cx, by - 153, id);
   } else if (id === "realestate") {
-    const H = 150, wall = 0xfeca57;
+    const H = 150 + growth, wall = 0xfeca57;
     isoBox(p, cx, by - 6, a - 18, b - 9, H, wall, 0x8395a7);
     const L = leftFace(cx, by - 6, a - 18, b - 9);
     const R = rightFace(cx, by - 6, a - 18, b - 9);
@@ -569,10 +670,9 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
       p.fill(0xffffff).poly(faceQuad(R, 0, 1, v, v + 3));
       p.fill(0xffffff).poly(faceQuad(L, 0, 1, v, v + 3));
     }
-    p.fill(0xffffff).rrect(cx - 26, by - H - 64, 52, 34, 9);
-    emoji(cx, by - H - 47, "🔑", 22);
+    buildingEmblem(p, cx, by - H - 47, id);
   } else if (id === "crypto") {
-    const H = 190, wall = 0x341f97;
+    const H = 190 + growth, wall = 0x341f97;
     isoBox(p, cx, by - 6, a - 22, b - 11, H, wall, 0x5f27cd);
     const L = leftFace(cx, by - 6, a - 22, b - 11);
     const R = rightFace(cx, by - 6, a - 22, b - 11);
@@ -581,7 +681,7 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
     p.fill(0xff9f1a).poly(faceQuad(L, 0, 1, 40, 46)).poly(faceQuad(R, 0, 1, 40, 46));
     p.fill(0xff9f1a).circle(cx, by - H - 52, 22);
     p.fill(0xffc36b).circle(cx, by - H - 52, 16);
-    emoji(cx, by - H - 52, "🪙", 20);
+    buildingEmblem(p, cx, by - H - 52, id);
   } else {
     // En obras
     p.fill(0xb58b5a).poly([[cx - a, by - b], [cx, by], [cx + a, by - b], [cx, by - 2 * b]]);
@@ -595,6 +695,25 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
     p.stroke(1.5, 0x2d3436).line(cx - 30, by - 150, cx - 30, by - 110);
     p.fill(0xc68b4f).rrect(cx - 38, by - 112, 16, 12, 2);
   }
+  if (id !== "soon") {
+    // Landscaping, entry steps and expansion equipment give the plot a finished silhouette.
+    for (const side of [-1, 1]) {
+      p.fill(0x314d60).rrect(cx + side * 57 - 9, by - 29, 18, 7, 2);
+      p.fill(0x42b887).ellipse(cx + side * 57, by - 31, 19, 10);
+      p.fill(0x97e4a9).ellipse(cx + side * 57 - 3, by - 33, 9, 4);
+    }
+    p.stroke(1.5, 0xffffff, 0.6).line(cx - 15, by - 5, cx, by + 2).line(cx, by + 2, cx + 15, by - 5);
+    if (tier >= 2) {
+      isoBox(p, cx - 45, by - 15, 17, 8.5, 22, 0x345c76, 0xa5dcea);
+      p.fill(0xffda75).rrect(cx - 54, by - 38, 12, 5, 1);
+      p.fill(0x67ddbf).circle(cx - 47, by - 22, 2);
+    }
+    if (tier >= 3) {
+      p.stroke(2, 0x31556d).line(cx + 52, by - 26, cx + 52, by - 72);
+      p.fill(0xffd56b).poly([[cx + 53, by - 72], [cx + 73, by - 64], [cx + 53, by - 57]]);
+      p.fill(0xffffff, 0.8).circle(cx + 60, by - 64, 2);
+    }
+  }
 }
 
 /* ---------- Generación ---------- */
@@ -602,7 +721,7 @@ function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: stri
 type EmojiFn = (x: number, y: number, ch: string, size: number) => void;
 
 function make(scene: Phaser.Scene, key: string, k: number, draw: (p: Pen, emoji: EmojiFn) => void): void {
-  if (scene.textures.exists(key)) return; // hay un PNG que lo sustituye
+  if (scene.textures.exists(key) || hasGeneratedArt(scene, key)) return; // PNG or a shared generated atlas frame
   const spec = ART[key];
   const g = scene.make.graphics({}, false);
   const p = new Pen(g, k);
@@ -622,6 +741,21 @@ function make(scene: Phaser.Scene, key: string, k: number, draw: (p: Pen, emoji:
 
 /** Crea todas las texturas que no se hayan cargado como PNG. */
 export function buildArt(scene: Phaser.Scene, k: number): void {
+  for (const [role, look] of [["chef", LOOKS.cook], ["waiter", LOOKS.waiter], ["guest", LOOKS.ped0]] as const) {
+    for (const [pose, frame] of [["a", 1], ["b", 2]] as const) make(scene, `rest_${role}_${pose}`, k, p => drawChar(p, look, frame));
+  }
+  for (const key of ["rest_table_empty", "rest_table_served"]) make(scene, key, k, p => {
+    p.fill(0x994c47).rrect(5,32,21,38,7).rrect(74,32,21,38,7);
+    p.fill(0x946b50).rect(45,43,10,33);
+    p.fill(0xffe6c5).ellipse(50,38,72,36);
+    if (key.endsWith("served")) p.fill(0xffffff).ellipse(35,37,20,12).ellipse(65,37,20,12).fill(0xd78b38).ellipse(35,36,13,7).ellipse(65,36,13,7);
+  });
+  make(scene, "rest_counter", k, p => p.fill(0x946b50).rrect(5,28,110,53,8).fill(0xffe6c5).rrect(2,22,116,18,6).fill(0xf2c351).ellipse(40,23,30,22).ellipse(80,23,30,22));
+  make(scene, "rest_host", k, p => p.fill(0x946b50).rect(15,17,12,36).fill(0xc89558).rrect(2,7,38,17,3).fill(0xffe6c5).rect(8,9,26,10));
+  for (const key of ["rest_seated_man", "rest_seated_woman"]) make(scene, key, k, p => {
+    p.fill(key.endsWith("woman") ? 0xe9a449 : 0x36a79a).rrect(8,22,24,24,7);
+    p.fill(0xc68642).circle(20,15,11).fill(0x392b29).ellipse(20,7,23,12);
+  });
   for (const [role, look] of Object.entries(LOOKS)) for (const f of [0, 1, 2]) make(scene, `ch_${role}_${f}`, k, (p) => drawChar(p, look, f));
   make(scene, "van", k, drawVan);
   CAR_COLORS.forEach((c, i) => make(scene, `car_${i}`, k, (p) => drawCar(p, c)));
@@ -638,13 +772,34 @@ export function buildArt(scene: Phaser.Scene, k: number): void {
   make(scene, "cloud", k, drawCloud);
   make(scene, "sign_sale", k, drawSaleSign);
   make(scene, "lamp_post", k, drawLampPost);
-  for (const id of Object.keys(BLD)) make(scene, `bld_${id}`, k, (p, e) => drawBuilding(p, id, e));
+  make(scene, "bench", k, (p) => {
+    p.fill(0x243b50).rect(7, 21, 3, 13).rect(34, 21, 3, 13);
+    p.fill(0xbe8852).rrect(2, 5, 40, 12, 3).rrect(2, 18, 40, 7, 3);
+  });
+  make(scene, "recycling_bin", k, (p) => {
+    p.fill(0x237bc1).rrect(4, 9, 19, 28, 3);
+    p.fill(0x72c5f0).rrect(2, 5, 23, 6, 2);
+    p.fill(0xffffff).circle(13, 21, 4);
+  });
+  for (const id of Object.keys(BLD)) {
+    make(scene, `bld_${id}`, k, (p) => drawBuilding(p, id));
+    if (id !== "soon") for (const tier of [1, 2, 3]) {
+      const key = `bld_${id}_${tier}`;
+      // Existing custom PNGs remain authoritative when no tier-specific PNG is supplied.
+      if (!scene.textures.exists(key) && scene.textures.exists(`bld_${id}`) && scene.cache.json.get("sprite-manifest")?.includes(`bld_${id}`)) {
+        scene.textures.addImage(key, scene.textures.get(`bld_${id}`).getSourceImage() as HTMLImageElement);
+        ART[key] = ART[`bld_${id}`];
+      }
+      make(scene, key, k, (p) => drawBuilding(p, id, tier));
+    }
+  }
 }
 
 /** Imagen con el tamaño lógico del catálogo, venga de PNG o de código. */
 export function art(scene: Phaser.Scene, x: number, y: number, key: string): Phaser.GameObjects.Image {
   const spec = ART[key];
-  const img = scene.add.image(x, y, key);
+  const ref = artRef(scene, key);
+  const img = scene.add.image(x, y, ref.texture, ref.frame);
   if (spec) img.setDisplaySize(spec.w, spec.h);
   return img;
 }
@@ -652,6 +807,7 @@ export function art(scene: Phaser.Scene, x: number, y: number, key: string): Pha
 /** Escala para partículas: tamaño lógico / tamaño real de la textura. */
 export function artScale(scene: Phaser.Scene, key: string): number {
   const spec = ART[key];
-  const src = scene.textures.get(key).getSourceImage() as { width: number };
-  return spec && src?.width ? spec.w / src.width : 1;
+  const ref = artRef(scene, key);
+  const frame = scene.textures.getFrame(ref.texture, ref.frame);
+  return spec && frame?.width ? spec.w / frame.width : 1;
 }

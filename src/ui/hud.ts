@@ -1,3 +1,4 @@
+import { icon, decorateIcons } from "./icons";
 import { CONFIG, LIFE } from "../game/data";
 import { bizDef, businessRate, chainRates, lifeIndex, passiveRate } from "../game/economy";
 import { fmt, fmtTime } from "../game/format";
@@ -17,14 +18,14 @@ export function updateHeader(s: GameState, now: number): void {
   // Si baja (una compra) se muestra al instante; si sube, se acerca poco a poco.
   shownCash = target < shownCash || Math.abs(target - shownCash) < 1 ? target : shownCash + (target - shownCash) * 0.35;
   const cash = $("cash");
-  cash.innerHTML = `<small>€</small>${fmt(shownCash)}`;
+  cash.innerHTML = `<small class="cash-symbol">€</small>${fmt(shownCash)}`;
   // Pequeño salto visual cuando entra un buen pellizco (más de un 5 %)
   if (target > prev * 1.05 && prev > 0 && !cash.classList.contains("bump")) {
     cash.classList.add("bump");
     setTimeout(() => cash.classList.remove("bump"), 350);
   }
   $("rate").innerHTML = `+${fmt(passiveRate(s, now))} /s<span>ingresos pasivos</span>`;
-  $("gems").textContent = `💎 ${fmt(s.meta.gems)}`;
+  $("gems").innerHTML = `${icon("gem")} ${fmt(s.meta.gems)}`;
 
   const li = lifeIndex(s.totalEarned);
   const L = LIFE[li];
@@ -32,7 +33,10 @@ export function updateHeader(s: GameState, now: number): void {
   const pct = N ? (Math.log10(Math.max(1, s.totalEarned) / Math.max(1, L.min)) / Math.log10(N.min / Math.max(1, L.min))) * 100 : 100;
   $("life").innerHTML = `<span class="em">${L.icon}</span><b>${L.name}</b><span class="nx">${N ? `Siguiente: ${N.icon} ${fmt(N.min)} €` : "Lo has conseguido"}</span><span class="track"><i style="width:${Math.max(0, Math.min(100, pct))}%"></i></span>`;
 
+  $("lifeDetail").textContent = `${L.name} · ${N ? `Siguiente: ${N.name} (${fmt(N.min)} €)` : "Has llegado a la cima"}`;
   const rem = (s.boostEnd - now) / 1000;
+  $("hustleShortcut").classList.toggle("on", rem > 0);
+  $("hustleShortcut").setAttribute("aria-label", rem > 0 ? `Hustle x2 activo: ${fmtTime(rem)}. Abrir menú` : "Activar modo hustle x2. Abrir menú");
   $("boost").classList.toggle("on", rem > 0);
   $("boostTxt").innerHTML =
     rem > 0
@@ -62,6 +66,7 @@ export function renderBar(s: GameState): void {
       <div class="barmid"><b>${city.flag} ${city.name}</b><span>Toca un edificio para entrar</span></div>
       <button class="navbtn" data-nav="world"><span class="ic">🌍</span>Mundo<i class="dot" id="worldDot" hidden></i></button>`;
   }
+  decorateIcons(bar);
 }
 
 export function updateBar(s: GameState, now: number): void {

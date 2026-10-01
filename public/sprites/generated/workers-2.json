@@ -1,0 +1,193 @@
+{
+  "frames": {
+    "ch_sailor_0": {
+      "frame": {
+        "x": 117,
+        "y": 9,
+        "w": 234,
+        "h": 442
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 234,
+        "h": 442
+      },
+      "sourceSize": {
+        "w": 234,
+        "h": 442
+      }
+    },
+    "ch_agent_0": {
+      "frame": {
+        "x": 491,
+        "y": 11,
+        "w": 254,
+        "h": 443
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 254,
+        "h": 443
+      },
+      "sourceSize": {
+        "w": 254,
+        "h": 443
+      }
+    },
+    "ch_broker_0": {
+      "frame": {
+        "x": 895,
+        "y": 13,
+        "w": 257,
+        "h": 441
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 257,
+        "h": 441
+      },
+      "sourceSize": {
+        "w": 257,
+        "h": 441
+      }
+    },
+    "ch_clerk_0": {
+      "frame": {
+        "x": 118,
+        "y": 448,
+        "w": 233,
+        "h": 435
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 233,
+        "h": 435
+      },
+      "sourceSize": {
+        "w": 233,
+        "h": 435
+      }
+    },
+    "ch_coder_0": {
+      "frame": {
+        "x": 504,
+        "y": 448,
+        "w": 248,
+        "h": 430
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 248,
+        "h": 430
+      },
+      "sourceSize": {
+        "w": 248,
+        "h": 430
+      }
+    },
+    "ch_trader_0": {
+      "frame": {
+        "x": 910,
+        "y": 449,
+        "w": 285,
+        "h": 434
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 285,
+        "h": 434
+      },
+      "sourceSize": {
+        "w": 285,
+        "h": 434
+      }
+    },
+    "ch_ped0_0": {
+      "frame": {
+        "x": 125,
+        "y": 875,
+        "w": 231,
+        "h": 400
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 231,
+        "h": 400
+      },
+      "sourceSize": {
+        "w": 231,
+        "h": 400
+      }
+    },
+    "ch_ped1_0": {
+      "frame": {
+        "x": 536,
+        "y": 873,
+        "w": 196,
+        "h": 403
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 403
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 403
+      }
+    },
+    "ch_ped2_0": {
+      "frame": {
+        "x": 915,
+        "y": 880,
+        "w": 221,
+        "h": 395
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 221,
+        "h": 395
+      },
+      "sourceSize": {
+        "w": 221,
+        "h": 395
+      }
+    }
+  },
+  "meta": {
+    "image": "workers-2.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1230,
+      "h": 1278
+    },
+    "scale": "1"
+  }
+}

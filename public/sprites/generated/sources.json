@@ -1,0 +1,189 @@
+[
+  {
+    "sheet": "buildings-1",
+    "source": "exec-23874f86-da83-4b2a-b219-9f4b12542184.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "frames": 9,
+    "bytes": 2587261,
+    "bounds_warnings": []
+  },
+  {
+    "sheet": "buildings-2",
+    "source": "exec-5cbef94b-fcd8-42da-a2cd-1d1bed30b718.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "frames": 9,
+    "bytes": 2795728,
+    "bounds_warnings": []
+  },
+  {
+    "sheet": "buildings-3",
+    "source": "exec-034d60fb-5d95-4399-bb11-43c4ea95d9ec.png",
+    "size": [
+      1448,
+      1086
+    ],
+    "frames": 9,
+    "bytes": 1848454,
+    "bounds_warnings": []
+  },
+  {
+    "sheet": "stations",
+    "source": "exec-1c27b7a0-adc0-4337-9c89-5d217a4084e8.png",
+    "size": [
+      1448,
+      1086
+    ],
+    "frames": 9,
+    "bytes": 1688309,
+    "bounds_warnings": [
+      [
+        "st_restaurant",
+        87,
+        0.1
+      ],
+      [
+        "st_tiktok",
+        96,
+        0.12
+      ],
+      [
+        "st_foodtruck",
+        623,
+        0.76
+      ],
+      [
+        "st_beachclub",
+        843,
+        0.91
+      ],
+      [
+        "st_yachts",
+        571,
+        0.85
+      ],
+      [
+        "st_realestate",
+        804,
+        1.13
+      ]
+    ]
+  },
+  {
+    "sheet": "workers-1",
+    "source": "exec-c5011f74-ab45-46fb-a5e6-05bd1b2624ca.png",
+    "size": [
+      1230,
+      1278
+    ],
+    "frames": 16,
+    "bytes": 1534947,
+    "bounds_warnings": [
+      [
+        "ch_skater_0",
+        349,
+        1.0
+      ],
+      [
+        "ch_captain_0",
+        227,
+        0.59
+      ]
+    ]
+  },
+  {
+    "sheet": "workers-2",
+    "source": "exec-ea4e3a89-7260-43de-a114-0c06f1be815f.png",
+    "size": [
+      1230,
+      1278
+    ],
+    "frames": 9,
+    "bytes": 1450309,
+    "bounds_warnings": [
+      [
+        "ch_sailor_0",
+        6,
+        0.01
+      ],
+      [
+        "ch_agent_0",
+        78,
+        0.11
+      ],
+      [
+        "ch_broker_0",
+        76,
+        0.1
+      ],
+      [
+        "ch_clerk_0",
+        114,
+        0.17
+      ],
+      [
+        "ch_coder_0",
+        219,
+        0.28
+      ],
+      [
+        "ch_trader_0",
+        139,
+        0.18
+      ],
+      [
+        "ch_ped0_0",
+        240,
+        0.37
+      ],
+      [
+        "ch_ped1_0",
+        133,
+        0.22
+      ],
+      [
+        "ch_ped2_0",
+        24,
+        0.04
+      ]
+    ]
+  },
+  {
+    "sheet": "decor",
+    "source": "exec-ec5e7a99-f96e-4a9a-a2d5-e47983b934ff.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "frames": 16,
+    "bytes": 2172647,
+    "bounds_warnings": []
+  },
+  {
+    "sheet": "items",
+    "source": "exec-9d25648a-c395-43a6-b3f5-b9b9d571fd16.png",
+    "size": [
+      1448,
+      1086
+    ],
+    "frames": 12,
+    "bytes": 1538998,
+    "bounds_warnings": []
+  },
+  {
+    "sheet": "portraits",
+    "source": "exec-5c3f1b4f-550c-40f8-896d-1dc3e01e2771.png",
+    "size": [
+      1774,
+      887
+    ],
+    "frames": 8,
+    "bytes": 2002353,
+    "bounds_warnings": []
+  }
+]
