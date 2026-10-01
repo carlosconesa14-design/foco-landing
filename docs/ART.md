@@ -126,7 +126,7 @@ Revisión del juego actual, ordenada por impacto: lo que más se nota en pantall
 Es lo primero que ve el jugador y lo que más "vende" en las capturas de la tienda. Hoy son cajas isométricas dibujadas por código, con un emoji encima en un recuadro blanco.
 - Genera los 9 `bld_*` y `bld_soon` con las tablas de arriba.
 - **Sin emoji encima:** el edificio tiene que reconocerse solo por su forma (un cartel de pasta, un aro de luz…). Ya hay PNG de Madrid; el recuadro del emoji solo sale con el arte por código.
-- **Idea que requiere código:** 3 versiones por edificio según sus puestos (`bld_x_1`, `_2`, `_3`). Por ejemplo, un almacén pequeño que se vuelve nave logística y luego centro de distribución con camiones. Es la recompensa visual más fuerte de un tycoon: ver crecer lo que compras.
+- ✅ **Enganche listo:** 3 versiones por edificio según sus puestos (`bld_x`, `bld_x_2`, `bld_x_3`; ver más abajo). Por ejemplo, un almacén pequeño que se vuelve nave logística y luego centro de distribución con camiones. Es la recompensa visual más fuerte de un tycoon: ver crecer lo que compras.
 
 ### 2. Suelo de la ciudad y del recinto
 El suelo son rombos de color plano: carreteras, césped, aceras y arena. Se ve vacío.
@@ -205,8 +205,22 @@ Prompt base para iconos: "Game UI icon of <objeto>, glossy cartoon style matchin
 
 Prompt base para baldosas: "Seamless isometric 2:1 ground tile, top face only, <material>, flat even lighting, edges must tile perfectly with copies of itself, transparent outside the diamond."
 
+**Edificios que crecen** (mismo tamaño y encuadre que `bld_<id>`; el juego los recorta y ajusta a la parcela). Con 3 puestos el negocio pasa a ★★ y con 6 a ★★★. Se celebra con una pantalla de "¡sube de categoría!" y el edificio cambia en el mapa y en el recinto. Si falta una versión, se usa la anterior.
+
+| Clave | Prompt (tras el estilo común; mantener la misma base de rombo, colores y vista) |
+| --- | --- |
+| `bld_dropship_2` | The same warehouse, now bigger: two connected warehouse halls, a loading dock with a delivery truck, stacked pallets |
+| `bld_dropship_3` | The same brand as a large modern logistics center: tall building, solar panels on the roof, several trucks, a small conveyor belt, company flag |
+| `bld_restaurant_2` | The same Italian restaurant, now with a terrace full of tables and string lights, and a second floor |
+| `bld_restaurant_3` | The same restaurant as an upscale three-floor venue: rooftop terrace, golden sign, valet stand, lush plants |
+| `bld_tiktok_2` | The same purple studio tower, taller, with a big LED screen on the facade |
+| `bld_tiktok_3` | The same content-creator HQ as a landmark skyscraper: giant ring light crown, neon billboards, rooftop helipad |
+| `bld_ai_2` | The same AI tower, taller, with a glowing data center wing beside it |
+| `bld_ai_3` | The same AI company as a futuristic campus: twin teal skyscrapers joined by a sky bridge, holographic logo, antenna |
+| `bld_<id>_2` / `bld_<id>_3` de Miami (`foodtruck`, `beachclub`, `yachts`, `realestate`, `crypto`) | La misma regla: la versión 2 es el mismo negocio más grande y con más detalle; la 3, la versión de lujo y emblemática |
+
 ### Qué ya funciona sin tocar código
-Cualquier clave de las tablas de arriba: se deja el PNG en `public/sprites/` y se añade al `manifest.json`. Lo único que aún **requiere código** son las 3 versiones de cada edificio según sus puestos.
+Cualquier clave de las tablas de arriba: se deja el PNG en `public/sprites/` y se añade al `manifest.json`. Ya no hace falta código para ninguna pieza de esta guía.
 
 ## Consejos para generar con ChatGPT
 

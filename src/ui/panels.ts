@@ -4,6 +4,7 @@ import * as act from "../game/actions";
 import { CHAIN, CONFIG, LIFE } from "../game/data";
 import {
   bizDef,
+  bizTier,
   businessRate,
   chainRates,
   floorRate,
@@ -168,11 +169,23 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
     },
   );
   $<HTMLButtonElement>(sheet.el, "[data-unlock]").onclick = () => {
+    const before = bizTier(ctx.state().biz[id]);
     const msg = act.unlockFloor(ctx.state(), id);
     if (!msg) return ctx.fx("error");
+    closeSheet();
+    const tier = bizTier(ctx.state().biz[id]);
+    if (tier > before) {
+      // Sube de categoría: el edificio crece en el mapa. Es un hito grande, se celebra a lo grande.
+      void ctx.celebrate({
+        icon: def.icon,
+        title: `¡${def.name} sube de categoría!`,
+        subtitle: tier === 3 ? "Ya es de los grandes: el edificio luce su versión de lujo." : "El negocio crece y el edificio se amplía.",
+        highlight: "★".repeat(tier),
+      });
+      return;
+    }
     ctx.fx("unlock", true);
     ctx.banner("🔓", msg);
-    closeSheet();
   };
 }
 

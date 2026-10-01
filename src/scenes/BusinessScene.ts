@@ -1,8 +1,8 @@
 import Phaser from "phaser";
-import { ART, BIZ_ART, art, artScale, placeTile } from "../art/catalog";
+import { ART, BIZ_ART, art, artScale, buildingKey, placeTile } from "../art/catalog";
 import { mix, shade } from "../art/pen";
 import { CHAIN } from "../game/data";
-import { bizDef, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
+import { bizDef, bizTier, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
 import { fmt } from "../game/format";
 import { cityDef, type BusinessState } from "../game/state";
 import { COLORS, DPR, DragScroll, Pill, bridgeOf, emoji, floatText, label, setupCamera, type Bridge } from "./common";
@@ -153,7 +153,7 @@ export class BusinessScene extends Phaser.Scene {
     this.floorCount = b.floors.length;
     this.levels = { transport: b.transport.level, sale: b.sale.level };
 
-    const hubKey = `bld_${this.bizId}`;
+    const hubKey = buildingKey(this, this.bizId, bizTier(b));
     const margin = 70;
     this.ox = (ROWS * TW) / 2 + margin;
     this.oy = insets.top + Math.max(120, ART[hubKey].h - 40);
@@ -297,7 +297,7 @@ export class BusinessScene extends Phaser.Scene {
   /* ---------- Edificio principal ---------- */
 
   private drawHub(): void {
-    const key = `bld_${this.bizId}`;
+    const key = buildingKey(this, this.bizId, bizTier(this.biz()));
     const spec = ART[key];
     const bottom = this.iso(HUB.c + 2, HUB.r + 2);
     art(this, bottom.x, bottom.y + 2, key).setOrigin(0.5, (spec.h - 6) / spec.h).setDepth(bottom.y);

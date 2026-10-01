@@ -33,7 +33,7 @@ Cosas que hay que saber:
 - **Isometría 2:1:** `TW = 88`, `TH = 44`. La profundidad de dibujo es la `y` en pantalla.
 - **Píxeles CSS con DPR:** el canvas va a resolución física y la cámara hace zoom. `art()` escala cualquier textura a su tamaño lógico, así que un PNG más grande se ve nítido sin tocar nada.
 - **Iconos, baldosas del suelo y retratos de ejecutivos ya se sustituyen por PNG** con las claves de `docs/ART.md` («Enganches ya preparados»). Los iconos están en `src/ui/icons.ts` y las baldosas en `placeTile` (catalog.ts). Los edificios en PNG se recortan y se ajustan a la parcela solos (`BootScene`).
-- **Falta el enganche** para las 3 versiones de cada edificio según sus puestos. Si las haces, añádelo antes en el código.
+- **Edificios que crecen:** `bld_<id>_2` y `bld_<id>_3` (categorías ★★ y ★★★, con 3 y 6 puestos) ya tienen enganche (`buildingKey` en catalog.ts). Solo faltan las imágenes.
 
 ## Reglas
 

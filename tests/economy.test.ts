@@ -272,3 +272,18 @@ describe("dopamina", () => {
     expect(g2.progress).toBe(1);
   });
 });
+
+describe("categoría del negocio", () => {
+  it("★ con 1–2 puestos, ★★ con 3–5 y ★★★ con 6–8", async () => {
+    const { bizTier } = await import("../src/game/economy");
+    const { freshState, freshFloor } = await import("../src/game/state");
+    const b = freshState(0).biz.dropship;
+    const tiers: number[] = [];
+    while (b.floors.length < 8) {
+      tiers.push(bizTier(b));
+      b.floors.push(freshFloor());
+    }
+    tiers.push(bizTier(b));
+    expect(tiers).toEqual([1, 1, 2, 2, 2, 3, 3, 3]);
+  });
+});

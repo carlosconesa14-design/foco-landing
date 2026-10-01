@@ -1,9 +1,9 @@
 import Phaser from "phaser";
-import { ART, art, artScale, placeTile } from "../art/catalog";
+import { ART, art, artScale, buildingKey, placeTile } from "../art/catalog";
 import { mix } from "../art/pen";
 import { ALL_BUSINESSES, type CityDef } from "../game/data";
 import { cityDef } from "../game/state";
-import { businessRate } from "../game/economy";
+import { bizTier, businessRate } from "../game/economy";
 import { fmt } from "../game/format";
 import { DragScroll, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
 
@@ -100,7 +100,7 @@ export class CityScene extends Phaser.Scene {
     const s = this.bridge.state();
     this.city = cityDef(s.city);
     this.lots = lotsFor(this.city);
-    this.ownedKey = s.city + this.city.businesses.map((b) => (s.biz[b.id].owned ? 1 : 0)).join("");
+    this.ownedKey = this.stateKey();
 
     const margin = 40;
     this.ox = (ROWS * TW) / 2 + margin;
@@ -233,7 +233,7 @@ export class CityScene extends Phaser.Scene {
     const view: PlotView = { id, owned };
     let topY = bottom.y - 90;
     if (owned) {
-      const key = `bld_${id}`;
+      const key = buildingKey(this, id, bizTier(this.bridge.state().biz[id]));
       const spec = ART[key];
       const img = art(this, bottom.x, bottom.y + 2, key);
       img.setOrigin(0.5, (spec.h - 6) / spec.h).setDepth(bottom.y);
@@ -257,7 +257,9 @@ export class CityScene extends Phaser.Scene {
       this.tweens.add({ targets: price, scale: 1.08, yoyo: true, repeat: -1, duration: 700 });
       topY = center.y - 90;
     }
-    label(this, bottom.x, bottom.y + 14, def.name, 12, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
+    // Estrellas de categoría junto al nombre (★ con 1–2 puestos, ★★ con 3–5, ★★★ con 6–8)
+    const stars = owned ? ` ${"★".repeat(bizTier(this.bridge.state().biz[id]))}` : "";
+    label(this, bottom.x, bottom.y + 14, def.name + stars, 12, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
 
     const zone = this.add.zone(center.x - TW, topY, TW * 2, bottom.y - topY + 10).setOrigin(0).setInteractive({ useHandCursor: true });
     zone.setDepth(9.5e4);
@@ -265,6 +267,12 @@ export class CityScene extends Phaser.Scene {
       if (!this.drag.wasDrag()) this.bridge.tapPlot(id);
     });
     this.plots.push(view);
+  }
+
+  /** Cambia al comprar un negocio o al subir de categoría: entonces se redibuja la ciudad. */
+  private stateKey(): string {
+    const s = this.bridge.state();
+    return s.city + this.city.businesses.map((b) => (s.biz[b.id]?.owned ? bizTier(s.biz[b.id]) : 0)).join("");
   }
 
   /* ---------- Tráfico, gente y nubes ---------- */
@@ -312,7 +320,7 @@ export class CityScene extends Phaser.Scene {
 
   update(_t: number, dtMs: number): void {
     const s = this.bridge.state();
-    const key = s.city + this.city.businesses.map((b) => (s.biz[b.id]?.owned ? 1 : 0)).join("");
+    const key = this.stateKey();
     if (key !== this.ownedKey) {
       this.scene.restart();
       return;

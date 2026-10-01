@@ -434,6 +434,14 @@ const BLD: Record<string, number> = {
   foodtruck: 140, beachclub: 170, yachts: 180, realestate: 260, crypto: 300,
 };
 for (const [id, h] of Object.entries(BLD)) def(`bld_${id}`, BLD_W, h);
+// Versiones del edificio según su categoría (★★ con 3 puestos, ★★★ con 6). Solo en PNG.
+for (const b of ALL_BUSINESSES) for (const t of [2, 3]) def(`bld_${b.id}_${t}`, BLD_W, BLD[b.id] ?? 200);
+
+/** Edificio que toca según la categoría: la versión más alta que exista, si no la base. */
+export function buildingKey(scene: Phaser.Scene, bizId: string, tier: number): string {
+  for (let t = tier; t >= 2; t--) if (scene.textures.exists(`bld_${bizId}_${t}`)) return `bld_${bizId}_${t}`;
+  return `bld_${bizId}`;
+}
 
 function drawBuilding(p: Pen, id: string, emoji: (x: number, y: number, ch: string, s: number) => void): void {
   const h = BLD[id];
