@@ -3,7 +3,7 @@
 > **Borrador para revisar con un asesor antes de dar premios en dinero.** Los campos entre [corchetes] hay que rellenarlos. Las bases definitivas tienen que publicarse en una web accesible (y enlazarse desde la app) **antes** de que empiece la semana a la que se apliquen.
 
 ## 1. Organizador
-La Liga Millonario la organiza [NOMBRE Y APELLIDOS / RAZÓN SOCIAL], con NIF [NIF] y domicilio en [DOMICILIO] (en adelante, «el Organizador»), desarrollador del juego «Idle Millionaire». Contacto: [EMAIL DE CONTACTO].
+La Liga Millonario la organiza [NOMBRE Y APELLIDOS / RAZÓN SOCIAL], con NIF [NIF] y domicilio en [DOMICILIO] (en adelante, «el Organizador»), desarrollador del juego «Rider Millionaire». Contacto: [EMAIL DE CONTACTO].
 
 **Apple Inc. y Google LLC no patrocinan, avalan ni administran esta promoción, ni están vinculados a ella.**
 

@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.carlosconesa.idlemillionaire"
+    namespace = "com.carlosconesa.ridermillionaire"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.carlosconesa.idlemillionaire"
+        applicationId "com.carlosconesa.ridermillionaire"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // En GitHub Actions el número de versión sube solo con cada compilación

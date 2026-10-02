@@ -3,7 +3,7 @@
 Todo el código está listo: juego en español e inglés, Liga, evento del fin de semana, analítica, compras, anuncios, avisos, APK automático y la versión firmada para Google Play. Lo que queda son **cuentas, datos y material** que solo puedes poner tú, en este orden.
 
 ## 1. Probar la app en tu móvil Android
-1. En GitHub: repositorio → **Actions** → **Android APK** → la última ejecución en verde → **Artifacts** → `idle-millionaire-apk`. Se descarga un .zip con el .apk dentro.
+1. En GitHub: repositorio → **Actions** → **Android APK** → la última ejecución en verde → **Artifacts** → `rider-millionaire-apk`. Se descarga un .zip con el .apk dentro.
 2. Pásalo al móvil y ábrelo. Android pedirá permitir «instalar apps de origen desconocido».
 3. En el juego: **Ajustes → Diagnóstico del móvil**. Comprueba:
    - **Guardado:** OK;

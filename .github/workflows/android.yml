@@ -1,5 +1,5 @@
 # Compila la app de Android (APK de prueba) en cada subida.
-# Descarga: pestaña «Actions» del repositorio → la última ejecución → «Artifacts» → idle-millionaire-apk.
+# Descarga: pestaña «Actions» del repositorio → la última ejecución → «Artifacts» → rider-millionaire-apk.
 name: Android APK
 
 on:
@@ -52,6 +52,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: idle-millionaire-apk
+          name: rider-millionaire-apk
           path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 30

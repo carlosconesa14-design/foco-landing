@@ -1,4 +1,4 @@
-package com.carlosconesa.idlemillionaire;
+package com.carlosconesa.ridermillionaire;
 
 import com.getcapacitor.BridgeActivity;
 

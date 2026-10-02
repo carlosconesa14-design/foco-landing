@@ -17,7 +17,7 @@ function files(dir: string): string[] {
 /** Todas las frases que el código pasa a `t("…")`. */
 const keys = [...new Set(files("src").flatMap((f) => [...readFileSync(f, "utf8").matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g)].map((m) => m[1])))];
 /** Nombres propios que no se traducen. */
-const BRAND = ["Hustle", "Idle Millionaire", "Idle", "Millionaire"];
+const BRAND = ["Hustle", "Rider Millionaire: Idle Tycoon", "Rider Millionaire", "Rider", "Millionaire"];
 const holes = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
 describe("traducción al inglés", () => {
