@@ -16,6 +16,8 @@ function files(dir: string): string[] {
 
 /** Todas las frases que el código pasa a `t("…")`. */
 const keys = [...new Set(files("src").flatMap((f) => [...readFileSync(f, "utf8").matchAll(/\bt\("((?:[^"\\]|\\.)*)"/g)].map((m) => m[1])))];
+/** Nombres propios que no se traducen. */
+const BRAND = ["Hustle", "Idle Millionaire", "Idle", "Millionaire"];
 const holes = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
 describe("traducción al inglés", () => {
@@ -34,7 +36,7 @@ describe("traducción al inglés", () => {
 
   it("los textos visibles de index.html están traducidos", () => {
     const html = readFileSync("index.html", "utf8").replace(/<script[\s\S]*?<\/script>/g, "");
-    const texts = [...html.matchAll(/>([^<>]+)</g)].map((m) => m[1].trim()).filter((s) => /[a-záéíóúñ]{2}/i.test(s) && s !== "Hustle");
+    const texts = [...html.matchAll(/>([^<>]+)</g)].map((m) => m[1].trim()).filter((s) => /[a-záéíóúñ]{2}/i.test(s) && !BRAND.includes(s));
     const attrs = [...html.matchAll(/aria-label="([^"]+)"/g)].map((m) => m[1]);
     expect([...texts, ...attrs].filter((s) => !(s in EN))).toEqual([]);
   });

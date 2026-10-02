@@ -169,7 +169,7 @@ Todo esto es código más que sprites. ChatGPT solo tendría que dibujar la piez
 - confeti y rayos de las celebraciones con sprites propios.
 
 ### 8. Tienda y marca (antes de publicar)
-- Icono de la app (1024×1024), pantalla de carga (splash) y logotipo "De Rider a Millonario".
+- Icono de la app (1024×1024), pantalla de carga (splash) y logotipo "Idle Millionaire".
 - 5 capturas para la tienda con textos grandes; se pueden montar sobre capturas reales del juego.
 
 ### Enganches ya preparados en el código

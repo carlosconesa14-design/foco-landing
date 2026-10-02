@@ -6,10 +6,7 @@
  */
 export const EN: Record<string, string> = {
   /* ---------- index.html ---------- */
-  "De Rider a Millonario": "From Rider to Millionaire",
   "TU PRÓXIMO GRAN IMPERIO": "YOUR NEXT BIG EMPIRE",
-  "De Rider a": "From Rider to",
-  Millonario: "Millionaire",
   "Pequeños comienzos. Grandes negocios.": "Small beginnings. Big business.",
   "Preparando tu ciudad…": "Getting your city ready…",
   "Tienda de diamantes y ventajas": "Gems and perks shop",

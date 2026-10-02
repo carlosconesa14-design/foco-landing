@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.carlosconesa.ridermillonario",
-  appName: "De Rider a Millonario",
+  appId: "com.carlosconesa.idlemillionaire",
+  appName: "Idle Millionaire",
   webDir: "dist",
   backgroundColor: "#0e1a2b",
 };

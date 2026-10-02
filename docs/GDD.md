@@ -1,4 +1,4 @@
-# De Rider a Millonario: documento de diseño
+# Idle Millionaire: documento de diseño
 
 ## La idea en una frase
 

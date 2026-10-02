@@ -62,6 +62,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: rider-millonario-release-aab
+          name: idle-millionaire-release-aab
           path: android/app/build/outputs/bundle/release/*.aab
           retention-days: 30

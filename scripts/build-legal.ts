@@ -32,7 +32,7 @@ for (const p of PAGES) {
   const pending = /\[[A-ZÁÉÍÓÚÑ0-9 ]{3,}[^\]]*\]/.test(cleaned);
   const body = marked.parse(cleaned) as string;
   const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${p.title} · De Rider a Millonario</title><style>${css}</style></head><body><main>
+<title>${p.title} · Idle Millionaire</title><style>${css}</style></head><body><main>
 <nav>${links}</nav>
 ${pending ? `<div class="draft">Documento en preparación: aún tiene campos por completar.</div>` : ""}
 ${body}

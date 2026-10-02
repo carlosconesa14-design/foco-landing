@@ -1,4 +1,4 @@
-# Política de privacidad de «De Rider a Millonario» (BORRADOR)
+# Política de privacidad de «Idle Millionaire» (BORRADOR)
 
 > **Borrador para revisar con un asesor.** Google Play exige publicarla en una URL y enlazarla en la ficha de la tienda. Rellena los [corchetes].
 

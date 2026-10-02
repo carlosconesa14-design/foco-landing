@@ -1,4 +1,4 @@
-# De Rider a Millonario
+# Idle Millionaire
 
 Idle tycoon para móvil: construyes un imperio de negocios modernos (dropshipping, restaurante, TikTok, IA) en una ciudad isométrica que ves crecer. Cada negocio es un recinto en el mapa donde construyes puestos y ves a tus trabajadores producir, recoger y vender. Se monetiza con anuncios bonificados (rewarded ads) de AdMob, siempre opcionales.
 

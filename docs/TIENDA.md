@@ -2,14 +2,14 @@
 
 ## 1. Textos de la ficha (listos para copiar)
 
-**Nombre de la app** (máx. 30): `De Rider a Millonario`
+**Nombre de la app** (máx. 30): `Idle Millionaire: Rider Tycoon` (30 caracteres justos; también vale `Idle Millionaire`)
 
 **Descripción breve** (máx. 80):
 > Empieza de rider y construye un imperio de negocios. ¡Liga semanal con premios!
 
 **Descripción completa** (máx. 4.000):
 
-> ¿Te imaginas pasar de repartir en bici a dueño de un imperio? En **De Rider a Millonario** empiezas desde abajo y construyes, negocio a negocio, tu propia ciudad.
+> ¿Te imaginas pasar de repartir en bici a dueño de un imperio? En **Idle Millionaire** empiezas desde abajo y construyes, negocio a negocio, tu propia ciudad.
 >
 > 📦 **Monta tu primer negocio**: un almacén de dropshipping con sus estanterías, su carretilla y sus furgonetas. Mejora cada parte de la cadena: producción, transporte y venta. Si una se atasca, ¡todo se para!
 >
@@ -42,7 +42,7 @@
 | Pieza | Tamaño | Notas |
 | --- | --- | --- |
 | Icono | 512×512 PNG | Sin transparencia en las esquinas. Se lee bien en pequeño |
-| Gráfico destacado | 1024×500 | Ciudad isométrica + logotipo + "De Rider a Millonario" |
+| Gráfico destacado | 1024×500 | Ciudad isométrica + logotipo + "Idle Millionaire" |
 | Capturas de pantalla | De 4 a 8, verticales (mín. 1080×1920) | Con un texto grande arriba: «Monta tu imperio», «Tus negocios trabajan solos», «Expándete a Miami», «Liga semanal con premios» |
 
 ## 3. Clave de firma y secretos de GitHub
@@ -96,14 +96,14 @@ Mientras los documentos tengan campos [entre corchetes], las páginas muestran e
 
 El juego se muestra en inglés en los móviles que no están en español (ver `docs/IDIOMAS.md`). En Play Console → Presencia en Google Play → Ficha de Play Store → **Gestionar traducciones → Añadir tus propias traducciones → Inglés (Estados Unidos) – en-US**, y pega esto:
 
-**App name** (máx. 30): `From Rider to Millionaire`
+**App name** (máx. 30): `Idle Millionaire: Rider Tycoon`
 
 **Short description** (máx. 80):
 > Start as a delivery rider and build a business empire. Weekly League with prizes!
 
 **Full description:**
 
-> Ever dreamed of going from delivery rider to owner of a business empire? In **From Rider to Millionaire** you start at the bottom and build your own city, one business at a time.
+> Ever dreamed of going from delivery rider to owner of a business empire? In **Idle Millionaire** you start at the bottom and build your own city, one business at a time.
 >
 > 📦 **Start your first business**: a dropshipping warehouse with shelves, a forklift and delivery vans. Upgrade every part of the chain: production, transport and sales. If one jams, everything stops!
 >
