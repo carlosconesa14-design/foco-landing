@@ -27,14 +27,14 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Anuncios | 14 ubicaciones (x2 4 h, hora punta, offline x3, viral, maletín, habilidad, diario, bolsa, expandir, ola, evento, **camión de suministros, cliente VIP y ruleta diaria**) y una **escalera diaria**: a los 3, 6 y 10 anuncios, maletín, 40 💎 y maletín de oro | `src/ads`, `adLadder.ts`, `offers.ts`, [`GDD.md`](GDD.md) («Monetización») |
 | Compras | VIP (sin anuncios y x2), pack de inicio y diamantes. En la web, desactivadas | `shop.ts`, `platform/store.ts`, [`COMPRAS.md`](COMPRAS.md) |
 | Liga Millonario | Semanal y por esfuerzo: todos empiezan el lunes a 0. Puntos por tiempo activo (con techo), constancia, reto del día, misiones y retos semanales. Premios del 1.º al 10.º, descanso para quien cobra dinero y Muro de la fama. **Ahora solo diamantes** | Supabase, `leaguePanel.ts`, [`LIGA.md`](LIGA.md), [`BASES_LIGA.md`](BASES_LIGA.md) |
-| Analítica | Propia y anónima, también en la web (`platform = 'web'`). **Panel de la beta** en directo: https://claude.ai/artifact/PerKxxxMATFCAmg5y5YZyV | [`ANALITICA.md`](ANALITICA.md) |
+| Analítica | Propia y anónima, con **registro de errores**, eventos de las funciones nuevas y **opiniones** desde Ajustes (migración 0016, `track` v3), también en la web (`platform = 'web'`). **Panel de la beta** en directo: https://claude.ai/artifact/PerKxxxMATFCAmg5y5YZyV | [`ANALITICA.md`](ANALITICA.md) |
 | Idiomas | Español e inglés, según el móvil o desde Ajustes | [`IDIOMAS.md`](IDIOMAS.md) |
 | Web | Beta en GitHub Pages (`pages.yml`): sin compras, anuncios simulados y sin dinero en la Liga | `src/platform/web.ts` |
 | Android | Capacitor, `com.carlosconesa.ridermillionaire`. Hay un APK en cada subida y un AAB firmado manual (`release.yml`) | `android/`, [`TIENDA.md`](TIENDA.md) |
 
 **Servidor (Supabase):** proyecto `de-rider-a-millonario` (id `jpdvpbqiasyjzbdaiedh`, París).
-- **Migraciones aplicadas:** de la 0001 a la 0015 (`supabase/migrations`). La 0014 son las cuentas anónimas (invitaciones y nube) y la 0015 los ajustes remotos. La 0010 es la de seguridad, la 0011 deja sin premios las partidas editadas, la 0012 es la función del panel y la 0013 la carrera de fundadores.
-- **Edge Functions:** `league` (v5, con la hora del servidor y la carrera de fundadores), `track` (v2) y `account` (v2, invitaciones, nube y ajustes).
+- **Migraciones aplicadas:** de la 0001 a la 0016 (`supabase/migrations`). La 0014 son las cuentas anónimas (invitaciones y nube) y la 0015 los ajustes remotos. La 0010 es la de seguridad, la 0011 deja sin premios las partidas editadas, la 0012 es la función del panel y la 0013 la carrera de fundadores.
+- **Edge Functions:** `league` (v5, con la hora del servidor y la carrera de fundadores), `track` (v3, también opiniones) y `account` (v2, invitaciones, nube y ajustes).
 - **Seguridad:** RLS sin políticas y ningún permiso para anónimos; solo se accede a través de las funciones. Auditoría completa, defensas y pendientes en [`SEGURIDAD.md`](SEGURIDAD.md).
 
 ## Decisiones tomadas (no volver a discutir sin motivo)

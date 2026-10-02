@@ -28,6 +28,7 @@ import {
   type WeeklyRetoId,
 } from "../game/challenges";
 import { LANGS, lang, money, saveLang, t, type Lang } from "../i18n";
+import { analytics } from "../platform/analytics";
 
 /** Paneles de la fase 2: misiones, premio diario, ejecutivos y maletines, logros. */
 
@@ -328,6 +329,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
             b.onclick = () => {
               const e = fuseExecs(ctx.state(), Number(b.dataset.fuse));
               if (!e) return ctx.fx("error");
+              analytics.track("fusion", { rarity: e.rarity });
               ctx.fx("chest", true);
               void showExec(ctx, e, { exec: e }, "🔀");
             };
@@ -380,7 +382,8 @@ export function openSettings(ctx: PanelCtx): void {
      <div data-list style="display:grid;gap:8px"></div>
      <div class="row"><span class="face">🌐</span><div><b>${t("Idioma")}</b><span class="sub">${t("Se aplica al momento")}</span></div>
        <div class="seg" data-langs>${LANGS.map((l) => `<button data-lang="${l.id}" aria-pressed="${l.id === lang}">${l.name}</button>`).join("")}</div></div>
-     <button class="btn ghost wide" data-open="cloud" style="margin-top:12px">☁️ ${t("Partida en la nube")}</button>
+     <button class="btn ghost wide" data-open="feedback" style="margin-top:12px">💬 ${t("Danos tu opinión")}</button>
+     <button class="btn ghost wide" data-open="cloud" style="margin-top:8px">☁️ ${t("Partida en la nube")}</button>
      <button class="btn ghost wide" data-diag style="margin-top:8px">🩺 ${t("Diagnóstico del móvil")}</button>
      <p class="small muted legal-links"><a href="#" data-legal="privacidad">${t("Política de privacidad")}</a> · <a href="#" data-legal="bases-liga">${t("Bases de la Liga")}</a></p>`,
     (el) => {

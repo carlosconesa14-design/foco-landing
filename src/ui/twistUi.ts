@@ -8,6 +8,7 @@ import { money, t } from "../i18n";
 import { gem } from "./icons";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
+import { analytics } from "../platform/analytics";
 
 /**
  * Interfaz de las mecánicas de cada negocio (src/game/twists.ts): una tarjeta encima de la barra
@@ -36,6 +37,7 @@ export function twistTick(ctx: PanelCtx, sales: SaleEvent[], dt: number): void {
     if (!kind || !b.owned) continue;
     if (kind === "hype") {
       if (tw.hypeTick(s, id, n, dt, salesOf(sales, id), taps[id] ?? 0)) {
+        analytics.track("twist", { what: "viral", ad: false });
         ctx.fx("milestone", true);
         ctx.banner("🔴", t("¡Directo viral! Ventas x{n} durante {time}", { n: tw.TW.viralMult, time: fmtTime(tw.TW.viralSec) }));
       }
@@ -138,6 +140,7 @@ export async function twistAction(ctx: PanelCtx, act: string): Promise<void> {
     if (act === "order2" && !(await ctx.watchAd("order_x2"))) return;
     const r = tw.claimOrder(ctx.state(), id, clockNow(), act === "order2");
     if (!r) return;
+    analytics.track("twist", { what: "order", ad: act === "order2" });
     earn(ctx.state(), r.money);
     ctx.fx("gems", true);
     ctx.banner("📦", t("+{m} y {g}", { m: money(r.money), g: `${r.gems} 💎` }));
@@ -147,6 +150,7 @@ export async function twistAction(ctx: PanelCtx, act: string): Promise<void> {
   } else if (act === "hype") {
     if (!(await ctx.watchAd("hype_collab"))) return;
     if (tw.hypeAd(ctx.state(), id, clockNow())) {
+      analytics.track("twist", { what: "viral", ad: true });
       ctx.fx("milestone", true);
       ctx.banner("🔴", t("¡Colaboración! Directo viral: ventas x{n}", { n: tw.TW.viralMult }));
     }
@@ -159,6 +163,7 @@ async function serve(ctx: PanelCtx, id: string, force: boolean): Promise<void> {
   const rate = businessRate(st, id, clockNow());
   const r = tw.serveCritic(st, id, clockNow(), force);
   if (!r) return ctx.fx("error");
+  analytics.track("twist", { what: "critic", ad: force, stars: tw.twist(st, id).stars });
   const tip = rate * tw.TW.criticTipMin * 60;
   earn(st, tip);
   ctx.fx("milestone", true);
@@ -189,6 +194,7 @@ export function openResearch(ctx: PanelCtx, id: string): void {
         if (b)
           b.onclick = () => {
             if (!tw.buyResearch(ctx.state(), id)) return ctx.fx("error");
+            analytics.track("twist", { what: "research", level: tw.twist(ctx.state(), id).research });
             ctx.fx("milestone", true);
             ctx.banner("🧠", t("¡Investigación completada!"));
             sheet.update?.();

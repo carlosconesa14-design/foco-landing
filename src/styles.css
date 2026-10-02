@@ -703,3 +703,9 @@ body.season-halloween header { box-shadow: 0 2px 0 #ff8a2a66 inset, 0 5px 16px #
   .lux-banner > button { grid-column: 2; justify-self: end; }
   .lux-banner > span { min-width: 0; }
 }
+
+/* Opiniones */
+.fb-stars { display: flex; justify-content: center; gap: 6px; margin: 4px 0 10px; }
+.fb-stars button { font-size: 36px; line-height: 1; padding: 2px 4px; background: none; border: 0; color: #4a6077; transition: transform 0.15s, color 0.15s; }
+.fb-stars button.on { color: var(--gold); transform: scale(1.08); }
+.fb-text { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: inherit; font: inherit; font-size: 14px; resize: vertical; }

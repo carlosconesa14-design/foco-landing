@@ -4,7 +4,7 @@ import { grantReward, tutorialStep } from "../game/meta";
 import type { GameState } from "../game/state";
 import { t } from "../i18n";
 import { AccountError, accountApi, inviteLink, refFromUrl, type RefStatus } from "../platform/account";
-import { daysSinceInstall } from "../platform/analytics";
+import { analytics, daysSinceInstall } from "../platform/analytics";
 import { decodeSave, encodeSave, replaceSave } from "../platform/storage";
 import { gem } from "./icons";
 import { showGrant } from "./metaPanels";
@@ -64,6 +64,7 @@ export async function useRefCode(ctx: PanelCtx, code: string): Promise<string | 
     return (e instanceof AccountError && refErrors()[e.message]) || t("No hay conexión. Inténtalo en un momento.");
   }
   s.meta.account.refUsed = true;
+  analytics.track("ref_used", { days: daysSinceInstall() });
   const n = now();
   grantReward(s, { gems: REF.friendGems }, n, Math.random);
   const g = grantReward(s, { chest: REF.friendChest }, n, Math.random);
@@ -280,6 +281,8 @@ async function recover(key: string, show: (m: string) => void): Promise<void> {
     data.meta ??= {};
     data.meta.account = { ...(data.meta.account ?? {}), id: r.id, secret: r.secret, code: r.code, recovery: key.toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/(.{4})(?=.)/g, "$1-") };
     if (!(await replaceSave(await encodeSave(data)))) return show(t("La partida guardada no es válida."));
+    analytics.track("cloud_recover");
+    await analytics.flush(true);
     location.reload();
   } catch (e) {
     show(e instanceof AccountError && e.message === "recovery" ? t("Esa clave no existe. Revísala.") : e instanceof AccountError && e.message === "too_many" ? t("Demasiados intentos. Prueba mañana.") : t("No hay conexión. Inténtalo en un momento."));

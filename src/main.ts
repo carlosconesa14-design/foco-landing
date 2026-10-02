@@ -21,6 +21,7 @@ import { haptics } from "./platform/haptics";
 import { notifications } from "./platform/notifications";
 import { planNotifications } from "./game/notify";
 import { analytics, daysSinceInstall, deviceId, minutesSinceInstall } from "./platform/analytics";
+import { installErrorReporting } from "./platform/errors";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
@@ -43,7 +44,7 @@ import { maybeIntro, twistAction, twistCardHtml, twistTap, twistTick } from "./u
 import { fusableRarities } from "./game/fusion";
 import { awaySummary } from "./game/away";
 import { RIVALS, checkRival, ensureRival } from "./game/rival";
-import { AUTO, autoAdLeft, autoFreeLeft, autoUpgrade, planAuto, spendAutoUse } from "./game/autoUpgrade";
+import { AUTO, autoAdLeft, autoFreeLeft, autoUnlimited, autoUpgrade, planAuto, spendAutoUse } from "./game/autoUpgrade";
 import { cachedConfig, fetchConfig } from "./platform/account";
 import { LUXURY, affordable, owns } from "./game/luxury";
 import { SEASON, activeSeason, collectVisitor, ensureSeason, scheduleVisitor, seasonOpen, visitorCandy, visitorDue } from "./game/season";
@@ -57,6 +58,7 @@ import { ensureRetos, retosToClaim } from "./game/challenges";
 import { adLadderStep, nextAdStep } from "./game/adLadder";
 import { rewardLabel, showGrant } from "./ui/metaPanels";
 import { ensureEvent, eventTiersReached, eventToClaim, eventWindow } from "./game/event";
+import { openFeedback } from "./ui/feedbackPanel";
 import { fmtWait, openEvent } from "./ui/eventPanel";
 import { icon, loadIcons } from "./ui/icons";
 import { WEB_BETA } from "./platform/web";
@@ -346,6 +348,7 @@ root.addEventListener("click", (e) => {
   else if (which === "invite") openInvite(ctx);
   else if (which === "rival") openEmpire(ctx);
   else if (which === "cloud") openCloud(ctx);
+  else if (which === "feedback") openFeedback(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
@@ -355,7 +358,7 @@ function updateMeta(now: number): void {
   updateAdLadder(now);
   updateEvent(now);
   ensureSeason(S, now);
-  tickUnlocks(root, S, fx);
+  for (const f of tickUnlocks(root, S, fx)) analytics.track("unlock", { feature: f.id, minutes: minutesSinceInstall() });
   applyLocks(root, S);
   const nu = document.getElementById("nextUnlock")!;
   const nuText = nextUnlockText(S);
@@ -368,6 +371,7 @@ function updateMeta(now: number): void {
     }
     const won = checkRival(S, now);
     if (won) {
+      analytics.track("rival_win", { wins: S.meta.rival.wins });
       const who = RIVALS[S.meta.rival.who];
       void celebrate(root, {
         icon: "🏆",
@@ -609,6 +613,7 @@ async function runAuto(withAd: boolean, spendAll: boolean): Promise<void> {
   if (withAd && !(await watchAd("auto_upgrade"))) return;
   if (!spendAutoUse(S, clockNow(), withAd)) return;
   const r = autoUpgrade(S, id, clockNow(), spendAll);
+  analytics.track("auto_upgrade", { steps: r.steps, ad: withAd, unlimited: autoUnlimited(S), all: spendAll });
   fx("milestone", true);
   floatAt(autoBtn, `+${money(Math.max(0, r.after - r.before))}/s`);
   banner(root, "⚡", t("{n} mejoras · ahora ganas {m}/s", { n: r.steps, m: money(r.after) }));
@@ -729,6 +734,7 @@ async function syncFounder(): Promise<void> {
   try {
     const r = await leagueApi.founder({ id: L.id!, secret: L.secret! }, FOUNDERS.city, deviceId());
     const exec = applyFounderRank(S, r.rank);
+    analytics.track("founder", { rank: r.rank });
     save();
     if (exec) {
       void celebrate(root, {
@@ -1062,6 +1068,8 @@ game.events.on("step", (time: number) => {
 let booted = false;
 
 async function boot(): Promise<void> {
+  // Errores del juego al panel de la beta (anónimos; ver docs/ANALITICA.md).
+  installErrorReporting(() => ({ view: S?.view.scene === "business" ? `biz:${S.view.id}` : "city", city: S?.city ?? "" }));
   // Ajustes desde el servidor: los últimos guardados al momento y los nuevos en cuanto lleguen.
   applyRemoteConfig(cachedConfig());
   void fetchConfig().then((cfg) => cfg && applyRemoteConfig(cfg));

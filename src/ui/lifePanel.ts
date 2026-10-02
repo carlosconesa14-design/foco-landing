@@ -8,6 +8,7 @@ import { gem, hasIcon, icon } from "./icons";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
 import { seasonOpen } from "../game/season";
+import { analytics, minutesSinceInstall } from "../platform/analytics";
 
 /** «Mi vida»: el personaje con lo que se ha comprado y la tienda de lujo por colecciones. */
 
@@ -113,6 +114,7 @@ export function openLife(ctx: PanelCtx): void {
           ctx.toast(res === "gems" ? t("Te faltan diamantes") : res === "candy" ? t("Te faltan caramelos") : t("No tienes suficiente dinero"));
           return;
         }
+        analytics.track("lux_buy", { id, prestige: item.prestige, paid: item.gems ? "gems" : item.candy ? "candy" : "cash", minutes: minutesSinceInstall() });
         if (item.gems || item.candy || item.price >= 1e9) {
           void ctx.celebrate({
             icon: item.icon,

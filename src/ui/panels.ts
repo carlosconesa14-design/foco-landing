@@ -30,6 +30,7 @@ import { RANKS, nextRank, rankOf } from "../game/ranks";
 import { analytics, minutesSinceInstall } from "../platform/analytics";
 import { closeSheet, openSheet } from "./sheet";
 import { money, t } from "../i18n";
+import { maybeAskFeedback } from "./feedbackPanel";
 
 /** Lo que los paneles necesitan del controlador del juego. */
 export interface PanelCtx {
@@ -231,6 +232,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
     const msg = act.buyBusiness(ctx.state(), id);
     if (!msg) return ctx.fx("error");
     analytics.track("business_bought", { biz: id, minutes: minutesSinceInstall() });
+    if (Object.values(ctx.state().biz).filter((b) => b.owned).length === 2) maybeAskFeedback(ctx);
     closeSheet();
     ctx.goTo({ scene: "business", id });
     void ctx.celebrate({

@@ -9,6 +9,7 @@ import { rewardLabel, showGrant } from "./metaPanels";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
 import { fmtWait } from "./eventPanel";
+import { analytics } from "../platform/analytics";
 
 /** Pantalla del evento de temporada (Halloween): caramelos, cómo se consiguen y su tienda exclusiva. */
 
@@ -57,6 +58,7 @@ export function openSeason(ctx: PanelCtx): void {
           b.onclick = () => {
             const item = lux.itemById(b.dataset.buy!)!;
             if (lux.buyLuxury(ctx.state(), item.id, now()) !== "ok") return ctx.fx("error");
+            analytics.track("season_buy", { id: item.id });
             void ctx
               .celebrate({ icon: item.icon, title: t("¡Te has comprado {name}!", { name: item.name }), subtitle: t("Edición limitada de Halloween: después ya no se podrá conseguir."), color: "#ff8a2a" })
               .then(() => openLife(ctx));

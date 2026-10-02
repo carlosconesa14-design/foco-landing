@@ -21,7 +21,22 @@ Deno.serve(async (req) => {
     const text = await req.text();
     if (text.length > 32_768) return reply({ error: "size" }, 413);
     const b = JSON.parse(text);
-    if (typeof b?.device !== "string" || !UUID.test(b.device) || !Array.isArray(b.events)) return reply({ error: "bad" }, 400);
+    if (typeof b?.device !== "string" || !UUID.test(b.device)) return reply({ error: "bad" }, 400);
+    // Opinión desde el juego (como mucho 3 al día por dispositivo: lo limita feedback_insert).
+    if (b.feedback && typeof b.feedback === "object") {
+      const f = b.feedback;
+      const { data, error } = await db.rpc("feedback_insert", {
+        p_device: b.device,
+        p_platform: String(b.platform ?? ""),
+        p_version: String(b.version ?? ""),
+        p_rating: Number.isInteger(f.rating) ? f.rating : null,
+        p_message: typeof f.message === "string" ? f.message.slice(0, 1000) : null,
+        p_meta: f.meta && typeof f.meta === "object" && !Array.isArray(f.meta) ? f.meta : {},
+      });
+      if (error) throw error;
+      return reply({ stored: data === true });
+    }
+    if (!Array.isArray(b.events)) return reply({ error: "bad" }, 400);
     const { data, error } = await db.rpc("analytics_insert", {
       p_device: b.device,
       p_platform: String(b.platform ?? ""),

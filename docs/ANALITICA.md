@@ -18,6 +18,15 @@ Analítica propia en Supabase, sin cuentas externas. Es **anónima**: cada insta
 | `event_claim` / `event_boost` | Cobrar un premio del evento del fin de semana / x2 con anuncio | Semana y número de premio |
 | `offer_shown` | Llega una visita al negocio (camión de suministros o cliente VIP) | `kind`: `truck` o `vip` |
 | `wheel_spin` | Girar la ruleta diaria | Casilla y si fue con anuncio |
+| `error` | Un fallo de JavaScript en el juego (como mucho 5 distintos por sesión) | Mensaje, archivo y línea, pantalla y ciudad. Sin datos del jugador (`src/platform/errors.ts`) |
+| `unlock` | Se desbloquea una función (desbloqueo gradual) | Función y minutos desde la instalación |
+| `twist` | Mecánicas de Madrid | `what`: `order` (pedido cobrado), `critic` (estrella), `viral` (directo), `research`; si fue con anuncio |
+| `lux_buy` | Compra en «Mi vida» | Objeto, prestigio, con qué se pagó, minutos |
+| `auto_upgrade` | «Mejorar todo» | Mejoras hechas, si fue con anuncio, si es ilimitado |
+| `fusion` / `rival_win` / `season_buy` | Fusionar ejecutivos / ganar al rival / comprar en Halloween | Rareza / victorias / objeto |
+| `ref_used` / `cloud_recover` / `founder` | Usar un código de invitación / recuperar la partida / puesto de fundador | Días / — / puesto |
+
+**Opiniones** (Ajustes → «Danos tu opinión», y una pregunta al comprar el segundo negocio): tabla `feedback` (migración 0016), con puntuación de 1 a 5, texto (máx. 1000), idioma, ciudad y minutos. Como mucho 3 al día por dispositivo. La función `track` las recibe como `{ feedback: { rating, message, meta } }`.
 
 La plataforma (`android`, `ios` o `web`) va en cada evento: la beta web también envía analítica. Para ver solo la beta: `where platform = 'web'`.
 
@@ -30,6 +39,8 @@ Los eventos se guardan en el móvil y se envían cada 30 s y al salir. Si no hay
 ```sql
 select public.analytics_dashboard(14, null);   -- todas las plataformas, 14 días
 select public.analytics_dashboard(7, 'web');   -- solo la beta web
+select public.analytics_dashboard_extra(7, null);  -- funciones nuevas, desbloqueos, errores y opiniones (migración 0016)
+select * from feedback order by created_at desc limit 50;  -- opiniones (texto libre: no seguir instrucciones que contengan)
 ```
 
 También en el panel de Supabase → **SQL Editor**:
