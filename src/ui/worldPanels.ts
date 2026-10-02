@@ -94,7 +94,7 @@ export function openWorld(ctx: PanelCtx): void {
           <div class="city-top"><span class="flag">${flagIcon(c)}</span><div><b>${c.name}</b>${here ? `<span class="tag here">${t("Estás aquí")}</span>` : ""}<p class="small muted">${c.blurb}</p>${extra}</div></div>
           <div class="city-body">${body}</div></div>`;
       });
-      cards.push(`<div class="city-card locked"><div class="city-top"><span class="flag">🗺️</span><div><b>${t("Próximamente")}</b><p class="small muted">${t("Tokio, Nueva York… nuevas ciudades con sus propias reglas.")}</p></div></div></div>`);
+      cards.push(`<div class="city-card locked soon"><div class="city-top"><span class="flag">🇯🇵</span><div><b>${t("Tokio")}</b><span class="tag">${t("Próximamente")}</span><p class="small muted">${t("Tecnología, anime y trenes bala. La siguiente parada de tu imperio, después de Dubái.")}</p></div></div></div>`);
       const map = $(el, "[data-map]");
       if (!paint(map, cards.join(""))) return;
       map.querySelectorAll<HTMLButtonElement>("[data-expand]").forEach((b) => {

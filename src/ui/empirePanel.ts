@@ -8,6 +8,30 @@ import { bizIcon, flagIcon } from "./icons";
 import { openPlotSheet, type PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
 import { money, t } from "../i18n";
+import { RIVALS, myWeek, rivalReward, rivalScore } from "../game/rival";
+import type { GameState } from "../game/state";
+import { fmtWait } from "./eventPanel";
+import { gem } from "./icons";
+
+/** Tarjeta del rival de la semana: tú contra él, quién va ganando y el premio. */
+export function rivalCardHtml(s: GameState, now: number): string {
+  const r = s.meta.rival;
+  if (!r.week) return "";
+  const who = RIVALS[r.who];
+  const mine = myWeek(s);
+  const his = rivalScore(s, now);
+  const top = Math.max(r.target, mine, 1);
+  const status = r.won
+    ? `<span class="good">✅ ${t("¡Le has ganado esta semana!")}</span>`
+    : mine >= his
+      ? `<span class="good">${t("Vas ganando. Llega a {m} y será tuyo.", { m: money(r.target) })}</span>`
+      : `<span class="warn">${t("Te gana por {m}", { m: money(his - mine) })}</span>`;
+  return `<div class="rv-head"><span class="rv-face">${who.face}</span><div><b>${t("Rival de la semana: {name}", { name: who.name })}</b><small>${who.biz} · ${t("termina en {time}", { time: fmtWait(r.end - now) })}</small></div>
+      <span class="rv-prize">👜 + ${rivalReward(s).gems} ${gem()}</span></div>
+    <div class="rv-row"><span>${t("Tú")}</span><i class="rv-bar me"><i style="width:${((mine / top) * 100).toFixed(1)}%"></i></i><b>${money(mine)}</b></div>
+    <div class="rv-row"><span>${who.name}</span><i class="rv-bar him"><i style="width:${((his / top) * 100).toFixed(1)}%"></i></i><b>${money(his)}</b></div>
+    <p class="small">${status}</p>`;
+}
 
 /**
  * Panel «Imperio»: todos los negocios de la ciudad de un vistazo. Qué gana cada uno,
@@ -32,12 +56,14 @@ export function openEmpire(ctx: PanelCtx): void {
   openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">${flagIcon(city)}</span><div><h3>${t("Tu imperio en {city}", { city: city.name })}</h3><p class="muted" data-sub></p></div></div>
+     <div class="rival-card" data-rival></div>
      <div class="empire-goal" data-goal></div>
      <div class="list" data-list style="display:grid;gap:8px"></div>`,
     (el) => {
       const s = ctx.state();
       const now = clockNow();
       $(el, "[data-sub]").innerHTML = `<b class="good">+${money(passiveRate(s, now))}/s</b> ${t("entre todos tus negocios")}`;
+      paint($(el, "[data-rival]"), rivalCardHtml(s, now));
       const p = cityProgress(s);
       const pct = Math.min(100, (Math.log10(Math.max(1, p.earned)) / Math.log10(p.goal)) * 100);
       paint(

@@ -4,6 +4,7 @@ import { fmt, fmtTime } from "../game/format";
 import * as meta from "../game/meta";
 import type { Exec } from "../game/state";
 import { execBonus } from "../game/founders";
+import { fuseExecs, fusableRarities } from "../game/fusion";
 import { revealChest } from "./celebrate";
 import { modal } from "./overlays";
 import type { PanelCtx } from "./panels";
@@ -315,10 +316,22 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
         const intro = hereDef
           ? `<p class="small muted">${t("Estás en {biz}. «Asignar aquí» pone al ejecutivo en este negocio.", { biz: `${bizIcon(hereDef)} ${hereDef.name}` })}</p>`
           : `<p class="small muted">${t("Entra en un negocio para asignarle un ejecutivo.")}</p>`;
+        // Fusión: 3 iguales → 1 de la rareza siguiente
+        const fuse = fusableRarities(s)
+          .map((r) => `<button class="fuse-btn" data-fuse="${r}" style="--from:${RARITIES[r].color};--to:${RARITIES[r + 1].color}">🔀 ${t("Fusionar 3 {from} → 1 {to}", { from: RARITIES[r].name.toLowerCase(), to: RARITIES[r + 1].name.toLowerCase() })}</button>`)
+          .join("");
         const html = execs.length
-          ? intro + execs.map((e) => execRow(e, here, now)).join("")
+          ? (fuse ? `<div class="fuse-box"><p class="small muted">${t("Tienes ejecutivos repetidos: fusiona 3 de la misma rareza y consigue uno mejor.")}</p>${fuse}</div>` : "") + intro + execs.map((e) => execRow(e, here, now)).join("")
           : `<p class="muted">${t("Aún no tienes ejecutivos. Abre un maletín para conseguir el primero.")}</p>`;
         if (paint(body, html)) {
+          body.querySelectorAll<HTMLButtonElement>("[data-fuse]").forEach((b) => {
+            b.onclick = () => {
+              const e = fuseExecs(ctx.state(), Number(b.dataset.fuse));
+              if (!e) return ctx.fx("error");
+              ctx.fx("chest", true);
+              void showExec(ctx, e, { exec: e }, "🔀");
+            };
+          });
           body.querySelectorAll<HTMLButtonElement>("[data-assign]").forEach((b) => {
             b.onclick = () => {
               if (here && meta.assignExec(ctx.state(), b.dataset.assign!, here)) {

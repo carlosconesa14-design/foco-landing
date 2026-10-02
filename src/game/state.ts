@@ -11,6 +11,8 @@ import { freshLuxury, migrateLuxury, type LuxuryState } from "./luxury";
 import { freshSeason, migrateSeason, type SeasonState } from "./season";
 import { freshAccount, migrateAccount, type AccountState } from "./account";
 import { migrateTwists, type TwistState } from "./twists";
+import { freshAuto, migrateAuto, type AutoState } from "./autoUpgrade";
+import { freshRival, migrateRival, type RivalState } from "./rival";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
@@ -127,6 +129,10 @@ export interface MetaState {
   account: AccountState;
   /** Mecánicas propias de cada negocio (pedidos, crítico, hype, investigación). */
   twists: TwistState;
+  /** Usos de «Mejorar todo» hoy. */
+  auto: AutoState;
+  /** Rival de la semana. */
+  rival: RivalState;
 }
 
 export interface Settings {
@@ -227,6 +233,8 @@ export function freshMeta(now = clockNow()): MetaState {
     season: freshSeason(),
     account: freshAccount(),
     twists: {},
+    auto: freshAuto(),
+    rival: freshRival(),
   };
 }
 
@@ -341,6 +349,8 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.season = migrateSeason(r.season);
   m.account = migrateAccount(r.account);
   m.twists = migrateTwists(r.twists);
+  m.auto = migrateAuto(r.auto);
+  m.rival = migrateRival(r.rival);
   m.flags = Array.isArray(r.flags) ? r.flags.filter((f): f is string => typeof f === "string").slice(0, 10) : [];
   return m;
 }

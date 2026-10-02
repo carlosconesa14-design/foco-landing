@@ -15,6 +15,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Área | Qué | Dónde |
 | --- | --- | --- |
 | Juego | Ciudad isométrica y recintos por negocio. Madrid (4 negocios), Miami (5, con olas turísticas) y **Dubái** (5, con el precio del oro y la carrera de fundadores; arte provisional). Gerentes, ejecutivos y maletines, bolsa, expansión, Oficina central y edificios que crecen | `src/game`, `src/scenes`, [`GDD.md`](GDD.md) |
+| Comodidad y vuelta | **Mejorar todo** (3 gratis/día + 2 con anuncio; ilimitado con el Gestor automático de 0,99 € o VIP), **fusionar ejecutivos**, **«Mientras no estabas»** y **rival de la semana**. Tokio «Próximamente» | `autoUpgrade.ts`, `fusion.ts`, `away.ts`, `rival.ts` |
 | Mecánicas por negocio | Madrid: **pedidos urgentes** (almacén), **críticos** con estrellas (restaurante), **hype** y directo viral (TikTok) e **investigación** (IA). Reutilizables para Miami y Dubái | `twists.ts`, `twistUi.ts` |
 | Ajustes remotos | Números de ofertas, viral, «Mi vida» y temporada cambiables desde Supabase sin publicar versión (¼–4× del valor de fábrica) | `remote.ts`, migración 0015, [`AJUSTES.md`](AJUSTES.md) |
 | Amigos y nube | Cuenta anónima automática: **invitar a amigos** (50 💎 + maletín para el amigo, 100 💎 + maletín para quien invita) y **partida en la nube** con clave de recuperación | `account.ts`, `invitePanel.ts`, migración 0014, función `account` |
@@ -49,7 +50,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 7. **Moneda:** € en español y $ en inglés. Los premios reales, siempre en euros.
 
 ## Pendiente de Carlos
-- [ ] Google Play Console (25 $) y AdMob: crear las cuentas y pasar los IDs de AdMob.
+- [ ] Google Play Console (25 $) y AdMob: crear las cuentas y pasar los IDs de AdMob. Dar de alta el producto nuevo `auto_manager` (0,99 €, ver `COMPRAS.md`).
 - [ ] Datos para la política de privacidad: nombre, NIF, domicilio y email (`PRIVACIDAD.md`).
 - [ ] Subir los secretos de GitHub (`TIENDA.md`, punto 3). La clave de subida ya está generada (te la pasó Claude el 2 de octubre): guárdala en un gestor de contraseñas.
 - [ ] Play Console → Play Integrity API: vincular un proyecto de Google Cloud y crear una cuenta de servicio (`SEGURIDAD.md`, «Pendiente»).

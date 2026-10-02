@@ -73,6 +73,15 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
 - **Carrera de fundadores:** los **100 primeros** jugadores en llegar a Dubái reciben un **ejecutivo fundador** exclusivo: legendario, con +100 % extra sobre su bonus y su número («Fundador #12»). Solo premios del juego, nunca dinero real. Los demás ven en qué puesto llegaron. El mapa del mundo enseña las plazas que quedan. El puesto lo da el servidor (`founder_claim`, migración 0013) una sola vez por jugador. Hace falta estar en la Liga, que es la cuenta con la que el servidor reconoce al jugador: al llegar a Dubái sin estar en la Liga, se le propone unirse una vez. Contra trampas: no hay puesto para partidas editadas sin revisar ni para quien llega en menos de 3 días desde que empezó a jugar (`league_config.founders_min_days`).
 - **Siguientes ciudades:** Tokio (tecnología, turnos de noche), Nueva York… Solo hay que añadir un `CityDef` en `src/game/data.ts` y su arte.
 
+### Comodidad y motivos para volver ✅
+- **⚡ Mejorar todo** (botón abajo a la derecha en cada negocio): contrata los gerentes que falten y reparte el dinero en lo que más €/s da por euro (la misma lógica del bot de equilibrado). **3 usos gratis al día y 2 más con anuncio** (`auto_upgrade`). Sin límite con el **Gestor automático (0,99 €, compra única)** o con el VIP. `src/game/autoUpgrade.ts`.
+- **🔀 Fusionar ejecutivos:** 3 de la misma rareza → 1 de la rareza siguiente (común → raro → épico → legendario). Hereda la especialidad más repetida y el sitio del que estuviera asignado; se usan primero los libres. El fundador no se fusiona. Da valor a los repetidos de los maletines (y a abrir más). `src/game/fusion.ts`.
+- **👋 Mientras no estabas:** al volver, además de lo que ganaron los gerentes (x3 con anuncio), una lista de hasta 4 cosas que te esperan: premio diario, maletín gratis, misiones, habilidades listas, premios del evento, investigación o algo de «Mi vida» que ya te puedes comprar. `src/game/away.ts`.
+- **🥊 Rival de la semana:** cada lunes, un competidor ficticio (Kevin del kebab, Vanesa del salón de uñas…) que gana a su ritmo hasta el domingo. Su meta son 8 h de tus ingresos pasivos al empezar la semana (+3 h por cada victoria, hasta 40 h). Si ganas más que su meta esa semana (sumando todas tus ciudades): **maletín de oro y 40–100 💎** al momento. Si no, no pasa nada. Tarjeta en el panel Imperio y en el menú. `src/game/rival.ts`.
+
+### Más allá de Dubái
+**Tokio** aparece en el mapa del mundo como «Próximamente». Descartado un pueblo antes de Madrid: el principio decide si el jugador vuelve, y los idles alargan por el final (ciudades, prestigio, eventos). Si se hace, mejor como «tu pueblo natal», opcional y más adelante.
+
 ### Mecánicas de cada negocio (fase 1: Madrid ✅)
 Cada negocio de Madrid tiene una regla propia, para que no se sientan todos iguales. Son módulos reutilizables (`src/game/twists.ts`) que luego se pueden poner en Miami y Dubái con su temática. Reglas: **nunca castigan** (si no haces nada, el negocio va igual), se entienden en 5 segundos y tienen un anuncio opcional natural. Se muestran en una tarjeta encima de la barra de la cadena y se explican la primera vez que entras.
 - **📦 Almacén: pedidos urgentes.** Cada 4–7 min llega un pedido: «gana X € en 3 min» (1,25 veces lo que el negocio gana en ese tiempo: hay que mejorar algo o usar la hora punta). Si lo cumples, 10 min de ingresos y 3 💎 (x2 con anuncio, `order_x2`). Si no, no pasa nada.
@@ -219,6 +228,7 @@ Anuncios bonificados, siempre opcionales:
 | `order_x2` | Almacén: doble premio del pedido urgente | 4 ✅ |
 | `critic_now` | Restaurante: atender al crítico al momento | 4 ✅ |
 | `hype_collab` | TikTok: directo viral al momento (cada 10 min) | 4 ✅ |
+| `auto_upgrade` | «Mejorar todo» extra (2 al día, tras los 3 gratis) | 4 ✅ |
 | `supply_truck` | Camión de suministros: llega al negocio que estás viendo cada 5–9 min y trae lo que vende en 15 min a pleno rendimiento | 4 ✅ |
 | `vip_client` | Cliente VIP: cada 7–13 min, paga 10 💎 (4 al día como máximo) | 4 ✅ |
 | `wheel_spin` | Ruleta diaria: un giro gratis al día y 3 más con anuncio (dinero, diamantes o maletines) | 4 ✅ |

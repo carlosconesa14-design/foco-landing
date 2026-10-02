@@ -49,7 +49,7 @@ describe("tienda", () => {
     const s = freshState(NOW);
     grantProduct(s, "vip", "v", NOW);
     const loaded = migrate(JSON.parse(JSON.stringify(s)), NOW);
-    expect(loaded.meta.shop).toEqual({ vip: true, starter: false, orders: ["v"] });
+    expect(loaded.meta.shop).toEqual({ vip: true, starter: false, autoManager: false, orders: ["v"] });
     loaded.runEarned = 1e30;
     expect(act.ipo(loaded, 1, NOW)!.state.meta.shop.vip).toBe(true);
   });

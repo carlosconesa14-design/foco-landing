@@ -587,3 +587,39 @@ body.season-halloween header { box-shadow: 0 2px 0 #ff8a2a66 inset, 0 5px 16px #
   .tw-card.tw-offer, .tw-card.tw-viral { animation: ready 1.2s ease-in-out infinite; }
   .tw-card.tw-viral .tw-ic { animation: rank-bob 0.8s ease-in-out infinite; }
 }
+
+/* «Mejorar todo» (abajo a la derecha, en el negocio) */
+.auto-btn { position: absolute; right: 12px; z-index: 6; display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; column-gap: 6px; align-items: center; padding: 6px 12px 6px 8px; border-radius: 14px; background: linear-gradient(160deg, #ffd86b, var(--gold)); color: var(--gold-ink); border: 0; box-shadow: 0 4px 0 var(--gold-dark), 0 8px 18px rgba(0, 0, 0, 0.3); text-align: left; }
+.auto-btn .ic { grid-row: span 2; font-size: 22px; line-height: 1; }
+.auto-btn b { font-size: 12.5px; line-height: 1.1; }
+.auto-btn small { font-size: 10.5px; font-weight: 700; opacity: 0.8; line-height: 1.1; }
+.auto-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--gold-dark), 0 4px 10px rgba(0, 0, 0, 0.3); }
+
+/* Fusionar ejecutivos */
+.fuse-box { display: grid; gap: 6px; padding: 10px; border-radius: 14px; background: linear-gradient(160deg, rgba(181, 123, 255, 0.18), var(--bg) 70%); border: 1px solid rgba(181, 123, 255, 0.5); }
+.fuse-box p { margin: 0; }
+.fuse-btn { padding: 10px 12px; border-radius: 12px; border: 0; font-weight: 700; color: #14202f; background: linear-gradient(90deg, var(--from), var(--to)); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35); text-align: left; }
+
+/* «Mientras no estabas»: lo que te espera */
+.modal-list { list-style: none; margin: 4px 0 12px; padding: 0; display: grid; gap: 6px; text-align: left; }
+.modal-list li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; align-items: center; padding: 7px 10px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); font-size: 13px; }
+.modal-list li span { font-size: 18px; text-align: center; }
+
+/* Rival de la semana (panel del Imperio) */
+.rival-card:empty { display: none; }
+.rival-card { display: grid; gap: 6px; padding: 12px; margin-bottom: 10px; border-radius: 14px; background: linear-gradient(160deg, rgba(255, 107, 91, 0.18), var(--bg) 70%); border: 1px solid rgba(255, 107, 91, 0.5); }
+.rival-card p { margin: 2px 0 0; }
+.rv-head { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.rv-face { font-size: 30px; text-align: center; }
+.rv-head b { display: block; font-size: 14px; }
+.rv-head small { color: var(--muted); font-size: 12px; }
+.rv-prize { font-weight: 700; font-size: 13px; white-space: nowrap; }
+.rv-row { display: grid; grid-template-columns: 60px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 12px; }
+.rv-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-row b { font-variant-numeric: tabular-nums; }
+.rv-bar { display: block; height: 10px; border-radius: 5px; background: rgba(0, 0, 0, 0.35); overflow: hidden; }
+.rv-bar i { display: block; height: 100%; border-radius: 5px; }
+.rv-bar.me i { background: linear-gradient(90deg, var(--green), #9cf3c9); }
+.rv-bar.him i { background: linear-gradient(90deg, var(--red), #ffa494); }
+.rival-card .warn { color: #ffb4a8; }
+.city-card.soon { opacity: 0.85; }

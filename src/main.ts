@@ -38,6 +38,10 @@ import { openSeason } from "./ui/seasonPanel";
 import { openCloud, openInvite, syncAccount } from "./ui/invitePanel";
 import { applyRemoteConfig, remoteVersion } from "./game/remote";
 import { maybeIntro, twistAction, twistCardHtml, twistTap, twistTick } from "./ui/twistUi";
+import { fusableRarities } from "./game/fusion";
+import { awaySummary } from "./game/away";
+import { RIVALS, checkRival, ensureRival } from "./game/rival";
+import { AUTO, autoAdLeft, autoFreeLeft, autoUpgrade, spendAutoUse } from "./game/autoUpgrade";
 import { cachedConfig, fetchConfig } from "./platform/account";
 import { LUXURY, affordable, owns } from "./game/luxury";
 import { SEASON, activeSeason, collectVisitor, ensureSeason, scheduleVisitor, seasonOpen, visitorCandy, visitorDue } from "./game/season";
@@ -333,6 +337,7 @@ root.addEventListener("click", (e) => {
   else if (which === "life") openLife(ctx);
   else if (which === "season") openSeason(ctx);
   else if (which === "invite") openInvite(ctx);
+  else if (which === "rival") openEmpire(ctx);
   else if (which === "cloud") openCloud(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
@@ -343,6 +348,23 @@ function updateMeta(now: number): void {
   updateAdLadder(now);
   updateEvent(now);
   ensureSeason(S, now);
+  if (meta.tutorialStep(S) === null) {
+    if (ensureRival(S, now, passiveRate(S, now, false))) {
+      const who = RIVALS[S.meta.rival.who];
+      banner(root, who.face, t("Nuevo rival de la semana: {name} ({biz}). ¡Gánale antes del domingo!", { name: who.name, biz: who.biz }));
+    }
+    const won = checkRival(S, now);
+    if (won) {
+      const who = RIVALS[S.meta.rival.who];
+      void celebrate(root, {
+        icon: "🏆",
+        title: t("¡Has superado a {name}!", { name: who.name }),
+        subtitle: t("Tu imperio ha ganado más que {biz} esta semana. El lunes llega un rival más fuerte.", { biz: who.biz }),
+        highlight: t("Maletín de oro + {n} 💎", { n: won[1].gems ?? 0 }),
+        color: "#f5c542",
+      }).then(() => { if (won[0].exec) showGrant(ctx, won[0]); });
+    }
+  }
   const season = activeSeason(now);
   document.getElementById("seasonBtn")!.hidden = !season || meta.tutorialStep(S) !== null;
   document.body.classList.toggle("season-halloween", season?.def.id === "halloween");
@@ -353,7 +375,7 @@ function updateMeta(now: number): void {
   const ready: Record<string, boolean> = {
     missions: meta.missionsToClaim(S) + retosToClaim(S) > 0,
     daily: meta.dailyStatus(S, now).canClaim,
-    execs: meta.freeChestReady(S, now),
+    execs: meta.freeChestReady(S, now) || fusableRarities(S).length > 0,
     achievements: meta.achievementsToClaim(S) > 0,
     league: leagueHasPrize() || (!leagueJoined(S) && meta.tutorialStep(S) === null),
     event: eventToClaim(S) > 0,
@@ -550,6 +572,55 @@ function updateTwist(): void {
 twistEl.addEventListener("click", (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>("[data-tw]");
   if (b) void twistAction(ctx, b.dataset.tw!);
+});
+
+/* ---------- «Mejorar todo» ---------- */
+
+const autoBtn = document.getElementById("autoBtn") as HTMLButtonElement;
+
+function updateAuto(now: number): void {
+  const show = S.view.scene === "business" && meta.tutorialStep(S) === null && !!S.biz[S.view.id]?.owned;
+  autoBtn.hidden = !show;
+  if (!show) return;
+  autoBtn.style.bottom = `${document.getElementById("bar")!.offsetHeight + overlayHeight() + 12}px`;
+  const free = autoFreeLeft(S, now);
+  const txt = free === Infinity ? "∞" : free > 0 ? t("{n} hoy", { n: free }) : autoAdLeft(S, now) > 0 ? "▶" : "🔒";
+  const el = document.getElementById("autoLeft")!;
+  if (el.textContent !== txt) el.textContent = txt;
+}
+
+/** ¿Hay algo que mejorar con el dinero que hay? (sin tocar la partida) */
+function autoWouldHelp(id: string): boolean {
+  const copy = structuredClone(S);
+  return autoUpgrade(copy, id, clockNow()).steps > 0;
+}
+
+async function runAuto(withAd: boolean): Promise<void> {
+  if (S.view.scene !== "business") return;
+  const id = S.view.id;
+  if (withAd && !(await watchAd("auto_upgrade"))) return;
+  if (!spendAutoUse(S, clockNow(), withAd)) return;
+  const r = autoUpgrade(S, id, clockNow());
+  fx("milestone", true);
+  floatAt(autoBtn, `+${money(Math.max(0, r.after - r.before))}/s`);
+  banner(root, "⚡", t("{n} mejoras · ahora ganas {m}/s", { n: r.steps, m: money(r.after) }));
+}
+
+autoBtn.addEventListener("click", () => {
+  if (S.view.scene !== "business") return;
+  const now = clockNow();
+  if (!autoWouldHelp(S.view.id)) return say(t("Aún no tienes dinero para ninguna mejora"));
+  if (autoFreeLeft(S, now) > 0) return void runAuto(false);
+  const actions: { label: string; ad?: boolean; run: () => void }[] = [];
+  if (autoAdLeft(S, now) > 0) actions.push({ ad: true, label: t("Ver anuncio y mejorar"), run: () => void runAuto(true) });
+  actions.push({ label: t("Sin límite: Gestor automático"), run: () => openShop(ctx) });
+  actions.push({ label: t("Ahora no"), run: () => {} });
+  modal(root, {
+    title: t("Mejorar todo"),
+    amount: "⚡",
+    text: t("Hoy ya has usado tus {n} mejoras automáticas gratis. Mañana tendrás más; o hazlo sin límite para siempre con el Gestor automático.", { n: AUTO.freePerDay }),
+    actions,
+  });
 });
 
 /* ---------- Rangos de los puestos (bronce … leyenda) ---------- */
@@ -823,9 +894,10 @@ function offerOffline(): void {
   S.lastSeen = clockNow();
   if (seconds < 60 || amount < 1) return;
   modal(root, {
-    title: t("Ingresos pasivos"),
+    title: t("¡Bienvenido de nuevo!"),
     amount: money(amount),
     text: t("Tus gerentes han ganado esto en {time} mientras no estabas.", { time: fmtTime(seconds) }),
+    list: awaySummary(S, clockNow(), S.cash + amount * 3),
     actions: [
       {
         ad: true,
@@ -927,6 +999,7 @@ game.events.on("step", (time: number) => {
     updateMeta(now);
     updateWave(now);
     updateTwist();
+    updateAuto(now);
     watchRanks();
     const li = lifeIndex(S.totalEarned);
     if (li > S.lifeSeen) {
