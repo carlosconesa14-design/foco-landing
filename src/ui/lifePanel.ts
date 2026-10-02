@@ -7,6 +7,7 @@ import { avatarSvg, luxIcon } from "./avatar";
 import { gem, hasIcon } from "./icons";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
+import { seasonOpen } from "../game/season";
 
 /** «Mi vida»: el personaje con lo que se ha comprado y la tienda de lujo por colecciones. */
 
@@ -70,8 +71,10 @@ export function openLife(ctx: PanelCtx): void {
       if (paint(dealBox, dealHtml)) wire(dealBox);
 
       el.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
-      const items = lux.LUXURY.filter((i) => i.cat === tab);
-      const paid = items.filter((i) => i.price > 0 || i.gems);
+      const open = seasonOpen(s, n);
+      // Los de temporada solo se ven durante su evento (o si ya los tienes).
+      const items = lux.LUXURY.filter((i) => i.cat === tab && (!i.season || open || lux.owns(s, i.id)));
+      const paid = lux.collectionItems(tab);
       const have = paid.filter((i) => lux.owns(s, i.id)).length;
       const cat = lux.LUXURY_CATS.find((c) => c.id === tab)!;
       $(el, "[data-coll]").textContent = `${cat.name}: ${have}/${paid.length}${have === paid.length ? " · " + t("¡Colección completa! +10 %") : " · " + t("Complétala: +10 % de ingresos")}`;
@@ -83,13 +86,15 @@ export function openLife(ctx: PanelCtx): void {
           const price = lux.priceOf(s, i, n);
           let btn: string;
           if (owned) btn = on ? `<button class="mini" disabled>✓ ${t("En uso")}</button>` : `<button class="mini" data-equip="${i.id}">${t("Usar")}</button>`;
+          else if (i.candy) btn = `<button class="buy" data-buy="${i.id}" ${s.meta.season.candy < i.candy ? "disabled" : ""}><span>${t("Comprar")}</span><b>${i.candy} 🍬</b></button>`;
           else if (i.gems) btn = `<button class="buy" data-buy="${i.id}" ${s.meta.gems < i.gems ? "disabled" : ""}><span>${t("Comprar")}</span><b>${i.gems} ${gem()}</b></button>`;
           else
             btn = `<button class="buy" data-buy="${i.id}" ${s.cash < price ? "disabled" : ""}><span>${t("Comprar")}</span><b>${money(price)}</b></button>` +
               (trialsLeft > 0 && trial !== i.id ? `<button class="ad-btn mini" data-trial="${i.id}"><span class="play"></span>${t("Probar 1 h")}</button>` : "");
           const tag = i.prestige ? `<small class="lux-pr">+${i.prestige} % ${t("ingresos")}</small>` : `<small class="lux-pr">${t("De serie")}</small>`;
-          return `<div class="lux-card ${owned ? "owned" : ""} ${on ? "on" : ""} ${i.gems ? "exclusive" : ""}">
-            <div class="lux-ic">${luxIcon(i.id, hasIcon)}</div><b>${i.name}</b>${tag}<div class="lux-btns">${btn}</div></div>`;
+          const seasonTag = i.season ? `<small class="lux-season">🎃 ${t("Edición Halloween")}</small>` : "";
+          return `<div class="lux-card ${owned ? "owned" : ""} ${on ? "on" : ""} ${i.gems ? "exclusive" : ""} ${i.season ? "seasonal" : ""}">
+            <div class="lux-ic">${luxIcon(i.id, hasIcon)}</div><b>${i.name}</b>${seasonTag}${tag}<div class="lux-btns">${btn}</div></div>`;
         })
         .join("");
       const grid = $(el, "[data-items]");
@@ -105,10 +110,10 @@ export function openLife(ctx: PanelCtx): void {
         const res = lux.buyLuxury(ctx.state(), id, now());
         if (res !== "ok") {
           ctx.fx("error");
-          ctx.toast(res === "gems" ? t("Te faltan diamantes") : t("No tienes suficiente dinero"));
+          ctx.toast(res === "gems" ? t("Te faltan diamantes") : res === "candy" ? t("Te faltan caramelos") : t("No tienes suficiente dinero"));
           return;
         }
-        if (item.gems || item.price >= 1e9) {
+        if (item.gems || item.candy || item.price >= 1e9) {
           void ctx.celebrate({
             icon: item.icon,
             title: t("¡Te has comprado {name}!", { name: item.name }),

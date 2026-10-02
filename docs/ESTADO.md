@@ -15,6 +15,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Área | Qué | Dónde |
 | --- | --- | --- |
 | Juego | Ciudad isométrica y recintos por negocio. Madrid (4 negocios), Miami (5, con olas turísticas) y **Dubái** (5, con el precio del oro y la carrera de fundadores; arte provisional). Gerentes, ejecutivos y maletines, bolsa, expansión, Oficina central y edificios que crecen | `src/game`, `src/scenes`, [`GDD.md`](GDD.md) |
+| Temporada | **Halloween** (24 oct – 1 nov): fantasmas con caramelos (x3 con anuncio), tienda con 5 objetos exclusivos de «Mi vida», diamantes y maletines, y calabazas en la ciudad | `season.ts`, `seasonPanel.ts` |
 | Mi vida | Tienda de lujo con personaje: 32 objetos en 6 colecciones, prestigio (+1 % de ingresos por punto, +10 % por colección), exclusivos con 💎, probar 1 h y oferta del día con anuncio. Tu coche circula por la ciudad | `luxury.ts`, `lifePanel.ts`, `avatar.ts` |
 | Mejoras visibles | **Rangos de los puestos** (bronce, plata, oro, diamante y leyenda en los niveles 10–200): pedestal, brillo, medalla y celebración, en todos los negocios. Decoración del recinto con ★★ y ★★★ | `ranks.ts`, `rankFx.ts`, [`GDD.md`](GDD.md) |
 | Retención | Tutorial, misiones diarias, premio diario, logros, avisos en el móvil, **evento del fin de semana** (10 premios, tema semanal) y **retos del día y de la semana** | `meta.ts`, `event.ts`, `challenges.ts`, `notify.ts` |

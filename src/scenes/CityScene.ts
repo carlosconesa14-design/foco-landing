@@ -11,7 +11,8 @@ import { ALL_BUSINESSES, type CityDef } from "../game/data";
 import { cityDef } from "../game/state";
 import { bizTier, businessRate } from "../game/economy";
 import { fmt } from "../game/format";
-import { DragScroll, reducedMotion, rewardCoins, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
+import { DragScroll, reducedMotion, rewardCoins, bridgeOf, emoji, floatText, label, setupCamera, type Bridge } from "./common";
+import { activeSeason } from "../game/season";
 
 /* Rejilla isométrica */
 const TW = 88;
@@ -249,6 +250,7 @@ export class CityScene extends Phaser.Scene {
   private drawPublicSpaces(): void {
     const g = this.add.graphics().setDepth(-8);
     const tropical = this.city.id === "miami";
+    const halloween = activeSeason(clockNow())?.def.id === "halloween";
     for (const row of [1, 5, 9]) {
       const pts = [this.iso(5,row),this.iso(6,row),this.iso(6,row+2),this.iso(5,row+2)].map(p=>new Phaser.Math.Vector2(p.x,p.y));
       g.fillStyle(tropical ? 0xf4ddae : 0xe5d9c4).fillPoints(pts,true);
@@ -275,6 +277,13 @@ export class CityScene extends Phaser.Scene {
         g.lineStyle(1.5,0xe2fbff).lineBetween(p.x-5,p.y-17,p.x-10,p.y-2).lineBetween(p.x+5,p.y-17,p.x+10,p.y-2);
       }
       art(this,p.x-18,p.y+35,"bench").setDepth(p.y+35);
+      if (halloween) {
+        // Halloween: calabazas en las plazas (Codex puede cambiarlas por el sprite `pumpkin`).
+        for (const [dx,dy] of [[-30,10],[26,14],[6,40]]) {
+          if (this.textures.exists("pumpkin")) art(this,p.x+dx,p.y+dy,"pumpkin").setOrigin(0.5,0.9).setDepth(p.y+dy);
+          else emoji(this,p.x+dx,p.y+dy-8,"🎃",18).setDepth(p.y+dy);
+        }
+      }
       art(this,p.x+4,p.y+46,"bush").setScale(artScale(this,"bush")*0.65).setDepth(p.y+46);
     }
     // Waterfront stone coping instead of an unfinished earth slab.
@@ -385,7 +394,7 @@ export class CityScene extends Phaser.Scene {
   /** Cambia al comprar un negocio o al subir de categoría: entonces se redibuja la ciudad. */
   private stateKey(): string {
     const s = this.bridge.state();
-    return s.city + this.city.businesses.map((b) => (s.biz[b.id]?.owned ? bizTier(s.biz[b.id]) : 0)).join("") + (s.meta.luxury.equipped.car ?? "");
+    return s.city + this.city.businesses.map((b) => (s.biz[b.id]?.owned ? bizTier(s.biz[b.id]) : 0)).join("") + (s.meta.luxury.equipped.car ?? "") + (activeSeason(clockNow())?.key ?? "");
   }
 
   /* ---------- Tráfico, gente y nubes ---------- */

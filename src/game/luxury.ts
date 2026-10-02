@@ -1,3 +1,4 @@
+import { spendCandy } from "./season";
 import type { GameState } from "./state";
 
 /**
@@ -20,6 +21,9 @@ export interface LuxuryItem {
   price: number;
   /** Precio en diamantes (exclusivos). */
   gems?: number;
+  /** Objeto de temporada: solo se compra durante ese evento, con su moneda (🍬). */
+  season?: "halloween";
+  candy?: number;
   prestige: number;
 }
 
@@ -68,6 +72,13 @@ export const LUXURY: LuxuryItem[] = [
   { id: "tiger", cat: "pet", name: "Tigre blanco", icon: "🐯", price: 3e22, prestige: 8 },
   { id: "penguin", cat: "pet", name: "Pingüino (exclusivo)", icon: "🐧", price: 0, gems: 250, prestige: 4 },
 
+  // Halloween (del 24 de octubre al 1 de noviembre), con caramelos
+  { id: "vampire", cat: "outfit", name: "Disfraz de vampiro", icon: "🧛", price: 0, season: "halloween", candy: 150, prestige: 4 },
+  { id: "skullring", cat: "jewel", name: "Anillo de calavera", icon: "💀", price: 0, season: "halloween", candy: 80, prestige: 2 },
+  { id: "hearse", cat: "car", name: "Coche fúnebre", icon: "⚰️", price: 0, season: "halloween", candy: 250, prestige: 5 },
+  { id: "haunted", cat: "home", name: "Mansión encantada", icon: "🏚️", price: 0, season: "halloween", candy: 400, prestige: 6 },
+  { id: "pumpkin", cat: "pet", name: "Calabaza mascota", icon: "🎃", price: 0, season: "halloween", candy: 100, prestige: 3 },
+
   { id: "yacht", cat: "extreme", name: "Yate", icon: "🛥️", price: 1e21, prestige: 7 },
   { id: "jet", cat: "extreme", name: "Jet privado", icon: "🛩️", price: 1e28, prestige: 10 },
   { id: "rocket", cat: "extreme", name: "Cohete", icon: "🚀", price: 1e35, prestige: 15 },
@@ -98,7 +109,7 @@ export interface LuxuryState {
   dealDay: string;
 }
 
-const DEFAULTS = LUXURY.filter((i) => i.price === 0 && !i.gems);
+const DEFAULTS = LUXURY.filter((i) => i.price === 0 && !i.gems && !i.candy);
 
 export function freshLuxury(): LuxuryState {
   return {
@@ -157,9 +168,12 @@ export function prestige(s: GameState, now: number): number {
   return p;
 }
 
+/** Objetos que cuentan para completar una colección: los de dinero y diamantes (no los de temporada). */
+export const collectionItems = (cat: LuxuryCat) => LUXURY.filter((i) => i.cat === cat && (i.price > 0 || i.gems));
+
 /** Colecciones completas: todos sus objetos de pago (dinero o diamantes) comprados. */
 export function completedCollections(s: GameState): LuxuryCat[] {
-  return LUXURY_CATS.filter((c) => LUXURY.filter((i) => i.cat === c.id && (i.price > 0 || i.gems)).every((i) => owns(s, i.id))).map((c) => c.id);
+  return LUXURY_CATS.filter((c) => collectionItems(c.id).every((i) => owns(s, i.id))).map((c) => c.id);
 }
 
 /** Multiplicador de ingresos de «Mi vida» (prestigio y colecciones). */
@@ -185,14 +199,16 @@ export function priceOf(s: GameState, item: LuxuryItem, now: number): number {
   return deal?.id === item.id && dealUnlocked(s, now) ? item.price * (1 - LUX.dealOff) : item.price;
 }
 
-export type BuyResult = "ok" | "owned" | "cash" | "gems" | "unknown";
+export type BuyResult = "ok" | "owned" | "cash" | "gems" | "candy" | "unknown";
 
 /** Compra un objeto (y se lo pone). */
 export function buyLuxury(s: GameState, id: string, now: number): BuyResult {
   const item = itemById(id);
   if (!item) return "unknown";
   if (owns(s, id)) return "owned";
-  if (item.gems) {
+  if (item.candy) {
+    if (!spendCandy(s, item.candy, now)) return "candy";
+  } else if (item.gems) {
     if (s.meta.gems < item.gems) return "gems";
     s.meta.gems -= item.gems;
   } else {
@@ -223,7 +239,7 @@ export function trialsLeft(s: GameState, now: number): number {
 /** Prueba un objeto 1 hora (tras ver un anuncio). Solo objetos de dinero que no tienes. */
 export function startTrial(s: GameState, id: string, now: number): boolean {
   const item = itemById(id);
-  if (!item || item.gems || owns(s, id) || trialsLeft(s, now) <= 0) return false;
+  if (!item || item.gems || item.candy || owns(s, id) || trialsLeft(s, now) <= 0) return false;
   const l = s.meta.luxury;
   if (l.trialDay !== day(now)) {
     l.trialDay = day(now);

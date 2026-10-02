@@ -606,4 +606,25 @@ export const EN: Record<string, string> = {
   "Tu personaje ya lo luce. +{n} de prestigio: tus ingresos suben un {n} % para siempre.": "Your character is already showing it off. +{n} prestige: your income goes up {n}% forever.",
   "¡Nuevo: {name}! +{n} % de ingresos": "New: {name}! +{n}% income",
   "¡Pruébalo durante {min} min!": "Try it for {min} min!",
+
+  /* ---------- Halloween ---------- */
+  "Fantasma con caramelos": "Ghost with candy",
+  "¡Buuu! Un fantasma con caramelos": "Boo! A ghost with candy",
+  "Mira un anuncio corto y te da el triple.": "Watch a short ad and get triple.",
+  "Ver anuncio: x{n}": "Watch ad: x{n}",
+  "Cobrar {n}": "Collect {n}",
+  "Edición Halloween": "Halloween edition",
+  "Te faltan caramelos": "Not enough candy",
+  Halloween: "Halloween",
+  caramelos: "candy",
+  "Toca los fantasmas 👻 que aparecen mientras juegas (x{n} con un anuncio). Las ventas también dan caramelos. Gástalos antes de que acabe: después desaparecen.":
+    "Tap the ghosts 👻 that show up while you play (x{n} with an ad). Sales give candy too. Spend it before the event ends: then it's gone.",
+  "Solo en Halloween: para tu personaje": "Halloween only: for your character",
+  Premios: "Rewards",
+  "El evento ha terminado": "The event is over",
+  "Termina en {time}": "Ends in {time}",
+  "Ver en Mi vida": "See in My life",
+  "Edición limitada de Halloween: después ya no se podrá conseguir.": "Limited Halloween edition: you won't be able to get it afterwards.",
+  "Quedan {n}": "{n} left",
+  Canjear: "Redeem",
 };

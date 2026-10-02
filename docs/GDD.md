@@ -81,6 +81,14 @@ Un sitio en el que gastar el dinero aparte de las mejoras, para que apetezca gan
 - **Anuncios:** «**Probar 1 h**» (`lux_trial`, 5 al día): lo usas y lo ves puesto una hora, con su bonus, para que entren ganas de comprarlo. «**Oferta del día**» (`lux_deal`): uno de los 4 objetos más baratos que no tienes, a mitad de precio con un anuncio.
 - Lógica en `src/game/luxury.ts` (tests en `tests/luxury.test.ts`), pantalla en `src/ui/lifePanel.ts` y personaje en `src/ui/avatar.ts` (SVG por capas hasta que llegue el arte).
 
+### Eventos de temporada: Halloween ✅
+Del **24 de octubre al 1 de noviembre** (calendario local, con la hora del juego). Botón 🎃 en el lateral mientras dura y calabazas en las plazas de la ciudad.
+- **Fantasmas 👻:** aparecen cada 1–2 min mientras juegas y se van a los 20 s. Al tocarlos dan 5–10 **caramelos 🍬**, **x3 con un anuncio** (`season_x3`). Las ventas también dan 1 caramelo cada 50.
+- **Tienda de Halloween:** 5 objetos de «Mi vida» que **solo se consiguen esas fechas** (disfraz de vampiro 150 🍬, anillo de calavera 80, coche fúnebre 250, mansión encantada 400 y calabaza mascota 100; dan prestigio pero no cuentan para completar colecciones), más 30 💎 por 60 🍬 (5 veces) y un maletín de oro por 150 🍬 (3 veces).
+- **Caducan:** los caramelos desaparecen al acabar (los objetos comprados se quedan para siempre).
+- Con ~250 caramelos por hora de juego activo sin anuncios, todo pide unas 6–7 horas en 9 días; con anuncios, la mitad.
+- Es genérico (`SEASONS` en `src/game/season.ts`): para Navidad basta con añadir fechas, moneda, visitante y objetos.
+
 ### Rangos de los puestos: mejoras que se ven ✅
 Cada parte de la cadena (cada puesto, el transporte y la venta) sube de **rango** al llegar a los hitos que ya duplican su rendimiento: **🥉 bronce (nivel 10), 🥈 plata (25), 🥇 oro (50), 💎 diamante (100) y 👑 leyenda (200)**. Es para todos los negocios de todas las ciudades y no cambia ningún número: es la recompensa visual de llegar al hito.
 - **En el recinto:** pedestal con el borde del color del rango (desde plata, también el centro), brillo que late bajo el puesto (desde oro), destellos de vez en cuando (diamante y leyenda) y una medalla junto al nivel. El transporte y la venta llevan un aro del color en el suelo.
@@ -192,6 +200,7 @@ Anuncios bonificados, siempre opcionales:
 | `gold_lock` | Contrato de oro en Dubái: fija el precio máximo (ventas x3) durante 4 min | 3 ✅ |
 | `lux_trial` | «Mi vida»: probar un objeto 1 hora, con su bonus (5 al día) | 4 ✅ |
 | `lux_deal` | «Mi vida»: oferta del día a mitad de precio | 4 ✅ |
+| `season_x3` | Halloween: triple de caramelos del fantasma | 4 ✅ |
 | `supply_truck` | Camión de suministros: llega al negocio que estás viendo cada 5–9 min y trae lo que vende en 15 min a pleno rendimiento | 4 ✅ |
 | `vip_client` | Cliente VIP: cada 7–13 min, paga 10 💎 (4 al día como máximo) | 4 ✅ |
 | `wheel_spin` | Ruleta diaria: un giro gratis al día y 3 más con anuncio (dinero, diamantes o maletines) | 4 ✅ |

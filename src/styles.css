@@ -536,3 +536,20 @@ button:enabled:active { filter:brightness(1.12); }.buy:disabled,.claim:disabled,
 .lux-banner .lux-emoji { font-size: 32px; }
 .lux-banner b { display: block; font-size: 13px; }
 .lux-banner small { color: var(--muted); font-size: 12px; }
+
+/* Temporada: Halloween */
+.ghost { position: absolute; z-index: 7; font-size: 46px; line-height: 1; padding: 6px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 70%); filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
+@media (prefers-reduced-motion: no-preference) {
+  .ghost { animation: ghost-float 2.4s ease-in-out infinite, ghost-in 0.4s ease-out; }
+}
+@keyframes ghost-float { 50% { transform: translate(8px, -12px) rotate(6deg); } }
+@keyframes ghost-in { from { opacity: 0; transform: scale(0.4); } }
+.rail .season-btn { border-color: #ff8a2a; background: linear-gradient(160deg, rgba(255, 138, 42, 0.45), rgba(14, 26, 43, 0.92)); color: #ffd8b0; }
+.season-candy { display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 10px; border-radius: 14px; background: linear-gradient(90deg, rgba(255, 138, 42, 0.25), rgba(122, 63, 214, 0.25)); border: 1px solid rgba(255, 138, 42, 0.5); }
+.season-candy span { font-size: 30px; }
+.season-candy b { font-family: var(--display); font-size: 30px; color: #ffb35c; }
+.season-candy small { color: var(--muted); }
+.season-h { margin: 6px 0 0; font-family: var(--display); font-weight: 400; color: #ffb35c; }
+.lux-card.seasonal { background: linear-gradient(160deg, rgba(255, 138, 42, 0.22), var(--bg) 60%); border-color: rgba(255, 138, 42, 0.55); }
+.lux-card .lux-season { color: #ffb35c; font-size: 11px; font-weight: 700; }
+body.season-halloween header { box-shadow: 0 2px 0 #ff8a2a66 inset, 0 5px 16px #06172755; }

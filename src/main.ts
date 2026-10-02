@@ -34,7 +34,9 @@ import { openAchievements, openDaily, openExecs, openMissions, openSettings } fr
 import { activeSheet, closeSheet } from "./ui/sheet";
 import { openWorld } from "./ui/worldPanels";
 import { openLife } from "./ui/lifePanel";
-import { affordable } from "./game/luxury";
+import { openSeason } from "./ui/seasonPanel";
+import { LUXURY, affordable, owns } from "./game/luxury";
+import { SEASON, activeSeason, collectVisitor, ensureSeason, scheduleVisitor, seasonOpen, visitorCandy, visitorDue } from "./game/season";
 import { openEmpire } from "./ui/empirePanel";
 import { openShop } from "./ui/shopPanel";
 import { isVip, grantProduct } from "./game/shop";
@@ -324,6 +326,7 @@ root.addEventListener("click", (e) => {
   else if (which === "wheel") openWheel(ctx);
   else if (which === "settings") openSettings(ctx);
   else if (which === "life") openLife(ctx);
+  else if (which === "season") openSeason(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
@@ -332,6 +335,10 @@ function updateMeta(now: number): void {
   ensureRetos(S, now);
   updateAdLadder(now);
   updateEvent(now);
+  ensureSeason(S, now);
+  const season = activeSeason(now);
+  document.getElementById("seasonBtn")!.hidden = !season || meta.tutorialStep(S) !== null;
+  document.body.classList.toggle("season-halloween", season?.def.id === "halloween");
   const top = document.getElementById("hud")!.offsetHeight + 10;
   const rail = document.getElementById("rail")!;
   rail.style.top = `${top}px`;
@@ -345,6 +352,7 @@ function updateMeta(now: number): void {
     event: eventToClaim(S) > 0,
     wheel: started && wheelStatus(S, now).free,
     life: started && !!affordable(S, now),
+    season: seasonOpen(S, now) && LUXURY.some((i) => i.season && !owns(S, i.id) && S.meta.season.candy >= (i.candy ?? Infinity)),
   };
   for (const [name, available] of Object.entries(ready)) {
     root.querySelectorAll<HTMLElement>(`[data-open="${name}"] .dot`).forEach((dot) => (dot.hidden = !available));
@@ -647,6 +655,54 @@ function viralTick(now: number): void {
   if (viralEl && now > viralUntil) hideViral();
 }
 
+/* ---------- Temporada: fantasmas de Halloween que traen caramelos ---------- */
+
+let ghostEl: HTMLButtonElement | null = null;
+let ghostUntil = 0;
+
+function hideGhost(): void {
+  ghostEl?.remove();
+  ghostEl = null;
+  scheduleVisitor(S, clockNow());
+}
+
+function ghostTick(now: number): void {
+  if (ghostEl && now > ghostUntil) hideGhost();
+  if (ghostEl || viralEl || modalOpen() || activeSheet() || meta.tutorialStep(S) !== null || !visitorDue(S, now)) return;
+  const season = activeSeason(now)!;
+  const amount = visitorCandy();
+  const el = document.createElement("button");
+  el.className = "ghost";
+  el.textContent = season.def.visitor;
+  el.setAttribute("aria-label", t("Fantasma con caramelos"));
+  el.style.left = `${12 + Math.random() * 60}%`;
+  el.style.top = `${30 + Math.random() * 30}%`;
+  el.onclick = () => {
+    hideGhost();
+    fx("gems", true);
+    modal(root, {
+      title: t("¡Buuu! Un fantasma con caramelos"),
+      amount: `+${amount} ${season.def.currency}`,
+      text: t("Mira un anuncio corto y te da el triple."),
+      actions: [
+        {
+          ad: true,
+          label: t("Ver anuncio: x{n}", { n: SEASON.adMult }),
+          run: async () => {
+            const ok = await watchAd("season_x3");
+            const got = collectVisitor(S, amount, clockNow(), ok);
+            say(`+${got} ${season.def.currency}`);
+          },
+        },
+        { label: t("Cobrar {n}", { n: amount }), run: () => say(`+${collectVisitor(S, amount, clockNow(), false)} ${season.def.currency}`) },
+      ],
+    });
+  };
+  ghostEl = el;
+  ghostUntil = now + 20e3;
+  root.appendChild(el);
+}
+
 /* ---------- Visitas: camión de suministros y cliente VIP ---------- */
 
 let visitorEl: HTMLButtonElement | null = null;
@@ -827,6 +883,7 @@ game.events.on("step", (time: number) => {
   }
   viralTick(now);
   visitorTick(now);
+  ghostTick(now);
   if (time - lastUi > 120) {
     lastUi = time;
     updateHeader(S, now);

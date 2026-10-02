@@ -141,6 +141,7 @@ const LUXURY_EN: Record<string, string> = {
   parents: "Your parents' house", flat: "Rented flat", penthouse: "City penthouse", villa: "Villa with pool", mansion: "Mansion", island: "Private island",
   cat: "Cat", dog: "Dog", parrot: "Parrot", tiger: "White tiger", penguin: "Penguin (exclusive)",
   yacht: "Yacht", jet: "Private jet", rocket: "Rocket",
+  vampire: "Vampire costume", skullring: "Skull ring", hearse: "Hearse", haunted: "Haunted mansion", pumpkin: "Pet pumpkin",
 };
 const LUXURY_CATS_EN: Record<string, string> = { outfit: "Clothes", jewel: "Watches & jewellery", car: "Garage", home: "Homes", pet: "Pets", extreme: "Extreme luxury" };
 

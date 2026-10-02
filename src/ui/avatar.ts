@@ -26,6 +26,7 @@ const OUTFITS: Record<string, Outfit> = {
   suit: { top: "#1f3a93", topDark: "#16296b", pants: "#1b2631", shoes: "#2b1d14", head: "hair", neck: "tie", neckColor: "#f5c542", lapel: "#f4f6f7" },
   designer: { top: "#8e2b4d", topDark: "#6a1f39", pants: "#2d1b26", shoes: "#111111", head: "slick", neck: "tie", neckColor: "#111111", lapel: "#f8e1ea", glasses: true },
   goldtux: { top: "#15151c", topDark: "#000000", pants: "#15151c", shoes: "#111111", head: "slick", neck: "bowtie", neckColor: "#f5c542", lapel: "#f5c542" },
+  vampire: { top: "#1b1b24", topDark: "#0d0d12", pants: "#1b1b24", shoes: "#111111", head: "slick", neck: "bowtie", neckColor: "#b3122e", lapel: "#b3122e", glow: "#b3122e" },
   neonsuit: { top: "#d63384", topDark: "#9c1c5c", pants: "#2b1a4a", shoes: "#6fe3ff", head: "slick", neck: "tie", neckColor: "#6fe3ff", lapel: "#6fe3ff", glasses: true, glow: "#ff6fd8" },
 };
 
@@ -53,12 +54,17 @@ export function avatarSvg(shown: Partial<Record<LuxuryCat, string>>, available: 
     : jewel === "luxwatch" ? `<rect x="40" y="147" width="12" height="11" rx="3" fill="#f5c542"/><circle cx="46" cy="152.5" r="3.5" fill="#fff7d6"/>`
     : "";
   const chain = jewel === "goldchain" ? `<path d="M64 104q16 26 32 0" fill="none" stroke="#f5c542" stroke-width="4"/><circle cx="80" cy="124" r="5" fill="#f5c542"/>` : "";
+  const skull = jewel === "skullring" ? `<circle cx="114" cy="160" r="5" fill="#f4f6f7"/><circle cx="112" cy="159" r="1.4" fill="#222"/><circle cx="116" cy="159" r="1.4" fill="#222"/>` : "";
+  const vampire = outfitId === "vampire";
+  const cape = vampire ? `<path d="M40 100q-14 60 6 112h68q20-52 6-112z" fill="#b3122e" opacity=".85"/>` : "";
+  const fangs = vampire ? `<path d="M74 78l2 5 2-5zM82 78l2 5 2-5z" fill="#fff"/>` : "";
   const ring = jewel === "diamondring" ? `<circle cx="114" cy="160" r="4" fill="#f5c542"/><path d="M114 150l5 5-5 5-5-5z" fill="#bff3ff"/><path d="M114 146v-4M121 151l3-3M107 151l-3-3" stroke="#fff" stroke-width="2"/>` : "";
   const crown = jewel === "crown" ? `<path d="M56 26l8 14 8-16 8 16 8-16 8 16 8-14v18H56z" fill="#f5c542" stroke="#a77b0f" stroke-width="2"/><circle cx="80" cy="34" r="3" fill="#6fe3ff"/>` : "";
   const glasses = o.glasses ? `<rect x="62" y="58" width="15" height="9" rx="3" fill="#111"/><rect x="83" y="58" width="15" height="9" rx="3" fill="#111"/><path d="M77 61h6" stroke="#111" stroke-width="2"/>` : "";
   const glow = o.glow ? `<ellipse cx="80" cy="130" rx="58" ry="70" fill="${o.glow}" opacity=".25"/>` : "";
   return `<svg class="avatar-svg" viewBox="0 0 160 230" role="img" aria-hidden="true">
     ${glow}
+    ${cape}
     <ellipse cx="80" cy="222" rx="44" ry="7" fill="#000" opacity=".25"/>
     <rect x="58" y="168" width="18" height="48" rx="7" fill="${o.pants}"/><rect x="84" y="168" width="18" height="48" rx="7" fill="${o.pants}"/>
     <rect x="52" y="210" width="26" height="12" rx="6" fill="${o.shoes}"/><rect x="82" y="210" width="26" height="12" rx="6" fill="${o.shoes}"/>
@@ -72,7 +78,7 @@ export function avatarSvg(shown: Partial<Record<LuxuryCat, string>>, available: 
     <circle cx="70" cy="62" r="3.4" fill="#2d2d2d"/><circle cx="90" cy="62" r="3.4" fill="#2d2d2d"/>
     <path d="M71 75q9 7 18 0" stroke="#7a3b2e" stroke-width="3" fill="none" stroke-linecap="round"/>
     <circle cx="63" cy="70" r="4" fill="#ff9a8b" opacity=".5"/><circle cx="97" cy="70" r="4" fill="#ff9a8b" opacity=".5"/>
-    ${glasses}${watch}${ring}${crown}
+    ${glasses}${watch}${ring}${skull}${crown}${fangs}
   </svg>`;
 }
 

@@ -131,6 +131,8 @@ Hoy el personaje es un SVG sencillo (`src/ui/avatar.ts`) y los objetos son emoji
 | `luxcar_<id>` | 50×42 | El coche del personaje visto en isométrico para circular por la ciudad (como `car_0`). Hoy es su emoji con un halo dorado |
 | `ic_life` | 48×48 | Icono del botón «Mi vida» (hoy 🛍️) |
 
+**Halloween:** iconos `lux_vampire`, `lux_skullring`, `lux_hearse`, `lux_haunted`, `lux_pumpkin`, el personaje `avatar_vampire` (traje negro, capa roja, colmillos), `luxcar_hearse` y la calabaza `pumpkin` (40×40) para las plazas de la ciudad (hoy son emojis). Un fantasma `ghost` (64×64) para el botón flotante sería un buen extra.
+
 Ideas: que el fondo del escenario cambie con la casa (piso compartido, ático con vistas, villa con piscina, mansión, isla) y que los exclusivos tengan un brillo propio.
 
 ### Rangos de los puestos (bronce … leyenda)
