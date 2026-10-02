@@ -4,7 +4,7 @@ import * as lux from "../game/luxury";
 import type { LuxuryCat } from "../game/luxury";
 import { money, t } from "../i18n";
 import { avatarSvg, luxIcon } from "./avatar";
-import { gem, hasIcon } from "./icons";
+import { gem, hasIcon, icon } from "./icons";
 import type { PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
 import { seasonOpen } from "../game/season";
@@ -39,10 +39,10 @@ export function openLife(ctx: PanelCtx): void {
   let tab = lastTab;
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">🛍️</span><div><h3>${t("Mi vida")}</h3><p class="muted" data-sub></p></div></div>
+    `<div class="sheet-head"><span class="sicon">${icon("ic_life")}</span><div><h3>${t("Mi vida")}</h3><p class="muted" data-sub></p></div></div>
      <div data-stage></div>
      <div data-deal></div>
-     <div class="tabs life-tabs" data-tabs>${lux.LUXURY_CATS.map((c) => `<button class="tabbtn" data-tab="${c.id}" aria-label="${c.name}">${c.icon}</button>`).join("")}</div>
+     <div class="tabs life-tabs" data-tabs>${lux.LUXURY_CATS.map((c) => `<button class="tabbtn" data-tab="${c.id}" aria-label="${c.name}">${icon(c.id)}</button>`).join("")}</div>
      <div data-coll class="small muted"></div>
      <div class="lux-grid" data-items></div>
      <p class="small muted">${t("Lo que compras es para siempre: no se pierde al salir a bolsa ni al cambiar de ciudad. Cada punto de prestigio da +0,5 % de ingresos y cada colección completa, +5 %.")}</p>`,
@@ -91,7 +91,7 @@ export function openLife(ctx: PanelCtx): void {
           else
             btn = `<button class="buy" data-buy="${i.id}" ${s.cash < price ? "disabled" : ""}><span>${t("Comprar")}</span><b>${money(price)}</b></button>` +
               (trialsLeft > 0 && trial !== i.id ? `<button class="ad-btn mini" data-trial="${i.id}"><span class="play"></span>${t("Probar 1 h")}</button>` : "");
-          const tag = i.prestige ? `<small class="lux-pr">+${i.prestige} % ${t("ingresos")}</small>` : `<small class="lux-pr">${t("De serie")}</small>`;
+          const tag = i.prestige ? `<small class="lux-pr">+${i.prestige} ${t("Prestigio")}</small>` : `<small class="lux-pr">${t("De serie")}</small>`;
           const seasonTag = i.season ? `<small class="lux-season">🎃 ${t("Edición Halloween")}</small>` : "";
           return `<div class="lux-card ${owned ? "owned" : ""} ${on ? "on" : ""} ${i.gems ? "exclusive" : ""} ${i.season ? "seasonal" : ""}">
             <div class="lux-ic">${luxIcon(i.id, hasIcon)}</div><b>${i.name}</b>${seasonTag}${tag}<div class="lux-btns">${btn}</div></div>`;
@@ -117,13 +117,13 @@ export function openLife(ctx: PanelCtx): void {
           void ctx.celebrate({
             icon: item.icon,
             title: t("¡Te has comprado {name}!", { name: item.name }),
-            subtitle: t("Tu personaje ya lo luce. +{n} de prestigio: tus ingresos suben un {n} % para siempre.", { n: item.prestige }),
+            subtitle: t("Tu personaje ya lo luce. +{n} de prestigio: +{bonus} % de ingresos para siempre.", { n: item.prestige, bonus: item.prestige * lux.LUX.perPrestige * 100 }),
             color: "#f5c542",
           }).then(() => openLife(ctx)); // vuelve a «Mi vida» para verlo puesto
           return;
         } else {
           ctx.fx("unlock", true);
-          ctx.banner(item.icon, t("¡Nuevo: {name}! +{n} % de ingresos", { name: item.name, n: item.prestige }));
+          ctx.banner(item.icon, t("¡Nuevo: {name}! +{n} % de ingresos", { name: item.name, n: item.prestige * lux.LUX.perPrestige * 100 }));
         }
         sheet.update?.();
       };

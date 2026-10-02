@@ -32,7 +32,11 @@ const OUTFITS: Record<string, Outfit> = {
 
 export function avatarSvg(shown: Partial<Record<LuxuryCat, string>>, available: (key: string) => boolean): string {
   const outfitId = shown.outfit ?? "tracksuit";
-  if (available(`avatar_${outfitId}`)) return `<div class="avatar-img">${icon(`avatar_${outfitId}`)}</div>`;
+  if (available(`avatar_${outfitId}`)) {
+    const jewel = shown.jewel;
+    const overlay = jewel ? `<span class="avatar-jewel jewel-${jewel}">${icon(`lux_${jewel}`)}</span>` : "";
+    return `<div class="avatar-img">${icon(`avatar_${outfitId}`)}${overlay}</div>`;
+  }
   const o = OUTFITS[outfitId] ?? OUTFITS.tracksuit;
   const jewel = shown.jewel ?? "";
   const skin = "#f1c27d";

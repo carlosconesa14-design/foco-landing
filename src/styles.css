@@ -538,9 +538,9 @@ button:enabled:active { filter:brightness(1.12); }.buy:disabled,.claim:disabled,
 .lux-banner small { color: var(--muted); font-size: 12px; }
 
 /* Temporada: Halloween */
-.ghost { position: absolute; z-index: 7; font-size: 46px; line-height: 1; padding: 6px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 70%); filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
+.season-ghost { position: absolute; z-index: 7; font-size: 46px; line-height: 1; padding: 6px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 70%); filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
 @media (prefers-reduced-motion: no-preference) {
-  .ghost { animation: ghost-float 2.4s ease-in-out infinite, ghost-in 0.4s ease-out; }
+  .season-ghost { animation: ghost-float 2.4s ease-in-out infinite, ghost-in 0.4s ease-out; }
 }
 @keyframes ghost-float { 50% { transform: translate(8px, -12px) rotate(6deg); } }
 @keyframes ghost-in { from { opacity: 0; transform: scale(0.4); } }
@@ -633,3 +633,73 @@ body.season-halloween header { box-shadow: 0 2px 0 #ff8a2a66 inset, 0 5px 16px #
 @keyframes unlockGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 216, 107, 0.0); } 50% { box-shadow: 0 0 0 4px rgba(255, 216, 107, 0.85), 0 0 18px rgba(255, 216, 107, 0.7); } }
 .next-unlock { border: 1px dashed #6e94ad; border-radius: 12px; padding: 8px 10px; }
 @media (prefers-reduced-motion: reduce) { .fresh-unlock { animation: none; outline: 3px solid #ffd86b; } }
+
+/* Visual completion: one icon language and scene-anchored opportunities. */
+.inline-icon { display: inline-flex; width: 1.1em; height: 1.1em; vertical-align: -0.15em; align-items: center; justify-content: center; }
+.inline-icon .game-icon, .inline-icon .ico { width: 100%; height: 100%; object-fit: contain; }
+.tw-ic .game-icon, .rv-face .game-icon, .shop-ic .game-icon { width: 30px; height: 30px; }
+.life-tabs .game-icon { width: 24px; height: 24px; }
+.season-ghost .game-icon, .season-ghost .ico { width: 64px; height: 64px; }
+.viral .game-icon, .viral .ico { width: 42px; height: 42px; }
+.world-visitor { position: absolute; z-index: 7; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 7px 12px; border: 2px solid #ffe5a1; border-radius: 14px; background: linear-gradient(160deg, #ffd970, #efb742); color: #2e2200; box-shadow: 0 3px 0 #aa7825, 0 6px 12px #14202f44; transform: translate(-50%, -100%); font: 700 12px var(--body); }
+.world-visitor::after { content: ""; position: absolute; left: calc(50% - 5px); bottom: -7px; width: 10px; height: 10px; background: #efb742; transform: rotate(45deg); border-right: 2px solid #ffe5a1; border-bottom: 2px solid #ffe5a1; }
+.world-visitor .visitor-dot { width: 7px; height: 7px; border-radius: 50%; background: #189768; box-shadow: 0 0 0 3px #18976822; }
+.world-visitor .visitor-arrow { font-size: 21px; line-height: 1; }
+.world-visitor.offscreen::after { display: none; }
+.world-visitor:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #9eefff; outline-offset: 3px; }
+.world-visitor:active { filter: brightness(1.1); }
+.avatar-img { position: relative; width: 120px; height: 172px; }
+.avatar-jewel { position: absolute; pointer-events: none; }
+.avatar-jewel .game-icon, .avatar-jewel .ico { width: 100%; height: 100%; }
+.avatar-jewel.jewel-digital, .avatar-jewel.jewel-luxwatch { left: 18px; top: 107px; width: 14px; height: 14px; transform: rotate(-12deg); }
+.avatar-jewel.jewel-goldchain { left: 45px; top: 69px; width: 29px; height: 25px; }
+.avatar-jewel.jewel-diamondring, .avatar-jewel.jewel-skullring { right: 21px; top: 117px; width: 12px; height: 12px; }
+.avatar-jewel.jewel-crown { left: 41px; top: 0; width: 39px; height: 27px; }
+.life-stage { isolation: isolate; height: 258px; background: linear-gradient(#91d6ed 0%, #e4f4ec 59%, #c6dccb 60%, #a4c7a8 100%); }
+.life-stage::before { content: ""; position: absolute; inset: 62% 0 0; background: repeating-linear-gradient(28deg, transparent 0 32px, #fff3 33px 34px); transform: scale(1.3); z-index: -1; }
+.life-stage::after { content: ""; position: absolute; left: 14%; right: 14%; bottom: 8px; height: 17px; border-radius: 50%; background: #183b482a; z-index: -1; }
+.life-stage.home-haunted { background: linear-gradient(#263859 0%, #667099 59%, #56736a 60%, #2f524d 100%); }
+.life-stage .st-home { top: 4px; left: 48%; }
+.life-stage .st-home .game-icon, .life-stage .st-home .ico { width: 180px; height: 160px; }
+.life-stage .st-avatar { bottom: 8px; }
+.life-stage .st-car { bottom: 4px; left: 5px; }
+.life-stage .st-sky { top: 8px; right: 8px; }
+.lux-card { min-width: 0; padding: 12px 10px; border-radius: 16px; background: linear-gradient(155deg, #25415b, #172c43); box-shadow: inset 0 1px 0 #bce8ff15, 0 4px 0 #0a172533; }
+.lux-card > b { min-height: 2.5em; line-height: 1.25; text-wrap: balance; overflow-wrap: anywhere; }
+.lux-card .lux-ic { height: 80px; width: 100%; overflow: hidden; }
+.lux-card .lux-ic .game-icon, .lux-card .lux-ic .ico { width: 76px; height: 76px; }
+.lux-card .lux-pr { color: #cde8e9; }
+.lux-card.on { border-color: #8be0bd; box-shadow: inset 0 0 0 1px #8be0bd44, 0 4px 0 #0a172533; }
+.lux-card.exclusive { background: linear-gradient(150deg, #4b365f, #182b43); border-color: #b8a0d7; }
+.lux-btns button, .life-tabs .tabbtn { min-height: 44px; }
+.lux-banner { min-width: 0; flex-wrap: wrap; }
+.lux-banner > span { min-width: 120px; flex: 1; }
+.lux-banner small { white-space: normal; line-height: 1.35; }
+.locked::after { content: "" !important; width: 14px; height: 17px; background: url("/sprites/ui-lock.svg") center / contain no-repeat; }
+.wave.gold { border-color: #d6aa5b; background: linear-gradient(110deg, #675325, #152a40 75%); box-shadow: inset 0 1px 0 #ffe7a244, 0 3px 0 #132438; }
+.wave.gold.on { background: linear-gradient(110deg, #96702a, #283e4b 78%); }
+.tw-txt b, .tw-txt small { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.25; }
+.tw-btns { flex-wrap: wrap; justify-content: flex-end; }
+.tw-btns button { min-height: 40px; }
+.modal { max-height: calc(100dvh - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; }
+.sheet { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+.menu-grid button, .rail button { min-height: 44px; }
+@media (max-width: 359px) {
+  .tw-card { grid-template-columns: 26px minmax(0, 1fr); gap: 6px; }
+  .tw-btns { grid-column: 2; }
+  .tw-ic .game-icon { width: 26px; height: 26px; }
+  .life-stage .st-home .game-icon { width: 150px; height: 145px; }
+  .life-stage .st-car .game-icon { width: 77px; height: 77px; }
+  .life-stage .st-pet { right: 5px; }
+  .life-stage .st-pet .game-icon { width: 46px; height: 46px; }
+  .lux-banner { gap: 6px; }
+  .lux-banner > button { margin-left: auto; }
+  .twist { left: 8px; right: 8px; }
+}
+.loading-app-icon { width: 112px; height: 112px; border-radius: 24px; box-shadow: 0 6px 0 #071a2b, 0 16px 30px #030f2555; }
+.loading-logo { width: min(328px, 88vw); height: auto; margin: 16px 0 0; }
+@media (max-width:359px) {
+  .lux-banner { grid-template-columns: 32px minmax(0, 1fr); }
+  .lux-banner > button { grid-column: 2; justify-self: end; }
+  .lux-banner > span { min-width: 0; }
+}

@@ -1,3 +1,4 @@
+import { decorateIcons } from "./icons";
 import { fmt } from "../game/format";
 
 /** Toasts, textos flotantes y ventanas modales. */
@@ -82,5 +83,6 @@ export function modal(root: HTMLElement, opts: { title: string; amount?: string;
   box.appendChild(actions);
   scrim.appendChild(box);
   root.appendChild(scrim);
+  decorateIcons(box);
   actions.querySelector("button")?.focus();
 }

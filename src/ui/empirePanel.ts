@@ -4,7 +4,7 @@ import { bizList, bizTier, businessRate, chainRates, passiveRate } from "../game
 import { fmt } from "../game/format";
 import { cityDef } from "../game/state";
 import { cityProgress } from "../game/world";
-import { bizIcon, flagIcon } from "./icons";
+import { bizIcon, icon, flagIcon } from "./icons";
 import { openPlotSheet, type PanelCtx } from "./panels";
 import { openSheet } from "./sheet";
 import { money, t } from "../i18n";
@@ -26,7 +26,7 @@ export function rivalCardHtml(s: GameState, now: number): string {
     : mine >= his
       ? `<span class="good">${t("Vas ganando. Llega a {m} y será tuyo.", { m: money(r.target) })}</span>`
       : `<span class="warn">${t("Te gana por {m}", { m: money(his - mine) })}</span>`;
-  return `<div class="rv-head"><span class="rv-face">${who.face}</span><div><b>${t("Rival de la semana: {name}", { name: who.name })}</b><small>${who.biz} · ${t("termina en {time}", { time: fmtWait(r.end - now) })}</small></div>
+  return `<div class="rv-head"><span class="rv-face">${icon(`exec_${r.who % 8}`)}</span><div><b>${t("Rival de la semana: {name}", { name: who.name })}</b><small>${who.biz} · ${t("termina en {time}", { time: fmtWait(r.end - now) })}</small></div>
       <span class="rv-prize">👜 + ${rivalReward(s).gems} ${gem()}</span></div>
     <div class="rv-row"><span>${t("Tú")}</span><i class="rv-bar me"><i style="width:${((mine / top) * 100).toFixed(1)}%"></i></i><b>${money(mine)}</b></div>
     <div class="rv-row"><span>${who.name}</span><i class="rv-bar him"><i style="width:${((his / top) * 100).toFixed(1)}%"></i></i><b>${money(his)}</b></div>
