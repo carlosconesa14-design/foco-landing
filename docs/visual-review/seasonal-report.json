@@ -1,0 +1,28 @@
+{
+  "baseline": false,
+  "checks": [
+    "es-ES/390/HUD",
+    "es-ES/390/menu",
+    "es-ES/390/life",
+    "es-ES/dropship/business",
+    "es-ES/restaurant/business",
+    "es-ES/tiktok/business",
+    "es-ES/ai/business",
+    "es-ES/foodtruck/business",
+    "es-ES/beachclub/business",
+    "es-ES/yachts/business",
+    "es-ES/realestate/business",
+    "es-ES/crypto/business",
+    "es-ES/supercars/business",
+    "es-ES/hotel/business",
+    "es-ES/safari/business",
+    "es-ES/souk/business",
+    "es-ES/tower/business",
+    "es-ES: 305 rank textures validated",
+    "es-ES: ghost collected through UI",
+    "es-ES/reduced-motion"
+  ],
+  "errors": [],
+  "remote": "Supabase stubbed; no remote integration or writes",
+  "date": "2026-10-02T14:16:16.892Z"
+}
