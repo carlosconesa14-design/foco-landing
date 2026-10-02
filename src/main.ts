@@ -81,8 +81,11 @@ const say = (msg: string | null) => {
 
 /* ---------- Guardado ---------- */
 
+/** Al volver, hasta cobrar lo ganado fuera, el guardado no mueve la última vez visto (no se pierde). */
+let offlinePending = false;
+
 function save(): void {
-  S.lastSeen = clockNow();
+  if (!offlinePending) S.lastSeen = clockNow();
   S.clock = clockSnapshot();
   void writeSave(S);
 }
@@ -740,7 +743,7 @@ async function syncFounder(): Promise<void> {
     }
   } catch (e) {
     const code = e instanceof Error ? e.message : "";
-    if (code === "review" || code === "too_fast") applyFounderError(S, code, clockNow());
+    applyFounderError(S, code, clockNow());
   } finally {
     founderBusy = false;
   }
@@ -874,7 +877,8 @@ function visitorTick(now: number): void {
   visitorKind = kind;
   visitorUntil = now + OFFERS.visibleSec * 1000;
   root.appendChild(el);
-  (game.scene.getScene("business") as BusinessScene).presentVisitor(kind, el);
+  // Si la escena aún no ha arrancado, la presenta el siguiente tick (arriba).
+  if (game.scene.isActive("business")) (game.scene.getScene("business") as BusinessScene).presentVisitor(kind, el);
   fx("click");
   analytics.track("offer_shown", { kind });
 }
@@ -926,6 +930,7 @@ function offerVip(): void {
 /* ---------- Ganancias offline ---------- */
 
 function offerOffline(): void {
+  offlinePending = false;
   const { seconds, amount } = offlineEarnings(S, clockNow());
   S.lastSeen = clockNow();
   if (seconds < 60 || amount < 1) return;
@@ -975,6 +980,7 @@ async function returning(): Promise<void> {
   sessionStart = clockNow();
   analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial, lang, cfg: remoteVersion });
   void notifications.cancelAll();
+  offlinePending = true;
   // Lo ganado fuera se calcula con la hora del servidor: adelantar la del móvil no da más.
   await waitTime();
   offerOffline();

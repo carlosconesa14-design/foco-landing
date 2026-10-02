@@ -22,6 +22,8 @@ const creds = (s: GameState) => ({ id: s.meta.account.id!, secret: s.meta.accoun
 
 /** Código que venía en el enlace de invitación (se usa solo en cuanto hay cuenta). */
 const pendingRef = refFromUrl();
+/** El servidor ya respondió al código del enlace (válido o no): no se vuelve a intentar. */
+let refLinkDone = false;
 
 let registering: Promise<boolean> | null = null;
 
@@ -55,6 +57,10 @@ export async function useRefCode(ctx: PanelCtx, code: string): Promise<string | 
   try {
     await accountApi.refUse(creds(s), code.trim().toUpperCase());
   } catch (e) {
+    if (e instanceof AccountError && e.message in refErrors()) {
+      refLinkDone = true;
+      if (e.message === "used") s.meta.account.refUsed = true;
+    }
     return (e instanceof AccountError && refErrors()[e.message]) || t("No hay conexión. Inténtalo en un momento.");
   }
   s.meta.account.refUsed = true;
@@ -75,10 +81,9 @@ export async function syncAccount(ctx: PanelCtx, force = false): Promise<void> {
   const s = ctx.state();
   if (tutorialStep(s) !== null) return;
   if (!(await ensureAccount(s))) return;
-  if (pendingRef && !s.meta.account.refUsed && daysSinceInstall() < REF.newDays) {
-    const err = await useRefCode(ctx, pendingRef);
-    if (err) s.meta.account.refUsed = true; // código del enlace no válido: no se insiste
-  }
+  // Código del enlace: si falla la conexión se reintenta; si el servidor lo rechaza, no se insiste
+  // (y el jugador aún puede escribir otro a mano).
+  if (pendingRef && !refLinkDone && !s.meta.account.refUsed && daysSinceInstall() < REF.newDays) await useRefCode(ctx, pendingRef);
   if (refQualifyPending(s)) {
     try {
       if ((await accountApi.refQualify(creds(s))).ok) s.meta.account.refQualified = true;

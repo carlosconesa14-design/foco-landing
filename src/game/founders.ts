@@ -78,4 +78,6 @@ export function applyFounderRank(s: GameState, rank: number): Exec | null {
 export function applyFounderError(s: GameState, code: string, now: number, after?: number): void {
   if (code === "review") s.meta.founder.blocked = true;
   else if (code === "too_fast") s.meta.founder.retryAt = after && after > now ? after : now + 3600e3;
+  // Cualquier otro fallo (sin conexión, cuenta no válida…): se reintenta más tarde, no cada pocos segundos.
+  else s.meta.founder.retryAt = now + 10 * 60e3;
 }

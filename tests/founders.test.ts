@@ -53,6 +53,13 @@ describe("carrera de fundadores", () => {
     expect(f.founderPending(s, NOW + 2 * 86400e3)).toBe(false);
   });
 
+  it("cualquier otro fallo espera 10 minutos (no se repite cada pocos segundos)", () => {
+    const s = inDubai();
+    f.applyFounderError(s, "player", NOW);
+    expect(f.founderPending(s, NOW + 60e3)).toBe(false);
+    expect(f.founderPending(s, NOW + 10 * 60e3)).toBe(true);
+  });
+
   it("se guarda con la partida", () => {
     const s = inDubai();
     f.applyFounderRank(s, 3);

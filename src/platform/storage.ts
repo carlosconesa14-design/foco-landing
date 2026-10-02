@@ -64,7 +64,8 @@ export interface LoadedSave {
 
 /**
  * Decide qué partida cargar a partir de la principal y la copia. Puro, para los tests.
- * Una partida sin firma cuando ya existe una copia firmada también cuenta como editada.
+ * Una partida sin firma cuenta como editada si ya existe una copia firmada o si es de una versión
+ * que ya firmaba (lleva `clock`): así no basta con borrar la copia y escribir JSON a mano.
  */
 export async function pickSave(main: string | null, backup: string | null, canSign: boolean): Promise<LoadedSave> {
   const safe = async (v: string | null) => {
@@ -78,7 +79,9 @@ export async function pickSave(main: string | null, backup: string | null, canSi
   const m = await safe(main);
   const b = await safe(backup);
   const bValid = !!b && !b.tampered && b.data != null;
-  const mEdited = !!m && (m.tampered || m.data == null || (canSign && !m.signed && !!b?.signed));
+  // Sin firma solo puede venir de la beta de antes de firmar, que no guardaba `clock`.
+  const newFormat = (d: unknown) => !!d && typeof d === "object" && "clock" in d;
+  const mEdited = !!m && (m.tampered || m.data == null || (canSign && !m.signed && (!!b?.signed || newFormat(m.data))));
   if (m && !mEdited) return { data: m.data, tampered: false, restored: false };
   if (!m) return { data: bValid ? b!.data : null, tampered: false, restored: false };
   // La principal se ha editado: la copia válida manda; si no hay, partida nueva.

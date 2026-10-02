@@ -112,6 +112,12 @@ describe("firma del guardado", () => {
     expect(out).toMatchObject({ data: null, tampered: true, restored: false });
   });
 
+  it("borrar la copia y escribir JSON sin firma tampoco sirve (el formato nuevo siempre se firma)", async () => {
+    const unsigned = JSON.stringify({ ...freshState(T0), clock: {}, cash: 1e30 });
+    const out = await pickSave(unsigned, null, true);
+    expect(out).toMatchObject({ data: null, tampered: true, restored: false });
+  });
+
   it("quitar la firma tampoco sirve si ya había partidas firmadas", async () => {
     const raw = await encodeSave(freshState(T0));
     const unsigned = JSON.stringify({ ...freshState(T0), cash: 1e30 });

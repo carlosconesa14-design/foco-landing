@@ -1,7 +1,7 @@
 import { now as clockNow } from "../game/clock";
 import { Capacitor } from "@capacitor/core";
 import { fmt, fmtTime } from "../game/format";
-import { LEAGUE_POINTS, PLAY, STREAK_POINTS, leagueEvent, leagueJoined } from "../game/league";
+import { LEAGUE_POINTS, PLAY, STREAK_POINTS, leagueEvent, leagueJoined, reportFlags } from "../game/league";
 import { dayKey } from "../game/meta";
 import type { GameState } from "../game/state";
 import { leagueApi, type LeagueStatus, type Payout } from "../platform/league";
@@ -137,6 +137,7 @@ export function openLeague(ctx: PanelCtx): void {
         L.id = r.id;
         L.secret = r.secret;
         L.nickname = r.nickname;
+        reportFlags(ctx.state()); // las señales de antes de unirse también se informan
         analytics.track("league_join", { minutes: minutesSinceInstall() });
         ctx.fx("unlock", true);
         ctx.banner("🏅", t("¡Ya estás en la Liga!"));

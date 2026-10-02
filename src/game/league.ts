@@ -102,6 +102,11 @@ export function migrateLeague(raw: unknown): LeagueState {
 /** Señales de trampa que se pueden informar (no dan ni quitan puntos: el servidor las apunta para revisar). */
 export type SecurityFlag = "clock" | "clock_future" | "save";
 
+/** Al unirse a la Liga: informa las señales que se apuntaron antes (si no, una partida editada pasaría limpia). */
+export function reportFlags(s: GameState): void {
+  for (const f of s.meta.flags) leagueEvent(s, "flag", f);
+}
+
 /** Apunta una señal de trampa en la partida y, si está en la Liga, la informa una vez. */
 export function addFlag(s: GameState, flag: SecurityFlag): void {
   if (!s.meta.flags.includes(flag)) s.meta.flags.push(flag);
