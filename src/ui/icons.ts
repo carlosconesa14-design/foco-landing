@@ -66,7 +66,8 @@ export async function loadIcons(): Promise<void> {
   });
 }
 
-export const hasIcon = (key: string) => available.has(key);
+/** ¿Hay imagen propia (PNG o atlas generado) para esta clave? */
+export const hasIcon = (key: string) => available.has(key) || !!generatedIcon(key);
 
 
 export const gem = () => icon("ic_gem", "💎");

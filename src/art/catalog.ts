@@ -2,6 +2,7 @@ import { artRef, hasGeneratedArt } from "./generated";
 import Phaser from "phaser";
 import { EMOJI_FONT } from "../scenes/common";
 import { ALL_BUSINESSES, CITIES } from "../game/data";
+import { LUXURY } from "../game/luxury";
 import { Pen, faceQuad, isoBox, leftFace, rightFace, shade } from "./pen";
 
 /**
@@ -491,6 +492,9 @@ function drawLampPost(p: Pen): void {
  * no hay ninguna, la normal. Aquí solo se registran las claves y tamaños para que el PNG se cargue.
  */
 export const RANK_LEVELS = [1, 2, 3, 4, 5];
+
+/** El coche del personaje («Mi vida») circulando por la ciudad: `luxcar_<id>` (PNG o emoji). */
+for (const i of LUXURY) if (i.cat === "car") def(`luxcar_${i.id}`, 50, 42);
 for (const n of RANK_LEVELS) {
   def(`rank_${n}`, 24, 24);
   for (const k of [...STATIONS, "wh_shelf", "veh_forklift", "veh_van", "rest_chef_a", "rest_chef_b", "rest_waiter_a", "rest_waiter_b"]) {
@@ -818,6 +822,10 @@ function make(scene: Phaser.Scene, key: string, k: number, draw: (p: Pen, emoji:
 
 /** Crea todas las texturas que no se hayan cargado como PNG. */
 export function buildArt(scene: Phaser.Scene, k: number): void {
+  for (const i of LUXURY) if (i.cat === "car") make(scene, `luxcar_${i.id}`, k, (p, emoji) => {
+    p.fill(0xf5c542, 0.35).ellipse(25, 36, 44, 10);
+    emoji(25, 22, i.icon, 32);
+  });
   for (const [role, look] of [["chef", LOOKS.cook], ["waiter", LOOKS.waiter], ["guest", LOOKS.ped0]] as const) {
     for (const [pose, frame] of [["a", 1], ["b", 2]] as const) make(scene, `rest_${role}_${pose}`, k, p => drawChar(p, look, frame));
   }

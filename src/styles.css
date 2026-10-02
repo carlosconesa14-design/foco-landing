@@ -493,3 +493,46 @@ button:enabled:active { filter:brightness(1.12); }.buy:disabled,.claim:disabled,
 
 /* Precio del oro (Dubái): misma barra que la ola de Miami, en dorado */
 .wave.gold.on { border-color: #f5c542; background: linear-gradient(90deg, rgba(245, 197, 66, 0.35), rgba(14, 26, 43, 0.9)); }
+
+/* «Mi vida»: escenario del personaje y tienda de lujo */
+.life-stage { position: relative; height: 230px; border-radius: 16px; overflow: hidden; margin: 4px 0 8px; border: 1px solid var(--line);
+  background: linear-gradient(180deg, #7cc8f2 0%, #bfe6ff 58%, #8fd17a 58%, #6fbf5c 100%); }
+.life-stage.home-parents { background: linear-gradient(180deg, #8fb2c9 0%, #c9dbe6 58%, #9ab38a 58%, #7f9c72 100%); }
+.life-stage.home-penthouse { background: linear-gradient(180deg, #ff9a6b 0%, #ffd29a 58%, #7f8c99 58%, #5d6d7e 100%); }
+.life-stage.home-villa { background: linear-gradient(180deg, #5ec8f5 0%, #b9ecff 58%, #39c4d6 58%, #e9d8a6 78%); }
+.life-stage.home-mansion { background: linear-gradient(180deg, #2c3e8f 0%, #8e7cc3 58%, #5aa85b 58%, #3f8a46 100%); }
+.life-stage.home-island { background: linear-gradient(180deg, #ffb36b 0%, #ffe1a8 55%, #2ec4d6 55%, #f3d99b 82%); }
+.life-stage .lux-emoji { line-height: 1; }
+.life-stage .st-home { position: absolute; left: 50%; top: 22px; transform: translateX(-50%); font-size: 96px; opacity: 0.95; filter: drop-shadow(0 6px 6px #0004); }
+.life-stage .st-home .ico, .life-stage .st-home svg { width: 150px; height: 150px; }
+.life-stage .st-sky { position: absolute; right: 16px; top: 12px; font-size: 40px; }
+.life-stage .st-car { position: absolute; left: 10px; bottom: 10px; font-size: 64px; filter: drop-shadow(0 4px 3px #0005); }
+.life-stage .st-pet { position: absolute; right: 22px; bottom: 12px; font-size: 44px; filter: drop-shadow(0 3px 2px #0005); }
+.life-stage .st-car .ico, .life-stage .st-car svg { width: 96px; height: 96px; }
+.life-stage .st-pet .ico, .life-stage .st-pet svg, .life-stage .st-sky .ico, .life-stage .st-sky svg { width: 60px; height: 60px; }
+.life-stage .st-avatar { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); width: 120px; }
+.avatar-svg { display: block; width: 100%; height: auto; }
+.avatar-img .ico, .avatar-img svg { width: 120px; height: 172px; }
+@media (prefers-reduced-motion: no-preference) {
+  .life-stage .st-avatar { animation: life-idle 3s ease-in-out infinite; }
+  .life-stage .st-pet { animation: life-idle-pet 1.6s ease-in-out infinite; }
+}
+@keyframes life-idle { 50% { transform: translate(-50%, -3px); } }
+@keyframes life-idle-pet { 50% { transform: translateY(-4px); } }
+.life-tabs .tabbtn { font-size: 20px; padding: 6px 0; }
+.lux-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lux-card { display: grid; justify-items: center; text-align: center; gap: 3px; padding: 10px 8px; border-radius: 14px; background: var(--bg); border: 1.5px solid var(--line); }
+.lux-card .lux-ic { font-size: 38px; height: 46px; display: grid; place-items: center; }
+.lux-card .lux-ic .ico, .lux-card .lux-ic svg { width: 46px; height: 46px; }
+.lux-card b { font-size: 13px; line-height: 1.15; }
+.lux-card .lux-pr { color: var(--green); font-weight: 700; font-size: 11px; }
+.lux-card .lux-btns { display: grid; gap: 5px; width: 100%; margin-top: 3px; }
+.lux-card .lux-btns .buy, .lux-card .lux-btns .mini, .lux-card .lux-btns .ad-btn { width: 100%; justify-content: center; }
+.lux-card.owned { border-color: rgba(61, 220, 151, 0.45); }
+.lux-card.on { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245, 197, 66, 0.25); }
+.lux-card.exclusive { background: linear-gradient(160deg, rgba(181, 123, 255, 0.22), var(--bg) 60%); border-color: rgba(181, 123, 255, 0.55); }
+.lux-banner { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 14px; margin-bottom: 8px; background: linear-gradient(90deg, rgba(245, 197, 66, 0.22), var(--bg)); border: 1px solid rgba(245, 197, 66, 0.5); }
+.lux-banner.trial { grid-template-columns: 44px minmax(0, 1fr); background: linear-gradient(90deg, rgba(111, 227, 255, 0.2), var(--bg)); border-color: rgba(111, 227, 255, 0.5); }
+.lux-banner .lux-emoji { font-size: 32px; }
+.lux-banner b { display: block; font-size: 13px; }
+.lux-banner small { color: var(--muted); font-size: 12px; }

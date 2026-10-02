@@ -73,6 +73,14 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
 - **Carrera de fundadores:** los **100 primeros** jugadores en llegar a Dubái reciben un **ejecutivo fundador** exclusivo: legendario, con +100 % extra sobre su bonus y su número («Fundador #12»). Solo premios del juego, nunca dinero real. Los demás ven en qué puesto llegaron. El mapa del mundo enseña las plazas que quedan. El puesto lo da el servidor (`founder_claim`, migración 0013) una sola vez por jugador. Hace falta estar en la Liga, que es la cuenta con la que el servidor reconoce al jugador: al llegar a Dubái sin estar en la Liga, se le propone unirse una vez. Contra trampas: no hay puesto para partidas editadas sin revisar ni para quien llega en menos de 3 días desde que empezó a jugar (`league_config.founders_min_days`).
 - **Siguientes ciudades:** Tokio (tecnología, turnos de noche), Nueva York… Solo hay que añadir un `CityDef` en `src/game/data.ts` y su arte.
 
+### «Mi vida»: el personaje y su tienda de lujo ✅
+Un sitio en el que gastar el dinero aparte de las mejoras, para que apetezca ganar más. Botón «Mi vida» en el lateral (con punto rojo cuando hay algo que te puedes permitir) y en el menú.
+- **El personaje:** empieza en chándal de rider, en moto de reparto y en casa de sus padres. Lo que compras se le ve encima (ropa, joyas), y se ve su casa al fondo, su coche, su mascota y su capricho de lujo. **Tu coche circula por la ciudad** con un cartel «Tú».
+- **6 colecciones (32 objetos):** ropa, relojes y joyas, garaje, casas, mascotas y lujo extremo. Se pagan con el dinero del juego de la ciudad en la que estás, con precios de 500 € a 10^35 € (siempre hay algo a lo que aspirar). Hay 5 **exclusivos con diamantes** (de 250 a 500 💎).
+- **Bonus:** cada objeto da prestigio y **cada punto, +1 % de ingresos para siempre** (también al salir a bolsa y en todas las ciudades). **Cada colección completa, +10 %**. Con todo, x2,1 como mucho. No cambia el ritmo de los tests (el bot no compra), pero un jugador que compra va algo más rápido; es la idea.
+- **Anuncios:** «**Probar 1 h**» (`lux_trial`, 5 al día): lo usas y lo ves puesto una hora, con su bonus, para que entren ganas de comprarlo. «**Oferta del día**» (`lux_deal`): uno de los 4 objetos más baratos que no tienes, a mitad de precio con un anuncio.
+- Lógica en `src/game/luxury.ts` (tests en `tests/luxury.test.ts`), pantalla en `src/ui/lifePanel.ts` y personaje en `src/ui/avatar.ts` (SVG por capas hasta que llegue el arte).
+
 ### Rangos de los puestos: mejoras que se ven ✅
 Cada parte de la cadena (cada puesto, el transporte y la venta) sube de **rango** al llegar a los hitos que ya duplican su rendimiento: **🥉 bronce (nivel 10), 🥈 plata (25), 🥇 oro (50), 💎 diamante (100) y 👑 leyenda (200)**. Es para todos los negocios de todas las ciudades y no cambia ningún número: es la recompensa visual de llegar al hito.
 - **En el recinto:** pedestal con el borde del color del rango (desde plata, también el centro), brillo que late bajo el puesto (desde oro), destellos de vez en cuando (diamante y leyenda) y una medalla junto al nivel. El transporte y la venta llevan un aro del color en el suelo.
@@ -182,6 +190,8 @@ Anuncios bonificados, siempre opcionales:
 | `expand_x2` | Doble de estrellas al expandirse a otra ciudad | 3 ✅ |
 | `tourist_wave` | Atraer una ola turística al momento en Miami (ventas x3 durante 3 min) | 3 ✅ |
 | `gold_lock` | Contrato de oro en Dubái: fija el precio máximo (ventas x3) durante 4 min | 3 ✅ |
+| `lux_trial` | «Mi vida»: probar un objeto 1 hora, con su bonus (5 al día) | 4 ✅ |
+| `lux_deal` | «Mi vida»: oferta del día a mitad de precio | 4 ✅ |
 | `supply_truck` | Camión de suministros: llega al negocio que estás viendo cada 5–9 min y trae lo que vende en 15 min a pleno rendimiento | 4 ✅ |
 | `vip_client` | Cliente VIP: cada 7–13 min, paga 10 💎 (4 al día como máximo) | 4 ✅ |
 | `wheel_spin` | Ruleta diaria: un giro gratis al día y 3 más con anuncio (dinero, diamantes o maletines) | 4 ✅ |

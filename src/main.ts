@@ -33,6 +33,8 @@ import { openIpoSheet, openPlotSheet, openStationSheet, openUnlockSheet, type Pa
 import { openAchievements, openDaily, openExecs, openMissions, openSettings } from "./ui/metaPanels";
 import { activeSheet, closeSheet } from "./ui/sheet";
 import { openWorld } from "./ui/worldPanels";
+import { openLife } from "./ui/lifePanel";
+import { affordable } from "./game/luxury";
 import { openEmpire } from "./ui/empirePanel";
 import { openShop } from "./ui/shopPanel";
 import { isVip, grantProduct } from "./game/shop";
@@ -321,6 +323,7 @@ root.addEventListener("click", (e) => {
   else if (which === "event") openEvent(ctx);
   else if (which === "wheel") openWheel(ctx);
   else if (which === "settings") openSettings(ctx);
+  else if (which === "life") openLife(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
@@ -341,6 +344,7 @@ function updateMeta(now: number): void {
     league: leagueHasPrize() || (!leagueJoined(S) && meta.tutorialStep(S) === null),
     event: eventToClaim(S) > 0,
     wheel: started && wheelStatus(S, now).free,
+    life: started && !!affordable(S, now),
   };
   for (const [name, available] of Object.entries(ready)) {
     root.querySelectorAll<HTMLElement>(`[data-open="${name}"] .dot`).forEach((dot) => (dot.hidden = !available));

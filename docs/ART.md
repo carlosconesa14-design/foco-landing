@@ -120,6 +120,19 @@ Mismo estilo común, con luz de playa soleada. Para la arena y las palmeras, añ
 | `ch_coder_0` | 44×60 | Chibi crypto developer, purple hoodie, headphones |
 | `ch_trader_0` | 44×60 | Chibi trader, green shirt, purple tie |
 
+### «Mi vida»: personaje y objetos de lujo
+
+Hoy el personaje es un SVG sencillo (`src/ui/avatar.ts`) y los objetos son emojis. Para el arte propio, basta con añadir los PNG (y apuntarlos en `public/sprites/manifest.json`):
+
+| Clave | Tamaño | Qué es |
+| --- | --- | --- |
+| `avatar_<ropa>` | 240×344 (se ve a 120×172) | El personaje de cuerpo entero con cada ropa: `tracksuit` (chándal verde de rider con gorra), `hoodie`, `suit`, `designer` (traje granate con gafas de sol), `goldtux` (esmoquin negro con solapas doradas), `neonsuit` (exclusivo, rosa y cian con brillo). Mismo personaje y pose en todos, de frente, fondo transparente. Las joyas hoy se dibujan encima del SVG; con PNG, mejor una versión por joya más adelante |
+| `lux_<id>` | 96×96 | Icono de cada objeto (ids en `src/game/luxury.ts`): ropa, joyas, coches, casas, mascotas, yate, jet y cohete. Los de casa también se ven grandes de fondo (hasta 150×150): mejor como edificio con algo de suelo |
+| `luxcar_<id>` | 50×42 | El coche del personaje visto en isométrico para circular por la ciudad (como `car_0`). Hoy es su emoji con un halo dorado |
+| `ic_life` | 48×48 | Icono del botón «Mi vida» (hoy 🛍️) |
+
+Ideas: que el fondo del escenario cambie con la casa (piso compartido, ático con vistas, villa con piscina, mansión, isla) y que los exclusivos tengan un brillo propio.
+
 ### Rangos de los puestos (bronce … leyenda)
 
 Cada parte de la cadena sube de rango en los niveles 10, 25, 50, 100 y 200 (`src/game/ranks.ts`). Hoy el rango se ve con efectos hechos por código (pedestal y brillo del color, medalla y destellos, en `src/scenes/rankFx.ts`). Para que además **el puesto, el trabajador y el vehículo cambien de aspecto**, basta con añadir PNG con estas claves (y apuntarlas en `public/sprites/manifest.json`). Si falta la de un rango, se usa la del rango anterior; si no hay ninguna, la normal. Mismo tamaño que la pieza base.

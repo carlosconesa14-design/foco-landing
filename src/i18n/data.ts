@@ -1,3 +1,4 @@
+import { LUXURY, LUXURY_CATS } from "../game/luxury";
 import { RANKS } from "../game/ranks";
 import {
   ACHIEVEMENTS,
@@ -133,6 +134,16 @@ const PRODUCTS_EN: Record<string, { name: string; desc: string; price: string; h
   gems_1200: { name: "1,200 gems", desc: "20% more gems per euro than the small pack.", price: "€9.99" },
 };
 
+const LUXURY_EN: Record<string, string> = {
+  tracksuit: "Rider tracksuit", hoodie: "Designer hoodie", suit: "Tailored suit", designer: "Designer suit", goldtux: "Gold tuxedo", neonsuit: "Neon suit (exclusive)",
+  digital: "Digital watch", luxwatch: "Luxury watch", goldchain: "Gold chain", diamondring: "Diamond ring", crown: "Diamond crown (exclusive)",
+  deliverybike: "Delivery scooter", scooter: "Electric kick scooter", motorbike: "Sports bike", sportscar: "Sports car", supercar: "Supercar", limo: "Limousine", goldcar: "Gold sports car (exclusive)",
+  parents: "Your parents' house", flat: "Rented flat", penthouse: "City penthouse", villa: "Villa with pool", mansion: "Mansion", island: "Private island",
+  cat: "Cat", dog: "Dog", parrot: "Parrot", tiger: "White tiger", penguin: "Penguin (exclusive)",
+  yacht: "Yacht", jet: "Private jet", rocket: "Rocket",
+};
+const LUXURY_CATS_EN: Record<string, string> = { outfit: "Clothes", jewel: "Watches & jewellery", car: "Garage", home: "Homes", pet: "Pets", extreme: "Extreme luxury" };
+
 const RANKS_EN = ["Bronze", "Silver", "Gold", "Diamond", "Legend"];
 
 let done = false;
@@ -147,6 +158,8 @@ export function localizeData(): void {
   VIRAL_TITLES.splice(0, VIRAL_TITLES.length, ...VIRAL_EN);
   RARITIES.forEach((r, i) => (r.name = RARITIES_EN[i] ?? r.name));
   RANKS.forEach((r, i) => (r.name = RANKS_EN[i] ?? r.name));
+  for (const i of LUXURY) i.name = LUXURY_EN[i.id] ?? i.name;
+  for (const c of LUXURY_CATS) c.name = LUXURY_CATS_EN[c.id] ?? c.name;
   for (const k of Object.keys(EXEC_KINDS) as (keyof typeof EXEC_KINDS)[]) Object.assign(EXEC_KINDS[k], EXEC_KINDS_EN[k]);
   for (const k of Object.keys(CHESTS) as (keyof typeof CHESTS)[]) CHESTS[k].name = CHESTS_EN[k];
   for (const k of Object.keys(MISSIONS) as (keyof typeof MISSIONS)[]) MISSIONS[k].text = MISSIONS_EN[k] ?? MISSIONS[k].text;
@@ -156,4 +169,4 @@ export function localizeData(): void {
 }
 
 /** Para el test de cobertura: que no falte ningún elemento del contenido. */
-export const EN_DATA = { RANKS_EN, BUSINESSES_EN, CITIES_EN, OFFICE_EN, LIFE_EN, VIRAL_EN, RARITIES_EN, MISSIONS_EN, ACHIEVEMENTS_EN, TUTORIAL_EN, PRODUCTS_EN };
+export const EN_DATA = { LUXURY_EN, LUXURY_CATS_EN, RANKS_EN, BUSINESSES_EN, CITIES_EN, OFFICE_EN, LIFE_EN, VIRAL_EN, RARITIES_EN, MISSIONS_EN, ACHIEVEMENTS_EN, TUTORIAL_EN, PRODUCTS_EN };

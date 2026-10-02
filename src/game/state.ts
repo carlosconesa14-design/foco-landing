@@ -7,6 +7,7 @@ import type { ClockState } from "./clock";
 import { freshShop, migrateShop, type ShopState } from "./shop";
 import { freshLeague, migrateLeague, type LeagueState } from "./league";
 import { freshFounder, migrateFounder, type FounderState } from "./founders";
+import { freshLuxury, migrateLuxury, type LuxuryState } from "./luxury";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
@@ -115,6 +116,8 @@ export interface MetaState {
   flags: string[];
   /** Carrera de fundadores de Dubái. */
   founder: FounderState;
+  /** «Mi vida»: lo que se ha comprado el personaje. */
+  luxury: LuxuryState;
 }
 
 export interface Settings {
@@ -211,6 +214,7 @@ export function freshMeta(now = clockNow()): MetaState {
     offers: freshOffers(now),
     flags: [],
     founder: freshFounder(),
+    luxury: freshLuxury(),
   };
 }
 
@@ -321,6 +325,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.adLadder = migrateAdLadder(r.adLadder);
   m.offers = migrateOffers(r.offers, now);
   m.founder = migrateFounder(r.founder);
+  m.luxury = migrateLuxury(r.luxury);
   m.flags = Array.isArray(r.flags) ? r.flags.filter((f): f is string => typeof f === "string").slice(0, 10) : [];
   return m;
 }

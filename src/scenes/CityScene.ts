@@ -66,6 +66,8 @@ interface Walker {
   phase: number;
   wait: number;
   crossing: string;
+  /** Cartel «Tú» encima del coche del personaje. */
+  tag?: Phaser.GameObjects.Text;
 }
 
 /** Semilla fija: la ciudad siempre tiene los mismos árboles. */
@@ -383,7 +385,7 @@ export class CityScene extends Phaser.Scene {
   /** Cambia al comprar un negocio o al subir de categoría: entonces se redibuja la ciudad. */
   private stateKey(): string {
     const s = this.bridge.state();
-    return s.city + this.city.businesses.map((b) => (s.biz[b.id]?.owned ? bizTier(s.biz[b.id]) : 0)).join("");
+    return s.city + this.city.businesses.map((b) => (s.biz[b.id]?.owned ? bizTier(s.biz[b.id]) : 0)).join("") + (s.meta.luxury.equipped.car ?? "");
   }
 
   /* ---------- Tráfico, gente y nubes ---------- */
@@ -397,10 +399,13 @@ export class CityScene extends Phaser.Scene {
       [{c:0.32,r:3.32},{c:4.68,r:3.32},{c:4.68,r:7.68},{c:0.32,r:7.68}],
       [{c:4.32,r:3.32},{c:9.68,r:3.32},{c:9.68,r:7.68},{c:4.32,r:7.68}],
     ].map(points => streetLoop(points));
+    // El primero es el coche del personaje (lo que tenga en «Mi vida»), con su cartel.
+    const myCar = this.bridge.state().meta.luxury.equipped.car ?? "deliverybike";
     for (let i=0;i<8;i++) {
-      const obj = art(this,0,0,`car_${i%4}`).setOrigin(0.5,0.76);
+      const obj = art(this,0,0,i===0 ? `luxcar_${myCar}` : `car_${i%4}`).setOrigin(0.5,0.76);
       const route = loops[i%loops.length];
-      this.movers.push({obj,shadow:actorShadow(this,obj.displayWidth),route,distance:route.total*(Math.floor(i/4)*0.5+rand()*0.2),speed:0.8+rand()*0.35,phase:rand()*6,wait:0,crossing:""});
+      const tag = i===0 ? label(this,0,0,t("Tú"),10,"#2e2200",{bold:true}).setBackgroundColor("#f5c542").setPadding(4,1,4,1).setOrigin(0.5) : undefined;
+      this.movers.push({obj,shadow:actorShadow(this,obj.displayWidth),route,distance:route.total*(Math.floor(i/4)*0.5+rand()*0.2),speed:0.8+rand()*0.35,phase:rand()*6,wait:0,crossing:"",tag});
     }
     // Walking loops follow the inner pavements, not the carriageway or the buildings.
     for (let i=0;i<8;i++) {
@@ -474,6 +479,7 @@ export class CityScene extends Phaser.Scene {
       m.obj.setPosition(p.x,p.y).setDepth(p.y+1);
       gait(m.obj,p.y,this.walkClock*m.speed*2.5+m.phase,!calm && m.wait===0,!m.role);
       m.shadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
+      m.tag?.setPosition(p.x,p.y-40).setDepth(9e4);
     }
     for (const cl of this.clouds) {
       cl.cloud.x += reducedMotion() ? 0 : cl.speed * dt;
