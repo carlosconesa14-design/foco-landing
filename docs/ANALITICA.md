@@ -16,6 +16,8 @@ Analítica propia en Supabase, sin cuentas externas. Es **anónima**: cada insta
 | `league_join` | Apuntarse a la Liga | Minutos |
 | `offline_collect` | Cobrar lo ganado offline | Minutos fuera, si se triplicó |
 | `event_claim` / `event_boost` | Cobrar un premio del evento del fin de semana / x2 con anuncio | Semana y número de premio |
+| `offer_shown` | Llega una visita al negocio (camión de suministros o cliente VIP) | `kind`: `truck` o `vip` |
+| `wheel_spin` | Girar la ruleta diaria | Casilla y si fue con anuncio |
 
 La plataforma (`android`, `ios` o `web`) va en cada evento: la beta web también envía analítica. Para ver solo la beta: `where platform = 'web'`.
 
@@ -32,6 +34,7 @@ select * from analytics_tutorial_funnel;  -- cuántos llegan a cada paso del tut
 select * from analytics_ads;              -- anuncios por día y ubicación, y por jugador activo
 select * from analytics_progress;         -- minutos (mediana) hasta comprar cada negocio
 select * from analytics_weekend_event;    -- por semana: jugadores que cobran cada premio (tier 0 = anuncios x2)
+select * from analytics_offers;           -- por día: camiones y clientes VIP mostrados, cobrados con anuncio y conversión
 ```
 
 ## Objetivos para el lanzamiento de prueba

@@ -30,7 +30,9 @@ export type AnalyticsName =
   | "purchase"
   | "offline_collect"
   | "event_claim"
-  | "event_boost";
+  | "event_boost"
+  | "offer_shown"
+  | "wheel_spin";
 
 interface Ev {
   name: AnalyticsName;

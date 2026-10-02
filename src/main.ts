@@ -41,6 +41,8 @@ import { ensureEvent, eventTiersReached, eventToClaim, eventWindow } from "./gam
 import { fmtWait, openEvent } from "./ui/eventPanel";
 import { loadIcons } from "./ui/icons";
 import { WEB_BETA } from "./platform/web";
+import { OFFERS, claimVip, dueOffer, rescheduleOffer, truckReward, wheelStatus, type OfferKind } from "./game/offers";
+import { openWheel } from "./ui/wheelPanel";
 import "./styles.css";
 import { decorateIcons } from "./ui/icons";
 
@@ -281,6 +283,7 @@ root.addEventListener("click", (e) => {
   else if (which === "achievements") openAchievements(ctx);
   else if (which === "league") openLeague(ctx);
   else if (which === "event") openEvent(ctx);
+  else if (which === "wheel") openWheel(ctx);
   else if (which === "settings") openSettings(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
@@ -293,6 +296,7 @@ function updateMeta(now: number): void {
   const top = document.getElementById("hud")!.offsetHeight + 10;
   const rail = document.getElementById("rail")!;
   rail.style.top = `${top}px`;
+  const started = meta.tutorialStep(S) === null;
   const ready: Record<string, boolean> = {
     missions: meta.missionsToClaim(S) + retosToClaim(S) > 0,
     daily: meta.dailyStatus(S, now).canClaim,
@@ -300,12 +304,13 @@ function updateMeta(now: number): void {
     achievements: meta.achievementsToClaim(S) > 0,
     league: leagueHasPrize() || (!leagueJoined(S) && meta.tutorialStep(S) === null),
     event: eventToClaim(S) > 0,
+    wheel: started && wheelStatus(S, now).free,
   };
   for (const [name, available] of Object.entries(ready)) {
     root.querySelectorAll<HTMLElement>(`[data-open="${name}"] .dot`).forEach((dot) => (dot.hidden = !available));
   }
   const menuDot = document.getElementById("menuDot");
-  if (menuDot) menuDot.hidden = !ready.daily && !ready.execs && !ready.achievements && !ready.league && !ready.event;
+  if (menuDot) menuDot.hidden = !ready.daily && !ready.execs && !ready.achievements && !ready.league && !ready.event && !ready.wheel;
 
   const adv = meta.advanceTutorial(S);
   if (adv) analytics.track(adv.done ? "tutorial_done" : "tutorial_step", { step: S.meta.tutorial, minutes: minutesSinceInstall() });
@@ -489,6 +494,86 @@ function viralTick(now: number): void {
   if (viralEl && now > viralUntil) hideViral();
 }
 
+/* ---------- Visitas: camión de suministros y cliente VIP ---------- */
+
+let visitorEl: HTMLButtonElement | null = null;
+let visitorKind: OfferKind | null = null;
+let visitorUntil = 0;
+
+function hideVisitor(): void {
+  if (visitorKind) rescheduleOffer(S, visitorKind, Date.now());
+  visitorEl?.remove();
+  visitorEl = null;
+  visitorKind = null;
+}
+
+function visitorTick(now: number): void {
+  // Se van si cambias de negocio o de escena; nunca a la vez que el 💸 viral.
+  const here = S.view.scene === "business" ? S.view.id : null;
+  if (visitorEl && (now > visitorUntil || visitorEl.dataset.biz !== here)) hideVisitor();
+  if (visitorEl || viralEl || !here || modalOpen() || activeSheet()) return;
+  const kind = dueOffer(S, now);
+  if (!kind) return;
+  const el = document.createElement("button");
+  el.className = `visitor ${kind}`;
+  el.dataset.biz = here;
+  el.innerHTML = kind === "truck" ? `🚚<b>${t("Suministros")}</b>` : `🤵<b>VIP</b>`;
+  el.setAttribute("aria-label", kind === "truck" ? t("Camión de suministros") : t("Cliente VIP"));
+  // Por encima de los botones de cámara (centrar, cuadrícula y zoom).
+  el.style.bottom = `${document.getElementById("bar")!.offsetHeight + 72}px`;
+  el.onclick = () => (kind === "truck" ? offerTruck(here) : offerVip());
+  visitorEl = el;
+  visitorKind = kind;
+  visitorUntil = now + OFFERS.visibleSec * 1000;
+  root.appendChild(el);
+  fx("click");
+  analytics.track("offer_shown", { kind });
+}
+
+function offerTruck(id: string): void {
+  const reward = truckReward(S, id, Date.now());
+  hideVisitor();
+  modal(root, {
+    title: t("¡Camión de suministros!"),
+    amount: money(reward),
+    text: t("Trae material para {min} minutos de ventas. Mira un anuncio corto y es tuyo.", { min: OFFERS.truckMinutes }),
+    actions: [
+      {
+        ad: true,
+        label: t("Ver anuncio y descargar"),
+        run: async () => {
+          if (!(await watchAd("supply_truck"))) return;
+          earn(S, reward, id);
+          fx("coin");
+          banner(root, "🚚", t("+{m} en suministros", { m: money(reward) }));
+        },
+      },
+      { label: t("Ahora no"), run: () => {} },
+    ],
+  });
+}
+
+function offerVip(): void {
+  hideVisitor();
+  modal(root, {
+    title: t("¡Un cliente VIP!"),
+    amount: `${OFFERS.vipGems} 💎`,
+    text: t("Quiere un pedido especial y paga en diamantes. Mira un anuncio corto para atenderle."),
+    actions: [
+      {
+        ad: true,
+        label: t("Ver anuncio y atender"),
+        run: async () => {
+          if (!(await watchAd("vip_client"))) return;
+          const gems = claimVip(S, Date.now());
+          if (gems) banner(root, "🤵", t("+{n} 💎 del cliente VIP", { n: gems }));
+        },
+      },
+      { label: t("Ahora no"), run: () => {} },
+    ],
+  });
+}
+
 /* ---------- Ganancias offline ---------- */
 
 function offerOffline(): void {
@@ -586,6 +671,7 @@ game.events.on("step", (time: number) => {
     }
   }
   viralTick(now);
+  visitorTick(now);
   if (time - lastUi > 120) {
     lastUi = time;
     updateHeader(S, now);

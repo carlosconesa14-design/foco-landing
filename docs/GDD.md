@@ -154,6 +154,8 @@ Anuncios bonificados, siempre opcionales:
 
 **Escalera diaria de anuncios** (`src/game/adLadder.ts`): al ver 3, 6 y 10 anuncios en el día se ganan un maletín, 40 💎 y un maletín de oro. El menú muestra cuántos llevas y cuál es el siguiente premio. Solo da premios del juego: nunca puntos de Liga ni nada de valor real (política de AdMob).
 
+**Visitas y ruleta** (`src/game/offers.ts`): el camión de suministros y el cliente VIP llegan solos al negocio que estás viendo (después del tutorial, nunca a la vez que el 💸 viral) y se van a los 30 s. La ruleta diaria está en el menú, con aviso cuando hay giro gratis. Ninguno da puntos de Liga.
+
 **Retos del día y de la semana** (`src/game/challenges.ts`): iguales para todos, dan diamantes y puntos de Liga. Los retos que se aceleran directamente con anuncios (maletines gratis, habilidades, evento) no se usan en la Liga.
 
 | Ubicación | Recompensa | Fase |
@@ -168,6 +170,9 @@ Anuncios bonificados, siempre opcionales:
 | `daily_double` | Doble premio diario | 2 ✅ |
 | `expand_x2` | Doble de estrellas al expandirse a otra ciudad | 3 ✅ |
 | `tourist_wave` | Atraer una ola turística al momento en Miami (ventas x3 durante 3 min) | 3 ✅ |
+| `supply_truck` | Camión de suministros: llega al negocio que estás viendo cada 5–9 min y trae lo que vende en 15 min a pleno rendimiento | 4 ✅ |
+| `vip_client` | Cliente VIP: cada 7–13 min, paga 10 💎 (4 al día como máximo) | 4 ✅ |
+| `wheel_spin` | Ruleta diaria: un giro gratis al día y 3 más con anuncio (dinero, diamantes o maletines) | 4 ✅ |
 
 Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2 permanente").
 

@@ -1,6 +1,7 @@
 import { freshEvent, migrateEvent, type EventState } from "./event";
 import { freshRetos, migrateRetos, type RetosState } from "./challenges";
 import { freshAdLadder, migrateAdLadder, type AdLadderState } from "./adLadder";
+import { freshOffers, migrateOffers, type OffersState } from "./offers";
 import { freshShop, migrateShop, type ShopState } from "./shop";
 import { freshLeague, migrateLeague, type LeagueState } from "./league";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
@@ -103,6 +104,8 @@ export interface MetaState {
   retos: RetosState;
   /** Escalera diaria de anuncios. */
   adLadder: AdLadderState;
+  /** Camión de suministros, cliente VIP y ruleta diaria. */
+  offers: OffersState;
 }
 
 export interface Settings {
@@ -192,6 +195,7 @@ export function freshMeta(now = Date.now()): MetaState {
     event: freshEvent(),
     retos: freshRetos(),
     adLadder: freshAdLadder(),
+    offers: freshOffers(now),
   };
 }
 
@@ -298,6 +302,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.event = migrateEvent(r.event);
   m.retos = migrateRetos(r.retos);
   m.adLadder = migrateAdLadder(r.adLadder);
+  m.offers = migrateOffers(r.offers, now);
   return m;
 }
 
