@@ -1,11 +1,12 @@
+import { COMPLETION_FRAMES, COMPLETION_SHEETS } from "./completionFrames";
 import type Phaser from "phaser";
 import { GENERATED_FRAMES as BASE_FRAMES, GENERATED_SHEETS as BASE_SHEETS } from "./generatedFrames";
 import { WAREHOUSE_FRAMES } from "./warehouseFrames";
 import { VISUAL_FRAMES, VISUAL_SHEETS } from "./visualFrames";
 import { RESTAURANT_FRAMES } from "./restaurantFrames";
 
-export const GENERATED_SHEETS = [...BASE_SHEETS, ...VISUAL_SHEETS, { key: "generated-restaurant", file: "restaurant" }, { key: "generated-warehouse", file: "warehouse" }];
-const GENERATED_FRAMES: typeof BASE_FRAMES = { ...BASE_FRAMES, ...RESTAURANT_FRAMES, ...WAREHOUSE_FRAMES, ...VISUAL_FRAMES };
+export const GENERATED_SHEETS = [...BASE_SHEETS, ...VISUAL_SHEETS, ...COMPLETION_SHEETS, { key: "generated-restaurant", file: "restaurant" }, { key: "generated-warehouse", file: "warehouse" }];
+const GENERATED_FRAMES: typeof BASE_FRAMES = { ...BASE_FRAMES, ...RESTAURANT_FRAMES, ...WAREHOUSE_FRAMES, ...VISUAL_FRAMES, ...COMPLETION_FRAMES };
 type Spec = { w: number; h: number };
 const aliases: Record<string, string> = {};
 for (const key of Object.keys(GENERATED_FRAMES)) {
