@@ -11,7 +11,7 @@ const QUALITY = 88;
 async function* pngs(dir) {
   for (const e of await readdir(dir, { withFileTypes: true })) {
     const p = join(dir, e.name);
-    if (e.isDirectory()) yield* pngs(p);
+    if (e.isDirectory()) { if (e.name !== "source") yield* pngs(p); } // source/: originales que el juego no carga
     else if (e.name.endsWith(".png")) yield p;
   }
 }

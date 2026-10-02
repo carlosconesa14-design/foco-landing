@@ -1,3 +1,4 @@
+import { TwistWorld } from "./TwistWorld";
 import { WorldVisitor } from "./WorldVisitor";
 import type { OfferKind } from "../game/offers";
 import { money, t } from "../i18n";
@@ -16,7 +17,7 @@ import { CHAIN, TUTORIAL } from "../game/data";
 import { bizDef, bizList, bizTier, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
 import { fmt } from "../game/format";
 import { cityDef, type BusinessState } from "../game/state";
-import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
+import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, floatText, label, setupCamera, type Bridge, calmWorld } from "./common";
 
 /* Rejilla isométrica del recinto */
 const TW = 88;
@@ -135,6 +136,7 @@ const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_va
 export class BusinessScene extends Phaser.Scene {
   private bridge!: Bridge;
   private visitor: WorldVisitor | null = null;
+  private twistWorld: TwistWorld | null = null;
   private restaurant: RestaurantRoom | null = null;
   private warehouse: WarehouseRoom | null = null;
   private get layout() { return this.bizId === "restaurant" ? RESTAURANT_LAYOUT : this.bizId === "dropship" ? WAREHOUSE_LAYOUT : DEFAULT_LAYOUT; }
@@ -188,6 +190,7 @@ export class BusinessScene extends Phaser.Scene {
     this.traffic = [];
     this.unlockPill = null;
     this.visitor = null;
+    this.twistWorld = null;
     this.restaurant = null;
     this.warehouse = null;
   }
@@ -260,6 +263,7 @@ export class BusinessScene extends Phaser.Scene {
     }
     const focus = this.iso(...this.layout.focus);
     this.drag.addControls(focus, { left: margin - TW / 2 - 40, top: this.oy - (this.restaurant || this.warehouse ? 75 : ART[hubKey].h), right: this.worldW - margin + 40, bottom: this.oy + (COLS + ROWS + 1) * TH / 2 + 20 });
+    this.twistWorld = new TwistWorld(this,this.bizId,this.iso(this.bizId === "restaurant" ? 7.6 : this.bizId === "dropship" ? 1.5 : 6.9, 8.7));
     revealScene(this);
   }
 
@@ -468,7 +472,8 @@ export class BusinessScene extends Phaser.Scene {
     const manager = art(this, center.x + 38, center.y - 62, "ic_manager").setDepth(9.2e4);
     const badge = rankBadge(this, center.x - 40, center.y - 62, rank).setDepth(9.31e4);
     const nameTag = label(this, center.x, center.y + 40, `${def.floorName} ${i + 1}`, 10, "#ffffff", { bold: true, stroke: "#14202f" });
-    nameTag.setDepth(9e4);
+    // Pantalla limpia: el nombre de cada puesto solo con 1–2 puestos (al aprender); luego se sobreentiende.
+    nameTag.setDepth(9e4).setVisible(this.biz().floors.length <= 2);
     this.tapZone(center.x - TW / 2, center.y - 46, TW, 80, { kind: "floor", index: i });
     const shadow = actorShadow(this,worker.displayWidth).setPosition(worker.x,center.y+13).setDepth(center.y+10);
     this.slots[i] = { worker, shadow, pile, stock, barBg, bar, hint, pill, manager, station, x: center.x, y: center.y, level: this.biz().floors[i].level, lastStock: this.biz().floors[i].stock,
@@ -709,6 +714,7 @@ export class BusinessScene extends Phaser.Scene {
   update(_t: number, dtMs: number): void {
     this.visitor?.update();
     const s = this.bridge.state();
+    this.twistWorld?.update(s);
     const b = this.biz();
     if (!b) return;
     if (b.floors.length !== this.floorCount) {
@@ -719,7 +725,7 @@ export class BusinessScene extends Phaser.Scene {
     const def = bizDef(this.bizId);
     const clk = this.time.now / 1000;
     const dt = Math.min(dtMs, 100) / 1000;
-    const walkFrame = reducedMotion() ? 0 : Math.floor(clk * WALK_FPS) % 2 ? 1 : 2;
+    const walkFrame = calmWorld() ? 0 : Math.floor(clk * WALK_FPS) % 2 ? 1 : 2;
     const tutorial = s.totalEarned < 30;
     // Paso del tutorial en curso: las pistas siguen al paso, no al stock (así nunca falta la mano).
     const tutStat = s.meta.tutorial < TUTORIAL.length && this.bizId === bizList(s)[0].id ? TUTORIAL[s.meta.tutorial].stat : null;
@@ -733,7 +739,7 @@ export class BusinessScene extends Phaser.Scene {
       const v = this.slots[i];
       const p = f.running ? f.prog / CHAIN.floorCycle : 0;
       const working = f.running;
-      const active=working && !reducedMotion();
+      const active=working && !calmWorld();
       if (this.restaurant) swapArt(v.worker, rankedKey(this, active && Math.floor(clk*4+i)%2 ? "rest_chef_b" : "rest_chef_a", v.rank));
       v.worker.setY(v.y + 12 - (active ? Math.abs(Math.sin(clk * 6 + i)) * 1.8 : 0));
       v.worker.setAngle(active ? Math.sin(clk * 6 + i) * 3 : 0);
@@ -853,13 +859,13 @@ export class BusinessScene extends Phaser.Scene {
 
     // Tráfico
     for (const car of this.traffic) {
-      if (!reducedMotion()) car.c += car.speed * dt;
+      if (!calmWorld()) car.c += car.speed * dt;
       if (car.c > COLS + 2) car.c = -2;
       const p = this.iso(car.c, ROAD_ROW + 0.35);
       car.obj.setPosition(p.x, p.y).setDepth(p.y + 1);
       const visible=Phaser.Math.Clamp(Math.min(car.c+2,COLS+2-car.c),0,1);
       car.obj.setAlpha(visible);
-      gait(car.obj,p.y,clk+car.speed,!reducedMotion(),true);
+      gait(car.obj,p.y,clk+car.speed,!calmWorld(),true);
       car.shadow.setPosition(p.x,p.y+1).setDepth(p.y-1).setAlpha(0.18*visible);
     }
 

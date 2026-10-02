@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { art } from "../art/catalog";
 import type { OfferKind } from "../game/offers";
 import { actorShadow } from "./motion";
-import { DPR, overlayHeight, reducedMotion } from "./common";
+import { DPR, overlayHeight, reducedMotion, calmWorld } from "./common";
 
 /** Scene-owned presentation only. Scheduling, expiry, ads and rewards stay in main/offers. */
 export class WorldVisitor {
@@ -23,7 +23,7 @@ export class WorldVisitor {
   }
   update(): void {
     if (!this.actor.scene) return;
-    const duration = reducedMotion() ? 1 : this.kind === "truck" ? 1400 : 1000;
+    const duration = calmWorld() ? 1 : this.kind === "truck" ? 1400 : 1000;
     const progress = Phaser.Math.Clamp((this.scene.time.now - this.started) / duration, 0, 1);
     const p = Phaser.Math.Easing.Cubic.Out(progress);
     this.actor.setPosition(Phaser.Math.Linear(this.entry.x, this.dock.x, p), Phaser.Math.Linear(this.entry.y, this.dock.y, p)).setDepth(this.actor.y + 3);
@@ -52,7 +52,7 @@ export class WorldVisitor {
     this.leaving = true;
     this.actor.disableInteractive();
     this.halo.destroy();
-    if (reducedMotion()) { this.actor.destroy(); this.shadow.destroy(); return; }
+    if (calmWorld()) { this.actor.destroy(); this.shadow.destroy(); return; }
     const actor = this.actor, shadow = this.shadow;
     this.scene.tweens.add({ targets: actor, x: this.entry.x, y: this.entry.y, alpha: 0, duration: 650, ease: "Cubic.easeIn",
       onUpdate: () => { actor.setDepth(actor.y + 3); shadow.setPosition(actor.x, actor.y + 1).setDepth(actor.y - 1).setAlpha(actor.alpha * .2); },

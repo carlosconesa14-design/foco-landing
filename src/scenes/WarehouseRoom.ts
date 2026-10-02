@@ -3,7 +3,7 @@ import Phaser from "phaser";
 import { art } from "../art/catalog";
 import type { BusinessState } from "../game/state";
 import { CHAIN } from "../game/data";
-import { label, reducedMotion } from "./common";
+import { label, calmWorld } from "./common";
 
 type Point = { x: number; y: number };
 type Grid = [number, number];
@@ -99,7 +99,7 @@ export class WarehouseRoom {
   }
 
   update(_dt: number, business: BusinessState, showStatus = true): void {
-    const calm=reducedMotion();
+    const calm=calmWorld();
     const anyStock=business.topStock>0;
     this.piles.forEach((pile,i)=>pile.setVisible(anyStock && i<Math.min(3,Math.ceil(business.topStock/CHAIN.floorCycle))));
     this.status.setVisible(showStatus).setText(business.sale.phase!=="idle" ? t("Reparto en marcha") : business.transport.phase!=="idle" ? (business.transport.phase==="unload" ? t("Descargando pedidos") : t("Recogida en curso")) : anyStock ? t("Listo para repartir") : business.floors.some(f=>f.running) ? t("Preparando paquetes…") : t("Muelle de carga"));

@@ -1,0 +1,612 @@
+{
+  "frames": {
+    "st_dropship_r4": {
+      "frame": {
+        "x": 3,
+        "y": 78,
+        "w": 209,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 209,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 209,
+        "h": 239
+      }
+    },
+    "st_restaurant_r4": {
+      "frame": {
+        "x": 212,
+        "y": 65,
+        "w": 211,
+        "h": 254
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 211,
+        "h": 254
+      },
+      "sourceSize": {
+        "w": 211,
+        "h": 254
+      }
+    },
+    "st_tiktok_r4": {
+      "frame": {
+        "x": 423,
+        "y": 90,
+        "w": 212,
+        "h": 235
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 235
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 235
+      }
+    },
+    "st_ai_r4": {
+      "frame": {
+        "x": 649,
+        "y": 91,
+        "w": 198,
+        "h": 223
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 198,
+        "h": 223
+      },
+      "sourceSize": {
+        "w": 198,
+        "h": 223
+      }
+    },
+    "st_foodtruck_r4": {
+      "frame": {
+        "x": 847,
+        "y": 89,
+        "w": 212,
+        "h": 222
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 222
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 222
+      }
+    },
+    "st_beachclub_r4": {
+      "frame": {
+        "x": 1059,
+        "y": 72,
+        "w": 211,
+        "h": 246
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 211,
+        "h": 246
+      },
+      "sourceSize": {
+        "w": 211,
+        "h": 246
+      }
+    },
+    "st_yachts_r4": {
+      "frame": {
+        "x": 1270,
+        "y": 94,
+        "w": 210,
+        "h": 231
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 210,
+        "h": 231
+      },
+      "sourceSize": {
+        "w": 210,
+        "h": 231
+      }
+    },
+    "st_realestate_r4": {
+      "frame": {
+        "x": 3,
+        "y": 343,
+        "w": 209,
+        "h": 218
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 209,
+        "h": 218
+      },
+      "sourceSize": {
+        "w": 209,
+        "h": 218
+      }
+    },
+    "st_crypto_r4": {
+      "frame": {
+        "x": 218,
+        "y": 352,
+        "w": 195,
+        "h": 195
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 195,
+        "h": 195
+      },
+      "sourceSize": {
+        "w": 195,
+        "h": 195
+      }
+    },
+    "st_supercars_r4": {
+      "frame": {
+        "x": 423,
+        "y": 325,
+        "w": 212,
+        "h": 238
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 238
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 238
+      }
+    },
+    "st_hotel_r4": {
+      "frame": {
+        "x": 635,
+        "y": 337,
+        "w": 212,
+        "h": 229
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 229
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 229
+      }
+    },
+    "st_safari_r4": {
+      "frame": {
+        "x": 847,
+        "y": 333,
+        "w": 212,
+        "h": 225
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 225
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 225
+      }
+    },
+    "st_souk_r4": {
+      "frame": {
+        "x": 1059,
+        "y": 339,
+        "w": 211,
+        "h": 222
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 211,
+        "h": 222
+      },
+      "sourceSize": {
+        "w": 211,
+        "h": 222
+      }
+    },
+    "st_tower_r4": {
+      "frame": {
+        "x": 1270,
+        "y": 325,
+        "w": 206,
+        "h": 241
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 206,
+        "h": 241
+      },
+      "sourceSize": {
+        "w": 206,
+        "h": 241
+      }
+    },
+    "st_dropship_r5": {
+      "frame": {
+        "x": 7,
+        "y": 566,
+        "w": 205,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 205,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 205,
+        "h": 239
+      }
+    },
+    "st_restaurant_r5": {
+      "frame": {
+        "x": 212,
+        "y": 566,
+        "w": 211,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 211,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 211,
+        "h": 239
+      }
+    },
+    "st_tiktok_r5": {
+      "frame": {
+        "x": 423,
+        "y": 574,
+        "w": 212,
+        "h": 231
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 231
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 231
+      }
+    },
+    "st_ai_r5": {
+      "frame": {
+        "x": 646,
+        "y": 566,
+        "w": 201,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 201,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 201,
+        "h": 239
+      }
+    },
+    "st_foodtruck_r5": {
+      "frame": {
+        "x": 847,
+        "y": 588,
+        "w": 212,
+        "h": 216
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 216
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 216
+      }
+    },
+    "st_beachclub_r5": {
+      "frame": {
+        "x": 1059,
+        "y": 566,
+        "w": 211,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 211,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 211,
+        "h": 239
+      }
+    },
+    "st_yachts_r5": {
+      "frame": {
+        "x": 1270,
+        "y": 566,
+        "w": 212,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 239
+      }
+    },
+    "st_realestate_r5": {
+      "frame": {
+        "x": 5,
+        "y": 810,
+        "w": 207,
+        "h": 237
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 207,
+        "h": 237
+      },
+      "sourceSize": {
+        "w": 207,
+        "h": 237
+      }
+    },
+    "st_crypto_r5": {
+      "frame": {
+        "x": 212,
+        "y": 835,
+        "w": 204,
+        "h": 201
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 204,
+        "h": 201
+      },
+      "sourceSize": {
+        "w": 204,
+        "h": 201
+      }
+    },
+    "st_supercars_r5": {
+      "frame": {
+        "x": 423,
+        "y": 808,
+        "w": 212,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 239
+      }
+    },
+    "st_hotel_r5": {
+      "frame": {
+        "x": 635,
+        "y": 807,
+        "w": 212,
+        "h": 243
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 243
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 243
+      }
+    },
+    "st_safari_r5": {
+      "frame": {
+        "x": 847,
+        "y": 805,
+        "w": 212,
+        "h": 246
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 212,
+        "h": 246
+      },
+      "sourceSize": {
+        "w": 212,
+        "h": 246
+      }
+    },
+    "st_souk_r5": {
+      "frame": {
+        "x": 1059,
+        "y": 827,
+        "w": 211,
+        "h": 219
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 211,
+        "h": 219
+      },
+      "sourceSize": {
+        "w": 211,
+        "h": 219
+      }
+    },
+    "st_tower_r5": {
+      "frame": {
+        "x": 1270,
+        "y": 805,
+        "w": 210,
+        "h": 253
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 210,
+        "h": 253
+      },
+      "sourceSize": {
+        "w": 210,
+        "h": 253
+      }
+    },
+    "wh_shelf_r4": {
+      "frame": {
+        "x": 3,
+        "y": 78,
+        "w": 209,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 209,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 209,
+        "h": 239
+      }
+    },
+    "wh_shelf_r5": {
+      "frame": {
+        "x": 7,
+        "y": 566,
+        "w": 205,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 205,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 205,
+        "h": 239
+      }
+    }
+  },
+  "meta": {
+    "image": "stations-premium.png",
+    "size": {
+      "w": 1482,
+      "h": 1061
+    },
+    "scale": "1"
+  }
+}

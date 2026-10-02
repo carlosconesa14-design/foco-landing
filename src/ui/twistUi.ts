@@ -91,7 +91,8 @@ export function twistCardHtml(s: GameState): string | null {
     `<div class="tw-card ${cls}"><span class="tw-ic">${icon}</span><span class="tw-txt"><b>${title}</b><small>${sub}</small>${bar >= 0 ? `<i class="tw-bar"><i style="width:${Math.round(bar * 100)}%"></i></i>` : ""}</span><span class="tw-btns">${buttons}</span></div>`;
   if (kind === "orders") {
     const o = st.order;
-    if (!o) return card("tw-idle", "📦", t("Pedidos urgentes"), t("El próximo pedido llega pronto"));
+    // Pantalla limpia: la tarjeta solo sale cuando hay algo que hacer.
+    if (!o) return null;
     if (o.done)
       return card("tw-on", "📦", t("¡Pedido cumplido!"), t("Premio: {m} y {g}", { m: money(o.reward), g: `${tw.TW.orderGems} ${gem()}` }),
         `<button class="ad-btn" data-tw="order2"><span class="play"></span>x2</button><button class="claim" data-tw="order">${t("Cobrar")}</button>`);
@@ -103,21 +104,19 @@ export function twistCardHtml(s: GameState): string | null {
   }
   if (kind === "critic") {
     const c = st.critic;
-    const rep = t("Reputación {n}/{max} · +{pct} % ventas", { n: st.stars, max: tw.TW.maxStars, pct: Math.round(st.stars * tw.TW.starBonus * 100) });
-    if (!c) return card("tw-idle", "⭐".repeat(Math.min(3, Math.max(1, Math.ceil(st.stars / 4)))), t("Reputación"), rep);
+    if (!c) return null;
     return card("tw-offer", "🧐", t("Toca las cocinas {got}/{need}", { got: c.got, need: c.need }), t("Un crítico se va en {time}", { time: fmtTime(Math.max(0, c.until - n) / 1000) }),
       `<button class="ad-btn" data-tw="criticAd"><span class="play"></span>${t("Atender ya")}</button>`, c.got / c.need);
   }
   if (kind === "hype") {
     if (st.viralEnd > n) return card("tw-viral", "🔴", t("¡Directo viral! Ventas x{n}", { n: tw.TW.viralMult }), fmtTime((st.viralEnd - n) / 1000), "", (st.viralEnd - n) / (tw.TW.viralSec * 1000));
-    const rest = tw.hypeRestUntil(s, id, n);
-    if (rest) return card("tw-idle", "😴", t("El público descansa"), fmtTime((rest - n) / 1000),
-      tw.hypeAdReady(s, id, n) ? `<button class="ad-btn" data-tw="hype"><span class="play"></span>${t("Colaboración")}</button>` : "", 0);
+    if (tw.hypeRestUntil(s, id, n)) return null;
     return card("tw-idle", "🔥", t("Hype {n} %", { n: Math.floor(st.hype) }), t("Vende y toca para llenarlo"),
       tw.hypeAdReady(s, id, n) ? `<button class="ad-btn" data-tw="hype"><span class="play"></span>${t("Colaboración")}</button>` : "", st.hype / 100);
   }
   const next = tw.nextResearch(s, id);
-  return card(next && st.data >= next.cost ? "tw-offer" : "tw-idle", "🧠", t("{n} datos", { n: fmt(st.data) }),
+  if (!next || st.data < next.cost) return null;
+  return card("tw-offer", "🧠", t("{n} datos", { n: fmt(st.data) }),
     next ? t("Siguiente: {icon} {name} · {cost} 🧠", { icon: next.icon, name: researchName(next), cost: fmt(next.cost) }) : t("Investigación completa"),
     `<button class="claim" data-tw="research">${t("Investigar")}</button>`, next ? Math.min(1, st.data / next.cost) : 1);
 }
