@@ -45,7 +45,7 @@ export function openLife(ctx: PanelCtx): void {
      <div class="tabs life-tabs" data-tabs>${lux.LUXURY_CATS.map((c) => `<button class="tabbtn" data-tab="${c.id}" aria-label="${c.name}">${c.icon}</button>`).join("")}</div>
      <div data-coll class="small muted"></div>
      <div class="lux-grid" data-items></div>
-     <p class="small muted">${t("Lo que compras es para siempre: no se pierde al salir a bolsa ni al cambiar de ciudad. Cada punto de prestigio da +1 % de ingresos y cada colección completa, +10 %.")}</p>`,
+     <p class="small muted">${t("Lo que compras es para siempre: no se pierde al salir a bolsa ni al cambiar de ciudad. Cada punto de prestigio da +0,5 % de ingresos y cada colección completa, +5 %.")}</p>`,
     (el) => {
       const s = ctx.state();
       const n = now();
@@ -77,7 +77,7 @@ export function openLife(ctx: PanelCtx): void {
       const paid = lux.collectionItems(tab);
       const have = paid.filter((i) => lux.owns(s, i.id)).length;
       const cat = lux.LUXURY_CATS.find((c) => c.id === tab)!;
-      $(el, "[data-coll]").textContent = `${cat.name}: ${have}/${paid.length}${have === paid.length ? " · " + t("¡Colección completa! +10 %") : " · " + t("Complétala: +10 % de ingresos")}`;
+      $(el, "[data-coll]").textContent = `${cat.name}: ${have}/${paid.length}${have === paid.length ? " · " + t("¡Colección completa! +5 %") : " · " + t("Complétala: +5 % de ingresos")}`;
       const trialsLeft = lux.trialsLeft(s, n);
       const html = items
         .map((i) => {

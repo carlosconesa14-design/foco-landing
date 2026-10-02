@@ -45,13 +45,13 @@ Solo esta lista (`src/game/remote.ts`). Cada valor se limita a **entre ¼ y 4 ve
 | `season` | `visitorMin`, `visitorMax` | 5, 10 | Caramelos por fantasma |
 | `season` | `adMult` | 3 | Multiplicador de caramelos con anuncio |
 | `season` | `salesPer` | 50 | Ventas por caramelo |
-| `twists` | `orderMinMin`, `orderMaxMin` | 4, 7 | Almacén: minutos entre pedidos urgentes |
+| `twists` | `orderMinMin`, `orderMaxMin` | 6, 10 | Almacén: minutos entre pedidos urgentes |
 | `twists` | `orderMinutes`, `orderTarget` | 3, 1,25 | Plazo del pedido y cuánto pide (veces el ritmo del negocio) |
-| `twists` | `orderRewardMin`, `orderGems` | 10, 3 | Premio del pedido: minutos de ingresos y diamantes |
-| `twists` | `criticMinMin`, `criticMaxMin`, `criticWaitSec` | 4, 8, 45 | Restaurante: cada cuánto viene el crítico y cuánto espera |
-| `twists` | `criticTaps`, `criticTipMin` | 12, 6 | Toques en la cocina que pide el crítico y propina (minutos de ingresos) |
+| `twists` | `orderRewardMin`, `orderGems` | 4, 3 | Premio del pedido: minutos de ingresos y diamantes |
+| `twists` | `criticMinMin`, `criticMaxMin`, `criticWaitSec` | 6, 10, 45 | Restaurante: cada cuánto viene el crítico y cuánto espera |
+| `twists` | `criticTaps`, `criticTipMin` | 12, 2 | Toques en la cocina que pide el crítico y propina (minutos de ingresos) |
 | `twists` | `hypePerSale`, `hypePerTap`, `hypeDecay` | 4, 2, 0,5 | TikTok: lo que sube el hype por venta y por toque, y lo que baja por segundo |
-| `twists` | `viralSec`, `hypeAdCooldownMin` | 90, 10 | Duración del directo viral y espera entre colaboraciones (anuncio) |
+| `twists` | `viralSec`, `viralRestMin`, `hypeAdCooldownMin` | 60, 6, 10 | Duración del directo viral, minutos de descanso después y espera entre colaboraciones (anuncio) |
 
 Para añadir otra clave: ponerla en `GROUPS` (`src/game/remote.ts`), en esta tabla y en `tests/remote.test.ts` si tiene reglas especiales.
 

@@ -5,7 +5,7 @@ import type { GameState } from "./state";
  * «Mi vida»: la tienda de lujo del personaje (ver docs/GDD.md, «Mi vida»).
  * Con el dinero del juego (o diamantes, en los exclusivos) el jugador se compra ropa, joyas, coches,
  * casas, mascotas y caprichos. Lo comprado es para siempre (también al salir a bolsa y en todas las
- * ciudades), se ve en su personaje y da **prestigio**: +1 % de ingresos por punto y +10 % por cada
+ * ciudades), se ve en su personaje y da **prestigio**: +0,5 % de ingresos por punto y +5 % por cada
  * colección completa. Con un anuncio se puede probar algo 1 hora o comprar la oferta del día a mitad de precio.
  * Nada de esto da puntos de Liga ni tiene valor real.
  */
@@ -86,9 +86,9 @@ export const LUXURY: LuxuryItem[] = [
 
 export const LUX = {
   /** Ingresos extra por cada punto de prestigio. */
-  perPrestige: 0.01,
+  perPrestige: 0.005,
   /** Ingresos extra por cada colección completa. */
-  perCollection: 0.1,
+  perCollection: 0.05,
   /** Prueba con anuncio. */
   trialMin: 60,
   trialsPerDay: 5,

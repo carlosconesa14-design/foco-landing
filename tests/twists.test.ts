@@ -81,6 +81,16 @@ describe("mecánicas de cada negocio", () => {
     expect(tw.hypeTick(s, "tiktok", NOW + 1000, 1, 100, 0)).toBe(false); // en directo no se acumula
     expect(tw.twistSaleMult(s, "tiktok", NOW + 1000, true)).toBe(tw.TW.viralMult);
     expect(tw.twistSaleMult(s, "tiktok", NOW + 1000, false)).toBe(1);
+    // Después del directo, el público descansa: el hype no sube.
+    const after = NOW + tw.TW.viralSec * 1000 + 1000;
+    expect(tw.hypeRestUntil(s, "tiktok", after)).toBe(NOW + (tw.TW.viralSec + tw.TW.viralRestMin * 60) * 1000);
+    tw.hypeTick(s, "tiktok", after, 1, 100, 100);
+    expect(tw.twist(s, "tiktok").hype).toBe(0);
+    const rested = NOW + (tw.TW.viralSec + tw.TW.viralRestMin * 60 + 1) * 1000;
+    expect(tw.hypeRestUntil(s, "tiktok", rested)).toBe(0);
+    tw.hypeTick(s, "tiktok", rested, 1, 1, 0);
+    expect(tw.twist(s, "tiktok").hype).toBeGreaterThan(0);
+    s.meta.twists.tiktok.hype = 0;
     expect(tw.hypeAd(s, "tiktok", NOW + 1000)).toBe(false); // ya está en directo
     expect(tw.hypeAd(s, "tiktok", NOW + 600e3)).toBe(true);
     expect(tw.hypeAd(s, "tiktok", NOW + 700e3)).toBe(false); // espera entre anuncios

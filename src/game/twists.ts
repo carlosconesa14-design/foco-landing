@@ -30,25 +30,25 @@ export const twistOf = (bizId: string): TwistKind | null => TWISTS[bizId] ?? nul
 /** Números de las mecánicas (algunos se pueden cambiar desde el servidor: ver remote.ts). */
 export const TW = {
   // Pedidos urgentes
-  orderMinMin: 4,
-  orderMaxMin: 7,
+  orderMinMin: 6,
+  orderMaxMin: 10,
   /** Minutos para cumplirlo. */
   orderMinutes: 3,
   /** Hay que ganar en ese tiempo esto por el ritmo actual del negocio (más que su ritmo: hay que mejorar o tocar). */
   orderTarget: 1.25,
   /** Premio: minutos de ingresos del negocio, y diamantes. */
-  orderRewardMin: 10,
+  orderRewardMin: 4,
   orderGems: 3,
   /** Segundos que espera el pedido a que lo aceptes. */
   orderOfferSec: 60,
   // Crítico gastronómico
-  criticMinMin: 4,
-  criticMaxMin: 8,
+  criticMinMin: 6,
+  criticMaxMin: 10,
   criticWaitSec: 45,
   /** Toques en el restaurante que pide. */
   criticTaps: 12,
   /** Propina: minutos de ingresos. */
-  criticTipMin: 6,
+  criticTipMin: 2,
   starBonus: 0.05,
   maxStars: 10,
   // Hype
@@ -56,8 +56,10 @@ export const TW = {
   hypePerTap: 2,
   /** Lo que baja por segundo (menos de lo que sube un negocio con gerentes: se llena solo en unos 3 min). */
   hypeDecay: 0.5,
-  viralSec: 90,
+  viralSec: 60,
   viralMult: 3,
+  /** Después de un directo, el público descansa: el hype no sube durante estos minutos (x1,2 de media). */
+  viralRestMin: 6,
   hypeAdCooldownMin: 10,
 } as const;
 
@@ -260,10 +262,17 @@ export function serveCritic(s: GameState, bizId: string, now: number, force: boo
 
 export const viralActive = (s: GameState, bizId: string, now: number) => (s.meta.twists[bizId]?.viralEnd ?? 0) > now;
 
+/** Hasta cuándo descansa el público tras el último directo (0 si no descansa). */
+export function hypeRestUntil(s: GameState, bizId: string, now: number): number {
+  const end = s.meta.twists[bizId]?.viralEnd ?? 0;
+  const until = end ? end + TW.viralRestMin * 60e3 : 0;
+  return end <= now && until > now ? until : 0;
+}
+
 /** Ventas y toques del último fotograma. Devuelve true si empieza un «directo viral». */
 export function hypeTick(s: GameState, bizId: string, now: number, dt: number, sales: number, taps: number): boolean {
   const tw = twist(s, bizId);
-  if (tw.viralEnd > now) return false;
+  if (tw.viralEnd > now || hypeRestUntil(s, bizId, now)) return false;
   tw.hype = Math.max(0, Math.min(100, tw.hype + sales * TW.hypePerSale + taps * TW.hypePerTap - TW.hypeDecay * dt));
   if (tw.hype >= 100) {
     tw.hype = 0;

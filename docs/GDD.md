@@ -89,9 +89,9 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
 
 ### Mecánicas de cada negocio (fase 1: Madrid ✅)
 Cada negocio de Madrid tiene una regla propia, para que no se sientan todos iguales. Son módulos reutilizables (`src/game/twists.ts`) que luego se pueden poner en Miami y Dubái con su temática. Reglas: **nunca castigan** (si no haces nada, el negocio va igual), se entienden en 5 segundos y tienen un anuncio opcional natural. Se muestran en una tarjeta encima de la barra de la cadena y se explican la primera vez que entras.
-- **📦 Almacén: pedidos urgentes.** Cada 4–7 min llega un pedido: «gana X € en 3 min» (1,25 veces lo que el negocio gana en ese tiempo: hay que mejorar algo o usar la hora punta). Si lo cumples, 10 min de ingresos y 3 💎 (x2 con anuncio, `order_x2`). Si no, no pasa nada.
-- **🧐 Restaurante: críticos gastronómicos.** Cada 4–8 min viene un crítico que quiere ver la cocina en marcha: tocar las cocinas 12 veces en 45 s (o «Atender ya» con anuncio, `critic_now`). Da 6 min de ingresos de propina y una **estrella de reputación**: +5 % de ventas en el restaurante para siempre (hasta 10).
-- **🔥 TikTok: hype.** Cada venta (+4) y cada toque (+2) suben el hype, que baja 0,5 por segundo. Con gerentes se llena solo en unos 3 min; tocando, antes. Lleno: **¡directo viral! Ventas x3 durante 90 s**. Con anuncio, «Colaboración» lo lanza al momento (cada 10 min, `hype_collab`).
+- **📦 Almacén: pedidos urgentes.** Cada 6–10 min llega un pedido: «gana X € en 3 min» (1,25 veces lo que el negocio gana en ese tiempo: hay que mejorar algo o usar la hora punta). Si lo cumples, 4 min de ingresos y 3 💎 (x2 con anuncio, `order_x2`). Si no, no pasa nada.
+- **🧐 Restaurante: críticos gastronómicos.** Cada 6–10 min viene un crítico que quiere ver la cocina en marcha: tocar las cocinas 12 veces en 45 s (o «Atender ya» con anuncio, `critic_now`). Da 2 min de ingresos de propina y una **estrella de reputación**: +5 % de ventas en el restaurante para siempre (hasta 10).
+- **🔥 TikTok: hype.** Cada venta (+4) y cada toque (+2) suben el hype, que baja 0,5 por segundo. Con gerentes se llena solo en unos 3 min; tocando, antes. Lleno: **¡directo viral! Ventas x3 durante 60 s**, y después el público descansa 6 min (el hype no sube): x1,2 de media. Con anuncio, «Colaboración» lo lanza al momento (cada 10 min, `hype_collab`).
 - **🧠 Agencia de IA: investigación.** Cada venta da 1 dato. 6 mejoras permanentes en orden (de 50 a 6000 datos): +25 % ventas, +25 % producción, +25 % transporte y venta, +50 % ventas, **+10 % ventas en toda la ciudad** y x2 ventas.
 - Las estrellas, los datos y la investigación se conservan al salir a bolsa. Todo es solo jugando y el bot de equilibrado no las usa: no cambian los tests de ritmo, son extra para quien juega. Números ajustables desde el servidor (grupo `twists`, [`AJUSTES.md`](AJUSTES.md)).
 - **Siguiente fase:** pedidos en el safari (excursiones) y la inmobiliaria (proyectos), hype en el club de playa y reseñas ⭐ en el hotel, investigación en el rascacielos, y «guardar o vender» en el exchange de cripto y el zoco del oro.
@@ -100,7 +100,7 @@ Cada negocio de Madrid tiene una regla propia, para que no se sientan todos igua
 Un sitio en el que gastar el dinero aparte de las mejoras, para que apetezca ganar más. Botón «Mi vida» en el lateral (con punto rojo cuando hay algo que te puedes permitir) y en el menú.
 - **El personaje:** empieza en chándal de rider, en moto de reparto y en casa de sus padres. Lo que compras se le ve encima (ropa, joyas), y se ve su casa al fondo, su coche, su mascota y su capricho de lujo. **Tu coche circula por la ciudad** con un cartel «Tú».
 - **6 colecciones (32 objetos):** ropa, relojes y joyas, garaje, casas, mascotas y lujo extremo. Se pagan con el dinero del juego de la ciudad en la que estás, con precios de 500 € a 10^35 € (siempre hay algo a lo que aspirar). Hay 5 **exclusivos con diamantes** (de 250 a 500 💎).
-- **Bonus:** cada objeto da prestigio y **cada punto, +1 % de ingresos para siempre** (también al salir a bolsa y en todas las ciudades). **Cada colección completa, +10 %**. Con todo, x2,1 como mucho. No cambia el ritmo de los tests (el bot no compra), pero un jugador que compra va algo más rápido; es la idea.
+- **Bonus:** cada objeto da prestigio y **cada punto, +0,5 % de ingresos para siempre** (también al salir a bolsa y en todas las ciudades). **Cada colección completa, +5 %**. Con todo, x2 como mucho. Era +1 % y +10 %: medido con el bot «implicado» (ver «Ritmo del jugador implicado»), aceleraba demasiado.
 - **Anuncios:** «**Probar 1 h**» (`lux_trial`, 5 al día): lo usas y lo ves puesto una hora, con su bonus, para que entren ganas de comprarlo. «**Oferta del día**» (`lux_deal`): uno de los 4 objetos más baratos que no tienes, a mitad de precio con un anuncio.
 - Lógica en `src/game/luxury.ts` (tests en `tests/luxury.test.ts`), pantalla en `src/ui/lifePanel.ts` y personaje en `src/ui/avatar.ts` (SVG por capas hasta que llegue el arte).
 
@@ -179,6 +179,19 @@ Ajustada con un simulador (`npx vite-node scripts/balance.ts`): un bot juega con
 | Inmobiliaria | ~40 h | ~18 h 30 min |
 | Exchange de cripto | ~3 días | ~1,5 días |
 | Ciudad completada (10^36 €) | ~6,5 días | ~3 días |
+
+### Ritmo del jugador implicado
+
+El bot normal no usa «Mi vida» ni las mecánicas de cada negocio. El bot **implicado** (`simulate({ engaged })`) sí: atiende siempre pedidos, críticos, hype e investigación, y compra en «Mi vida» lo que cuesta menos de ¼ de su dinero. En Miami y Dubái empieza con los objetos que ya tendría. Mide lo que puede ganar quien lo usa todo (cota alta: en la realidad nadie está siempre mirando).
+
+| Hito | Bot normal | Implicado (antes del ajuste) | Implicado (ahora) |
+| --- | --- | --- | --- |
+| Estudio de TikTok | ~4 h | 1 h 45 min | ~2 h 35 min |
+| Agencia de IA | ~21 h | 6 h 30 min | ~13 h 30 min |
+| Exchange de cripto (Miami) | ~77 h | — | ~58 h |
+| Rascacielos (Dubái) | ~106 h | — | ~68 h |
+
+Ajuste (octubre de 2026): el hype ya no da x3 casi siempre (directo de 60 s y 6 min de descanso), pedidos y propinas pagan menos y salen menos a menudo, y «Mi vida» da +0,5 % por punto y +5 % por colección. Objetivo: quien lo usa todo va hasta 1,5 veces más rápido, no 3. `tests/pacing.test.ts` lo protege.
 
 Claves del equilibrio:
 - **Puestos:** cada uno produce x5 y cuesta x11. Cada puesto nuevo tarda más en llegar, pero siempre compensa.

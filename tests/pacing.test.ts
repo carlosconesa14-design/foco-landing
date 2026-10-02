@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { simulate } from "../src/game/balance";
+import { LUXURY } from "../src/game/luxury";
+import type { GameState } from "../src/game/state";
 import { applyStartPerks } from "../src/game/world";
 
 /**
@@ -92,5 +94,35 @@ describe("ritmo de Dubái (tercera ciudad, con unas 20 ⭐ repartidas)", () => {
     expect(res.at["biz_souk"]).toBeGreaterThan(30 * h);
     expect(res.at["biz_tower"]).toBeGreaterThan(80 * h);
     expect(res.at["biz_tower"]).toBeLessThan(130 * h);
+  });
+}, 600_000);
+
+/** Da los objetos de «Mi vida» que un jugador ya tendría al llegar a la ciudad. */
+const ownLuxury = (s: GameState, upTo: number) => {
+  for (const i of LUXURY) if (i.price > 0 && i.price <= upTo && !s.meta.luxury.owned.includes(i.id)) s.meta.luxury.owned.push(i.id);
+};
+
+describe("ritmo del jugador implicado (mecánicas y «Mi vida»): más rápido, pero no rompe el juego", () => {
+  it("Madrid: la IA llega antes que con el bot normal, pero no antes de 10 h", () => {
+    const res = simulate({ hours: 24, dt: 2, engaged: { luxShare: 0.25 } });
+    expect(res.at["biz_tiktok"]).toBeGreaterThan(2 * h);
+    expect(res.at["biz_ai"]).toBeGreaterThan(10 * h);
+    expect(res.at["biz_ai"]).toBeLessThan(20 * h);
+  });
+
+  it("Dubái: el rascacielos sigue pidiendo más de 2 días y medio", () => {
+    const res = simulate({
+      hours: 100,
+      dt: 2,
+      city: "dubai",
+      engaged: { luxShare: 0.25 },
+      setup: (s) => {
+        s.world.completed = ["madrid", "miami"];
+        s.world.upgrades = { brand: 3, team: 1, floors: 1, suppliers: 1 };
+        applyStartPerks(s);
+        ownLuxury(s, 1e28);
+      },
+    });
+    expect(res.at["biz_tower"]).toBeGreaterThan(60 * h);
   });
 }, 600_000);

@@ -107,6 +107,9 @@ export function twistCardHtml(s: GameState): string | null {
   }
   if (kind === "hype") {
     if (st.viralEnd > n) return card("tw-viral", "🔴", t("¡Directo viral! Ventas x{n}", { n: tw.TW.viralMult }), fmtTime((st.viralEnd - n) / 1000), "", (st.viralEnd - n) / (tw.TW.viralSec * 1000));
+    const rest = tw.hypeRestUntil(s, id, n);
+    if (rest) return card("tw-idle", "😴", t("El público descansa"), fmtTime((rest - n) / 1000),
+      tw.hypeAdReady(s, id, n) ? `<button class="ad-btn" data-tw="hype"><span class="play"></span>${t("Colaboración")}</button>` : "", 0);
     return card("tw-idle", "🔥", t("Hype {n} %", { n: Math.floor(st.hype) }), t("Vende y toca para llenarlo"),
       tw.hypeAdReady(s, id, n) ? `<button class="ad-btn" data-tw="hype"><span class="play"></span>${t("Colaboración")}</button>` : "", st.hype / 100);
   }

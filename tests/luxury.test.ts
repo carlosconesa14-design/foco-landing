@@ -43,7 +43,7 @@ describe("Mi vida: tienda de lujo", () => {
     s.meta.gems = 1e4;
     for (const i of lux.LUXURY.filter((x) => x.cat === "pet")) lux.buyLuxury(s, i.id, NOW);
     expect(lux.completedCollections(s)).toEqual(["pet"]);
-    expect(lux.luxuryMult(s, NOW)).toBeCloseTo(1 + 0.01 * 19 + 0.1);
+    expect(lux.luxuryMult(s, NOW)).toBeCloseTo(1 + lux.LUX.perPrestige * 19 + lux.LUX.perCollection);
   });
 
   it("probar con anuncio: 1 hora, cuenta para el bonus y se ve puesto; 5 al día", () => {

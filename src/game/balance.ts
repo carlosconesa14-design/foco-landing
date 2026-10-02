@@ -3,7 +3,9 @@ import { CHAIN, LIFE } from "./data";
 import {
   bizDef,
   bizList,
+  businessRate,
   chainRates,
+  earn,
   floorUnlockCost,
   lifeIndex,
   managerCost,
@@ -13,10 +15,13 @@ import {
   tapStation,
   tick,
   upgradeQuote,
+  type SaleEvent,
   type Station,
 } from "./economy";
 import { execMults } from "./execs";
+import { buyLuxury, LUXURY, owns } from "./luxury";
 import { freshState, type GameState } from "./state";
+import * as tw from "./twists";
 
 /**
  * Bot de equilibrado: juega como un jugador activo razonable y registra cuándo llega a cada hito.
@@ -94,6 +99,38 @@ function bestOption(s: GameState, id: string, now: number): Option | null {
   return { ...best, gain: best.gain * scale };
 }
 
+/** Lo que hace en cada paso un jugador implicado (ver `engaged` en `simulate`). */
+function engagedStep(s: GameState, now: number, dt: number, sales: SaleEvent[], ads: boolean, { luxShare, mechanics }: { luxShare: number; mechanics?: tw.TwistKind[] }): void {
+  const rand = () => 0.5;
+  for (const [id, b] of Object.entries(s.biz)) {
+    const kind = tw.twistOf(id);
+    if (!kind || !b.owned || (mechanics && !mechanics.includes(kind))) continue;
+    const sold = sales.filter((e) => e.biz === id).length;
+    if (kind === "hype") {
+      // Toca el estudio una vez por segundo y, con anuncios, pide la colaboración en cuanto puede.
+      tw.hypeTick(s, id, now, dt, sold, dt);
+      if (ads && tw.hypeAdReady(s, id, now)) tw.hypeAd(s, id, now);
+    } else if (kind === "research") {
+      tw.addData(s, id, sold);
+      while (tw.buyResearch(s, id));
+    } else if (kind === "orders") {
+      tw.orderTick(s, id, now, businessRate(s, id, now), true, rand);
+      tw.acceptOrder(s, id, now);
+      const r = tw.claimOrder(s, id, now, ads, rand);
+      if (r) earn(s, r.money);
+    } else if (kind === "critic") {
+      if (tw.criticTick(s, id, now, true, rand) === "arrived") {
+        const rate = businessRate(s, id, now);
+        tw.criticTaps(s, id, tw.TW.criticTaps, now);
+        if (tw.serveCritic(s, id, now, false, rand)) earn(s, rate * tw.TW.criticTipMin * 60);
+      }
+    }
+  }
+  // «Mi vida»: lo más barato que no tiene, si cuesta poco comparado con su dinero.
+  const next = LUXURY.filter((i) => i.price > 0 && !owns(s, i.id)).sort((a, b) => a.price - b.price)[0];
+  if (next && next.price <= s.cash * luxShare) buyLuxury(s, next.id, now);
+}
+
 export function simulate(opts: {
   hours: number;
   ads?: boolean;
@@ -102,6 +139,11 @@ export function simulate(opts: {
   city?: string;
   /** Prepara el estado antes de empezar (p. ej. mejoras de la Oficina central). */
   setup?: (s: GameState) => void;
+  /**
+   * Jugador implicado: además usa las mecánicas de cada negocio (pedidos, críticos, hype e
+   * investigación, siempre atento) y compra en «Mi vida» lo que cueste menos de `luxShare` de su dinero.
+   */
+  engaged?: { luxShare: number; mechanics?: tw.TwistKind[] };
 }): SimResult {
   const dt = opts.dt ?? 1;
   // Suerte con semilla fija para que la simulación sea reproducible.
@@ -125,7 +167,8 @@ export function simulate(opts: {
   for (let t = 0; t < end; t += dt) {
     const now = T0 + t * 1000;
     if (opts.ads) s.boostEnd = now + 3600e3;
-    tick(s, dt, now);
+    const sales = tick(s, dt, now);
+    if (opts.engaged) engagedStep(s, now, dt, sales, opts.ads ?? false, opts.engaged);
 
     // Toca todo lo que no tiene gerente (jugador activo)
     for (const d of bizList(s)) {

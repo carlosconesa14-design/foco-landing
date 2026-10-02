@@ -19,7 +19,7 @@ const GROUPS: Record<string, { target: Numbers; keys: string[] }> = {
   viral: { target: CONFIG as unknown as Numbers, keys: ["viralMinSec", "viralMaxSec", "viralVisibleSec", "rushMinutes", "boostHours"] },
   lux: { target: LUX as unknown as Numbers, keys: ["trialMin", "trialsPerDay", "dealOff"] },
   season: { target: SEASON as unknown as Numbers, keys: ["visitorMinSec", "visitorMaxSec", "visitorMin", "visitorMax", "adMult", "salesPer"] },
-  twists: { target: TW as unknown as Numbers, keys: ["orderMinMin", "orderMaxMin", "orderMinutes", "orderTarget", "orderRewardMin", "orderGems", "criticMinMin", "criticMaxMin", "criticWaitSec", "criticTaps", "criticTipMin", "hypePerSale", "hypePerTap", "hypeDecay", "viralSec", "hypeAdCooldownMin"] },
+  twists: { target: TW as unknown as Numbers, keys: ["orderMinMin", "orderMaxMin", "orderMinutes", "orderTarget", "orderRewardMin", "orderGems", "criticMinMin", "criticMaxMin", "criticWaitSec", "criticTaps", "criticTipMin", "hypePerSale", "hypePerTap", "hypeDecay", "viralSec", "viralRestMin", "hypeAdCooldownMin"] },
 };
 
 /** Valores de fábrica, para poder volver a ellos y para los límites. */
