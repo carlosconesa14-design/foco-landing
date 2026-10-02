@@ -19,13 +19,13 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Anuncios | 14 ubicaciones (x2 4 h, hora punta, offline x3, viral, maletín, habilidad, diario, bolsa, expandir, ola, evento, **camión de suministros, cliente VIP y ruleta diaria**) y una **escalera diaria**: a los 3, 6 y 10 anuncios, maletín, 40 💎 y maletín de oro | `src/ads`, `adLadder.ts`, `offers.ts`, [`GDD.md`](GDD.md) («Monetización») |
 | Compras | VIP (sin anuncios y x2), pack de inicio y diamantes. En la web, desactivadas | `shop.ts`, `platform/store.ts`, [`COMPRAS.md`](COMPRAS.md) |
 | Liga Millonario | Semanal y por esfuerzo: todos empiezan el lunes a 0. Puntos por tiempo activo (con techo), constancia, reto del día, misiones y retos semanales. Premios del 1.º al 10.º, descanso para quien cobra dinero y Muro de la fama. **Ahora solo diamantes** | Supabase, `leaguePanel.ts`, [`LIGA.md`](LIGA.md), [`BASES_LIGA.md`](BASES_LIGA.md) |
-| Analítica | Propia y anónima, también en la web (`platform = 'web'`) | [`ANALITICA.md`](ANALITICA.md) |
+| Analítica | Propia y anónima, también en la web (`platform = 'web'`). **Panel de la beta** en directo: https://claude.ai/artifact/PerKxxxMATFCAmg5y5YZyV | [`ANALITICA.md`](ANALITICA.md) |
 | Idiomas | Español e inglés, según el móvil o desde Ajustes | [`IDIOMAS.md`](IDIOMAS.md) |
 | Web | Beta en GitHub Pages (`pages.yml`): sin compras, anuncios simulados y sin dinero en la Liga | `src/platform/web.ts` |
 | Android | Capacitor, `com.carlosconesa.ridermillionaire`. Hay un APK en cada subida y un AAB firmado manual (`release.yml`) | `android/`, [`TIENDA.md`](TIENDA.md) |
 
 **Servidor (Supabase):** proyecto `de-rider-a-millonario` (id `jpdvpbqiasyjzbdaiedh`, París).
-- **Migraciones aplicadas:** de la 0001 a la 0011 (`supabase/migrations`). La 0010 es la de seguridad y la 0011 deja sin premios las partidas editadas.
+- **Migraciones aplicadas:** de la 0001 a la 0012 (`supabase/migrations`). La 0010 es la de seguridad, la 0011 deja sin premios las partidas editadas y la 0012 es la función del panel.
 - **Edge Functions:** `league` (v4, con la hora del servidor) y `track` (v2).
 - **Seguridad:** RLS sin políticas y ningún permiso para anónimos; solo se accede a través de las funciones. Auditoría completa, defensas y pendientes en [`SEGURIDAD.md`](SEGURIDAD.md).
 
@@ -58,7 +58,7 @@ Icono, logotipo «Rider Millionaire», gráfico destacado y capturas para la tie
 ## Próximos pasos (Claude)
 0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
-2. Panel de números de la beta (jugadores, retención, anuncios por jugador, abandono en el tutorial, conversión de las visitas). ← siguiente
+2. ~~Panel de números de la beta~~ ✅ ([`ANALITICA.md`](ANALITICA.md), «Informes»).
 3. Dubái, con la carrera de fundadores: los 100 primeros reciben un ejecutivo exclusivo, sin dinero real.
 4. Rendimiento en móviles de gama media.
 5. Revisar la primera partida con datos reales.

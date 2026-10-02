@@ -25,7 +25,14 @@ Los eventos se guardan en el móvil y se envían cada 30 s y al salir. Si no hay
 
 ## Informes
 
-En el panel de Supabase → **SQL Editor**:
+**Panel de la beta:** https://claude.ai/artifact/PerKxxxMATFCAmg5y5YZyV (privado, solo para el dueño). Lee los datos en directo con el conector de Supabase de claude.ai y la función `analytics_dashboard(días, plataforma)` (migración 0012, solo lectura), que devuelve todos los números en un JSON:
+
+```sql
+select public.analytics_dashboard(14, null);   -- todas las plataformas, 14 días
+select public.analytics_dashboard(7, 'web');   -- solo la beta web
+```
+
+También en el panel de Supabase → **SQL Editor**:
 
 ```sql
 select * from analytics_retention;        -- % que vuelve el día 1, 3, 7 y 30 por cohorte
