@@ -55,9 +55,13 @@ export function swapArt(image: Phaser.GameObjects.Image, key: string): void {
   image.setTexture(ref.texture, ref.frame).setDisplaySize(w, h);
 }
 
-/** Also usable by HTML UI: SVG crops the unchanged sheet using the same frame metadata. */
+/**
+ * Also usable by HTML UI: SVG crops the unchanged sheet using the same frame metadata.
+ * The inner <svg> carries its size inline too: CSS rules like `.lux-card svg { width: 46px }` also
+ * match it and would shrink the crop window to 46 sheet pixels (empty or cut-off pictures).
+ */
 export function generatedIcon(key: string, className = "game-icon"): string {
   const ref = GENERATED_FRAMES[key];
   if (!ref) return "";
-  return `<svg class="${className}" viewBox="${ref.x} ${ref.y} ${ref.w} ${ref.h}" aria-hidden="true" focusable="false" overflow="hidden"><svg x="${ref.x}" y="${ref.y}" width="${ref.w}" height="${ref.h}" overflow="hidden"><image href="sprites/generated/${ref.file}.png" x="${-ref.x}" y="${-ref.y}" width="${ref.sheetW}" height="${ref.sheetH}"/></svg></svg>`;
+  return `<svg class="${className}" viewBox="${ref.x} ${ref.y} ${ref.w} ${ref.h}" aria-hidden="true" focusable="false" overflow="hidden"><svg x="${ref.x}" y="${ref.y}" width="${ref.w}" height="${ref.h}" style="width:${ref.w}px;height:${ref.h}px" overflow="hidden"><image href="sprites/generated/${ref.file}.png" x="${-ref.x}" y="${-ref.y}" width="${ref.sheetW}" height="${ref.sheetH}"/></svg></svg>`;
 }
