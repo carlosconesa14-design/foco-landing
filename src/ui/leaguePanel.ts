@@ -186,17 +186,17 @@ export function openLeague(ctx: PanelCtx): void {
         <div class="lg-tix"><b>⏱️ ${playTime(me.todayBlocks)}</b><small>${me.todayBlocks < st.rules.fullBlocks ? t("hoy") : me.todayBlocks < st.rules.fullBlocks + st.rules.halfBlocks ? t("hoy · a mitad") : t("hoy · máximo")}</small></div>
       </div>
       <h4 class="lg-h">${t("Clasificación")}</h4>
-      <ol class="lg-top">${st.top.map((p) => `<li class="${p.me ? "me" : ""}"><span>${esc(p.nickname)}</span><b>${pts(p.points)}</b></li>`).join("") || `<li class="muted">${t("Sé el primero en sumar puntos esta semana")}</li>`}</ol>
+      <ol class="lg-top">${st.top.map((p) => `<li class="${p.me ? "me" : ""}"><span data-nickname>${esc(p.nickname)}</span><b>${pts(p.points)}</b></li>`).join("") || `<li class="muted">${t("Sé el primero en sumar puntos esta semana")}</li>`}</ol>
       ${
         st.lastWeek
           ? `<h4 class="lg-h">${t("Ganadores de la semana pasada")}</h4>
-        <ul class="lg-win">${st.lastWeek.winners.map((w) => `<li><span>${w.rank ? place(w.rank) : "🏆"} · ${esc(w.nickname)}</span><b>${prize(w.cents, w.gems)}${w.cents > 0 && w.gems > 0 ? ` + ${w.gems} ${gem()}` : ""}</b></li>`).join("") || `<li class="muted">${t("Sin ganadores")}</li>`}</ul>`
+        <ul class="lg-win">${st.lastWeek.winners.map((w) => `<li><span>${w.rank ? place(w.rank) : "🏆"} · <span data-nickname>${esc(w.nickname)}</span></span><b>${prize(w.cents, w.gems)}${w.cents > 0 && w.gems > 0 ? ` + ${w.gems} ${gem()}` : ""}</b></li>`).join("") || `<li class="muted">${t("Sin ganadores")}</li>`}</ul>`
           : ""
       }
       ${
         st.fame.length
           ? `<h4 class="lg-h">🏆 ${t("Muro de la fama")}</h4>
-        <ul class="lg-win">${st.fame.map((f) => `<li><span>${t("Semana {n}", { n: esc(f.week.split("-W")[1] ?? f.week) })}</span><b>${esc(f.nickname)}</b></li>`).join("")}</ul>`
+        <ul class="lg-win">${st.fame.map((f) => `<li><span>${t("Semana {n}", { n: esc(f.week.split("-W")[1] ?? f.week) })}</span><b data-nickname>${esc(f.nickname)}</b></li>`).join("")}</ul>`
           : ""
       }
       <div class="lg-nick"><input data-nick maxlength="16" value="${esc(me.nickname)}" aria-label="${t("Tu nombre en la Liga")}"><button class="btn ghost" data-save>${t("Cambiar nombre")}</button></div>
