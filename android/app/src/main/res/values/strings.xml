@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Rider Millionaire</string>
+    <string name="title_activity_main">Rider Millionaire</string>
+    <string name="package_name">com.carlosconesa.ridermillionaire</string>
+    <string name="custom_url_scheme">com.carlosconesa.ridermillionaire</string>
+</resources>

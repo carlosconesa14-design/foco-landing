@@ -1,0 +1,193 @@
+{
+  "frames": {
+    "bld_dropship_2": {
+      "frame": {
+        "x": 19,
+        "y": 16,
+        "w": 474,
+        "h": 310
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 474,
+        "h": 310
+      },
+      "sourceSize": {
+        "w": 474,
+        "h": 310
+      }
+    },
+    "bld_restaurant_2": {
+      "frame": {
+        "x": 537,
+        "y": 9,
+        "w": 463,
+        "h": 325
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 463,
+        "h": 325
+      },
+      "sourceSize": {
+        "w": 463,
+        "h": 325
+      }
+    },
+    "bld_tiktok_2": {
+      "frame": {
+        "x": 1054,
+        "y": 13,
+        "w": 453,
+        "h": 323
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 453,
+        "h": 323
+      },
+      "sourceSize": {
+        "w": 453,
+        "h": 323
+      }
+    },
+    "bld_ai_2": {
+      "frame": {
+        "x": 14,
+        "y": 338,
+        "w": 480,
+        "h": 336
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 480,
+        "h": 336
+      },
+      "sourceSize": {
+        "w": 480,
+        "h": 336
+      }
+    },
+    "bld_foodtruck_2": {
+      "frame": {
+        "x": 536,
+        "y": 356,
+        "w": 483,
+        "h": 309
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 483,
+        "h": 309
+      },
+      "sourceSize": {
+        "w": 483,
+        "h": 309
+      }
+    },
+    "bld_beachclub_2": {
+      "frame": {
+        "x": 1049,
+        "y": 350,
+        "w": 473,
+        "h": 310
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 473,
+        "h": 310
+      },
+      "sourceSize": {
+        "w": 473,
+        "h": 310
+      }
+    },
+    "bld_yachts_2": {
+      "frame": {
+        "x": 25,
+        "y": 673,
+        "w": 508,
+        "h": 333
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 508,
+        "h": 333
+      },
+      "sourceSize": {
+        "w": 508,
+        "h": 333
+      }
+    },
+    "bld_realestate_2": {
+      "frame": {
+        "x": 573,
+        "y": 668,
+        "w": 394,
+        "h": 340
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 394,
+        "h": 340
+      },
+      "sourceSize": {
+        "w": 394,
+        "h": 340
+      }
+    },
+    "bld_crypto_2": {
+      "frame": {
+        "x": 1049,
+        "y": 671,
+        "w": 464,
+        "h": 332
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 464,
+        "h": 332
+      },
+      "sourceSize": {
+        "w": 464,
+        "h": 332
+      }
+    }
+  },
+  "meta": {
+    "image": "buildings-2.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}
