@@ -28,6 +28,7 @@ const salesOf = (sales: SaleEvent[], id: string) => sales.filter((e) => e.biz ==
 /** Lógica de las mecánicas (cada fotograma) y avisos. */
 export function twistTick(ctx: PanelCtx, sales: SaleEvent[], dt: number): void {
   const s = ctx.state();
+  if (!tw.twistsStarted(s)) return void (taps = {});
   const n = clockNow();
   const here = s.view.scene === "business" ? s.view.id : null;
   for (const [id, b] of Object.entries(s.biz)) {
@@ -81,7 +82,7 @@ export function twistCardHtml(s: GameState): string | null {
   if (s.view.scene !== "business") return null;
   const id = s.view.id;
   const kind = tw.twistOf(id);
-  if (!kind || !s.biz[id]?.owned) return null;
+  if (!kind || !s.biz[id]?.owned || !tw.twistsStarted(s)) return null;
   const n = clockNow();
   const st = tw.twist(s, id);
   const card = (cls: string, icon: string, title: string, sub: string, buttons = "", bar = -1) =>

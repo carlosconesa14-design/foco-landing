@@ -65,6 +65,14 @@ describe("mecánicas de cada negocio", () => {
     expect(tw.criticTick(s, "restaurant", NOW + 2000, true)).toBe("left");
   });
 
+  it("no empiezan justo al acabar el tutorial: esperan a 3 puestos abiertos", () => {
+    const s = freshState(NOW);
+    s.meta.stats.life.floors = 1;
+    expect(tw.twistsStarted(s)).toBe(false);
+    s.meta.stats.life.floors = tw.TW.startFloors;
+    expect(tw.twistsStarted(s)).toBe(true);
+  });
+
   it("hype: sube con ventas y toques, baja solo; lleno = directo viral x3 (solo jugando)", () => {
     const s = freshState(NOW);
     expect(tw.hypeTick(s, "tiktok", NOW, 1, 5, 5)).toBe(false);

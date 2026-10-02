@@ -27,8 +27,16 @@ export const TWISTS: Record<string, TwistKind> = {
 
 export const twistOf = (bizId: string): TwistKind | null => TWISTS[bizId] ?? null;
 
+/**
+ * Las mecánicas no empiezan justo al acabar el tutorial (ya hay celebración y desbloqueos): esperan a
+ * que el jugador haya abierto unos cuantos puestos (unos minutos más).
+ */
+export const twistsStarted = (s: GameState) => (s.meta.stats.life.floors ?? 0) >= TW.startFloors;
+
 /** Números de las mecánicas (algunos se pueden cambiar desde el servidor: ver remote.ts). */
 export const TW = {
+  /** Puestos abiertos (de por vida) para que empiecen las mecánicas. */
+  startFloors: 3,
   // Pedidos urgentes
   orderMinMin: 6,
   orderMaxMin: 10,
