@@ -623,3 +623,13 @@ body.season-halloween header { box-shadow: 0 2px 0 #ff8a2a66 inset, 0 5px 16px #
 .rv-bar.him i { background: linear-gradient(90deg, var(--red), #ffa494); }
 .rival-card .warn { color: #ffb4a8; }
 .city-card.soon { opacity: 0.85; }
+
+/* Desbloqueo gradual: lo bloqueado se ve, con candado, y lo recién desbloqueado brilla. */
+.rail button.locked, .menu-grid button.locked { color: #8ea3b6; }
+.locked .ic, .locked .game-icon { filter: grayscale(1) brightness(0.8); opacity: 0.6; }
+.rail button.locked::after, .menu-grid button.locked::after, .auto-btn.locked::after { content: "🔒"; position: absolute; top: -4px; right: -4px; font-size: 13px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)); }
+.auto-btn.locked { background: linear-gradient(160deg, #50677d, #2c4257); color: #d9e6f2; box-shadow: 0 4px 0 #1b2b3a, 0 8px 18px rgba(0, 0, 0, 0.3); }
+.fresh-unlock { animation: unlockGlow 1.4s ease-in-out infinite; }
+@keyframes unlockGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 216, 107, 0.0); } 50% { box-shadow: 0 0 0 4px rgba(255, 216, 107, 0.85), 0 0 18px rgba(255, 216, 107, 0.7); } }
+.next-unlock { border: 1px dashed #6e94ad; border-radius: 12px; padding: 8px 10px; }
+@media (prefers-reduced-motion: reduce) { .fresh-unlock { animation: none; outline: 3px solid #ffd86b; } }

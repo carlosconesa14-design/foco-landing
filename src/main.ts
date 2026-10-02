@@ -37,6 +37,8 @@ import { openLife } from "./ui/lifePanel";
 import { openSeason } from "./ui/seasonPanel";
 import { openCloud, openInvite, syncAccount } from "./ui/invitePanel";
 import { applyRemoteConfig, remoteVersion } from "./game/remote";
+import { applyLocks, nextUnlockText, progressText, seen, showLocked, tickUnlocks } from "./ui/unlockUi";
+import { FEATURES, featureDef, isUnlocked, type FeatureId } from "./game/unlocks";
 import { maybeIntro, twistAction, twistCardHtml, twistTap, twistTick } from "./ui/twistUi";
 import { fusableRarities } from "./game/fusion";
 import { awaySummary } from "./game/away";
@@ -326,6 +328,8 @@ root.addEventListener("click", (e) => {
   if (!b) return;
   if (moreMenu.open) { moreMenu.close(); menuToggle.focus(); }
   const which = b.dataset.open;
+  if (b.classList.contains("locked")) return showLocked(root, S, which as FeatureId);
+  if (which) seen(which);
   if (which === "missions") openMissions(ctx);
   else if (which === "daily") openDaily(ctx);
   else if (which === "execs") openExecs(ctx, S.meta.execs.length ? "execs" : "chests");
@@ -348,7 +352,13 @@ function updateMeta(now: number): void {
   updateAdLadder(now);
   updateEvent(now);
   ensureSeason(S, now);
-  if (meta.tutorialStep(S) === null) {
+  tickUnlocks(root, S, fx);
+  applyLocks(root, S);
+  const nu = document.getElementById("nextUnlock")!;
+  const nuText = nextUnlockText(S);
+  nu.hidden = !nuText;
+  if (nu.textContent !== nuText) nu.textContent = nuText;
+  if (isUnlocked(S, "rival")) {
     if (ensureRival(S, now, passiveRate(S, now, false))) {
       const who = RIVALS[S.meta.rival.who];
       banner(root, who.face, t("Nuevo rival de la semana: {name} ({biz}). ¡Gánale antes del domingo!", { name: who.name, biz: who.biz }));
@@ -383,6 +393,7 @@ function updateMeta(now: number): void {
     life: started && !!affordable(S, now),
     season: seasonOpen(S, now) && LUXURY.some((i) => i.season && !owns(S, i.id) && S.meta.season.candy >= (i.candy ?? Infinity)),
   };
+  for (const name of Object.keys(ready)) if (FEATURES.some((f) => f.id === name) && !isUnlocked(S, name as FeatureId)) ready[name] = false;
   for (const [name, available] of Object.entries(ready)) {
     root.querySelectorAll<HTMLElement>(`[data-open="${name}"] .dot`).forEach((dot) => (dot.hidden = !available));
   }
@@ -441,7 +452,7 @@ function updateEvent(now: number): void {
   const claim = eventToClaim(S);
   const started = meta.tutorialStep(S) === null;
   // Botón lateral solo mientras dura el evento (o si quedan premios por cobrar).
-  document.getElementById("eventBtn")!.hidden = !started || (!(w.active && S.meta.event.week === w.week) && claim === 0);
+  document.getElementById("eventBtn")!.hidden = !started || !isUnlocked(S, "event") || (!(w.active && S.meta.event.week === w.week) && claim === 0);
   document.getElementById("eventMenuSub")!.textContent = w.active
     ? t("En marcha · termina en {time}", { time: fmtWait(w.end - now) })
     : t("Próximo en {time}", { time: fmtWait(w.next - now) });
@@ -584,7 +595,7 @@ function updateAuto(now: number): void {
   if (!show) return;
   autoBtn.style.bottom = `${document.getElementById("bar")!.offsetHeight + overlayHeight() + 12}px`;
   const free = autoFreeLeft(S, now);
-  const txt = free === Infinity ? "∞" : free > 0 ? t("{n} hoy", { n: free }) : autoAdLeft(S, now) > 0 ? "▶" : "🔒";
+  const txt = !isUnlocked(S, "auto") ? progressText(S, featureDef("auto").need) : free === Infinity ? "∞" : free > 0 ? t("{n} hoy", { n: free }) : autoAdLeft(S, now) > 0 ? "▶" : "🔒";
   const el = document.getElementById("autoLeft")!;
   if (el.textContent !== txt) el.textContent = txt;
 }
@@ -638,7 +649,11 @@ function offerAuto(spendAll: boolean): void {
   });
 }
 
-autoBtn.addEventListener("click", () => offerAuto(false));
+autoBtn.addEventListener("click", () => {
+  if (!isUnlocked(S, "auto")) return showLocked(root, S, "auto");
+  seen("auto");
+  offerAuto(false);
+});
 
 /* ---------- Rangos de los puestos (bronce … leyenda) ---------- */
 

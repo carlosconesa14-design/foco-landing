@@ -157,6 +157,24 @@ Torneo **semanal** gratuito con premios reales, pensado como gancho principal pa
 - **Bote** = el mayor de un mínimo garantizado (50 €/semana, lo pone el dueño) o el 10 % de los ingresos de la semana anterior.
 - Validación en el servidor (Supabase), mayores de 18, bases legales en la app y revisión de un asesor antes de dar dinero.
 
+## Desbloqueo gradual
+
+Al acabar el tutorial no aparece todo de golpe: cada función se ve desde el principio **con candado** y dice cómo conseguirla. Al tocarla, se explica qué es, qué hay que hacer y cuánto llevas («Gana 10 M € en total · Llevas 2,3 M €»). En el menú siempre se ve el **próximo desbloqueo**. Al conseguirla: banda «🔓 ¡Nuevo!» y el botón brilla hasta que lo abres. `src/game/unlocks.ts`, `src/ui/unlockUi.ts`.
+
+| Función | Se desbloquea | Bot (minuto) |
+| --- | --- | --- |
+| 🎁 Premio diario y 📋 Misiones | Al acabar el tutorial | ~2 |
+| 💼 Ejecutivos | Abrir 2 puestos nuevos | ~3 |
+| ⚡ Mejorar todo | Mejorar 120 veces | ~4 |
+| 🎡 Ruleta diaria | Ganar 1 M € | ~6 |
+| 🏆 Logros | Contratar 7 gerentes | ~12 |
+| 🛍️ Mi vida | Ganar 10 M € | ~12 |
+| 🏅 Liga y 🥊 Rival de la semana | Comprar el segundo negocio | ~45 |
+| 🎉 Evento del finde | Ganar 1 billón € (10^12) | ~60 |
+| 🤝 Invitar a amigos | Ganar 10 billones € (10^13) | ~90 |
+
+Una persona tarda algo más que el bot. Lo desbloqueado se guarda para siempre. **Las partidas anteriores con el tutorial hecho lo tienen todo abierto** (no se le quita nada a nadie). Los tiempos los protege `tests/unlocks.test.ts`.
+
 ## Economía y ritmo
 
 Ajustada con un simulador (`npx vite-node scripts/balance.ts`): un bot juega con la lógica real y mide cuándo llega a cada hito. `tests/pacing.test.ts` falla si un cambio rompe estos márgenes.

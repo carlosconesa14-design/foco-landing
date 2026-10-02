@@ -13,7 +13,8 @@ import { freshAccount, migrateAccount, type AccountState } from "./account";
 import { migrateTwists, type TwistState } from "./twists";
 import { freshAuto, migrateAuto, type AutoState } from "./autoUpgrade";
 import { freshRival, migrateRival, type RivalState } from "./rival";
-import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
+import { migrateUnlocks, type FeatureId } from "./unlocks";
+import { ALL_BUSINESSES, CITIES, CONFIG, TUTORIAL, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
 
@@ -133,6 +134,8 @@ export interface MetaState {
   auto: AutoState;
   /** Rival de la semana. */
   rival: RivalState;
+  /** Funciones ya desbloqueadas (desbloqueo gradual). */
+  unlocked: FeatureId[];
 }
 
 export interface Settings {
@@ -235,6 +238,7 @@ export function freshMeta(now = clockNow()): MetaState {
     twists: {},
     auto: freshAuto(),
     rival: freshRival(),
+    unlocked: [],
   };
 }
 
@@ -351,6 +355,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.twists = migrateTwists(r.twists);
   m.auto = migrateAuto(r.auto);
   m.rival = migrateRival(r.rival);
+  m.unlocked = migrateUnlocks(r.unlocked, m.tutorial >= TUTORIAL.length);
   m.flags = Array.isArray(r.flags) ? r.flags.filter((f): f is string => typeof f === "string").slice(0, 10) : [];
   return m;
 }
