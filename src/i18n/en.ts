@@ -735,7 +735,6 @@ export const EN: Record<string, string> = {
   "Ver anuncio y mejorar": "Watch ad and upgrade",
   "Sin límite: Gestor automático": "Unlimited: Auto manager",
   "Mejorar todo": "Upgrade all",
-  "Hoy ya has usado tus {n} mejoras automáticas gratis. Mañana tendrás más; o hazlo sin límite para siempre con el Gestor automático.": "You've used your {n} free auto upgrades today. You'll get more tomorrow, or go unlimited forever with the Auto manager.",
 
   /* ---------- Fusión, vuelta, rival y Tokio ---------- */
   "Tu premio diario te espera": "Your daily reward is waiting",
@@ -761,4 +760,16 @@ export const EN: Record<string, string> = {
   "Tecnología, anime y trenes bala. La siguiente parada de tu imperio, después de Dubái.": "Tech, anime and bullet trains. Your empire's next stop, after Dubai.",
   "Rival de la semana": "Rival of the week",
   "Gánale antes del domingo": "Beat them before Sunday",
+
+  "Ahorrando para {biz}": "Saving for {biz}",
+  "Tu siguiente negocio está muy cerca, así que «Mejorar todo» no toca ese dinero.": "Your next business is very close, so «Upgrade all» won't touch that money.",
+  "Seguir ahorrando": "Keep saving",
+  "Gastarlo igualmente": "Spend it anyway",
+  "En menos de 2 minutos podrás pagar una mejora mucho mejor: espera un poco": "In under 2 minutes you'll afford a much better upgrade: wait a moment",
+  "Mejorar ({n} hoy)": "Upgrade ({n} today)",
+  "Gastarlo todo (sin guardar para {biz})": "Spend it all (don't save for {biz})",
+  "Guarda el dinero para {biz}, que ya casi puedes comprar.": "Keeps the money for {biz}, which you can almost buy.",
+  "Deja algo para una mejora mejor que podrás pagar en menos de 2 minutos.": "Leaves some for a better upgrade you'll afford in under 2 minutes.",
+  "Hoy ya has usado tus {n} mejoras automáticas gratis.": "You've used your {n} free auto upgrades today.",
+  "Gastarás {m} en {n} mejoras: de {a}/s a {b}/s.": "You'll spend {m} on {n} upgrades: from {a}/s to {b}/s.",
 };

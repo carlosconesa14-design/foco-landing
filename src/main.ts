@@ -41,7 +41,7 @@ import { maybeIntro, twistAction, twistCardHtml, twistTap, twistTick } from "./u
 import { fusableRarities } from "./game/fusion";
 import { awaySummary } from "./game/away";
 import { RIVALS, checkRival, ensureRival } from "./game/rival";
-import { AUTO, autoAdLeft, autoFreeLeft, autoUpgrade, spendAutoUse } from "./game/autoUpgrade";
+import { AUTO, autoAdLeft, autoFreeLeft, autoUpgrade, planAuto, spendAutoUse } from "./game/autoUpgrade";
 import { cachedConfig, fetchConfig } from "./platform/account";
 import { LUXURY, affordable, owns } from "./game/luxury";
 import { SEASON, activeSeason, collectVisitor, ensureSeason, scheduleVisitor, seasonOpen, visitorCandy, visitorDue } from "./game/season";
@@ -589,39 +589,56 @@ function updateAuto(now: number): void {
   if (el.textContent !== txt) el.textContent = txt;
 }
 
-/** ¿Hay algo que mejorar con el dinero que hay? (sin tocar la partida) */
-function autoWouldHelp(id: string): boolean {
-  const copy = structuredClone(S);
-  return autoUpgrade(copy, id, clockNow()).steps > 0;
-}
-
-async function runAuto(withAd: boolean): Promise<void> {
+async function runAuto(withAd: boolean, spendAll: boolean): Promise<void> {
   if (S.view.scene !== "business") return;
   const id = S.view.id;
   if (withAd && !(await watchAd("auto_upgrade"))) return;
   if (!spendAutoUse(S, clockNow(), withAd)) return;
-  const r = autoUpgrade(S, id, clockNow());
+  const r = autoUpgrade(S, id, clockNow(), spendAll);
   fx("milestone", true);
   floatAt(autoBtn, `+${money(Math.max(0, r.after - r.before))}/s`);
   banner(root, "⚡", t("{n} mejoras · ahora ganas {m}/s", { n: r.steps, m: money(r.after) }));
 }
 
-autoBtn.addEventListener("click", () => {
+/** Enseña antes lo que va a hacer «Mejorar todo» y pide confirmación (y el uso, si hace falta). */
+function offerAuto(spendAll: boolean): void {
   if (S.view.scene !== "business") return;
   const now = clockNow();
-  if (!autoWouldHelp(S.view.id)) return say(t("Aún no tienes dinero para ninguna mejora"));
-  if (autoFreeLeft(S, now) > 0) return void runAuto(false);
+  const plan = planAuto(S, S.view.id, now, spendAll);
+  if (!plan.steps) {
+    if (plan.savingFor && !spendAll)
+      return modal(root, {
+        title: t("Ahorrando para {biz}", { biz: plan.savingFor }),
+        amount: "🐷",
+        text: t("Tu siguiente negocio está muy cerca, así que «Mejorar todo» no toca ese dinero."),
+        actions: [
+          { label: t("Seguir ahorrando"), run: () => {} },
+          { label: t("Gastarlo igualmente"), run: () => offerAuto(true) },
+        ],
+      });
+    return say(plan.waiting ? t("En menos de 2 minutos podrás pagar una mejora mucho mejor: espera un poco") : t("Aún no tienes dinero para ninguna mejora"));
+  }
+  const free = autoFreeLeft(S, now);
   const actions: { label: string; ad?: boolean; run: () => void }[] = [];
-  if (autoAdLeft(S, now) > 0) actions.push({ ad: true, label: t("Ver anuncio y mejorar"), run: () => void runAuto(true) });
-  actions.push({ label: t("Sin límite: Gestor automático"), run: () => openShop(ctx) });
-  actions.push({ label: t("Ahora no"), run: () => {} });
+  if (free > 0) actions.push({ label: free === Infinity ? t("Mejorar") : t("Mejorar ({n} hoy)", { n: free }), run: () => void runAuto(false, spendAll) });
+  else if (autoAdLeft(S, now) > 0) actions.push({ ad: true, label: t("Ver anuncio y mejorar"), run: () => void runAuto(true, spendAll) });
+  if (free <= 0) actions.push({ label: t("Sin límite: Gestor automático"), run: () => openShop(ctx) });
+  if (plan.savingFor && !spendAll) actions.push({ label: t("Gastarlo todo (sin guardar para {biz})", { biz: plan.savingFor }), run: () => offerAuto(true) });
+  actions.push({ label: t("Cancelar"), run: () => {} });
+  const notes = [
+    plan.savingFor && !spendAll ? t("Guarda el dinero para {biz}, que ya casi puedes comprar.", { biz: plan.savingFor }) : "",
+    plan.waiting ? t("Deja algo para una mejora mejor que podrás pagar en menos de 2 minutos.") : "",
+    free <= 0 ? t("Hoy ya has usado tus {n} mejoras automáticas gratis.", { n: AUTO.freePerDay }) : "",
+  ].filter(Boolean);
   modal(root, {
     title: t("Mejorar todo"),
-    amount: "⚡",
-    text: t("Hoy ya has usado tus {n} mejoras automáticas gratis. Mañana tendrás más; o hazlo sin límite para siempre con el Gestor automático.", { n: AUTO.freePerDay }),
+    amount: `+${money(Math.max(0, plan.after - plan.before))}/s`,
+    text: [t("Gastarás {m} en {n} mejoras: de {a}/s a {b}/s.", { m: money(plan.spent), n: plan.steps, a: money(plan.before), b: money(plan.after) }), ...notes].join(" "),
     actions,
   });
-});
+}
+
+autoBtn.addEventListener("click", () => offerAuto(false));
 
 /* ---------- Rangos de los puestos (bronce … leyenda) ---------- */
 

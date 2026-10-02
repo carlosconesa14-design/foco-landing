@@ -42,14 +42,14 @@ function stations(s: GameState, id: string): Station[] {
   return [...s.biz[id].floors.map((_, i) => ({ kind: "floor", index: i }) as Station), { kind: "transport" }, { kind: "sale" }];
 }
 
-export type Option = { gain: number; cost: number; run: () => void; label: string };
+type Option = { gain: number; cost: number; run: () => void; label: string };
 
 /**
  * Mejor compra en un negocio, como haría un jugador: mejorar la parte en rojo (la que limita).
  * Si limita la producción, elige entre mejorar un puesto o abrir uno nuevo según €/s ganados por €.
  * La ganancia se mide en la propia parte (no en el mínimo), para no quedarse bloqueado en empates.
  */
-export function bestOption(s: GameState, id: string, now: number): Option | null {
+function bestOption(s: GameState, id: string, now: number): Option | null {
   const def = bizDef(id);
   const b = s.biz[id];
   const m = execMults(s, id, now);

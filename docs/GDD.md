@@ -74,7 +74,12 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
 - **Siguientes ciudades:** Tokio (tecnología, turnos de noche), Nueva York… Solo hay que añadir un `CityDef` en `src/game/data.ts` y su arte.
 
 ### Comodidad y motivos para volver ✅
-- **⚡ Mejorar todo** (botón abajo a la derecha en cada negocio): contrata los gerentes que falten y reparte el dinero en lo que más €/s da por euro (la misma lógica del bot de equilibrado). **3 usos gratis al día y 2 más con anuncio** (`auto_upgrade`). Sin límite con el **Gestor automático (0,99 €, compra única)** o con el VIP. `src/game/autoUpgrade.ts`.
+- **⚡ Mejorar todo** (botón abajo a la derecha en cada negocio): contrata los gerentes que falten y reparte el dinero en lo que más €/s da por euro en la parte que limita (como el bot de equilibrado). Para acercarse a lo óptimo:
+  - **Respeta el ahorro:** si el siguiente negocio de la ciudad se puede comprar ya, o está a menos de 20 min de ingresos, guarda ese dinero (`AUTO.saveForBizSec`). Se puede gastar igualmente con «Gastarlo todo».
+  - **Cuenta los hitos:** valora subir hasta el siguiente hito (x2) como un paquete, no nivel a nivel.
+  - **Espera a lo mejor:** si la mejor compra está a menos de 2 min de ingresos, para y no gasta en algo peor (`AUTO.waitForBestSec`).
+  - **Avisa antes:** «Gastarás X en N mejoras: de A/s a B/s», simulado sobre una copia de la partida (`planAuto`).
+  - **Límite:** 3 usos gratis al día y 2 más con anuncio (`auto_upgrade`). Sin límite con el **Gestor automático (0,99 €, compra única)** o con el VIP. `src/game/autoUpgrade.ts`.
 - **🔀 Fusionar ejecutivos:** 3 de la misma rareza → 1 de la rareza siguiente (común → raro → épico → legendario). Hereda la especialidad más repetida y el sitio del que estuviera asignado; se usan primero los libres. El fundador no se fusiona. Da valor a los repetidos de los maletines (y a abrir más). `src/game/fusion.ts`.
 - **👋 Mientras no estabas:** al volver, además de lo que ganaron los gerentes (x3 con anuncio), una lista de hasta 4 cosas que te esperan: premio diario, maletín gratis, misiones, habilidades listas, premios del evento, investigación o algo de «Mi vida» que ya te puedes comprar. `src/game/away.ts`.
 - **🥊 Rival de la semana:** cada lunes, un competidor ficticio (Kevin del kebab, Vanesa del salón de uñas…) que gana a su ritmo hasta el domingo. Su meta son 8 h de tus ingresos pasivos al empezar la semana (+3 h por cada victoria, hasta 40 h). Si ganas más que su meta esa semana (sumando todas tus ciudades): **maletín de oro y 40–100 💎** al momento. Si no, no pasa nada. Tarjeta en el panel Imperio y en el menú. `src/game/rival.ts`.
