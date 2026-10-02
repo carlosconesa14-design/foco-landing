@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { VISUAL_FRAMES, VISUAL_SHEETS } from '../src/art/visualFrames';
+import { COMPLETION_FRAMES, COMPLETION_SHEETS } from '../src/art/completionFrames';
 import { LUXURY } from '../src/game/luxury';
 
 describe('shipped visual atlas coverage', () => {
   it('keeps every registered crop inside its actual PNG', () => {
-    for (const sheet of VISUAL_SHEETS) {
+    for (const sheet of [...VISUAL_SHEETS,...COMPLETION_SHEETS]) {
       const png=readFileSync(`public/sprites/generated/${sheet.file}.png`);
       const width=png.readUInt32BE(16), height=png.readUInt32BE(20);
       expect(Math.max(width,height)).toBeLessThanOrEqual(2048);
       const atlas=JSON.parse(readFileSync(`public/sprites/generated/${sheet.file}.json`,'utf8'));
-      for(const [key,f] of Object.entries(VISUAL_FRAMES).filter(([,f])=>f.sheet===sheet.key)) {
+      for(const [key,f] of Object.entries({...VISUAL_FRAMES,...COMPLETION_FRAMES}).filter(([,f])=>f.sheet===sheet.key)) {
         expect(f.sheetW).toBe(width);expect(f.sheetH).toBe(height);
         expect(f.x).toBeGreaterThanOrEqual(0);expect(f.y).toBeGreaterThanOrEqual(0);
         expect(f.w).toBeGreaterThan(0);expect(f.h).toBeGreaterThan(0);
@@ -24,6 +25,18 @@ describe('shipped visual atlas coverage', () => {
       expect(VISUAL_FRAMES[`lux_${item.id}`],item.id).toBeDefined();
       if(item.cat==='outfit')expect(VISUAL_FRAMES[`avatar_${item.id}`]).toMatchObject({w:340,h:504});
       if(item.cat==='car')expect(VISUAL_FRAMES[`luxcar_${item.id}`]).toEqual(VISUAL_FRAMES[`lux_${item.id}`]);
+    }
+  });
+  it('provides distinct business decor, premium stations and complete walking frames',()=>{
+    for(const id of ['dropship','restaurant','tiktok','ai','foodtruck','beachclub','yachts','realestate','crypto','supercars','hotel','safari','souk','tower']) {
+      expect(COMPLETION_FRAMES[`decor_${id}_2` as keyof typeof COMPLETION_FRAMES]).toBeDefined();
+      expect(COMPLETION_FRAMES[`decor_${id}_3` as keyof typeof COMPLETION_FRAMES]).toBeDefined();
+      for(const rank of [4,5])expect(COMPLETION_FRAMES[`st_${id}_r${rank}` as keyof typeof COMPLETION_FRAMES]).toBeDefined();
+    }
+    for(const role of ['mechanic','valet','butler','guide','goldsmith','builder']) {
+      const poses=[0,1,2].map(n=>readFileSync(`public/sprites/ch_${role}_${n}.png`));
+      poses.forEach(p=>{expect(p.readUInt32BE(16)).toBe(132);expect(p.readUInt32BE(20)).toBe(180)});
+      expect(new Set(poses.map(p=>p.toString('base64'))).size).toBe(3);
     }
   });
   it('supplies three distinct Dubai evolutions and its own production pieces', () => {
