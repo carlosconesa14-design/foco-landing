@@ -1,0 +1,312 @@
+{
+  "frames": {
+    "bld_supercars_1": {
+      "frame": {
+        "x": 9,
+        "y": 103,
+        "w": 298,
+        "h": 209
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 298,
+        "h": 209
+      },
+      "sourceSize": {
+        "w": 298,
+        "h": 209
+      }
+    },
+    "bld_hotel_1": {
+      "frame": {
+        "x": 355,
+        "y": 4,
+        "w": 259,
+        "h": 308
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 259,
+        "h": 308
+      },
+      "sourceSize": {
+        "w": 259,
+        "h": 308
+      }
+    },
+    "bld_safari_1": {
+      "frame": {
+        "x": 653,
+        "y": 101,
+        "w": 269,
+        "h": 211
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 269,
+        "h": 211
+      },
+      "sourceSize": {
+        "w": 269,
+        "h": 211
+      }
+    },
+    "bld_souk_1": {
+      "frame": {
+        "x": 982,
+        "y": 87,
+        "w": 247,
+        "h": 225
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 247,
+        "h": 225
+      },
+      "sourceSize": {
+        "w": 247,
+        "h": 225
+      }
+    },
+    "bld_tower_1": {
+      "frame": {
+        "x": 1318,
+        "y": 4,
+        "w": 195,
+        "h": 300
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 195,
+        "h": 300
+      },
+      "sourceSize": {
+        "w": 195,
+        "h": 300
+      }
+    },
+    "bld_supercars_2": {
+      "frame": {
+        "x": 3,
+        "y": 425,
+        "w": 304,
+        "h": 226
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 304,
+        "h": 226
+      },
+      "sourceSize": {
+        "w": 304,
+        "h": 226
+      }
+    },
+    "bld_hotel_2": {
+      "frame": {
+        "x": 324,
+        "y": 312,
+        "w": 290,
+        "h": 336
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 290,
+        "h": 336
+      },
+      "sourceSize": {
+        "w": 290,
+        "h": 336
+      }
+    },
+    "bld_safari_2": {
+      "frame": {
+        "x": 650,
+        "y": 402,
+        "w": 272,
+        "h": 253
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 272,
+        "h": 253
+      },
+      "sourceSize": {
+        "w": 272,
+        "h": 253
+      }
+    },
+    "bld_souk_2": {
+      "frame": {
+        "x": 983,
+        "y": 384,
+        "w": 246,
+        "h": 266
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 246,
+        "h": 266
+      },
+      "sourceSize": {
+        "w": 246,
+        "h": 266
+      }
+    },
+    "bld_tower_2": {
+      "frame": {
+        "x": 1309,
+        "y": 312,
+        "w": 222,
+        "h": 334
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 222,
+        "h": 334
+      },
+      "sourceSize": {
+        "w": 222,
+        "h": 334
+      }
+    },
+    "bld_supercars_3": {
+      "frame": {
+        "x": 0,
+        "y": 707,
+        "w": 307,
+        "h": 294
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 307,
+        "h": 294
+      },
+      "sourceSize": {
+        "w": 307,
+        "h": 294
+      }
+    },
+    "bld_hotel_3": {
+      "frame": {
+        "x": 307,
+        "y": 655,
+        "w": 307,
+        "h": 353
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 307,
+        "h": 353
+      },
+      "sourceSize": {
+        "w": 307,
+        "h": 353
+      }
+    },
+    "bld_safari_3": {
+      "frame": {
+        "x": 614,
+        "y": 712,
+        "w": 308,
+        "h": 297
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 308,
+        "h": 297
+      },
+      "sourceSize": {
+        "w": 308,
+        "h": 297
+      }
+    },
+    "bld_souk_3": {
+      "frame": {
+        "x": 922,
+        "y": 702,
+        "w": 307,
+        "h": 296
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 307,
+        "h": 296
+      },
+      "sourceSize": {
+        "w": 307,
+        "h": 296
+      }
+    },
+    "bld_tower_3": {
+      "frame": {
+        "x": 1229,
+        "y": 655,
+        "w": 306,
+        "h": 343
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 306,
+        "h": 343
+      },
+      "sourceSize": {
+        "w": 306,
+        "h": 343
+      }
+    }
+  },
+  "meta": {
+    "image": "dubai-buildings.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}
