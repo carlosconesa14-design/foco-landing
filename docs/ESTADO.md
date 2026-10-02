@@ -84,4 +84,5 @@ Validación local: 217 tests correctos, build de producción correcto y 110 comp
 - **Desde el contenedor no se llega a `github.io` ni a `supabase.co`.** Para probar el servidor se usa el MCP de Supabase (`execute_sql` dentro de una transacción con `rollback`).
 - **Textos:** con `t()` y su traducción en `src/i18n/en.ts`.
 - **Ajustes de la economía:** se comprueban con el bot (`src/game/balance.ts` y `tests/pacing.test.ts`), también con el bot «implicado» (`engaged`), que usa las mecánicas y «Mi vida».
+- **Rendimiento:** el canvas se pinta como mucho a x2 (`DPR` en `common.ts`) y las imágenes se cargan en WebP (`npm run art:webp`, `src/art/imgExt.ts`): 9,6 MB en vez de 37 MB al arrancar.
 - **Partidas antiguas:** `tests/migration.test.ts` carga partidas reales de la beta publicada (`tests/fixtures/beta-*.json`, generadas con el código de `main`). Si cambia el guardado, tienen que seguir cargando sin perder nada.

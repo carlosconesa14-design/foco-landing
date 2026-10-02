@@ -4,6 +4,7 @@ import { CHESTS, EXEC_FACES, LIFE, type BusinessDef, type ChestType, type CityDe
 import type { Exec } from "../game/state";
 
 import { generatedIcon } from "../art/generated";
+import { IMG_EXT } from "../art/imgExt";
 /** Original vector UI kit. All paths use a 48px logical canvas, no remote assets. */
 const shapes: Record<string, string> = {
   ...VISUAL_ICON_SHAPES,
@@ -30,7 +31,7 @@ const names: Record<string, string> = {
   '🏙️':'city','📈':'ipo','🌍':'world','🗺️':'world','⭐':'star','🔒':'lock','👔':'manager','✅':'check',
 };
 export function icon(name: string, fallback?: string): string {
-  if (available.has(name)) return `<img class="ico" src="sprites/${name}.png" alt="" draggable="false">`;
+  if (available.has(name)) return `<img class="ico" src="sprites/${name}.${IMG_EXT}" alt="" draggable="false">`;
   const generated = generatedIcon(name);
   if (generated) return generated;
   if (name.startsWith("ic_biz_")) return icon(`bld_${name.slice(7)}_1`);

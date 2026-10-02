@@ -40,6 +40,7 @@ Cosas que hay que saber:
 - **No toques la economía** (`src/game/*`: números, fórmulas, guardado) salvo que un cambio visual lo necesite de verdad. Si cambias algo ahí, `npm test` tiene que seguir pasando, incluidos los tests de ritmo.
 - **Antes de dar algo por terminado:** `npm test` y `npm run build` sin errores. Prueba en el navegador a 390×844 (móvil) sin errores en la consola.
 - **Rendimiento:** tiene que ir fluido en móviles de gama media. Nada de miles de partículas ni de texturas de 4K.
+- **Después de añadir o cambiar PNG en `public/sprites`: `npm run art:webp`.** El juego carga la copia `.webp` (5 veces más ligera); `npm test` avisa si falta alguna.
 - **Accesibilidad:** respeta `prefers-reduced-motion` y mantén un contraste legible.
 - **Textos del juego en español, siempre con `t()`** (`src/i18n.ts`): `t("Nivel {n}", { n })`. Añade la traducción al inglés en `src/i18n/en.ts`; `npm test` avisa si falta alguna. Para dinero usa `money(n)` (€ o $ según el idioma), no `${fmt(n)} €`. Detalles en `docs/IDIOMAS.md`.
 - **Arte propio o con licencia libre**, sin marcas ni logotipos reales.

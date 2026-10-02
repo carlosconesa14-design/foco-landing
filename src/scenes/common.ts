@@ -10,7 +10,12 @@ import type { GameState } from "../game/state";
  */
 export const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export const DPR = Math.min(window.devicePixelRatio || 1, 3);
+/**
+ * Resolución del canvas: como mucho x2. En pantallas x3 se pintarían 2,25 veces más píxeles por
+ * fotograma (la mitad de fluidez en móviles de gama media) para una diferencia que casi no se ve.
+ * La interfaz HTML va aparte y sigue a resolución completa.
+ */
+export const DPR = Math.min(window.devicePixelRatio || 1, 2);
 export const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
 export const UI_FONT = '"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif';
 export const DISPLAY_FONT = '"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif';

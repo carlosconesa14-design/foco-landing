@@ -7,7 +7,8 @@ El catálogo `src/art/catalog.ts` define las claves y tamaños lógicos. El jueg
 1. Genera el PNG con **fondo transparente**.
 2. Guárdalo como `public/sprites/<clave>.png`, por ejemplo `public/sprites/bld_restaurant.png`.
 3. Añade la clave a `public/sprites/manifest.json`, por ejemplo `["bld_restaurant", "ch_cook_0"]`.
-4. Recarga el juego.
+4. Ejecuta `npm run art:webp`: crea la copia `.webp`, que es la que carga el juego (5 veces más ligera). El PNG sigue siendo la fuente; `npm test` avisa si falta alguna copia.
+5. Recarga el juego.
 
 Recomendaciones:
 - Exporta a **3 veces el tamaño lógico** (por ejemplo, un personaje de 44×60 se exporta a 132×180) para que se vea nítido en pantallas retina.
