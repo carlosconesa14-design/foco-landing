@@ -715,6 +715,7 @@ export const EN: Record<string, string> = {
   "Pedidos urgentes": "Rush orders",
   "De vez en cuando llega un pedido con prisa: acéptalo y gana el dinero que pide antes de que acabe el tiempo. Si lo cumples, premio grande y diamantes. Si no, no pasa nada.": "Every so often a rush order comes in: accept it and earn the money it asks for before time runs out. Complete it for a big reward and gems. If not, nothing happens.",
   "Críticos gastronómicos": "Food critics",
+  "En directo": "Live",
   "Hype": "Hype",
   "Cada venta y cada toque sube el hype del estudio, que baja solo si te paras. Cuando se llena: ¡directo viral! Ventas x3 durante un rato.": "Every sale and every tap raises the studio's hype, which drops if you stop. When it's full: viral live stream! Sales x3 for a while.",
   "Investigación": "Research",

@@ -1,3 +1,4 @@
+import { TwistWorld } from "./TwistWorld";
 import { WorldVisitor } from "./WorldVisitor";
 import type { OfferKind } from "../game/offers";
 import { money, t } from "../i18n";
@@ -135,6 +136,7 @@ const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_va
 export class BusinessScene extends Phaser.Scene {
   private bridge!: Bridge;
   private visitor: WorldVisitor | null = null;
+  private twistWorld: TwistWorld | null = null;
   private restaurant: RestaurantRoom | null = null;
   private warehouse: WarehouseRoom | null = null;
   private get layout() { return this.bizId === "restaurant" ? RESTAURANT_LAYOUT : this.bizId === "dropship" ? WAREHOUSE_LAYOUT : DEFAULT_LAYOUT; }
@@ -188,6 +190,7 @@ export class BusinessScene extends Phaser.Scene {
     this.traffic = [];
     this.unlockPill = null;
     this.visitor = null;
+    this.twistWorld = null;
     this.restaurant = null;
     this.warehouse = null;
   }
@@ -260,6 +263,7 @@ export class BusinessScene extends Phaser.Scene {
     }
     const focus = this.iso(...this.layout.focus);
     this.drag.addControls(focus, { left: margin - TW / 2 - 40, top: this.oy - (this.restaurant || this.warehouse ? 75 : ART[hubKey].h), right: this.worldW - margin + 40, bottom: this.oy + (COLS + ROWS + 1) * TH / 2 + 20 });
+    this.twistWorld = new TwistWorld(this,this.bizId,this.iso(this.bizId === "restaurant" ? 7.6 : this.bizId === "dropship" ? 1.5 : 6.9, 8.7));
     revealScene(this);
   }
 
@@ -709,6 +713,7 @@ export class BusinessScene extends Phaser.Scene {
   update(_t: number, dtMs: number): void {
     this.visitor?.update();
     const s = this.bridge.state();
+    this.twistWorld?.update(s);
     const b = this.biz();
     if (!b) return;
     if (b.floors.length !== this.floorCount) {
