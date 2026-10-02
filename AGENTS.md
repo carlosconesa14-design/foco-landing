@@ -1,6 +1,6 @@
 # Instrucciones para agentes (Codex, ChatGPT, Claude…)
 
-"Rider Millionaire" es un idle tycoon para móvil (Phaser 3 + TypeScript + Vite + Capacitor) monetizado con anuncios bonificados. Lee primero `README.md`, `docs/GDD.md` (diseño) y `docs/ART.md` (arte).
+"Rider Millionaire" es un idle tycoon para móvil (Phaser 3 + TypeScript + Vite + Capacitor) monetizado con anuncios bonificados. Lee primero `docs/ESTADO.md` (estado y decisiones), `README.md`, `docs/GDD.md` (diseño) y `docs/ART.md` (arte).
 
 ## Tu misión: todo lo visual
 
