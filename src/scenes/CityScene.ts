@@ -336,7 +336,7 @@ export class CityScene extends Phaser.Scene {
         const p = this.iso(c + 0.5, r + 0.5);
         const roll = rand();
         if (roll < 0.34) {
-          const key = this.city.id === "dubai" ? "dubai_planter" : this.city.trees[Math.floor(rand() * this.city.trees.length)];
+          const key = this.city.id === "dubai" ? "desert_palm" : this.city.trees[Math.floor(rand() * this.city.trees.length)];
           const tree = art(this, p.x + (rand() - 0.5) * 14, p.y + 8, key).setOrigin(0.5, 0.92);
           tree.setDepth(tree.y);
         } else if (roll < 0.5) {

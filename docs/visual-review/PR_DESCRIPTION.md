@@ -8,10 +8,12 @@ El juego tenía arte provisional de Dubái y Mi vida, rangos sin variantes de la
 - Visitantes: camión y VIP físicos, entrada/salida, sombra, halo e interacción; una pequeña etiqueta accesible sigue al actor.
 - Miami: se conserva su arte existente y se completa el tráfico pastel y decoración costera.
 - Marca: logos claro/oscuro, iconos 512/1024, carga web, iconos Android en cinco densidades, splash, gráfico Play 1024×500 y cinco capturas reales 1080×1920.
-- Documentación y scripts de exportación/captura reproducibles.
+- Ampliación final: 18 frames reales de caminar en Dubái, 28 decoraciones específicas por negocio/evolución, 28 puestos Diamante/Leyenda personalizados y vegetación, mobiliario y pavimentos propios.
+- Mecánicas físicas: furgoneta de pedidos urgentes, crítico sentado, equipo de directo y monitor holográfico; proyección de solo lectura sin acciones económicas nuevas.
+- Documentación antigua corregida y scripts de exportación/captura reproducibles.
 
 ### Assets y comparaciones
-119 claves comparten seis nuevos atlas RGBA; ningún atlas supera 1774 px. Las fuentes, tamaños, prompts de dirección, alias y puntos de integración se documentan en `docs/ART.md`.
+La primera entrega aporta 119 claves en seis atlas; la ampliación añade 74 frames en tres atlas y 18 PNG de animación. Ningún atlas supera 1774 px. Las fuentes, tamaños, prompts de dirección, alias y puntos de integración se documentan en `docs/ART.md`.
 
 [Comparación antes/después y contacto de rangos](https://github.com/carlosconesa14-design/foco-landing/blob/codex/complete-visual-overhaul/docs/visual-review/README.md)
 
@@ -19,12 +21,12 @@ El juego tenía arte provisional de Dubái y Mi vida, rangos sin variantes de la
 ![Mi vida terminada](https://raw.githubusercontent.com/carlosconesa14-design/foco-landing/codex/complete-visual-overhaul/docs/visual-review/after-life.png)
 
 ### Validación
-- `npm test`: 217 tests, 27 archivos, correctos.
+- `npm test`: 221 tests, 28 archivos, correctos.
 - `npm run build`: TypeScript y Vite correctos; permanece el aviso del bundle de Phaser >500 kB.
-- `npm run capture:visuals`: 110 comprobaciones sin errores JS/consola; español/inglés a 320, 390×844 y 560 px, 14 negocios y paneles, compra/equipamiento, visitantes, rangos y movimiento reducido.
-- Captura final rápida: 20 comprobaciones, incluido cobro real del fantasma mediante su modal.
+- `npm run capture:visuals`: 122 comprobaciones sin errores JS/consola; español/inglés a 320, 390×844 y 560 px, 14 negocios y paneles, compra/equipamiento, visitantes, rangos y movimiento reducido.
+- Captura final rápida: 25 comprobaciones, incluidos los 18 apoyos de caminar, las cuatro mecánicas físicas y cobro real del fantasma mediante su modal.
 - Smoke de producción: canvas, carga de assets y menú correctos, sin errores de navegador.
 - `src/game/*` sin cambios; no se modifica el balance.
 
 ### Límites de la validación
-Las capturas usan una partida local preparada y Supabase simulado: no envían cuentas, guardados ni analítica. No validan anuncios reales, cuentas o servidor. El APK no se ha compilado aquí; quedan la revisión de recursos nativos y rendimiento en un Android físico de gama media, y la revisión de material en Play Console antes de publicar. Los nuevos trabajadores de Dubái usan la pose quieta al caminar según el fallback existente; no se entrega un nuevo ciclo de tres dibujos por rol.
+Las capturas usan una partida local preparada y Supabase simulado: no envían cuentas, guardados ni analítica. No validan anuncios reales, cuentas o servidor. El APK no se ha compilado aquí; quedan la revisión de recursos nativos y rendimiento en un Android físico de gama media, y la revisión de material en Play Console antes de publicar. Los seis trabajadores de Dubái tienen ciclos reales de tres frames a 132×180 y apoyo común.

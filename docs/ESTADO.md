@@ -3,7 +3,7 @@
 **Rider Millionaire: Idle Tycoon.** Para retomar el trabajo sin tener que leer conversaciones antiguas. Última actualización: 2 de octubre de 2026.
 
 ## En una frase
-Es un idle tycoon para móvil, publicado como **beta web** en https://carlosconesa14-design.github.io/foco-landing/ (el juego, en `/jugar/`). Está listo para Google Play: solo faltan las cuentas, los datos legales y el material gráfico. Gana dinero con **anuncios bonificados** (AdMob) y compras dentro de la app.
+Es un idle tycoon para móvil, publicado como **beta web** en https://carlosconesa14-design.github.io/foco-landing/ (el juego, en `/jugar/`). Tiene el material gráfico preparado para Google Play; faltan las cuentas, los datos legales y la validación nativa antes de publicar. Gana dinero con **anuncios bonificados** (AdMob) y compras dentro de la app.
 
 ## Quién hace qué
 - **Claude:** lógica, economía, servidor, monetización, documentación y comprobaciones.
@@ -62,11 +62,11 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 
 ## Bloque visual completado por ChatGPT/Codex
 
-Dubái tiene sus quince evoluciones de edificios, puestos, productos, roles, vehículos, desierto, skyline y fundador. Mi vida incluye todas las ropas, lujo, coches y exclusivos de Halloween. Rangos con cambios estructurales sobre el arte base, medallas propias, visitantes físicos, moneda neutral, kit de iconos coherente, decoración de Miami y revisión responsive en español/inglés a 320/390/560 px. Madrid conserva su arte y animaciones existentes.
+Dubái tiene sus quince evoluciones de edificios, puestos, productos, roles, vehículos, desierto, skyline y fundador. Mi vida incluye todas las ropas, lujo, coches y exclusivos de Halloween. Rangos con cambios estructurales sobre el arte base, medallas propias, visitantes físicos, moneda neutral, kit de iconos coherente, decoración de Miami y revisión responsive en español/inglés a 320/390/560 px. Madrid conserva su arte y animaciones existentes. La ampliación final añade los 18 frames reales de Dubái, 28 decoraciones por negocio, puestos Diamante/Leyenda personalizados, cuatro mecánicas físicas y vegetación, mobiliario y pavimentos propios.
 
 Marca: logos claro/oscuro, iconos web/Android, carga y splash, gráfico de Google Play y cinco capturas reales de tienda. Catálogo, herramientas y límites documentados en [`ART.md`](ART.md), «Cierre visual». La economía, guardado y frecuencia/recompensa de las ofertas permanecen intactos (`src/game/*` sin cambios).
 
-Validación local: 217 tests correctos, build de producción correcto y 110 comprobaciones automatizadas de Chromium, más compra/equipamiento y fantasma. **Pendiente antes de publicar:** probar rendimiento en Android físico de gama media, compilar/verificar recursos nativos y revisar el material en Play Console. La prueba visual simula Supabase; no valida cuentas, anuncios reales ni servidor.
+Validación local: 221 tests correctos, build de producción correcto y 122 comprobaciones automatizadas de Chromium, incluidos compra/equipamiento, fantasma, mecánicas físicas y apoyos de animación. **Pendiente antes de publicar:** probar rendimiento en Android físico de gama media, compilar/verificar recursos nativos y revisar el material en Play Console. La prueba visual simula Supabase; no valida cuentas, anuncios reales ni servidor.
 
 ## Próximos pasos (Claude)
 0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.

@@ -13,7 +13,8 @@ const out = resolve(root, process.env.VISUAL_OUTPUT || 'artifacts/visual');
 const port = Number(process.env.VISUAL_PORT || 5175);
 const url = process.env.VISUAL_BASE_URL || `http://127.0.0.1:${port}`;
 const baseline = process.argv.includes('--baseline');
-const store = process.argv.includes('--store');
+const storeOnly = process.argv.includes('--store-only');
+const store = storeOnly || process.argv.includes('--store');
 const full = !baseline && !store && !process.argv.includes('--quick');
 const service = process.env.VISUAL_BASE_URL ? null : spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { cwd: root, stdio: 'pipe' });
 let serverLog = '';
@@ -109,12 +110,14 @@ try {
       await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)});
     });
     const page=await ctx.newPage();
+    page.setDefaultTimeout(60000);
     page.on('pageerror',e=>errors.push(`${locale}: ${e.message}`));
     page.on('console',m=>{if(m.type()==='error')errors.push(`${locale}: ${m.text()}`)});
     await page.goto(url,{waitUntil:'networkidle'});
     await page.waitForFunction(()=>window.__game?.state&&!document.body.classList.contains('loading'));
     await snap(page,`${locale}-starter`);
     assert.equal(await page.locator('canvas').count(),1);
+    if(!storeOnly) {
     for(const width of widths) {
       await page.setViewportSize({width,height:844});
       await seed(page);
@@ -144,7 +147,30 @@ try {
       }
     }
     if(!baseline) {
-      await business(page,'supercars');
+      const baselines=await page.evaluate(async()=>{
+        const result=[];
+        for(const role of ['mechanic','valet','butler','guide','goldsmith','builder'])for(let pose=0;pose<3;pose++) {
+          const im=new Image();im.src=`/sprites/ch_${role}_${pose}.png`;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const rgba=x.getImageData(0,0,c.width,c.height).data;let top=180,bottom=-1;
+          for(let y=0;y<c.height;y++)for(let xx=0;xx<c.width;xx++)if(rgba[(y*c.width+xx)*4+3]>8){top=Math.min(top,y);bottom=Math.max(bottom,y);}
+          result.push({role,pose,w:im.width,h:im.height,top,bottom});
+        }
+        return result;
+      });
+      assert(baselines.every(f=>f.w===132&&f.h===180&&f.bottom===177&&f.top>=7&&f.top<=9),'Worker frames drift from their canonical baseline/body box');
+      findings.push(`${locale}: 18 walking frames share canonical bounds`);
+      await seed(page,'madrid');
+      await page.evaluate(async()=>{
+        const {freshBizTwist,TW}=await import('/src/game/twists.ts');const {now}=await import('/src/game/clock.ts');const s=__game.state,n=now();s.meta.stats.life.floors=TW.startFloors;
+        for(const id of ['dropship','restaurant','tiktok','ai'])s.meta.twists[id]={...freshBizTwist(),intro:true,nextOrder:n+1e12,nextCritic:n+1e12};
+        s.meta.twists.dropship.order={target:1e30,base:0,deadline:0,offerUntil:n+60000,reward:500,done:false};
+        s.meta.twists.restaurant.critic={need:12,got:3,until:n+60000};s.meta.twists.tiktok.viralEnd=n+60000;s.meta.twists.ai.data=25;
+      });
+      for(const [id,key] of [['dropship','veh_order'],['restaurant','ch_critic_0'],['tiktok','prop_broadcast'],['ai','prop_research']]) {
+        await business(page,id);await page.waitForTimeout(650);await snap(page,`${locale}-world-${id}`);
+        assert(await page.evaluate(async key=>{const {artRef}=await import('/src/art/generated.ts');const sc=__game.game.scene.getScene('business'),ref=artRef(sc,key);return sc.children.list.some(o=>o.type==='Image'&&o.visible&&o.texture.key===ref.texture&&o.frame.name===ref.frame)},key),`Missing physical mechanic ${id}`);
+        findings.push(`${locale}: world mechanic ${id}`);
+      }
+      await seed(page,'dubai');await business(page,'supercars');
       // Presentation responds to the existing timers, with no changes to economy/rewards.
       for(const kind of ['truck','vip']) {
         await page.evaluate(async kind=>{
@@ -171,14 +197,14 @@ try {
       await closeOverlays(page);
       // Rendering all ranks does not add any levels, income or saved presentation data.
       const ranks=await page.evaluate(async()=>{
-        const {ART,BIZ_ART,rankedKey}=await import('/src/art/catalog.ts');const sc=__game.game.scene.getScene('business');
+        const {ART,BIZ_ART,rankedKey}=await import('/src/art/catalog.ts');const {artRef}=await import('/src/art/generated.ts');const sc=__game.game.scene.getScene('business');
         const bases=[...new Set([...Object.values(BIZ_ART).flatMap(l=>[l.station,`ch_${l.worker}_0`,l.mover.startsWith('veh_')?l.mover:`ch_${l.mover}_1`,l.seller.startsWith('veh_')?l.seller:`ch_${l.seller}_2`]),'wh_shelf','wh_van_open','wh_van_rear','wh_forklift_loaded','wh_forklift_rear','rest_chef_a','rest_chef_b','rest_waiter_a','rest_waiter_b'])];
         const results=[];
-        for(const base of bases)for(let rank=1;rank<=5;rank++){const key=rankedKey(sc,base,rank);const tex=sc.textures.get(key);results.push({base,rank,key,w:tex.source[0].width,h:tex.source[0].height,size:ART[key]});}
+        for(const base of bases)for(let rank=1;rank<=5;rank++){const key=rankedKey(sc,base,rank);const ref=artRef(sc,key),frame=sc.textures.getFrame(ref.texture,ref.frame);results.push({base,rank,key,w:frame.cutWidth,h:frame.cutHeight,shared:ref.texture!==key,size:ART[key]});}
         return results;
       });
       assert(ranks.every(r=>r.key.includes(`_r${r.rank}`)), 'Rank art fell back to base');
-      assert(ranks.every(r=>r.w<=300&&r.h<=258),'Rank textures exceed mobile size budget');
+      assert(ranks.every(r=>r.shared?r.w<=384&&r.h<=384:r.w<=300&&r.h<=258),'Rank textures exceed mobile size budget');
       findings.push(`${locale}: ${ranks.length} rank textures validated`);
       // Collect the real seasonal opportunity through its existing modal.
       const candyBefore=await page.evaluate(async()=>{const {now}=await import('/src/game/clock.ts');const s=__game.state;s.meta.season.nextVisitor=now()-1;return s.meta.season.candy});
@@ -192,6 +218,7 @@ try {
       const emojis=await page.evaluate(()=>document.getElementById('app').innerText.match(/\p{Extended_Pictographic}/gu) || []);
       assert.deepEqual(emojis,[],'System emoji remains in visible UI');
     }
+    }
     if(store) {
       await page.emulateMedia({reducedMotion:'reduce'});
       await page.setViewportSize({width:540,height:960});
@@ -204,6 +231,9 @@ try {
   assert.deepEqual(errors,[],'Browser errors');
   await writeFile(resolve(out,'report.json'),JSON.stringify({baseline,checks:findings,errors,remote:'Supabase stubbed; no remote integration or writes',date:new Date().toISOString()},null,2)+'\n');
   console.log(JSON.stringify({screenshots:out,checks:findings.length,errors:errors.length}));
+} catch(error) {
+  await writeFile(resolve(out,'failure.json'),JSON.stringify({checks:findings,errors,error:String(error)},null,2));
+  throw error;
 } finally {
   await browser?.close();service?.kill('SIGTERM');
 }

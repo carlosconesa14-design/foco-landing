@@ -598,10 +598,12 @@ const autoBtn = document.getElementById("autoBtn") as HTMLButtonElement;
 
 function updateAuto(now: number): void {
   const show = S.view.scene === "business" && meta.tutorialStep(S) === null && !!S.biz[S.view.id]?.owned;
+  // El 💸 viral va justo encima de la barra y de la tarjeta de la mecánica; «Mejorar todo», encima de él.
+  const base = document.getElementById("bar")!.offsetHeight + overlayHeight() + 12;
+  if (viralEl) viralEl.style.bottom = `${base}px`;
   autoBtn.hidden = !show;
   if (!show) return;
-  // Encima del 💸 viral si está en pantalla (no se tapan).
-  autoBtn.style.bottom = `${document.getElementById("bar")!.offsetHeight + overlayHeight() + 12 + (viralEl ? 88 : 0)}px`;
+  autoBtn.style.bottom = `${base + (viralEl ? 88 : 0)}px`;
   const free = autoFreeLeft(S, now);
   const txt = !isUnlocked(S, "auto") ? "" : free === Infinity ? "∞" : free > 0 ? t("{n} hoy", { n: free }) : autoAdLeft(S, now) > 0 ? "▶" : "🔒";
   const el = document.getElementById("autoLeft")!;

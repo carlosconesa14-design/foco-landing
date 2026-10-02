@@ -718,3 +718,4 @@ body.season-halloween header { box-shadow: 0 2px 0 #ff8a2a66 inset, 0 5px 16px #
 .auto-btn small { position: absolute; top: -6px; right: -8px; min-width: 22px; padding: 2px 6px; border-radius: 999px; background: #0e2236; color: #fff; font-size: 10.5px !important; opacity: 1 !important; text-align: center; box-shadow: 0 0 0 2px #ffd86b; white-space: nowrap; }
 .auto-btn small:empty { display: none; }
 .auto-btn.locked small { background: #2c4257; box-shadow: 0 0 0 2px #50677d; }
+.auto-btn[hidden] { display: none !important; }

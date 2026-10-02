@@ -2,6 +2,7 @@
 const star = '<path d="m24 9 4 9 10 2-7 7 2 10-9-5-9 5 2-10-7-7 10-2Z" fill="#fff1b5"/>';
 const medal = (metal: string, gem = false, crown = false) => `<path d="m14 5 10 7 10-7v18H14Z" fill="#355b8b"/><circle cx="24" cy="28" r="17" fill="${metal}"/><circle cx="24" cy="28" r="13" fill="none" stroke="#fff4cd"/>${gem ? '<path d="m14 25 5-6h10l5 6-10 13Z" fill="#d6faff"/>' : crown ? '<path d="m13 23 5 4 6-8 6 8 5-4-3 13H16Z" fill="#ffe390"/>' : '<path d="m24 17 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1Z" fill="#fff1b5"/>'}`;
 export const VISUAL_ICON_SHAPES: Record<string, string> = {
+  live: '<circle cx="24" cy="24" r="19" fill="#f0696e"/><path d="m20 14 14 10-14 10Z" fill="#fff2d3"/>',
   hand: '<path d="M18 24V9q0-6 6-6t6 6v13l4-3 5 2 4 6-3 15H19l-9-13q-3-5 2-7Z" fill="#fff4d6"/><path d="M23 13v14m7-5v8m7-8v9" stroke="#c49b60"/>',
   construction: '<path d="M8 37V10m32 27V10" stroke="#718ea4" stroke-width="5"/><rect x="3" y="14" width="42" height="14" rx="3" fill="#ffe08a"/><path d="m7 27 8-12m4 12 8-12m4 12 8-12" stroke="#ce7854" stroke-width="6"/><path d="M3 42h12m18 0h12" stroke="#718ea4" stroke-width="4"/>',
   coin: '<circle cx="24" cy="24" r="19" fill="#d89a32"/><circle cx="24" cy="22" r="17" fill="#ffd568"/><circle cx="24" cy="22" r="12" fill="#ffefb0"/><path d="m24 12 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" fill="#db9e32"/>',
@@ -34,7 +35,7 @@ export const VISUAL_ICON_SHAPES: Record<string, string> = {
   rank_1: medal('#cb8f65'), rank_2: medal('#bcd0e1'), rank_3: medal('#ffd46e'), rank_4: medal('#72ddec', true), rank_5: medal('#ac82df', false, true),
 };
 export const SYMBOL_ICONS: Record<string, string> = {
- '🎡':'wheel','🛍️':'life','👕':'outfit','🧥':'outfit','⌚':'jewel','⏱️':'jewel','📿':'lux_goldchain','💍':'lux_diamondring','👑':'crown',
+ '🔴':'live','😴':'moon','🎡':'wheel','🛍️':'life','👕':'outfit','🧥':'outfit','⌚':'jewel','⏱️':'jewel','📿':'lux_goldchain','💍':'lux_diamondring','👑':'crown',
  '🚗':'car','🏎️':'lux_supercar','🚘':'lux_limo','🛵':'lux_deliverybike','🛴':'lux_scooter','🏍️':'lux_motorbike','🏠':'home','🛏️':'lux_parents','🏚️':'lux_haunted','🏢':'city','🌆':'lux_penthouse','🏡':'lux_villa','🏰':'lux_mansion','🏝️':'lux_island',
  '🐶':'lux_dog','🐱':'lux_cat','🦜':'lux_parrot','🐯':'lux_tiger','🐧':'lux_penguin','🛥️':'lux_yacht','🛩️':'lux_jet','🚀':'lux_rocket','🎃':'lux_pumpkin','👻':'ghost','🍬':'candy','🧛':'lux_vampire','💀':'lux_skullring','⚰️':'lux_hearse',
  '📦':'order','🧐':'critic','🔥':'hype','🧠':'research','🤖':'research','💻':'research','🎉':'event','🎊':'event','🤝':'invite','🥊':'rival','⚡':'bolt','📺':'video','🎬':'video','📱':'video','☁️':'cloud','🌙':'moon','🏁':'finish','🔓':'check','✨':'star','🥉':'rank_1','🥈':'rank_2','🥇':'rank_3','🤴':'exec_founder','🤵':'ch_vip_0','🚚':'veh_supply','💸':'cash',
