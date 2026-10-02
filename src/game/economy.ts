@@ -1,3 +1,4 @@
+import { now } from "./clock";
 import { ALL_BUSINESSES, CHAIN, CONFIG, LIFE, MILESTONES, type BusinessDef } from "./data";
 import { NO_MULTS, execMults, type Mults } from "./execs";
 import { bump, cityDef, type BusinessState, type BuyMode, type GameState } from "./state";
@@ -344,7 +345,7 @@ export function tapStation(s: GameState, id: string, st: Station): string | null
   }
   if (b.sale.phase !== "idle") return null;
   if (b.topStock <= 0) return t("Aún no hay nada que vender arriba");
-  startSale(bizDef(id), b, execMults(s, id, Date.now()).log);
+  startSale(bizDef(id), b, execMults(s, id, now()).log);
   return null;
 }
 

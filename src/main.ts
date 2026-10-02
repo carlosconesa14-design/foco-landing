@@ -1,3 +1,6 @@
+import { clockSnapshot, now as clockNow, restoreClock, syncClock } from "./game/clock";
+import { addFlag } from "./game/league";
+import { leagueApi } from "./platform/league";
 import { localizeData } from "./i18n/data";
 import { lang, localizeDom, money, t } from "./i18n";
 import { App } from "@capacitor/app";
@@ -63,9 +66,35 @@ const say = (msg: string | null) => {
 /* ---------- Guardado ---------- */
 
 function save(): void {
-  S.lastSeen = Date.now();
+  S.lastSeen = clockNow();
+  S.clock = clockSnapshot();
   void writeSave(S);
 }
+
+/* ---------- Hora del servidor (contra trampas con la hora del móvil) ---------- */
+
+let timeSync: Promise<void> | null = null;
+
+/** Sincroniza el reloj del juego con el servidor. Sin conexión no hace nada (se usa la hora del móvil). */
+function syncTime(): Promise<void> {
+  timeSync ??= (async () => {
+    try {
+      const sent = Date.now();
+      const { now } = await leagueApi.time();
+      const r = syncClock(now, sent, Date.now());
+      if (r.skew) addFlag(S, "clock");
+      if (r.future) addFlag(S, "clock_future");
+    } catch {
+      /* sin conexión */
+    } finally {
+      timeSync = null;
+    }
+  })();
+  return timeSync;
+}
+
+/** Espera a la hora del servidor, como mucho `ms` (para no dejar la pantalla parada sin conexión). */
+const waitTime = (ms = 2500) => Promise.race([syncTime(), new Promise<void>((r) => setTimeout(r, ms))]);
 
 /* ---------- Sonido y vibración ---------- */
 
@@ -89,7 +118,7 @@ document.addEventListener("pointerdown", () => sound.unlock(), { capture: true }
 // Solo cuenta jugando de verdad: tocando la pantalla y nunca mientras se ve un anuncio.
 let lastInput = 0;
 let adOnScreen = false;
-for (const ev of ["pointerdown", "keydown", "wheel"]) document.addEventListener(ev, () => (lastInput = Date.now()), { capture: true, passive: true });
+for (const ev of ["pointerdown", "keydown", "wheel"]) document.addEventListener(ev, () => (lastInput = clockNow()), { capture: true, passive: true });
 const playingNow = (now: number) => !document.hidden && !adOnScreen && now - lastInput < IDLE_MS;
 // Un "clic" suave en cualquier botón de la interfaz HTML.
 root.addEventListener("click", (e) => {
@@ -117,7 +146,7 @@ async function watchAd(placement: Placement): Promise<boolean> {
     act.recordAd(S, placement);
     analytics.track("ad_watched", { placement });
     // Escalera diaria: a los 3, 6 y 10 anuncios del día, premio extra del juego.
-    for (const step of adLadderStep(S, Date.now())) {
+    for (const step of adLadderStep(S, clockNow())) {
       setTimeout(() => {
         fx("chest", true);
         banner(root, "📺", t("¡{n} anuncios hoy! Premio extra", { n: S.ads.today }));
@@ -175,7 +204,7 @@ function startView(): void {
   for (const sc of game.scene.getScenes(true)) game.scene.stop(sc.scene.key);
   // La barra va antes: la escena lee su altura al crearse.
   renderBar(S);
-  updateBar(S, Date.now());
+  updateBar(S, clockNow());
   if (S.view.scene === "business") game.scene.start("business", { id: S.view.id });
   else game.scene.start("city");
   document.body.classList.remove("loading");
@@ -247,7 +276,7 @@ document.getElementById("bar")!.addEventListener("click", async (e) => {
   else if (b.dataset.nav === "empire") openEmpire(ctx);
   else if (b.dataset.nav === "ipo") openIpoSheet(ctx);
   else if (b.dataset.rush && (await watchAd("rush"))) {
-    act.startRush(S, b.dataset.rush, Date.now());
+    act.startRush(S, b.dataset.rush, clockNow());
     say(t("Hora punta: x{n} en este negocio durante {min} min", { n: CONFIG.rushMult, min: CONFIG.rushMinutes }));
   }
 });
@@ -417,7 +446,7 @@ document.getElementById("goal")!.addEventListener("click", () => {
 document.getElementById("boostBtn")!.addEventListener("click", async () => {
   moreMenu.close();
   if (await watchAd("boost_x2")) {
-    act.addBoost(S, Date.now());
+    act.addBoost(S, clockNow());
     say(t("Modo hustle: +{h} h ganando el doble", { h: boostHours(S) }));
   }
 });
@@ -446,7 +475,7 @@ function updateWave(now: number): void {
 }
 
 document.getElementById("waveBtn")!.addEventListener("click", async () => {
-  if (await watchAd("tourist_wave")) callWave(S, Date.now());
+  if (await watchAd("tourist_wave")) callWave(S, clockNow());
 });
 
 /* ---------- Evento viral ---------- */
@@ -457,7 +486,7 @@ let viralUntil = 0;
 function hideViral(): void {
   viralEl?.remove();
   viralEl = null;
-  S.nextViral = Date.now() + (CONFIG.viralMinSec + Math.random() * (CONFIG.viralMaxSec - CONFIG.viralMinSec)) * 1000;
+  S.nextViral = clockNow() + (CONFIG.viralMinSec + Math.random() * (CONFIG.viralMaxSec - CONFIG.viralMinSec)) * 1000;
 }
 
 function viralTick(now: number): void {
@@ -468,7 +497,7 @@ function viralTick(now: number): void {
     viralEl.setAttribute("aria-label", t("Oportunidad"));
     viralUntil = now + CONFIG.viralVisibleSec * 1000;
     viralEl.onclick = () => {
-      const reward = Math.max(passiveRate(S, Date.now(), false) * 600, S.cash * 0.15, 100);
+      const reward = Math.max(passiveRate(S, clockNow(), false) * 600, S.cash * 0.15, 100);
       hideViral();
       modal(root, {
         title: VIRAL_TITLES[Math.floor(Math.random() * VIRAL_TITLES.length)],
@@ -501,7 +530,7 @@ let visitorKind: OfferKind | null = null;
 let visitorUntil = 0;
 
 function hideVisitor(): void {
-  if (visitorKind) rescheduleOffer(S, visitorKind, Date.now());
+  if (visitorKind) rescheduleOffer(S, visitorKind, clockNow());
   visitorEl?.remove();
   visitorEl = null;
   visitorKind = null;
@@ -531,7 +560,7 @@ function visitorTick(now: number): void {
 }
 
 function offerTruck(id: string): void {
-  const reward = truckReward(S, id, Date.now());
+  const reward = truckReward(S, id, clockNow());
   hideVisitor();
   modal(root, {
     title: t("¡Camión de suministros!"),
@@ -565,7 +594,7 @@ function offerVip(): void {
         label: t("Ver anuncio y atender"),
         run: async () => {
           if (!(await watchAd("vip_client"))) return;
-          const gems = claimVip(S, Date.now());
+          const gems = claimVip(S, clockNow());
           if (gems) banner(root, "🤵", t("+{n} 💎 del cliente VIP", { n: gems }));
         },
       },
@@ -577,8 +606,8 @@ function offerVip(): void {
 /* ---------- Ganancias offline ---------- */
 
 function offerOffline(): void {
-  const { seconds, amount } = offlineEarnings(S, Date.now());
-  S.lastSeen = Date.now();
+  const { seconds, amount } = offlineEarnings(S, clockNow());
+  S.lastSeen = clockNow();
   if (seconds < 60 || amount < 1) return;
   modal(root, {
     title: t("Ingresos pasivos"),
@@ -609,21 +638,23 @@ function offerOffline(): void {
 /* ---------- Avisos en el móvil ---------- */
 
 /** Al salir: guardar y programar los avisos (caja llena, maletín, premio diario). */
-let sessionStart = Date.now();
+let sessionStart = clockNow();
 
 function leaving(): void {
   save();
-  analytics.track("session_end", { seconds: Math.round((Date.now() - sessionStart) / 1000) });
+  analytics.track("session_end", { seconds: Math.round((clockNow() - sessionStart) / 1000) });
   void analytics.flush(true);
   void syncLeague(S);
-  void notifications.schedule(planNotifications(S, Date.now()));
+  void notifications.schedule(planNotifications(S, clockNow()));
 }
 
 /** Al volver: ya no hacen falta los avisos; se ofrecen las ganancias offline. */
-function returning(): void {
-  sessionStart = Date.now();
+async function returning(): Promise<void> {
+  sessionStart = clockNow();
   analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial, lang });
   void notifications.cancelAll();
+  // Lo ganado fuera se calcula con la hora del servidor: adelantar la del móvil no da más.
+  await waitTime();
   offerOffline();
 }
 
@@ -646,7 +677,7 @@ let lastLuckyBanner = -Infinity;
 let lastStep = performance.now();
 
 game.events.on("step", (time: number) => {
-  const now = Date.now();
+  const now = clockNow();
   // Reloj real: el delta de Phaser se suaviza y ralentizaría el juego en móviles lentos.
   const wall = performance.now();
   const elapsed = (wall - lastStep) / 1000;
@@ -696,14 +727,21 @@ game.events.on("step", (time: number) => {
 
 async function boot(): Promise<void> {
   await loadIcons();
-  S = migrate(await loadSave());
+  const loaded = await loadSave();
+  // Primero el reloj guardado (nunca hacia atrás); luego la hora del servidor.
+  restoreClock((loaded.data as { clock?: unknown } | null)?.clock);
+  S = migrate(loaded.data);
+  if (loaded.tampered) addFlag(S, "save");
+  const firstSync = waitTime();
   applySettings();
-  updateHeader(S, Date.now());
+  updateHeader(S, clockNow());
   renderBar(S);
   // La primera escena se lanza cuando el arte está listo y la partida cargada.
   saveLoaded = true;
   startView();
+  await firstSync;
   offerOffline();
+  setInterval(() => void syncTime(), 15 * 60e3);
   setInterval(save, 5000);
   analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial, lang });
   setInterval(() => void analytics.flush(), 30_000);
@@ -716,19 +754,19 @@ async function boot(): Promise<void> {
   document.addEventListener("visibilitychange", () => {
     sound.setHidden(document.hidden);
     if (document.hidden) leaving();
-    else returning();
+    else void returning();
   });
   window.addEventListener("pagehide", leaving);
   void App.addListener("appStateChange", ({ isActive }) => {
     sound.setHidden(!isActive);
-    if (isActive) returning();
+    if (isActive) void returning();
     else leaving();
   }).catch(() => {});
   // A quien ya terminó el tutorial (partidas anteriores) se le piden los avisos una vez.
   if (meta.tutorialStep(S) === null) setTimeout(askNotificationsOnce, 4000);
   ads.init().catch(() => {});
   // Compras únicas ya hechas (móvil nuevo o reinstalación): se entregan solas
-  void store.owned().then((owned) => owned.forEach((o) => grantProduct(S, o.id, o.order, Date.now())));
+  void store.owned().then((owned) => owned.forEach((o) => grantProduct(S, o.id, o.order, clockNow())));
 }
 
 /** Beta web: una vez, explica que es una versión de prueba y dónde se guarda la partida. */

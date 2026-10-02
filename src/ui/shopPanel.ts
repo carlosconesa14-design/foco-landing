@@ -1,3 +1,4 @@
+import { now } from "../game/clock";
 import { WEB_BETA } from "../platform/web";
 import { PRODUCTS, canBuy, grantProduct, isVip, type ProductId } from "../game/shop";
 import { analytics, minutesSinceInstall } from "../platform/analytics";
@@ -47,7 +48,7 @@ export function openShop(ctx: PanelCtx): void {
             if (res.error !== "cancelled") ctx.toast(t("La compra no se ha completado"));
             return;
           }
-          const msg = grantProduct(ctx.state(), id, res.order ?? "", Date.now());
+          const msg = grantProduct(ctx.state(), id, res.order ?? "", now());
           if (!msg) return;
           analytics.track("purchase", { product: id, minutes: minutesSinceInstall() });
           void ctx.celebrate({
@@ -64,7 +65,7 @@ export function openShop(ctx: PanelCtx): void {
   const restore = sheet.el.querySelector<HTMLButtonElement>("[data-restore]");
   if (restore) restore.onclick = async () => {
     const owned = await store.owned();
-    const got = owned.map((o) => grantProduct(ctx.state(), o.id, o.order, Date.now())).filter(Boolean);
+    const got = owned.map((o) => grantProduct(ctx.state(), o.id, o.order, now())).filter(Boolean);
     ctx.toast(got.length ? t("Restaurado: {n} compra(s)", { n: got.length }) : store.simulated ? t("En la web no hay compras que restaurar") : t("No hay compras que restaurar"));
   };
   void store.loadPrices().then(() => sheet.update?.());

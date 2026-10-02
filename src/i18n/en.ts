@@ -537,4 +537,5 @@ export const EN: Record<string, string> = {
   "Quiere un pedido especial y paga en diamantes. Mira un anuncio corto para atenderle.": "They want a special order and pay in gems. Watch a short ad to serve them.",
   "Ver anuncio y atender": "Watch ad and serve",
   "+{n} 💎 del cliente VIP": "+{n} 💎 from the VIP customer",
+  "Ese email ya se usó con otra cuenta. Cada persona puede cobrar con una sola cuenta.": "That email was already used with another account. Each person can only collect prizes with one account.",
 };

@@ -1,7 +1,9 @@
+import { now as clockNow } from "./clock";
 import { freshEvent, migrateEvent, type EventState } from "./event";
 import { freshRetos, migrateRetos, type RetosState } from "./challenges";
 import { freshAdLadder, migrateAdLadder, type AdLadderState } from "./adLadder";
 import { freshOffers, migrateOffers, type OffersState } from "./offers";
+import type { ClockState } from "./clock";
 import { freshShop, migrateShop, type ShopState } from "./shop";
 import { freshLeague, migrateLeague, type LeagueState } from "./league";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
@@ -106,6 +108,8 @@ export interface MetaState {
   adLadder: AdLadderState;
   /** Camión de suministros, cliente VIP y ruleta diaria. */
   offers: OffersState;
+  /** Señales de trampa detectadas (hora del móvil cambiada, partida editada). Solo se informan a la Liga. */
+  flags: string[];
 }
 
 export interface Settings {
@@ -164,6 +168,8 @@ export interface GameState {
   nextViral: number;
   lifeSeen: number;
   ads: AdStats;
+  /** Reloj del juego (ver clock.ts); se guarda aparte del resto. */
+  clock?: ClockState;
 }
 
 export const freshFloor = (): FloorState => ({ level: 1, managed: false, stock: 0, prog: 0, running: false });
@@ -180,7 +186,7 @@ export function freshBusiness(owned: boolean): BusinessState {
   };
 }
 
-export function freshMeta(now = Date.now()): MetaState {
+export function freshMeta(now = clockNow()): MetaState {
   return {
     gems: 0,
     execs: [],
@@ -196,6 +202,7 @@ export function freshMeta(now = Date.now()): MetaState {
     retos: freshRetos(),
     adLadder: freshAdLadder(),
     offers: freshOffers(now),
+    flags: [],
   };
 }
 
@@ -210,7 +217,7 @@ export const cityDef = (id: string): CityDef => CITIES.find((c) => c.id === id) 
 
 export const freshWorld = (): WorldState => ({ stars: 0, upgrades: {}, completed: [], archive: {}, lifetimeEarned: 0 });
 
-export function freshState(now = Date.now(), cityId = CITIES[0].id): GameState {
+export function freshState(now = clockNow(), cityId = CITIES[0].id): GameState {
   const city = cityDef(cityId);
   return {
     version: 2,
@@ -303,11 +310,12 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.retos = migrateRetos(r.retos);
   m.adLadder = migrateAdLadder(r.adLadder);
   m.offers = migrateOffers(r.offers, now);
+  m.flags = Array.isArray(r.flags) ? r.flags.filter((f): f is string => typeof f === "string").slice(0, 10) : [];
   return m;
 }
 
 /** Convierte una partida guardada en un estado válido. Las partidas de la versión 1 empiezan de cero. */
-export function migrate(raw: unknown, now = Date.now()): GameState {
+export function migrate(raw: unknown, now = clockNow()): GameState {
   const r = obj(raw);
   if (r.version !== 2) return freshState(now);
   // Las partidas anteriores a las ciudades pasan a ser Madrid.
@@ -363,7 +371,7 @@ function migrateWorld(raw: unknown, totalEarned: number): WorldState {
       ipos: num(a.ipos, 0),
       biz,
       lifeSeen: num(a.lifeSeen, 0),
-      savedAt: num(a.savedAt, Date.now()),
+      savedAt: num(a.savedAt, clockNow()),
     };
   }
   return w;
@@ -382,7 +390,7 @@ function keepGlobal(from: GameState, to: GameState): GameState {
 }
 
 /** Empieza (o reanuda) otra ciudad. La actual queda guardada en el archivo. */
-export function switchCity(s: GameState, cityId: string, now = Date.now()): GameState {
+export function switchCity(s: GameState, cityId: string, now = clockNow()): GameState {
   s.world.archive[s.city] = {
     cash: s.cash,
     runEarned: s.runEarned,
@@ -404,7 +412,7 @@ export function switchCity(s: GameState, cityId: string, now = Date.now()): Game
 }
 
 /** Nueva partida tras salir a bolsa: se conserva lo permanente. */
-export function afterIpo(s: GameState, gained: number, now = Date.now()): GameState {
+export function afterIpo(s: GameState, gained: number, now = clockNow()): GameState {
   const n = keepGlobal(s, freshState(now, s.city));
   n.shares = s.shares + gained;
   n.ipos = s.ipos + 1;

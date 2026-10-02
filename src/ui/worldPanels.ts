@@ -1,3 +1,4 @@
+import { now } from "../game/clock";
 import { CITIES, FRANCHISE, OFFICE, TOURISM } from "../game/data";
 import { earn, passiveRate } from "../game/economy";
 import { fmt, fmtTime } from "../game/format";
@@ -84,7 +85,7 @@ export function openWorld(ctx: PanelCtx): void {
             return;
           }
           if (double && !(await ctx.watchAd("expand_x2"))) return;
-          const res = world.expand(ctx.state(), Date.now(), double);
+          const res = world.expand(ctx.state(), now(), double);
           if (!res) return;
           analytics.track("city_expand", { city: res.city, stars: res.stars, minutes: minutesSinceInstall() });
           const city = CITIES.find((c) => c.id === res.city)!;
@@ -108,11 +109,11 @@ export function openWorld(ctx: PanelCtx): void {
 }
 
 function travelTo(ctx: PanelCtx, cityId: string): void {
-  const res = world.travel(ctx.state(), cityId, Date.now());
+  const res = world.travel(ctx.state(), cityId, now());
   if (!res) return;
   const city = CITIES.find((c) => c.id === cityId)!;
   // Lo ganado allí mientras no estabas (a ritmo de gerentes, con el tope de horas offline).
-  const earned = passiveRate(res.state, Date.now(), false) * res.offline;
+  const earned = passiveRate(res.state, now(), false) * res.offline;
   if (earned > 0) earn(res.state, earned);
   ctx.replaceState(res.state);
   ctx.goTo({ scene: "city" });

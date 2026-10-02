@@ -55,6 +55,8 @@ async function call<T>(body: Record<string, unknown>, timeoutMs = 8000): Promise
 }
 
 export const leagueApi = {
+  /** Hora del servidor (para el reloj del juego). No necesita estar apuntado. */
+  time: () => call<{ now: number }>({ action: "time" }, 4000),
   register: () => call<{ id: string; secret: string; nickname: string }>({ action: "register", platform: Capacitor.isNativePlatform() ? "app" : "web" }),
   status: (c: Creds) => call<LeagueStatus>({ action: "status", ...c }),
   events: (c: Creds, events: LeagueEvent[]) => call<{ added: number }>({ action: "events", ...c, events }),

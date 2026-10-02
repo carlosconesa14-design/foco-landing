@@ -1,3 +1,4 @@
+import { now as clockNow } from "./clock";
 import type { DailyReward } from "./data";
 import { bizDef, chainRates, saleMult } from "./economy";
 import { execMults } from "./execs";
@@ -55,7 +56,7 @@ export interface OffersState {
 
 const between = (min: number, max: number, rand: Rand) => (min + rand() * (max - min)) * 1000;
 
-export const freshOffers = (now = Date.now()): OffersState => ({
+export const freshOffers = (now = clockNow()): OffersState => ({
   truckAt: now + OFFERS.truckMinSec * 1000,
   vipAt: now + OFFERS.vipMinSec * 1000,
   vipDay: "",
@@ -149,7 +150,7 @@ export function spinWheel(s: GameState, now: number, viaAd: boolean, rand: Rand 
 
 /* ---------- Guardado ---------- */
 
-export function migrateOffers(raw: unknown, now = Date.now()): OffersState {
+export function migrateOffers(raw: unknown, now = clockNow()): OffersState {
   const o = freshOffers(now);
   const r = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);

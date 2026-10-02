@@ -1,3 +1,4 @@
+import { now } from "../game/clock";
 import type { Placement } from "../ads";
 import type { Sfx } from "../audio/sound";
 import * as act from "../game/actions";
@@ -145,10 +146,10 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
   );
   $<HTMLButtonElement>(sheet.el, "[data-up]").onclick = () => {
     const s = ctx.state();
-    const before = businessRate(s, id, Date.now()) || chainRates(bizDef(id), s.biz[id], false).total;
+    const before = businessRate(s, id, now()) || chainRates(bizDef(id), s.biz[id], false).total;
     const msg = act.upgrade(s, id, st);
     if (msg === null) return ctx.fx("error");
-    const after = businessRate(s, id, Date.now()) || chainRates(bizDef(id), s.biz[id], false).total;
+    const after = businessRate(s, id, now()) || chainRates(bizDef(id), s.biz[id], false).total;
     ctx.fx(msg ? "milestone" : "upgrade", !!msg);
     // Recompensa inmediata y visible: cuánto más ganas con esta mejora.
     if (after > before) ctx.floatAt($(sheet.el, "[data-up]"), `+${money(after - before)}/s`);
@@ -270,7 +271,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
         return;
       }
       if (mult === 2 && !(await ctx.watchAd("ipo_x2"))) return;
-      const res = act.ipo(ctx.state(), mult, Date.now());
+      const res = act.ipo(ctx.state(), mult, now());
       if (!res) return;
       analytics.track("ipo", { shares: Math.round(res.gained), withAd: mult === 2, minutes: minutesSinceInstall() });
       ctx.replaceState(res.state);

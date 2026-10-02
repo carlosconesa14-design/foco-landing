@@ -1,3 +1,4 @@
+import { now } from "../game/clock";
 import { t } from "../i18n";
 import { OFFERS, WHEEL, spinWheel, wheelStatus } from "../game/offers";
 import { analytics } from "../platform/analytics";
@@ -33,7 +34,7 @@ export function openWheel(ctx: PanelCtx): void {
      ${wheelHtml()}
      <div class="actions col" data-actions></div>`,
     (el) => {
-      const st = wheelStatus(ctx.state(), Date.now());
+      const st = wheelStatus(ctx.state(), now());
       const html = spinning
         ? `<button class="btn" disabled>${t("Girando…")}</button>`
         : st.free
@@ -53,7 +54,7 @@ export function openWheel(ctx: PanelCtx): void {
   async function spin(el: HTMLElement, viaAd: boolean): Promise<void> {
     if (spinning) return;
     if (viaAd && !(await ctx.watchAd("wheel_spin"))) return;
-    const r = spinWheel(ctx.state(), Date.now(), viaAd);
+    const r = spinWheel(ctx.state(), now(), viaAd);
     if (!r) return;
     analytics.track("wheel_spin", { slot: r.slot, ad: viaAd });
     spinning = true;

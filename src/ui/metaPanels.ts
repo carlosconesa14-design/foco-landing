@@ -1,3 +1,4 @@
+import { now as clockNow } from "../game/clock";
 import { ACHIEVEMENTS, ALL_BUSINESSES, CHESTS, DAILY_REWARDS, EXEC_KINDS, META, MISSIONS, RARITIES, type ChestType, type DailyReward } from "../game/data";
 import { fmt, fmtTime } from "../game/format";
 import * as meta from "../game/meta";
@@ -55,11 +56,11 @@ export function openMissions(ctx: PanelCtx): void {
      <p class="small muted">${t("Los retos dan diamantes y, si estás en la Liga, puntos de Liga.")}</p>`,
     (el) => {
       const s = ctx.state();
-      meta.ensureDay(s, Date.now());
-      ensureRetos(s, Date.now());
+      meta.ensureDay(s, clockNow());
+      ensureRetos(s, clockNow());
       paintRetos(ctx, el);
-      const tomorrow = new Date(meta.dayKey(Date.now()) + "T00:00:00Z").getTime() + 86400e3;
-      $(el, "[data-left]").textContent = t("Nuevas misiones en {time}", { time: fmtTime((tomorrow - Date.now()) / 1000) });
+      const tomorrow = new Date(meta.dayKey(clockNow()) + "T00:00:00Z").getTime() + 86400e3;
+      $(el, "[data-left]").textContent = t("Nuevas misiones en {time}", { time: fmtTime((tomorrow - clockNow()) / 1000) });
       const rows = s.meta.missions.list.map((mi, i) => {
         const def = MISSIONS[mi.id];
         const v = meta.missionProgress(s, mi);
@@ -179,7 +180,7 @@ export function openDaily(ctx: PanelCtx): void {
      <div class="actions col" data-actions></div>`,
     (el) => {
       const s = ctx.state();
-      const st = meta.dailyStatus(s, Date.now());
+      const st = meta.dailyStatus(s, clockNow());
       $(el, "[data-streak]").textContent = st.canClaim
         ? t("Entra cada día para no perder la racha. Hoy toca el día {n}.", { n: st.index + 1 })
         : st.streak === 1 ? t("Racha de 1 día. Vuelve mañana.") : t("Racha de {n} días. Vuelve mañana.", { n: st.streak });
@@ -202,7 +203,7 @@ export function openDaily(ctx: PanelCtx): void {
       ) {
         const claim = async (double: boolean) => {
           if (double && !(await ctx.watchAd("daily_double"))) return;
-          const g = meta.claimDaily(ctx.state(), Date.now(), double);
+          const g = meta.claimDaily(ctx.state(), clockNow(), double);
           if (g) {
             ctx.fx(g.exec ? "chest" : "gems", true);
             if (g.exec) void showExec(ctx, g.exec, g);
@@ -263,7 +264,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
      <div data-body style="display:grid;gap:8px"></div>`,
     (el) => {
       const s = ctx.state();
-      const now = Date.now();
+      const now = clockNow();
       $(el, "[data-gems]").innerHTML = `${fmt(s.meta.gems)} ${gem()}`;
       $(el, "[data-freedot]").hidden = !meta.freeChestReady(s, now);
       el.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === current)));
@@ -290,7 +291,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
             b.onclick = async () => {
               const type = b.dataset.chest as ChestType;
               if (type === "free" && !(await ctx.watchAd("free_chest"))) return;
-              const g = meta.openChest(ctx.state(), type, Date.now());
+              const g = meta.openChest(ctx.state(), type, clockNow());
               if (!g) return ctx.fx("error");
               ctx.fx("chest", true);
               if (g.exec) void showExec(ctx, g.exec, g, CHESTS[type].icon);
@@ -299,7 +300,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
           const cash = body.querySelector<HTMLButtonElement>("[data-cash]");
           if (cash)
             cash.onclick = () => {
-              const c = meta.buyCashPack(ctx.state(), Date.now());
+              const c = meta.buyCashPack(ctx.state(), clockNow());
               if (!c) return ctx.fx("error");
               ctx.fx("coin", true);
               ctx.toast(`+${money(c)}`);
@@ -324,7 +325,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
           });
           body.querySelectorAll<HTMLButtonElement>("[data-ability]").forEach((b) => {
             b.onclick = () => {
-              if (meta.activateAbility(ctx.state(), b.dataset.ability!, Date.now())) {
+              if (meta.activateAbility(ctx.state(), b.dataset.ability!, clockNow())) {
                 ctx.fx("ability", true);
                 ctx.toast("⚡ " + t("¡Habilidad activada!"));
               }
@@ -332,7 +333,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
           });
           body.querySelectorAll<HTMLButtonElement>("[data-recharge]").forEach((b) => {
             b.onclick = async () => {
-              if (await ctx.watchAd("ability_recharge")) meta.rechargeAbility(ctx.state(), b.dataset.recharge!, Date.now());
+              if (await ctx.watchAd("ability_recharge")) meta.rechargeAbility(ctx.state(), b.dataset.recharge!, clockNow());
             };
           });
         }

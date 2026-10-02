@@ -18,7 +18,9 @@ Deno.serve(async (req) => {
     new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
   if (req.method !== "POST") return reply({ error: "method" }, 405);
   try {
-    const b = await req.json();
+    const text = await req.text();
+    if (text.length > 32_768) return reply({ error: "size" }, 413);
+    const b = JSON.parse(text);
     if (typeof b?.device !== "string" || !UUID.test(b.device) || !Array.isArray(b.events)) return reply({ error: "bad" }, 400);
     const { data, error } = await db.rpc("analytics_insert", {
       p_device: b.device,
@@ -29,6 +31,7 @@ Deno.serve(async (req) => {
     if (error) throw error;
     return reply({ stored: data });
   } catch (e) {
+    if (e instanceof SyntaxError) return reply({ error: "bad" }, 400);
     console.error(e);
     return reply({ error: "server" }, 500);
   }

@@ -1,3 +1,4 @@
+import { now as clockNow } from "./clock";
 import { CHAIN, CONFIG } from "./data";
 import {
   bizDef,
@@ -93,7 +94,7 @@ export function ipo(s: GameState, mult: 1 | 2, now: number): { state: GameState;
   return { state, gained };
 }
 
-export function recordAd(s: GameState, placement: string, now: Date = new Date()): void {
+export function recordAd(s: GameState, placement: string, now: Date = new Date(clockNow())): void {
   const day = now.toISOString().slice(0, 10);
   if (s.ads.day !== day) {
     s.ads.day = day;

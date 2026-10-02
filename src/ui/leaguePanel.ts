@@ -1,3 +1,4 @@
+import { now as clockNow } from "../game/clock";
 import { Capacitor } from "@capacitor/core";
 import { fmt, fmtTime } from "../game/format";
 import { LEAGUE_POINTS, PLAY, STREAK_POINTS, leagueEvent, leagueJoined } from "../game/league";
@@ -60,7 +61,7 @@ let syncing = false;
 let loginDay = "";
 
 /** Envía los eventos pendientes. Devuelve los puntos sumados (0 si no hay conexión o nada nuevo). */
-export async function syncLeague(s: GameState, now = Date.now()): Promise<number> {
+export async function syncLeague(s: GameState, now = clockNow()): Promise<number> {
   if (!leagueJoined(s) || syncing) return 0;
   const today = dayKey(now);
   if (loginDay !== today) {
@@ -165,7 +166,7 @@ export function openLeague(ctx: PanelCtx): void {
 
   const renderStatus = (st: LeagueStatus, payouts: Payout[] = []) => {
     const me = st.me;
-    const left = Math.max(0, (new Date(st.week.endsAt).getTime() - Date.now()) / 1000);
+    const left = Math.max(0, (new Date(st.week.endsAt).getTime() - clockNow()) / 1000);
     const anyCash = st.prizes.cents.some((c) => c > 0);
     const gems = st.prizes.gems;
     const won = st.unclaimed.reduce((a, u) => a + u.gems, 0); // los premios en dinero van aparte (payouts)
@@ -216,7 +217,14 @@ export function openLeague(ctx: PanelCtx): void {
           void load();
         } catch (e) {
           btn.disabled = false;
-          ctx.toast((e as Error).message === "email" ? t("Ese email no parece válido") : t("No hay conexión. Inténtalo en un momento."));
+          const code = (e as Error).message;
+          ctx.toast(
+            code === "email"
+              ? t("Ese email no parece válido")
+              : code === "email_used"
+                ? t("Ese email ya se usó con otra cuenta. Cada persona puede cobrar con una sola cuenta.")
+                : t("No hay conexión. Inténtalo en un momento."),
+          );
         }
       };
     });

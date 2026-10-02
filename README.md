@@ -107,6 +107,8 @@ docs/GDD.md           documento de diseño y hoja de ruta
 
 **Liga Millonario** (Supabase): la URL y la clave pública por defecto son las del proyecto del juego. Se pueden cambiar con `VITE_LEAGUE_URL` y `VITE_LEAGUE_KEY` (ver `.env.example`). Cómo funciona y cómo se gestiona: [`docs/LIGA.md`](docs/LIGA.md).
 
+**Seguridad y trampas** (hora del móvil, partidas editadas, Liga, secretos): [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
+
 El consentimiento GDPR (formulario UMP de Google) y el permiso ATT de iOS ya se piden en `AdMobAds.init()`. Solo tienes que crear el mensaje de consentimiento en la consola de AdMob, en **Privacidad y mensajes**.
 
 ## Próximos pasos

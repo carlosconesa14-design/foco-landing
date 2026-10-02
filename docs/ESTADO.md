@@ -25,15 +25,16 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Android | Capacitor, `com.carlosconesa.ridermillionaire`. Hay un APK en cada subida y un AAB firmado manual (`release.yml`) | `android/`, [`TIENDA.md`](TIENDA.md) |
 
 **Servidor (Supabase):** proyecto `de-rider-a-millonario` (id `jpdvpbqiasyjzbdaiedh`, París).
-- **Migraciones aplicadas:** de la 0001 a la 0008 (`supabase/migrations`). **La 0009** (eventos `offer_shown` y `wheel_spin`, vista `analytics_offers`) está escrita y pendiente de aplicar; hasta entonces el servidor descarta esos dos eventos sin error.
-- **Edge Functions:** `league` (v3) y `track`.
-- **Seguridad:** RLS sin políticas; solo se accede a través de las funciones.
+- **Migraciones aplicadas:** de la 0001 a la 0010 (`supabase/migrations`). La 0010 es la de seguridad.
+- **Edge Functions:** `league` (v4, con la hora del servidor) y `track` (v2).
+- **Seguridad:** RLS sin políticas y ningún permiso para anónimos; solo se accede a través de las funciones. Auditoría completa, defensas y pendientes en [`SEGURIDAD.md`](SEGURIDAD.md).
 
 ## Decisiones tomadas (no volver a discutir sin motivo)
 1. **El dinero real nunca depende de anuncios, compras ni progreso en el juego.** Así lo exige AdMob, y es lo que lo mantiene legal. Los anuncios dan solo premios del juego.
 2. **La Liga premia el esfuerzo de la semana, no la antigüedad.** El tiempo activo cuenta poco y con techo: 2 h a puntos completos y 4 h como máximo al día. No es un sorteo.
 3. **Nada de prometer premios y no darlos** ni de jugar con el número de ganadores. Es ilegal.
-4. **Premios en dinero solo cuando un asesor revise las bases.** Es cambiar `prize_cents` en `league_config`.
+4. **Premios en dinero solo cuando un asesor revise las bases** y esté hecha la verificación Play Integrity ([`SEGURIDAD.md`](SEGURIDAD.md), «Pendiente»). Es cambiar `prize_cents` en `league_config`.
+8. **Contra trampas, el juego usa la hora del servidor** (`src/game/clock.ts`), nunca `Date.now()`. Las señales de trampa no castigan la partida: solo impiden cobrar dinero hasta revisarlas.
 5. **Aviso «el dinero del juego es ficticio»:** en las bases, la tienda y el juego.
 6. **Nombre:** «Rider Millionaire: Idle Tycoon». «Idle Millionaire» chocaba con *Cash Masters: Idle Millionaire*.
 7. **Moneda:** € en español y $ en inglés. Los premios reales, siempre en euros.
@@ -41,7 +42,8 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 ## Pendiente de Carlos
 - [ ] Google Play Console (25 $) y AdMob: crear las cuentas y pasar los IDs de AdMob.
 - [ ] Datos para la política de privacidad: nombre, NIF, domicilio y email (`PRIVACIDAD.md`).
-- [ ] Clave de firma y 6 secretos de GitHub (`TIENDA.md`, punto 3). Claude puede generar la clave.
+- [ ] Subir los secretos de GitHub (`TIENDA.md`, punto 3). La clave de subida ya está generada (te la pasó Claude el 2 de octubre): guárdala en un gestor de contraseñas.
+- [ ] Play Console → Play Integrity API: vincular un proyecto de Google Cloud y crear una cuenta de servicio (`SEGURIDAD.md`, «Pendiente»).
 - [ ] Comprobar el nombre en Google Play y en la EUIPO.
 - [ ] TikTok, con el enlace de la beta en la bio (`TIKTOK.md`).
 - [ ] Prueba cerrada en Google Play: 12 probadores durante 14 días, y luego producción (`LANZAMIENTO.md`).
@@ -51,6 +53,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 Icono, logotipo «Rider Millionaire», gráfico destacado y capturas para la tienda. Arte de Miami. Una moneda sin €, o en $, para el juego en inglés. El camión de suministros y el cliente VIP son ahora botones HTML (`.visitor` en `styles.css`): mejor como sprites que entren en la escena del negocio. Icono `ic_wheel` para la ruleta.
 
 ## Próximos pasos (Claude)
+0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
 2. Panel de números de la beta (jugadores, retención, anuncios por jugador, abandono en el tutorial, conversión de las visitas). ← siguiente
 3. Dubái, con la carrera de fundadores: los 100 primeros reciben un ejecutivo exclusivo, sin dinero real.

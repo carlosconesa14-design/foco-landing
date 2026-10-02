@@ -1,3 +1,4 @@
+import { now as clockNow } from "../game/clock";
 import { money, t } from "../i18n";
 import { constructionPop, revealScene } from "./feedback";
 import { actorShadow, gait, loopPosition, streetLoop, type StreetLoop } from "./motion";
@@ -481,7 +482,7 @@ export class CityScene extends Phaser.Scene {
         cl.shadow.x -= this.worldW + 260;
       }
     }
-    const now = Date.now();
+    const now = clockNow();
     for (const p of this.plots) {
       if (p.owned && p.bubbleText) {
         const rate = businessRate(s, p.id, now);

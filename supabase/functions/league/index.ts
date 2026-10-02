@@ -21,6 +21,10 @@ async function sha256(text: string): Promise<string> {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Ninguna petición legítima pasa de unos pocos KB (50 eventos como mucho). */
+const MAX_BODY = 16_384;
+
 async function rpc(fn: string, args: Record<string, unknown>) {
   const { data, error } = await db.rpc(fn, args);
   if (error) throw new Error(error.message);
@@ -32,10 +36,16 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "method" }, 405);
   let body: { action?: string; id?: string; secret?: string; events?: unknown; nickname?: string; week?: string; email?: string; adult?: boolean; platform?: string };
   try {
-    body = await req.json();
+    const text = await req.text();
+    if (text.length > MAX_BODY) return json({ error: "size" }, 413);
+    body = JSON.parse(text);
+    if (!body || typeof body !== "object") throw new Error("json");
   } catch {
     return json({ error: "json" }, 400);
   }
+
+  // Hora del servidor: el juego la usa para que cambiar la hora del móvil no adelante nada.
+  if (body.action === "time") return json({ now: Date.now() });
 
   try {
     if (body.action === "register") {
@@ -46,7 +56,9 @@ Deno.serve(async (req) => {
       return json(await rpc("league_register", { p_ip_hash: await sha256(`league:${ip}`), p_platform: platform }));
     }
 
-    if (typeof body.id !== "string" || typeof body.secret !== "string") return json({ error: "auth" }, 401);
+    if (typeof body.id !== "string" || !UUID.test(body.id) || typeof body.secret !== "string" || body.secret.length > 128) {
+      return json({ error: "auth" }, 401);
+    }
     const ok = await rpc("league_auth", { p_id: body.id, p_secret: body.secret });
     if (!ok) return json({ error: "auth" }, 401);
 

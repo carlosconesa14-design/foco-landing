@@ -1,3 +1,4 @@
+import { now as clockNow } from "../game/clock";
 import { CHAIN } from "../game/data";
 import { bizList, bizTier, businessRate, chainRates, passiveRate } from "../game/economy";
 import { fmt } from "../game/format";
@@ -35,7 +36,7 @@ export function openEmpire(ctx: PanelCtx): void {
      <div class="list" data-list style="display:grid;gap:8px"></div>`,
     (el) => {
       const s = ctx.state();
-      const now = Date.now();
+      const now = clockNow();
       $(el, "[data-sub]").innerHTML = `<b class="good">+${money(passiveRate(s, now))}/s</b> ${t("entre todos tus negocios")}`;
       const p = cityProgress(s);
       const pct = Math.min(100, (Math.log10(Math.max(1, p.earned)) / Math.log10(p.goal)) * 100);
