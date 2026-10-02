@@ -592,3 +592,65 @@ físico conectado; esa prueba sigue pendiente.
 El patio del almacén queda reservado a su logística: los coches decorativos
 se mantienen en los demás recintos. La furgoneta se desvanece al salir de la
 calzada del almacén, junto con su sombra y rótulos, para no circular por el vacío.
+
+## Cierre visual — 2 de octubre de 2026
+
+Esta sección describe el arte integrado y sustituye las descripciones históricas de piezas provisionales anteriores. Las fuentes originales son PNG RGBA generados con ImageGen; no hay marcas reales. Los recortes y alias exactos están en `src/art/visualFrames.ts` y en los seis JSON de `public/sprites/generated/`: 119 claves comparten seis texturas, sin duplicar sus píxeles. La prioridad sigue siendo PNG individual → atlas → respaldo procedural.
+
+### Familias entregadas
+
+| Claves | Tamaño lógico / presentación | Archivo, uso y dirección |
+| --- | --- | --- |
+| `bld_{supercars,hotel,safari,souk,tower}_{1,2,3}` | Ancho 172; alturas base 164/260/140/170/300, +24 por evolución; ajustadas a parcela 2:1 | `dubai-buildings.png`, 1536×1024. Quince edificios propios: concesionario, hotel, safari, zoco y torre. Piedra clara, arena, cristal cian, acentos dorados; luz superior izquierda |
+| `st_{supercars,hotel,safari,souk,tower}` | 100×86 | `dubai-details.png`, 1448×1086. Taller, suite, tienda beduina, banco de joyero y estructura de obra |
+| `item_{carkey,bell,camel,ring,beam}` | 26×26 | Mismo atlas: objetos de producción propios |
+| `ch_{mechanic,valet,butler,guide,goldsmith,builder}_0` | 44×60 | Mismo atlas: roles propios. Las poses de desplazamiento reutilizan el frame quieto, como admite el contrato existente; no son ciclos nuevos de tres dibujos |
+| `avatar_{tracksuit,hoodie,suit,designer,goldtux,neonsuit,vampire,founder}` | Recorte uniforme 340×504; mostrado a 120×172 | `avatars.png`, 1536×1024. Misma cara, pose y proporciones; siete vestuarios y fundador. Las joyas seleccionadas se superponen en HTML |
+| `exec_founder` | 64×64 | Retrato recortado del fundador en `avatars.png`; marco por rareza existente |
+| `lux_{digital,luxwatch,goldchain,diamondring,crown,deliverybike,scooter,motorbike,sportscar,supercar,limo,goldcar,parents,flat,penthouse,villa,mansion,island,hearse,haunted}` | Iconos de tarjeta 76×76; viviendas también en el escenario de Mi vida | `luxury.png`, 1536×1024. Relojes, joyas, vehículos y casas originales, estilo juguete 3D |
+| `lux_{tracksuit,hoodie,suit,designer,goldtux,neonsuit}` | 76×76 | Alias de los avatares; no hay copia de textura |
+| `lux_{cat,dog,parrot,tiger,penguin,pumpkin,yacht,jet,rocket,vampire,skullring}` | 76×76 | `lifestyle-extras.png`, 1254×1254. Mascotas, lujo extremo y exclusivos estacionales |
+| `luxcar_{deliverybike,scooter,motorbike,sportscar,supercar,limo,goldcar,hearse}` | 50×42 | Alias del vehículo correspondiente de `luxury.png`; circula en la ciudad con sombra y halo existentes |
+| `ghost`, `pumpkin` | 64×64 / 40×40 | `lifestyle-extras.png`. Fantasma interactivo y decoración de Halloween; se corrigió la colisión de la clase `.ghost` con botones de cancelar |
+| `veh_supply`, `ch_vip_0` | 96×78 / 48×68 | Mismo atlas. Visitantes físicos con entrada, halo, sombra, interacción y salida; objetivo HTML accesible de 44 px sigue su posición. No cambia ninguna oferta ni recompensa |
+| `veh_safari`, `veh_crane`, `veh_luggage`, `veh_flatbed`, `veh_goldvan` | 62×48, 68×60 y 68×54 | `vehicles.png`, 1774×887. Vehículos exclusivos de Dubái |
+| `car_miami_0`, `car_miami_1`, `dubai_lamp` | 44×34 / 22×60 | Mismo atlas. Tráfico pastel de Miami y farolas de Dubái |
+| `dubai_planter`, `miami_plaza`, `decor_<negocio>_{2,3}` | 58×76, 66×80 | Atlas extras: jardineras doradas y decoración costera; alias por ciudad para recintos. Dunas y skyline de Dubái son geometría agrupada, no otra textura grande |
+| `rank_1`…`rank_5` | 24×24; PNG 96×96 + SVG | `public/sprites/`. Bronce, plata, oro, diamante y leyenda, pictogramas propios sin letras |
+| `<pieza>_r1`…`_r5`, `ch_<rol>_r<n>_<pose>` | Igual a base; textura ≤300×258 | `src/art/rankArt.ts`. Composición diferida sobre el arte real: herramientas, soportes, marquesinas, terminales, herrajes, insignias y uniformes. No es un recoloreado global ni cientos de PNG independientes. Incluye las poses propias del almacén y restaurante. Un PNG específico puede sustituirla |
+| `coin`, `ic_wheel`, `ic_hand`, `ic_manager`, `ic_construction` | 20×20, 48×48, 26×28, 18×18, 32×24 | SVG original y PNG 96×96 en `public/sprites/`; moneda con estrella neutral. Los importes siguen usando €/$ mediante `money()` |
+| UI: categorías, ciudades, banderas, oficina, misiones, eventos, rival, invitaciones, nube y controles | Canvas vectorial 48×48; inline 1 em | `src/ui/visualIcons.ts` y `icons.ts`; conserva gemas, cofres y ejecutivos PNG existentes. Iconos de negocio usan sus edificios. Sustituye glifos decorativos en etiquetas traducidas sin cambiar cifras ni nombres escritos por jugadores |
+
+### Prompts de las familias generadas
+
+Dirección común utilizada: **original premium mobile idle tycoon, polished toy-like 3D cartoon, clean navy outlines, warm top-left lighting, transparent background, isolated objects in a strict grid, consistent scale, no text, no letters, no watermark, no real brands**. Los prompts solicitaban estas composiciones y orden de celdas (registro reproducible de dirección y contenido; las imágenes generadas no son deterministas):
+
+- **Dubái, 5×3:** five distinct Dubai businesses, supercar showroom, sail hotel, desert safari camp, gold souk, construction skyscraper; three progressively larger evolutions in rows; 2:1 isometric diamond foundations; cream stone, turquoise glass and gold details.
+- **Avatares, 4×2:** the same friendly tan male with brown hair, identical frontal relaxed pose, face and proportions; green rider tracksuit, blue hoodie, business suit, burgundy designer outfit, black gold tuxedo, cyan pink neon suit, vampire costume, white gold founder suit.
+- **Detalles de Dubái, 4×4:** five production stations, car key, hotel bell, camel, gold ring, steel beam; mechanic, valet, butler, guide, goldsmith and construction worker; each in its own transparent cell.
+- **Lujo, 5×4:** digital watch, luxury watch, gold necklace, diamond ring, crown; delivery bike, scooter, motorcycle, sports car, supercar; limousine, gold car, family home, apartment, penthouse; pool villa, mansion, private island, hearse, haunted mansion.
+- **Extras, 4×4:** cat, dog, parrot, tiger; penguin, jack-o-lantern, yacht, private jet; rocket, vampire costume, skull ring, friendly ghost; supply truck, premium suited VIP, gold Dubai planter, tropical Miami plaza.
+- **Vehículos, 4×2:** desert safari off-road car, small mobile construction crane, hotel luggage cart, vehicle transporter; gold delivery van, two pastel Miami convertibles, gold luxury street lamp; readable isolated isometric silhouettes.
+- **Icono de app:** original premium mobile tycoon app icon, navy background, green delivery scooter, gold coin with a star and small growing city buildings; bold central silhouette, no small text, no currency sign, no real brand.
+
+### Marca y tienda
+
+`public/brand/` contiene el original del icono, exportaciones 512/1024, `logo-dark.svg`, `logo-light.svg` y `splash.svg` (1080×1920). El logotipo convierte la fuente Lilita ya incluida en curvas SVG, sin dependencia de fuentes externas. La carga web utiliza icono y logo. Android incluye las cinco densidades, icono redondo/adaptativo y splash marino compartido, con ajustes para Android 12. **No se ha compilado ni probado un APK en este entorno.**
+
+`public/brand/store/` entrega cinco capturas reales 1080×1920 y un feature graphic 1024×500 compuesto a partir del logo y de esas capturas. La partida local avanzada está preparada para mostrar funciones existentes; Supabase está simulado, sin registros, guardados o analítica remotos. No es una captura de una cuenta real ni gameplay inventado.
+
+### Reproducción y comprobaciones
+
+```sh
+npm ci
+npm run capture:visuals                        # 320/390/560, español/inglés
+VISUAL_OUTPUT=artifacts/store npm run capture:visuals -- --store
+npm run brand:store                            # exporta capturas y gráfico
+npm run art:export                             # Vite en 5173, SVG → PNG y Android
+python scripts/register-visual-atlases.py       # Pillow, NumPy y SciPy
+python scripts/build-brand.py                  # fontTools con soporte Brotli
+```
+
+Los exportadores de navegador requieren Chromium instalado (`CHROMIUM_PATH`). Los scripts Python son herramientas opcionales de edición; el juego consume los archivos entregados y no los necesita. `artifacts/` está ignorado. Comparación reproducible en `docs/visual-review/`: antes de esta rama, commit `8b0f8a2`, y después, misma partida preparada, idioma y resolución.
+
+Verificaciones: 217 tests y build de producción correctos; cobertura de todas las claves de lujo y Dubái, límites reales de los atlas, 110 comprobaciones de navegador, compra/equipamiento, visitantes, rangos, ausencia de desbordamientos y errores JS, y movimiento reducido. Se conserva Madrid y sus tres frames de caminar originales 132×180 con el mismo apoyo. Se mantienen los efectos de monedas, rangos, colecciones y celebraciones existentes. La prueba en móvil físico de gama media y la revisión nativa siguen siendo necesarias antes de publicar: Chromium con renderizado software no permite certificar esos resultados.

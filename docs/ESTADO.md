@@ -14,7 +14,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 
 | Área | Qué | Dónde |
 | --- | --- | --- |
-| Juego | Ciudad isométrica y recintos por negocio. Madrid (4 negocios), Miami (5, con olas turísticas) y **Dubái** (5, con el precio del oro y la carrera de fundadores; arte provisional). Gerentes, ejecutivos y maletines, bolsa, expansión, Oficina central y edificios que crecen | `src/game`, `src/scenes`, [`GDD.md`](GDD.md) |
+| Juego | Ciudad isométrica y recintos por negocio. Madrid (4 negocios), Miami (5, con olas turísticas) y **Dubái** (5, con el precio del oro y la carrera de fundadores; arte propio integrado). Gerentes, ejecutivos y maletines, bolsa, expansión, Oficina central y edificios que crecen | `src/game`, `src/scenes`, [`GDD.md`](GDD.md) |
 | Comodidad y vuelta | **Mejorar todo** (3 gratis/día + 2 con anuncio; ilimitado con el Gestor automático de 0,99 € o VIP), **fusionar ejecutivos**, **«Mientras no estabas»** y **rival de la semana**. Tokio «Próximamente» | `autoUpgrade.ts`, `fusion.ts`, `away.ts`, `rival.ts` |
 | Mecánicas por negocio | Madrid: **pedidos urgentes** (almacén), **críticos** con estrellas (restaurante), **hype** y directo viral (TikTok) e **investigación** (IA). Reutilizables para Miami y Dubái | `twists.ts`, `twistUi.ts` |
 | Ajustes remotos | Números de ofertas, viral, «Mi vida» y temporada cambiables desde Supabase sin publicar versión (¼–4× del valor de fábrica) | `remote.ts`, migración 0015, [`AJUSTES.md`](AJUSTES.md) |
@@ -60,16 +60,21 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 - [ ] Prueba cerrada en Google Play: 12 probadores durante 14 días, y luego producción (`LANZAMIENTO.md`).
 - [ ] Asesor: bases de la Liga, privacidad e impuestos.
 
-## Pendiente de ChatGPT/Codex
-Icono, logotipo «Rider Millionaire», gráfico destacado y capturas para la tienda. Arte de Miami. Una moneda sin €, o en $, para el juego en inglés. El camión de suministros y el cliente VIP son ahora botones HTML (`.visitor` en `styles.css`): mejor como sprites que entren en la escena del negocio. Icono `ic_wheel` para la ruleta. **Mi vida:** personaje por ropa `avatar_*`, iconos `lux_*` y coches `luxcar_*` (ver [`ART.md`](ART.md), «Mi vida»). **Rangos:** medallas `rank_1…5` y versiones `_r1…_r5` de puestos, personajes y vehículos (ver [`ART.md`](ART.md), «Rangos»). **Dubái:** edificios, puestos, objetos, personajes y el retrato `exec_founder` (lista y prompts en [`ART.md`](ART.md), «Dubái»).
+## Bloque visual completado por ChatGPT/Codex
+
+Dubái tiene sus quince evoluciones de edificios, puestos, productos, roles, vehículos, desierto, skyline y fundador. Mi vida incluye todas las ropas, lujo, coches y exclusivos de Halloween. Rangos con cambios estructurales sobre el arte base, medallas propias, visitantes físicos, moneda neutral, kit de iconos coherente, decoración de Miami y revisión responsive en español/inglés a 320/390/560 px. Madrid conserva su arte y animaciones existentes.
+
+Marca: logos claro/oscuro, iconos web/Android, carga y splash, gráfico de Google Play y cinco capturas reales de tienda. Catálogo, herramientas y límites documentados en [`ART.md`](ART.md), «Cierre visual». La economía, guardado y frecuencia/recompensa de las ofertas permanecen intactos (`src/game/*` sin cambios).
+
+Validación local: 217 tests correctos, build de producción correcto y 110 comprobaciones automatizadas de Chromium, más compra/equipamiento y fantasma. **Pendiente antes de publicar:** probar rendimiento en Android físico de gama media, compilar/verificar recursos nativos y revisar el material en Play Console. La prueba visual simula Supabase; no valida cuentas, anuncios reales ni servidor.
 
 ## Próximos pasos (Claude)
 0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
 2. ~~Panel de números de la beta~~ ✅ ([`ANALITICA.md`](ANALITICA.md), «Informes»).
-3. ~~Dubái, con la carrera de fundadores~~ ✅ (`founders.ts`, migración 0013). Falta su arte (Codex).
+3. ~~Dubái, con la carrera de fundadores~~ ✅ (`founders.ts`, migración 0013). Arte completado en la rama visual (Codex).
 3c. Mecánicas de cada negocio: ~~fase 1 (Madrid)~~ ✅. Fase 2: Miami y Dubái con los mismos módulos.
-3b. ~~Rangos de los puestos, «Mi vida», Halloween, invitar a amigos, nube y ajustes remotos~~ ✅. Falta su arte (Codex, ver `ART.md`).
+3b. ~~Rangos de los puestos, «Mi vida», Halloween, invitar a amigos, nube y ajustes remotos~~ ✅. Arte completado (Codex, ver `ART.md`).
 4. Rendimiento en móviles de gama media (antes de salir en Google Play: ahora hay más efectos).
 5. Revisar la primera partida con datos reales.
 
