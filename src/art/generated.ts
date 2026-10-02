@@ -1,10 +1,12 @@
 import type Phaser from "phaser";
 import { GENERATED_FRAMES as BASE_FRAMES, GENERATED_SHEETS as BASE_SHEETS } from "./generatedFrames";
 import { WAREHOUSE_FRAMES } from "./warehouseFrames";
+import { VISUAL_FRAMES, VISUAL_SHEETS } from "./visualFrames";
 import { RESTAURANT_FRAMES } from "./restaurantFrames";
+import { IMG_EXT } from "./imgExt";
 
-export const GENERATED_SHEETS = [...BASE_SHEETS, { key: "generated-restaurant", file: "restaurant" }, { key: "generated-warehouse", file: "warehouse" }];
-const GENERATED_FRAMES: typeof BASE_FRAMES = { ...BASE_FRAMES, ...RESTAURANT_FRAMES, ...WAREHOUSE_FRAMES };
+export const GENERATED_SHEETS = [...BASE_SHEETS, ...VISUAL_SHEETS, { key: "generated-restaurant", file: "restaurant" }, { key: "generated-warehouse", file: "warehouse" }];
+const GENERATED_FRAMES: typeof BASE_FRAMES = { ...BASE_FRAMES, ...RESTAURANT_FRAMES, ...WAREHOUSE_FRAMES, ...VISUAL_FRAMES };
 type Spec = { w: number; h: number };
 const aliases: Record<string, string> = {};
 for (const key of Object.keys(GENERATED_FRAMES)) {
@@ -54,9 +56,13 @@ export function swapArt(image: Phaser.GameObjects.Image, key: string): void {
   image.setTexture(ref.texture, ref.frame).setDisplaySize(w, h);
 }
 
-/** Also usable by HTML UI: SVG crops the unchanged sheet using the same frame metadata. */
+/**
+ * Also usable by HTML UI: SVG crops the unchanged sheet using the same frame metadata.
+ * The inner <svg> carries its size inline too: CSS rules like `.lux-card svg { width: 46px }` also
+ * match it and would shrink the crop window to 46 sheet pixels (empty or cut-off pictures).
+ */
 export function generatedIcon(key: string, className = "game-icon"): string {
   const ref = GENERATED_FRAMES[key];
   if (!ref) return "";
-  return `<svg class="${className}" viewBox="${ref.x} ${ref.y} ${ref.w} ${ref.h}" aria-hidden="true" focusable="false" overflow="hidden"><image href="sprites/generated/${ref.file}.png" width="${ref.sheetW}" height="${ref.sheetH}"/></svg>`;
+  return `<svg class="${className}" viewBox="${ref.x} ${ref.y} ${ref.w} ${ref.h}" aria-hidden="true" focusable="false" overflow="hidden"><svg x="${ref.x}" y="${ref.y}" width="${ref.w}" height="${ref.h}" style="width:${ref.w}px;height:${ref.h}px" overflow="hidden"><image href="sprites/generated/${ref.file}.${IMG_EXT}" x="${-ref.x}" y="${-ref.y}" width="${ref.sheetW}" height="${ref.sheetH}"/></svg></svg>`;
 }

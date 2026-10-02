@@ -8,6 +8,10 @@ name: Android release (Google Play)
 on:
   workflow_dispatch:
 
+# Solo lectura del repositorio: este workflow no publica nada en GitHub.
+permissions:
+  contents: read
+
 jobs:
   aab:
     runs-on: ubuntu-latest
@@ -54,11 +58,15 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          # Los secretos van en variables de entorno, nunca pegados en el script.
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$ANDROID_KEYSTORE_PATH"
+          trap 'rm -f "$ANDROID_KEYSTORE_PATH"' EXIT
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$ANDROID_KEYSTORE_PATH"
+          chmod 600 "$ANDROID_KEYSTORE_PATH"
           chmod +x gradlew
-          ./gradlew bundleRelease --no-daemon -PADMOB_APP_ID="${{ secrets.ADMOB_APP_ID }}"
-          rm -f "$ANDROID_KEYSTORE_PATH"
+          ./gradlew bundleRelease --no-daemon -PADMOB_APP_ID="$ADMOB_APP_ID"
 
       - uses: actions/upload-artifact@v4
         with:

@@ -1,9 +1,13 @@
+import { SYMBOL_ICONS, VISUAL_ICON_SHAPES } from "./visualIcons";
+import { rankInfo } from "../game/ranks";
 import { CHESTS, EXEC_FACES, LIFE, type BusinessDef, type ChestType, type CityDef, type OfficeUpgrade } from "../game/data";
 import type { Exec } from "../game/state";
 
 import { generatedIcon } from "../art/generated";
+import { IMG_EXT } from "../art/imgExt";
 /** Original vector UI kit. All paths use a 48px logical canvas, no remote assets. */
 const shapes: Record<string, string> = {
+  ...VISUAL_ICON_SHAPES,
   cash: '<circle cx="24" cy="24" r="18" fill="#ffc94f"/><circle cx="24" cy="24" r="13" fill="#ffe99a"/><path d="M29 15h-7l-5 9 5 9h7M14 22h14M14 26h12"/>',
   gem: '<path fill="#83e5ff" d="m6 18 9-10h18l9 10-18 23Z"/><path fill="#d4f8ff" d="m15 8 9 10 9-10M6 18h36L24 41 16 18"/><path d="M6 18h36M15 8l9 10 9-10M16 18l8 23 8-23"/>',
   missions: '<rect x="11" y="9" width="27" height="33" rx="5" fill="#edf5ff"/><rect x="18" y="5" width="13" height="9" rx="3" fill="#ffc94f"/><path d="m15 23 3 3 5-6M27 23h6m-18 10 3 3 5-6M27 33h6"/>',
@@ -21,43 +25,74 @@ const shapes: Record<string, string> = {
   check: '<circle cx="24" cy="24" r="19" fill="#6ee4af"/><path d="m13 24 8 8 14-16"/>',
 };
 const names: Record<string, string> = {
+  ...SYMBOL_ICONS,
   '💶':'cash','💰':'cash','💎':'gem','📋':'missions','🎯':'missions','🎁':'daily',
   '💼':'execs','👜':'premium','🏆':'trophy','🏅':'trophy','⚙️':'settings',
   '🏙️':'city','📈':'ipo','🌍':'world','🗺️':'world','⭐':'star','🔒':'lock','👔':'manager','✅':'check',
 };
 export function icon(name: string, fallback?: string): string {
-  if (available.has(name)) return `<img class="ico" src="sprites/${name}.png" alt="" draggable="false">`;
+  if (available.has(name)) return `<img class="ico" src="sprites/${name}.${IMG_EXT}" alt="" draggable="false">`;
   const generated = generatedIcon(name);
   if (generated) return generated;
+  if (name.startsWith("ic_biz_")) return icon(`bld_${name.slice(7)}_1`);
+  if (name.startsWith("ic_life_")) return icon(["lux_parents", "lux_flat", "home", "lux_flat", "lux_penthouse", "lux_villa", "lux_mansion", "lux_yacht", "lux_island", "lux_rocket"][Number(name.slice(8))] ?? "home");
+  if (name.startsWith("ic_office_")) return icon(({ brand: "world", team: "manager", floors: "order", suppliers: "invite", offline: "moon", hustle: "bolt", luck: "hype" } as Record<string, string>)[name.slice(10)] ?? "city");
+  if (name === "chest_free") return icon("chest_normal");
   name = name.replace(/^ic_/, "");
   if (name === "league") name = "trophy";
   if (!shapes[name] && fallback) return iconFor(fallback);
   const generatedKey = { cash: "coin", gem: "ic_gem", execs: "chest_normal", premium: "chest_premium" }[name as "cash" | "gem" | "execs" | "premium"];
-  if (generatedKey) return generatedIcon(generatedKey);
+  if (generatedKey) return available.has(generatedKey) ? icon(generatedKey) : generatedIcon(generatedKey);
   return `<svg class="game-icon" viewBox="0 0 48 48" fill="none" stroke="#24445c" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${shapes[name] ?? shapes.star}</svg>`;
 }
 export function iconFor(symbol: string): string {
-  return names[symbol] ? icon(names[symbol]) : symbol;
+  return icon(names[symbol] ?? "star");
 }
 /** Replace only decorative icon slots, never labels or game state. Idempotent. */
+const emojiTokens = /(?:\p{Regional_Indicator}{2}|\p{Extended_Pictographic}(?:\uFE0F|\p{Emoji_Modifier})?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\p{Emoji_Modifier})?)*)/gu;
 export function decorateIcons(root: HTMLElement): void {
-  root.querySelectorAll<HTMLElement>('.ic,.sicon,.face,.mface,.gicon,.bicon,.cicon,.bigchest').forEach(el => {
+  root.querySelectorAll<HTMLElement>('.ic,.sicon,.face,.mface,.gicon,.bicon,.cicon,.bigchest,.tw-ic,.rv-face,.shop-ic').forEach(el => {
     if (el.querySelector('svg,img')) return;
-    const name = names[el.textContent?.trim() ?? ''];
-    if (name) el.innerHTML = icon(name);
+    const symbol = el.textContent?.trim() ?? '';
+    if (names[symbol]) el.innerHTML = icon(names[symbol]);
   });
+  // Preserve text, translations and numeric formatting; replace decorative glyphs only.
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const texts: Text[] = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+    if (node.parentElement?.closest('svg,script,style,input,textarea,option,[contenteditable],.nickname,[data-nickname]')) continue;
+    emojiTokens.lastIndex = 0;
+    if (emojiTokens.test(node.data)) texts.push(node);
+  }
+  for (const node of texts) {
+    const fragment = document.createDocumentFragment();
+    let cursor = 0;
+    emojiTokens.lastIndex = 0;
+    for (const match of node.data.matchAll(emojiTokens)) {
+      fragment.append(document.createTextNode(node.data.slice(cursor, match.index)));
+      const span = document.createElement('span');
+      span.className = 'inline-icon';
+      span.setAttribute('aria-hidden', 'true');
+      span.innerHTML = iconFor(match[0]);
+      fragment.append(span);
+      cursor = match.index! + match[0].length;
+    }
+    fragment.append(document.createTextNode(node.data.slice(cursor)));
+    node.replaceWith(fragment);
+  }
 }
 
 let available = new Set<string>();
 
-/** Lee el manifiesto de sprites una vez al arrancar. Si falla, todo sigue con emojis. */
+/** Lee el manifiesto de sprites una vez al arrancar. Si falla, quedan los atlas y el kit vectorial local. */
 export async function loadIcons(): Promise<void> {
   try {
     const res = await fetch("sprites/manifest.json");
     const list: unknown = await res.json();
     if (Array.isArray(list)) available = new Set(list.filter((k): k is string => typeof k === "string"));
   } catch {
-    /* sin manifiesto: emojis */
+    /* Sin manifiesto: atlas y vectores locales. */
   }
   // Iconos fijos del HTML (menú lateral): <span class="ic" data-icon="ic_missions">📋</span>
   document.querySelectorAll<HTMLElement>("[data-icon]").forEach((el) => {
@@ -65,7 +100,8 @@ export async function loadIcons(): Promise<void> {
   });
 }
 
-export const hasIcon = (key: string) => available.has(key);
+/** ¿Hay imagen propia (PNG o atlas generado) para esta clave? */
+export const hasIcon = (key: string) => available.has(key) || !!generatedIcon(key);
 
 
 export const gem = () => icon("ic_gem", "💎");
@@ -75,7 +111,15 @@ export const lifeIcon = (i: number) => icon(`ic_life_${i}`, LIFE[i].icon);
 export const flagIcon = (c: Pick<CityDef, "id" | "flag">) => icon(`flag_${c.id}`, c.flag);
 export const officeIcon = (o: Pick<OfficeUpgrade, "id" | "icon">) => icon(`ic_office_${o.id}`, o.icon);
 export const chestIcon = (t: ChestType) => icon(`chest_${t}`, CHESTS[t].icon);
-export const execFace = (e: Pick<Exec, "face">) => {
+export const execFace = (e: Pick<Exec, "face" | "founder">) => {
+  if (e.founder) return icon("exec_founder", e.face);
   const i = EXEC_FACES.indexOf(e.face);
   return i >= 0 ? icon(`exec_${i}`, e.face) : e.face;
 };
+
+/** Medalla de un rango (1 bronce … 5 leyenda) para la interfaz: PNG `rank_<n>` si existe, si no el emoji. */
+export function rankIcon(n: number): string {
+  const r = rankInfo(n);
+  if (!r) return "";
+  return `<span class="rank-ic r${n}">${icon(`rank_${n}`)}</span>`;
+}

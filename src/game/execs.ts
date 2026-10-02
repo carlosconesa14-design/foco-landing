@@ -1,4 +1,6 @@
 import { RARITIES } from "./data";
+import { execBonus } from "./founders";
+import { researchMults } from "./twists";
 import type { GameState } from "./state";
 
 export interface Mults {
@@ -18,8 +20,13 @@ export function execMults(s: GameState, bizId: string, now: number, live = true)
   for (const e of s.meta.execs) {
     if (e.assigned !== bizId) continue;
     const r = RARITIES[e.rarity];
-    m[e.kind] += r.bonus;
+    m[e.kind] += execBonus(e);
     if (live && e.abilityEnd > now) m.sale *= r.ability;
   }
+  // Investigación del negocio (Agencia de IA): mejoras permanentes.
+  const rm = researchMults(s, bizId);
+  m.prod *= rm.prod;
+  m.log *= rm.log;
+  m.sale *= rm.sale;
   return m;
 }

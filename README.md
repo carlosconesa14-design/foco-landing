@@ -1,5 +1,7 @@
 # Rider Millionaire
 
+> **¿Retomas el proyecto?** Empieza por [`docs/ESTADO.md`](docs/ESTADO.md): qué hay hecho, qué está decidido y qué falta.
+
 Idle tycoon para móvil: construyes un imperio de negocios modernos (dropshipping, restaurante, TikTok, IA) en una ciudad isométrica que ves crecer. Cada negocio es un recinto en el mapa donde construyes puestos y ves a tus trabajadores producir, recoger y vender. Se monetiza con anuncios bonificados (rewarded ads) de AdMob, siempre opcionales.
 
 Hecho con **TypeScript + Phaser 3 + Vite**, empaquetado para Android e iOS con **Capacitor**. El diseño completo y la hoja de ruta están en [`docs/GDD.md`](docs/GDD.md).
@@ -104,6 +106,10 @@ docs/GDD.md           documento de diseño y hoja de ruta
 **Avisos en el móvil** (`@capacitor/local-notifications`): al salir de la app se programan tres avisos: caja llena, maletín gratis y premio diario. Nunca suenan entre las 22:00 y las 9:00, y se cancelan al volver. El permiso se pide una vez, al acabar el tutorial, y el jugador puede desactivarlos en Ajustes. La lógica está en `src/game/notify.ts` (con tests) y la entrega en `src/platform/notifications.ts`. Al añadir Android, revisa en la documentación del plugin los permisos de Android 13+ y de alarmas exactas; sin alarma exacta, el aviso puede llegar unos minutos tarde.
 
 **Liga Millonario** (Supabase): la URL y la clave pública por defecto son las del proyecto del juego. Se pueden cambiar con `VITE_LEAGUE_URL` y `VITE_LEAGUE_KEY` (ver `.env.example`). Cómo funciona y cómo se gestiona: [`docs/LIGA.md`](docs/LIGA.md).
+
+**Seguridad y trampas** (hora del móvil, partidas editadas, Liga, secretos): [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
+
+**Ajustes desde el servidor** (cambiar ofertas y premios sin publicar versión): [`docs/AJUSTES.md`](docs/AJUSTES.md).
 
 El consentimiento GDPR (formulario UMP de Google) y el permiso ATT de iOS ya se piden en `AdMobAds.init()`. Solo tienes que crear el mensaje de consentimiento en la consola de AdMob, en **Privacidad y mensajes**.
 

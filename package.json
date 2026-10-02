@@ -10,7 +10,11 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "cap:sync": "npm run build && cap sync",
-    "legal": "vite-node scripts/build-legal.ts"
+    "legal": "vite-node scripts/build-legal.ts",
+    "capture:visuals": "node scripts/capture-visuals.mjs",
+    "art:export": "node scripts/export-visual-art.mjs",
+    "brand:store": "node scripts/build-store-graphic.mjs",
+    "art:webp": "node scripts/build-webp.mjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.1.0",
@@ -27,6 +31,8 @@
     "@capacitor/cli": "^8.0.0",
     "@capacitor/ios": "^8.0.0",
     "marked": "^15.0.12",
+    "playwright-core": "1.61.1",
+    "sharp": "^0.34.5",
     "typescript": "^5.9.0",
     "vite": "^7.3.0",
     "vitest": "^3.2.0"

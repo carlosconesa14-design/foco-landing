@@ -1,4 +1,4 @@
-import { CITIES, CONFIG, FRANCHISE, OFFICE, TOURISM, type OfficeId } from "./data";
+import { CITIES, CONFIG, FRANCHISE, GOLD, OFFICE, TOURISM, type OfficeId } from "./data";
 import { cityDef, freshFloor, switchCity, type GameState } from "./state";
 
 /**
@@ -42,6 +42,45 @@ export function callWave(s: GameState, now: number): boolean {
   const t = tourism(s, now);
   if (!t || t.active) return false;
   s.waveEnd = now + TOURISM.adWaveMin * 60e3;
+  return true;
+}
+
+/* ---------- Precio del oro (Dubái) ---------- */
+
+export interface GoldState {
+  /** Multiplicador de ventas actual (x1 a x3). */
+  mult: number;
+  /** Contrato firmado con un anuncio: precio máximo fijado. */
+  locked: boolean;
+  /** Tiempo que le queda al contrato (ms). */
+  left: number;
+  /** El precio está subiendo. */
+  rising: boolean;
+  /** Tiempo hasta el próximo máximo (ms; 0 si estás en él o con contrato). */
+  peakIn: number;
+}
+
+/** Precio del oro: una onda suave de `GOLD.periodMin` minutos entre x1 y x3. */
+export function gold(s: GameState, now: number): GoldState | null {
+  if (cityDef(s.city).mechanic !== "gold") return null;
+  if (s.goldEnd > now) return { mult: GOLD.max, locked: true, left: s.goldEnd - now, rising: false, peakIn: 0 };
+  const period = GOLD.periodMin * 60e3;
+  const phase = (now % period) / period;
+  const mult = GOLD.min + (GOLD.max - GOLD.min) * (0.5 - 0.5 * Math.cos(2 * Math.PI * phase));
+  return { mult: Math.round(mult * 100) / 100, locked: false, left: 0, rising: phase < 0.5, peakIn: phase <= 0.5 ? (0.5 - phase) * period : (1.5 - phase) * period };
+}
+
+/** Multiplicador de ventas por el oro (solo jugando, no offline). */
+export function goldMult(s: GameState, now: number, live: boolean): number {
+  if (!live) return 1;
+  return gold(s, now)?.mult ?? 1;
+}
+
+/** Firma un contrato de oro (tras ver un anuncio): precio máximo durante unos minutos. No si ya está casi en el máximo. */
+export function lockGold(s: GameState, now: number): boolean {
+  const g = gold(s, now);
+  if (!g || g.locked || g.mult >= GOLD.max * 0.9) return false;
+  s.goldEnd = now + GOLD.adLockMin * 60e3;
   return true;
 }
 

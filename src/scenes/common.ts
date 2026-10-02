@@ -10,7 +10,12 @@ import type { GameState } from "../game/state";
  */
 export const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export const DPR = Math.min(window.devicePixelRatio || 1, 3);
+/**
+ * Resolución del canvas: como mucho x2. En pantallas x3 se pintarían 2,25 veces más píxeles por
+ * fotograma (la mitad de fluidez en móviles de gama media) para una diferencia que casi no se ve.
+ * La interfaz HTML va aparte y sigue a resolución completa.
+ */
+export const DPR = Math.min(window.devicePixelRatio || 1, 2);
 export const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
 export const UI_FONT = '"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif';
 export const DISPLAY_FONT = '"Lilita One","Arial Rounded MT Bold","Trebuchet MS",sans-serif';
@@ -53,6 +58,16 @@ export interface Bridge {
 }
 
 export const bridgeOf = (scene: Phaser.Scene) => scene.registry.get("bridge") as Bridge;
+
+/** Barras que flotan encima de la barra inferior (ola u oro, y la mecánica del negocio): alto ocupado. */
+export function overlayHeight(): number {
+  let h = 0;
+  for (const id of ["wave", "twist"]) {
+    const el = document.getElementById(id);
+    if (el && !el.hidden) h += el.offsetHeight + 8;
+  }
+  return h ? h + 12 : 0;
+}
 
 export function setupCamera(scene: Phaser.Scene): { w: number; h: number } {
   const cam = scene.cameras.main;
@@ -268,8 +283,7 @@ export class DragScroll {
   private safeArea(): { left: number; top: number; w: number; h: number } {
     const w = this.scene.scale.width / DPR, h = this.scene.scale.height / DPR;
     const insets = bridgeOf(this.scene).insets();
-    const wave = document.getElementById("wave");
-    const bottom = insets.bottom + (wave && !wave.hidden ? wave.offsetHeight + 20 : 0) + 18;
+    const bottom = insets.bottom + overlayHeight() + 18;
     const top = insets.top + 64;
     return { left: 14, top, w: Math.max(150, w - 28), h: Math.max(130, h - top - bottom) };
   }
@@ -291,16 +305,17 @@ export class DragScroll {
     root.innerHTML = `<button data-map="home" aria-label="${t("Centrar mapa")}" title="${t("Centrar mapa")}">⌖</button><button data-map="overview" aria-label="${t("Ver mapa completo")}" title="${t("Ver mapa completo")}">▦</button><span class="map-zoom"><button data-map="out" aria-label="${t("Alejar mapa")}">−</button><button data-map="in" aria-label="${t("Acercar mapa")}">+</button></span>`;
     let lastBottom = -1;
     const position = () => {
-      const wave = document.getElementById("wave");
-      const bottom = bridgeOf(this.scene).insets().bottom + (wave && !wave.hidden ? wave.offsetHeight + 20 : 0) + 12;
+      const bottom = bridgeOf(this.scene).insets().bottom + overlayHeight() + 12;
       if (bottom !== lastBottom) { root.style.bottom = `${bottom}px`; lastBottom = bottom; }
     };
     position();
-    const waveElement = document.getElementById("wave")!;
     const visibility = new MutationObserver(position);
-    visibility.observe(waveElement, { attributes: true, attributeFilter: ["hidden"] });
     const size = new ResizeObserver(position);
-    size.observe(waveElement);
+    for (const id of ["wave", "twist"]) {
+      const el = document.getElementById(id)!;
+      visibility.observe(el, { attributes: true, attributeFilter: ["hidden"] });
+      size.observe(el);
+    }
     size.observe(document.getElementById("bar")!);
     root.addEventListener("click", e => {
       const action = (e.target as HTMLElement).closest<HTMLButtonElement>("button")?.dataset.map;

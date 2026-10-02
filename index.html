@@ -11,9 +11,8 @@
   </head>
   <body class="loading">
     <div id="loading-screen" role="status" aria-live="polite">
-      <div class="brand-mark" aria-hidden="true"><span>€</span><i></i><i></i><i></i></div>
-      <p class="brand-kicker">TU PRÓXIMO GRAN IMPERIO</p>
-      <h1>Rider<br/><em>Millionaire</em></h1>
+      <img class="loading-app-icon" src="brand/app-icon-512.png" alt="" width="112" height="112" />
+      <img class="loading-logo" src="brand/logo-dark.svg" alt="Rider Millionaire: Idle Tycoon" width="328" height="104" />
       <p>Pequeños comienzos. Grandes negocios.</p>
       <div class="loading-track" aria-hidden="true"><i></i></div>
       <small>Preparando tu ciudad…</small>
@@ -32,12 +31,15 @@
       <div class="tut" id="tut" hidden><span class="tut-step" id="tutStep"></span><span id="tutText"></span></div>
       <div class="rail" id="rail">
         <button data-open="missions" aria-label="Misiones"><span class="ic" data-icon="ic_missions">📋</span>Misiones<i class="dot" hidden></i></button>
+        <button data-open="season" id="seasonBtn" class="season-btn" hidden aria-label="Halloween"><span class="ic">🎃</span>Halloween<i class="dot" hidden></i></button>
+        <button data-open="life" aria-label="Mi vida"><span class="ic" data-icon="ic_life">🛍️</span>Mi vida<i class="dot" hidden></i></button>
         <button data-open="event" id="eventBtn" class="event-btn" hidden aria-label="Evento del fin de semana"><span class="ic">🎉</span>Evento<i class="dot" hidden></i></button>
         <button id="menuToggle" aria-label="Menú y recompensas" aria-haspopup="dialog" aria-controls="moreMenu" aria-expanded="false"><span class="menu-symbol" aria-hidden="true">☰</span>Menú<i class="dot" id="menuDot" hidden></i></button>
       </div>
       <dialog id="moreMenu" class="more-menu" aria-labelledby="menuTitle">
         <div class="menu-heading"><div><small>HAZ CRECER TU IMPERIO</small><h2 id="menuTitle">Tu negocio</h2></div><button id="menuClose" aria-label="Cerrar menú">✕</button></div>
         <p class="menu-life" id="lifeDetail"></p>
+        <p class="menu-life next-unlock" id="nextUnlock" hidden></p>
         <div class="boost" id="boost">
           <div class="x2">x2</div><div class="txt" id="boostTxt"></div>
           <button class="ad-btn" id="boostBtn"><span class="play"></span>+4 h</button>
@@ -45,13 +47,19 @@
         <p class="menu-life ad-ladder" id="adLadder"></p>
         <div class="menu-grid">
           <button data-open="daily"><span class="ic">🎁</span><b>Premio diario</b><small>Tu recompensa de hoy</small><i class="dot" hidden></i></button>
+          <button data-open="wheel"><span class="ic" data-icon="ic_wheel">🎡</span><b>Ruleta diaria</b><small>Un giro gratis cada día</small><i class="dot" hidden></i></button>
+          <button data-open="life"><span class="ic">🛍️</span><b>Mi vida</b><small>Tu personaje y tus lujos</small><i class="dot" hidden></i></button>
           <button data-open="execs"><span class="ic">💼</span><b>Ejecutivos</b><small>Equipo y maletines</small><i class="dot" hidden></i></button>
           <button data-open="achievements"><span class="ic">🏆</span><b>Logros</b><small>Celebra tus hitos</small><i class="dot" hidden></i></button>
           <button data-open="league"><span class="ic">🏅</span><b>Liga Millonario</b><small>Compite y reclama premios</small><i class="dot" hidden></i></button>
           <button data-open="event"><span class="ic">🎉</span><b>Evento del finde</b><small id="eventMenuSub">Premios cada fin de semana</small><i class="dot" hidden></i></button>
+          <button data-open="rival"><span class="ic">🥊</span><b>Rival de la semana</b><small>Gánale antes del domingo</small></button>
+          <button data-open="invite"><span class="ic">🤝</span><b>Invita a amigos</b><small>Ganáis diamantes los dos</small></button>
           <button data-open="settings"><span class="ic">⚙️</span><b>Ajustes</b><small>Sonido y vibración</small></button>
         </div>
       </dialog>
+      <div class="twist" id="twist" hidden></div>
+      <button class="auto-btn" id="autoBtn" hidden aria-label="Mejorar todo"><span class="ic">⚡</span><b>Mejorar todo</b><small id="autoLeft"></small></button>
       <div class="wave" id="wave" hidden><span class="txt" id="waveTxt"></span><button class="ad-btn" id="waveBtn"><span class="play"></span>Atraer ya</button></div>
       <footer id="bar"></footer>
     </div>

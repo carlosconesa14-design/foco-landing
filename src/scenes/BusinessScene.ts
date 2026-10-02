@@ -1,3 +1,5 @@
+import { WorldVisitor } from "./WorldVisitor";
+import type { OfferKind } from "../game/offers";
 import { money, t } from "../i18n";
 import { WarehouseRoom, WAREHOUSE_SLOTS, WAREHOUSE_DOOR, WAREHOUSE_ROUTE, WAREHOUSE_STOPS } from "./WarehouseRoom";
 import { RestaurantRoom, RESTAURANT_SLOTS, RESTAURANT_DOOR, RESTAURANT_ROUTE, RESTAURANT_STOPS } from "./RestaurantRoom";
@@ -6,13 +8,15 @@ import { actorShadow, gait } from "./motion";
 import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
 import { groundDetail } from "../art/ground";
 import Phaser from "phaser";
-import { buildingKey, ART, BIZ_ART, art, artScale, placeTile } from "../art/catalog";
+import { buildingKey, ART, BIZ_ART, art, artScale, placeTile, rankedKey } from "../art/catalog";
+import { rankInfo, rankOf } from "../game/ranks";
+import { rankBadge, rankBurst, rankGlow, rankPedestal } from "./rankFx";
 import { mix, shade } from "../art/pen";
 import { CHAIN, TUTORIAL } from "../game/data";
-import { bizDef, bizList, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
+import { bizDef, bizList, bizTier, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
 import { fmt } from "../game/format";
 import { cityDef, type BusinessState } from "../game/state";
-import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, emoji, floatText, label, setupCamera, type Bridge } from "./common";
+import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
 
 /* Rejilla isométrica del recinto */
 const TW = 88;
@@ -61,6 +65,11 @@ const GROUND: Record<string, { a: number; b: number; path: number; pad: number }
   yachts: { a: 0xd9c3a5, b: 0xd0b999, path: 0x1e3799, pad: 0x576574 },
   realestate: { a: 0xe9e4d6, b: 0xe0dac9, path: 0xfeca57, pad: 0x8395a7 },
   crypto: { a: 0xd9d3ee, b: 0xcfc8e8, path: 0xff9f1a, pad: 0x341f97 },
+  supercars: { a: 0xe2e4e8, b: 0xd8dbe0, path: 0xe84118, pad: 0x2f3640 },
+  hotel: { a: 0xf3ead6, b: 0xebe0c8, path: 0xc8a24a, pad: 0x8c6d2e },
+  safari: { a: 0xebcf9c, b: 0xe2c48e, path: 0x8c5a2b, pad: 0xb7793d },
+  souk: { a: 0xf2e2bd, b: 0xead6aa, path: 0xf6c344, pad: 0x7d5a14 },
+  tower: { a: 0xdbe6ec, b: 0xd0dde4, path: 0x9fd3e6, pad: 0x34495e },
 };
 
 interface SlotView {
@@ -70,14 +79,24 @@ interface SlotView {
   stock: Phaser.GameObjects.Text;
   barBg: Phaser.GameObjects.Rectangle;
   bar: Phaser.GameObjects.Rectangle;
-  hint: Phaser.GameObjects.Text;
+  hint: Phaser.GameObjects.Image;
   pill: Pill;
-  manager: Phaser.GameObjects.Text;
+  manager: Phaser.GameObjects.Image;
   station: Phaser.GameObjects.Image;
   x: number;
   y: number;
   level: number;
   lastStock: number;
+  /** Rango del puesto (0–5) y lo que lo enseña: pedestal, brillo y medalla. */
+  rank: number;
+  rankG: Phaser.GameObjects.Graphics;
+  rim: Phaser.Math.Vector2[];
+  inner: Phaser.Math.Vector2[];
+  glow: Phaser.GameObjects.Ellipse | null;
+  badge: Phaser.GameObjects.Container;
+  stationKey: string;
+  workerKey: string;
+  sparkleAt: number;
 }
 
 function rng(seed: number) {
@@ -115,6 +134,7 @@ const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_va
  */
 export class BusinessScene extends Phaser.Scene {
   private bridge!: Bridge;
+  private visitor: WorldVisitor | null = null;
   private restaurant: RestaurantRoom | null = null;
   private warehouse: WarehouseRoom | null = null;
   private get layout() { return this.bizId === "restaurant" ? RESTAURANT_LAYOUT : this.bizId === "dropship" ? WAREHOUSE_LAYOUT : DEFAULT_LAYOUT; }
@@ -128,7 +148,7 @@ export class BusinessScene extends Phaser.Scene {
   private mover!: Phaser.GameObjects.Image;
   private moverItem!: Phaser.GameObjects.Image;
   private moverCarry!: Phaser.GameObjects.Text;
-  private moverHint!: Phaser.GameObjects.Text;
+  private moverHint!: Phaser.GameObjects.Image;
   private moverTag!: Phaser.GameObjects.Text;
   private moverRing!: Phaser.GameObjects.Ellipse;
   private sellerRing!: Phaser.GameObjects.Ellipse;
@@ -136,7 +156,7 @@ export class BusinessScene extends Phaser.Scene {
   private seller!: Phaser.GameObjects.Image;
   private sellerItem!: Phaser.GameObjects.Image;
   private sellerCarry!: Phaser.GameObjects.Text;
-  private sellerHint!: Phaser.GameObjects.Text;
+  private sellerHint!: Phaser.GameObjects.Image;
   private topPile: Phaser.GameObjects.Image[] = [];
   private topStock!: Phaser.GameObjects.Text;
   private unlockPill: Pill | null = null;
@@ -146,6 +166,10 @@ export class BusinessScene extends Phaser.Scene {
   private puffs!: Phaser.GameObjects.Particles.ParticleEmitter;
   private drag!: DragScroll;
   private levels = { transport: 0, sale: 0 };
+  /** Rango del transporte y de la venta, y su aro de color en el suelo. */
+  private ranks = { transport: 0, sale: 0 };
+  private moverAura!: Phaser.GameObjects.Ellipse;
+  private sellerAura!: Phaser.GameObjects.Ellipse;
   private puffClock = 0;
   private previousFloors = 0;
   private lastTopStock = 0;
@@ -163,8 +187,19 @@ export class BusinessScene extends Phaser.Scene {
     this.topPile = [];
     this.traffic = [];
     this.unlockPill = null;
+    this.visitor = null;
     this.restaurant = null;
     this.warehouse = null;
+  }
+
+  presentVisitor(kind: OfferKind, button: HTMLButtonElement): void {
+    if (this.visitor) return;
+    this.visitor = new WorldVisitor(this, kind, button, this.iso(10.5, 9.5), this.iso(kind === "truck" ? 5.6 : 4.9, 8.4), () => this.drag.wasDrag());
+  }
+
+  dismissVisitor(): void {
+    this.visitor?.depart();
+    this.visitor = null;
   }
 
   private get look() {
@@ -189,6 +224,7 @@ export class BusinessScene extends Phaser.Scene {
     this.floorCount = b.floors.length;
     this.lastTopStock=b.topStock;
     this.levels = { transport: b.transport.level, sale: b.sale.level };
+    this.ranks = { transport: rankOf(b.transport.level), sale: rankOf(b.sale.level) };
 
     const hubKey = buildingKey(this.bizId, b.floors.length);
     const margin = 70;
@@ -208,6 +244,7 @@ export class BusinessScene extends Phaser.Scene {
       this.drawGround();
       this.drawFence();
       this.drawDecor();
+      this.drawTierDecor(bizTier(b));
     }
     this.drawHub();
     this.layout.slots.forEach((_, i) => this.drawSlot(i));
@@ -383,7 +420,7 @@ export class BusinessScene extends Phaser.Scene {
         // Siguiente puesto: en obras, con el precio
         g.fillStyle(0xc19a6b, 1).fillPoints(this.diamond(c, r, 2), true);
         g.lineStyle(2, 0xf5c542, 1).strokePoints(this.diamond(c, r, 6), true);
-        emoji(this, center.x, center.y - 10, "🚧", 26).setDepth(center.y);
+        art(this, center.x, center.y - 10, "ic_construction").setDepth(center.y);
         this.unlockPill = new Pill(this, center.x, center.y - 44, "").setDepth(9.3e4);
         this.unlockPill.setInteractive({ useHandCursor: true });
         this.unlockPill.on("pointerup", () => {
@@ -407,25 +444,35 @@ export class BusinessScene extends Phaser.Scene {
     g.fillStyle(theme.pad, 1).fillPoints(top, true);
     g.fillStyle(mix(theme.pad, 0xffffff, 0.2), 1).fillPoints(this.diamond(c, r, 14).map((v) => new Phaser.Math.Vector2(v.x, v.y - 5)), true);
 
+    const rank = rankOf(this.biz().floors[i].level);
+    const rankG = this.add.graphics().setDepth(-4);
+    const rim = this.diamond(c, r, 4).map((v) => new Phaser.Math.Vector2(v.x, v.y - 5));
+    const inner = this.diamond(c, r, 14).map((v) => new Phaser.Math.Vector2(v.x, v.y - 5));
+    rankPedestal(rankG, rim, inner, rank);
+    const glow = rankGlow(this, center.x + 6, center.y + 2, 84, center.y + 3, rank);
     const station = art(this, center.x + 10, center.y + 4, this.look.station).setOrigin(0.5, 1);
     station.setDisplaySize(ART[this.look.station].w * 0.62, ART[this.look.station].h * 0.62).setDepth(center.y + 4);
+    if (rank) swapArt(station, rankedKey(this, this.look.station, rank));
     if(this.previousFloors && i>=this.previousFloors) constructionPop(this,station,t("¡Puesto nuevo!"));
     const workerKey = this.restaurant ? "rest_chef_a" : `ch_${this.look.worker}_0`;
     const worker = art(this, center.x - 24, center.y + 12, workerKey).setOrigin(0.5, 0.95);
     worker.setDisplaySize(ART[workerKey].w * 0.8, ART[workerKey].h * 0.8).setDepth(center.y + 12);
+    if (rank) swapArt(worker, rankedKey(this, workerKey, rank));
     const pile = this.pile(center.x - 2, center.y + 20, center.y + 20, 0.7);
     const stock = label(this, center.x - 4, center.y - 8, "", 11, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
     const barBg = this.add.rectangle(center.x, center.y + 26, 44, 5, 0x14202f, 0.6).setDepth(center.y + 30);
     const bar = this.add.rectangle(center.x - 22, center.y + 26, 0, 5, COLORS.green).setOrigin(0, 0.5).setDepth(center.y + 31);
-    const hint = emoji(this, center.x - 24, center.y - 44, "👆", 22).setDepth(9.4e4);
+    const hint = art(this, center.x - 24, center.y - 44, "ic_hand").setDepth(9.4e4);
     if (!reducedMotion()) this.tweens.add({ targets: hint, y: center.y - 36, yoyo: true, repeat: -1, duration: 500 });
     const pill = this.pill(center.x, center.y - 62, { kind: "floor", index: i });
-    const manager = emoji(this, center.x + 38, center.y - 62, "👔", 14).setDepth(9.2e4);
+    const manager = art(this, center.x + 38, center.y - 62, "ic_manager").setDepth(9.2e4);
+    const badge = rankBadge(this, center.x - 40, center.y - 62, rank).setDepth(9.31e4);
     const nameTag = label(this, center.x, center.y + 40, `${def.floorName} ${i + 1}`, 10, "#ffffff", { bold: true, stroke: "#14202f" });
     nameTag.setDepth(9e4);
     this.tapZone(center.x - TW / 2, center.y - 46, TW, 80, { kind: "floor", index: i });
     const shadow = actorShadow(this,worker.displayWidth).setPosition(worker.x,center.y+13).setDepth(center.y+10);
-    this.slots[i] = { worker, shadow, pile, stock, barBg, bar, hint, pill, manager, station, x: center.x, y: center.y, level: this.biz().floors[i].level, lastStock: this.biz().floors[i].stock };
+    this.slots[i] = { worker, shadow, pile, stock, barBg, bar, hint, pill, manager, station, x: center.x, y: center.y, level: this.biz().floors[i].level, lastStock: this.biz().floors[i].stock,
+      rank, rankG, rim, inner, glow, badge, stationKey: this.look.station, workerKey, sparkleAt: 0 };
   }
 
   /* ---------- Transporte y venta ---------- */
@@ -445,7 +492,7 @@ export class BusinessScene extends Phaser.Scene {
     });
     this.moverItem = art(this, 0, 0, this.look.item).setVisible(false);
     this.moverCarry = label(this, 0, 0, "", 11, "#ffffff", { bold: true, stroke: "#14202f" });
-    this.moverHint = emoji(this, 0, 0, "👆", 22);
+    this.moverHint = art(this, 0, 0, "ic_hand");
     // Durante el tutorial, cartel con el nombre encima: si no, no se sabe cuál es «la carretilla».
     // Aro dorado en el suelo bajo quien hay que tocar en el tutorial (que no haya dudas entre dos vehículos)
     const ring = () => {
@@ -455,15 +502,20 @@ export class BusinessScene extends Phaser.Scene {
     };
     this.moverRing = ring();
     this.sellerRing = ring();
+    const aura = (rank: number) => this.add.ellipse(0, 0, 58, 24, rankInfo(rank)?.color ?? 0xffffff, 0.45).setStrokeStyle(2, rankInfo(rank)?.color ?? 0xffffff, 0.9).setVisible(rank > 0);
+    this.moverAura = aura(this.ranks.transport);
+    this.sellerAura = aura(this.ranks.sale);
     this.moverTag = label(this, 0, 0, bizDef(this.bizId).transportName, 12, "#14202f", { bold: true }).setBackgroundColor("#f5c542").setPadding(6, 2, 6, 2).setVisible(false);
 
     this.seller = this.actor(this.look.seller, 0).setInteractive({ useHandCursor: true });
+    this.vehicleRank(this.mover, this.look.mover, this.ranks.transport);
+    this.vehicleRank(this.seller, this.look.seller, this.ranks.sale);
     this.seller.on("pointerup", () => {
       if (!this.drag.wasDrag()) this.bridge.tapStation(this.bizId, { kind: "sale" });
     });
     this.sellerItem = art(this, 0, 0, this.look.item).setVisible(false);
     this.sellerCarry = label(this, 0, 0, "", 11, "#ffffff", { bold: true, stroke: "#14202f" });
-    this.sellerHint = emoji(this, 0, 0, "👆", 22);
+    this.sellerHint = art(this, 0, 0, "ic_hand");
     this.sellerTag = label(this, 0, 0, bizDef(this.bizId).saleName, 12, "#14202f", { bold: true }).setBackgroundColor("#f5c542").setPadding(6, 2, 6, 2).setVisible(false);
 
     // Tráfico por la calle de delante
@@ -486,11 +538,13 @@ export class BusinessScene extends Phaser.Scene {
         const pose = key === "veh_forklift"
           ? (rear ? "wh_forklift_rear" : b.transport.carry > 0 ? "wh_forklift_loaded" : "veh_forklift")
           : loading ? "wh_van_open" : parked || rear ? "wh_van_rear" : "veh_van";
-        swapArt(img,pose);
+        swapArt(img, rankedKey(this, pose, img === this.mover ? this.ranks.transport : this.ranks.sale));
         img.setFlipX(parked ? false : dc-dr < 0);
       } else img.setFlipX(Math.abs(dr) > Math.abs(dc));
     } else {
-      swapArt(img, this.restaurant && key === "waiter" ? (frame === 2 ? "rest_waiter_b" : "rest_waiter_a") : `ch_${key}_${frame}`);
+      const rank = img === this.mover ? this.ranks.transport : img === this.seller ? this.ranks.sale : 0;
+      const base = this.restaurant && key === "waiter" ? (frame === 2 ? "rest_waiter_b" : "rest_waiter_a") : `ch_${key}_${frame}`;
+      swapArt(img, rank ? rankedKey(this, base, rank) : base);
       const screenDx = dc - dr;
       if (screenDx !== 0) img.setFlipX(screenDx < 0);
     }
@@ -498,6 +552,76 @@ export class BusinessScene extends Phaser.Scene {
     const shadow=img.getData("groundShadow") as Phaser.GameObjects.Ellipse;
     shadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
     return p;
+  }
+
+  /** Vehículo con arte propio del rango (si existe; los del almacén cambian de pose y no se tocan). */
+  private vehicleRank(img: Phaser.GameObjects.Image, key: string, rank: number): void {
+    if (rank && isVehicle(key)) swapArt(img, rankedKey(this, key, rank));
+  }
+
+  /** Cambia el aspecto de un puesto a su rango; con `burst`, lo celebra en la escena. */
+  private applySlotRank(i: number, rank: number, burst: boolean): void {
+    const v = this.slots[i];
+    v.rank = rank;
+    rankPedestal(v.rankG, v.rim, v.inner, rank);
+    v.glow?.destroy();
+    v.glow = rankGlow(this, v.x + 6, v.y + 2, 84, v.y + 3, rank);
+    v.badge.destroy();
+    v.badge = rankBadge(this, v.x - 40, v.y - 62, rank).setDepth(9.31e4);
+    swapArt(v.station, rankedKey(this, v.stationKey, rank));
+    swapArt(v.worker, rankedKey(this, v.workerKey, rank));
+    if (burst) rankBurst(this, v.station.x, v.station.y - 10, rank, `${rankInfo(rank)!.name}!`);
+  }
+
+  /**
+   * Decoración del recinto según la categoría del negocio (★★ con 3 puestos, ★★★ con 6):
+   * farolas y jardineras junto al camino y, con ★★★, guirnaldas de luces y alfombra dorada.
+   * Si existe el PNG `decor_<negocio>_<categoría>`, se pone junto al edificio principal.
+   */
+  private drawTierDecor(tier: number): void {
+    if (tier < 2) return;
+    const decorKey = `decor_${this.bizId}_${tier}`;
+    if (this.textures.exists(decorKey) || hasGeneratedArt(this, decorKey)) {
+      const p = this.iso(HUB.c + 2.6, HUB.r + 1.6);
+      art(this, p.x, p.y, decorKey).setOrigin(0.5, 0.9).setDepth(p.y);
+    }
+    const g = this.add.graphics().setDepth(-3);
+    // Jardineras y farolas a lo largo del camino central
+    for (const r of [4, 7, 8]) {
+      for (const side of [-0.15, 1.15]) {
+        const p = this.iso(4 + side, r + 0.5);
+        g.fillStyle(0x6d4c41, 1).fillRect(p.x - 7, p.y - 4, 14, 6);
+        g.fillStyle(0x3ddc97, 1).fillEllipse(p.x, p.y - 6, 16, 8);
+        g.fillStyle(tier >= 3 ? 0xf5c542 : 0xff7aa8, 1).fillCircle(p.x - 3, p.y - 8, 2).fillCircle(p.x + 3, p.y - 7, 2);
+      }
+    }
+    for (const r of [2.6, 8.4]) {
+      const p = this.iso(3.9, r);
+      art(this, p.x, p.y, "lamp_post").setOrigin(0.5, 0.95).setDepth(p.y);
+    }
+    if (tier < 3) return;
+    // Alfombra dorada desde el portón hasta la puerta
+    const carpet = [this.iso(4.35, 2.6), this.iso(4.65, 2.6), this.iso(4.65, 8.9), this.iso(4.35, 8.9)].map((p) => new Phaser.Math.Vector2(p.x, p.y));
+    g.fillStyle(0xc0392b, 0.85).fillPoints(carpet, true);
+    g.lineStyle(2, 0xf5c542, 1).strokePoints(carpet, true);
+    // Guirnaldas de luces sobre las filas de puestos
+    const lights = this.add.graphics().setDepth(9e3);
+    const bulbs: Phaser.GameObjects.Arc[] = [];
+    for (const r of [2.2, 5.2]) {
+      const a = this.iso(0.6, r), b = this.iso(8.4, r);
+      const n = 14;
+      lights.lineStyle(1.5, 0x2c3e50, 0.8);
+      let prev: { x: number; y: number } | null = null;
+      for (let i = 0; i <= n; i++) {
+        const t = i / n;
+        const x = a.x + (b.x - a.x) * t;
+        const y = a.y + (b.y - a.y) * t - 46 + Math.sin(t * Math.PI * 3) * 6;
+        if (prev) lights.lineBetween(prev.x, prev.y, x, y);
+        prev = { x, y };
+        bulbs.push(this.add.circle(x, y + 3, 2.6, [0xf5c542, 0xff7aa8, 0x6fe3ff][i % 3]).setDepth(9e3 + 1));
+      }
+    }
+    if (!reducedMotion()) this.tweens.add({ targets: bulbs, alpha: 0.45, duration: 700, yoyo: true, repeat: -1, delay: this.tweens.stagger(90, {}) });
   }
 
   /* ---------- Utilidades ---------- */
@@ -583,6 +707,7 @@ export class BusinessScene extends Phaser.Scene {
   /* ---------- Actualización ---------- */
 
   update(_t: number, dtMs: number): void {
+    this.visitor?.update();
     const s = this.bridge.state();
     const b = this.biz();
     if (!b) return;
@@ -609,7 +734,7 @@ export class BusinessScene extends Phaser.Scene {
       const p = f.running ? f.prog / CHAIN.floorCycle : 0;
       const working = f.running;
       const active=working && !reducedMotion();
-      if (this.restaurant) swapArt(v.worker, active && Math.floor(clk*4+i)%2 ? "rest_chef_b" : "rest_chef_a");
+      if (this.restaurant) swapArt(v.worker, rankedKey(this, active && Math.floor(clk*4+i)%2 ? "rest_chef_b" : "rest_chef_a", v.rank));
       v.worker.setY(v.y + 12 - (active ? Math.abs(Math.sin(clk * 6 + i)) * 1.8 : 0));
       v.worker.setAngle(active ? Math.sin(clk * 6 + i) * 3 : 0);
       v.shadow.setAlpha(active ? 0.13 + Math.abs(Math.sin(clk*6+i))*0.05 : 0.18);
@@ -631,6 +756,13 @@ export class BusinessScene extends Phaser.Scene {
         if (!reducedMotion()) this.sparks.explode(14, v.station.x, v.station.y - 30);
         upgradePop(this,v.station);
         v.level = f.level;
+        const rank = rankOf(f.level);
+        if (rank > v.rank) this.applySlotRank(i, rank, true);
+      }
+      // Diamante y leyenda: destellos de vez en cuando
+      if (v.rank >= 4 && !reducedMotion() && clk > v.sparkleAt) {
+        v.sparkleAt = clk + 1.6 + Math.random() * 1.6;
+        this.sparks.emitParticleAt(v.station.x + (Math.random() - 0.5) * 50, v.station.y - 20 - Math.random() * 40, 2);
       }
       const q = upgradeQuote(s, this.bizId, { kind: "floor", index: i });
       v.pill.setText(`${t("Nv")} ${f.level}`).setAlert(s.cash >= q.cost || (!f.managed && s.cash >= managerCost(def, { kind: "floor", index: i })));
@@ -660,9 +792,17 @@ export class BusinessScene extends Phaser.Scene {
     this.moverHint.setPosition(mp.x, mp.y - 64 + mvLift + (reducedMotion() ? 0 : Math.sin(clk * 8) * 4)).setDepth(9.4e4);
     this.moverTag.setVisible(moverStep).setPosition(mp.x, mp.y - 92 + mvLift).setDepth(9.4e4);
     this.moverRing.setVisible(moverStep).setPosition(mp.x, mp.y).setDepth(mp.y - 0.5);
+    this.moverAura.setPosition(mp.x, mp.y).setDepth(mp.y - 1.5);
     if (tr.level > this.levels.transport) {
       if (!reducedMotion()) this.sparks.explode(14, mp.x, mp.y - 20);
       this.levels.transport = tr.level;
+      const rank = rankOf(tr.level);
+      if (rank > this.ranks.transport) {
+        this.ranks.transport = rank;
+        this.moverAura.setFillStyle(rankInfo(rank)!.color, 0.45).setStrokeStyle(2, rankInfo(rank)!.color, 0.9).setVisible(true);
+        this.vehicleRank(this.mover, this.look.mover, rank);
+        rankBurst(this, mp.x, mp.y, rank, `${rankInfo(rank)!.name}!`);
+      }
     }
 
     // Venta: sale por el portón hacia la calle y vuelve
@@ -693,9 +833,17 @@ export class BusinessScene extends Phaser.Scene {
     this.lastTopStock=b.topStock;
     this.showPile(this.topPile, this.warehouse ? 0 : b.topStock, unit);
     this.topStock.setText(b.topStock > 0 ? fmt(b.topStock) : "");
+    this.sellerAura.setPosition(sp.x, sp.y).setDepth(sp.y - 1.5).setAlpha(deliveryVisibility);
     if (sl.level > this.levels.sale) {
       if (!reducedMotion()) this.sparks.explode(14, sp.x, sp.y - 20);
       this.levels.sale = sl.level;
+      const rank = rankOf(sl.level);
+      if (rank > this.ranks.sale) {
+        this.ranks.sale = rank;
+        this.sellerAura.setFillStyle(rankInfo(rank)!.color, 0.45).setStrokeStyle(2, rankInfo(rank)!.color, 0.9).setVisible(true);
+        this.vehicleRank(this.seller, this.look.seller, rank);
+        rankBurst(this, sp.x, sp.y, rank, `${rankInfo(rank)!.name}!`);
+      }
     }
 
     if (this.unlockPill) {

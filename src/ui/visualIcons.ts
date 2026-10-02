@@ -1,0 +1,42 @@
+/** Original enamel pictograms, 48x48. Shared by the UI and exported PNG medals. */
+const star = '<path d="m24 9 4 9 10 2-7 7 2 10-9-5-9 5 2-10-7-7 10-2Z" fill="#fff1b5"/>';
+const medal = (metal: string, gem = false, crown = false) => `<path d="m14 5 10 7 10-7v18H14Z" fill="#355b8b"/><circle cx="24" cy="28" r="17" fill="${metal}"/><circle cx="24" cy="28" r="13" fill="none" stroke="#fff4cd"/>${gem ? '<path d="m14 25 5-6h10l5 6-10 13Z" fill="#d6faff"/>' : crown ? '<path d="m13 23 5 4 6-8 6 8 5-4-3 13H16Z" fill="#ffe390"/>' : '<path d="m24 17 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1Z" fill="#fff1b5"/>'}`;
+export const VISUAL_ICON_SHAPES: Record<string, string> = {
+  hand: '<path d="M18 24V9q0-6 6-6t6 6v13l4-3 5 2 4 6-3 15H19l-9-13q-3-5 2-7Z" fill="#fff4d6"/><path d="M23 13v14m7-5v8m7-8v9" stroke="#c49b60"/>',
+  construction: '<path d="M8 37V10m32 27V10" stroke="#718ea4" stroke-width="5"/><rect x="3" y="14" width="42" height="14" rx="3" fill="#ffe08a"/><path d="m7 27 8-12m4 12 8-12m4 12 8-12" stroke="#ce7854" stroke-width="6"/><path d="M3 42h12m18 0h12" stroke="#718ea4" stroke-width="4"/>',
+  coin: '<circle cx="24" cy="24" r="19" fill="#d89a32"/><circle cx="24" cy="22" r="17" fill="#ffd568"/><circle cx="24" cy="22" r="12" fill="#ffefb0"/><path d="m24 12 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" fill="#db9e32"/>',
+  wheel: '<path d="m17 43 7-20 7 20Z" fill="#e8c689"/><circle cx="24" cy="22" r="18" fill="#ffcf62"/><path d="M24 4v36M6 22h36M11 9l26 26M11 35 26 9" stroke="#f5f4e8" stroke-width="3"/><path d="M24 4a18 18 0 0 1 18 18H24Z" fill="#61cdda"/><path d="M24 40A18 18 0 0 1 6 22h18Z" fill="#ef828c"/><circle cx="24" cy="22" r="5" fill="#fff0ae"/>',
+  life: '<path d="M10 18h28l4 24H6Z" fill="#74d4b5"/><path d="M17 20V12a7 7 0 0 1 14 0v8"/><path d="m24 24 3 5 5 1-4 3 1 6-5-3-5 3 1-6-4-3 5-1Z" fill="#ffe291"/>',
+  outfit: '<path d="m15 8 9 5 9-5 11 13-8 6-4-5v20H16V22l-4 5-8-6Z" fill="#72c8ed"/><path d="m18 10 6 13 6-13M24 23v19"/>',
+  jewel: '<path d="M18 5h12l4 10v20l-4 8H18l-4-8V15Z" fill="#efbe62"/><circle cx="24" cy="24" r="13" fill="#ffebae"/><circle cx="24" cy="24" r="9" fill="#21405b"/><path stroke="#b1f6ff" d="M24 17v8l5 3"/>',
+  car: '<path d="m10 21 5-12h18l5 12 5 5v12H5V26Z" fill="#ff837b"/><path d="M15 13h18l3 10H12Z" fill="#b6eeff"/><circle cx="13" cy="37" r="5" fill="#233c51"/><circle cx="35" cy="37" r="5" fill="#233c51"/><path d="M9 28h8m14 0h8" stroke="#fff3bb" stroke-width="3"/>',
+  home: '<path d="m4 23 20-18 20 18-6 1v19H10V24Z" fill="#f0d5ac"/><path d="m4 23 20-18 20 18" stroke="#e08065" stroke-width="5"/><path d="M20 29h9v14H20Z" fill="#77b9d3"/><path d="M12 26h5v6h-5Z" fill="#72c9e5"/>',
+  pet: '<ellipse cx="24" cy="31" rx="14" ry="11" fill="#efa869"/><ellipse cx="10" cy="19" rx="5" ry="7" fill="#f6c488"/><ellipse cx="22" cy="12" rx="5" ry="7" fill="#f6c488"/><ellipse cx="34" cy="16" rx="5" ry="7" fill="#f6c488"/><ellipse cx="41" cy="27" rx="4" ry="6" fill="#f6c488"/>',
+  extreme: '<path d="m5 34 36-9-5 15H14Z" fill="#eef6fb"/><path d="M23 7v24H10Z" fill="#78d9e9"/><path d="M27 12v16h12Z" fill="#ffd571"/><path d="M5 44q6-5 12 0t12 0t12 0" stroke="#72dce5"/>',
+  order: '<path d="m5 17 18-9 17 9v22L23 45 5 36Z" fill="#e4b176"/><path d="m5 17 18 8 17-8M23 25v20M15 12l17 9v9"/><circle cx="35" cy="12" r="10" fill="#eef6fb"/><path d="M35 6v6l4 3"/>',
+  critic: '<circle cx="24" cy="17" r="12" fill="#f2c895"/><path d="M12 13q12-14 24 0" fill="#524236"/><circle cx="29" cy="18" r="6" fill="#ddf4fc"/><path d="M35 18v16M7 43V36q17-16 34 0v7" fill="#7aaac9"/><path d="m19 31 5 6 5-6" fill="#ffda78"/>',
+  hype: '<path d="M26 4q4 15 12 20t-2 16q-12 12-23-1t4-24q-1 10 5 9t4-20Z" fill="#ff9870"/><path d="M25 23q9 12 2 18t-11-3q-2-7 9-15Z" fill="#ffe087"/>',
+  research: '<path d="M10 13h28v23H10Z" fill="#203d54"/><path d="M15 18h18v13H15Z" fill="#77e2d5"/><path d="M19 6v7m10-7v7M19 36v7m10-7v7M4 19h6m-6 10h6m28-10h6m-6 10h6M19 23h10m-5-5v10"/>',
+  event: '<path d="m7 39 7-29 24 24Z" fill="#ffc96a"/><path d="m12 23 13 13m-11-20 19 17" stroke="#ef8190" stroke-width="3"/><path d="M30 7v8m-4-4h8M39 18l4 4m0-4-4 4M19 4l3 4" stroke="#81dcef"/>',
+  invite: '<circle cx="16" cy="14" r="8" fill="#ffd39b"/><circle cx="34" cy="18" r="7" fill="#ce925c"/><path d="M3 39v-7q13-17 26 0v7" fill="#79d9be"/><path d="M27 31q14-12 18 3v5H29" fill="#77bce0"/><path d="M13 33h12m-6-6v12" stroke="#fff3bb" stroke-width="3"/>',
+  rival: '<path d="M7 16q2-10 12-6l7 7-1 14-9 5-13-8Z" fill="#f58a86"/><path d="M31 16q3-7 10-1l5 11-7 11-13-2-3-10Z" fill="#76bfe6"/><path d="m16 3 3 4m13-2-3 4"/>',
+  bolt: '<path d="M28 4 10 27h12l-3 17 19-26H26Z" fill="#ffe182"/>',
+  video: '<rect x="5" y="8" width="38" height="30" rx="6" fill="#789fd1"/><path d="m19 15 13 8-13 8Z" fill="#fff3c8"/><path d="M15 43h18"/>',
+  cloud: '<path d="M11 35a9 9 0 0 1-2-17q3-12 15-10t12 12q11-1 8 10t-12 5Z" fill="#b7eaff"/><path d="m17 27 7-8 7 8m-7-8v20" stroke="#397ca2"/>',
+  moon: '<path d="M33 6a18 18 0 1 0 10 29A22 22 0 0 1 33 6Z" fill="#b8c7fc"/>'+star,
+  candy: '<path d="m6 14 9 6-9 12 1-9Z" fill="#79e3c7"/><path d="m42 14-9 6 9 12-1-9Z" fill="#79e3c7"/><ellipse cx="24" cy="24" rx="13" ry="10" fill="#c499ef"/><path d="m17 17 14 14M24 14l11 10" stroke="#ffe38d" stroke-width="3"/>',
+  flag_madrid: '<path d="M7 6v38M8 8h33v23H8Z" fill="#d65e61"/><path d="M8 15h33v9H8Z" fill="#ffda72"/>',
+  flag_miami: '<path d="M7 6v38M8 8h33v23H8Z" fill="#f6ebdc"/><path d="M8 11h33m-33 7h33m-33 7h33" stroke="#d65e61" stroke-width="3"/><path d="M8 8h15v13H8Z" fill="#5b91bf"/><path d="m15 11 1 2 3 1-2 1v3l-2-2-2 2v-3l-2-1 3-1Z" fill="#fff3cc"/>',
+  flag_dubai: '<path d="M7 6v38M8 8h33v23H8Z" fill="#f6ebdc"/><path d="M8 8h33v8H8Z" fill="#49b791"/><path d="M8 24h33v7H8Z" fill="#263d51"/><path d="M8 8h8v23H8Z" fill="#d65e61"/>',
+  flag_tokyo: '<path d="M7 6v38M8 8h33v23H8Z" fill="#f6ebdc"/><circle cx="25" cy="19" r="7" fill="#d65e61"/>',
+  finish: '<path d="M8 5v39M10 7h30v24H10Z" fill="#fff1ce"/><path d="M10 7h10v8H10m10 0h10v8H20m10-16h10v8H30M10 23h10v8H10m20-8h10v8H30" fill="#344e66"/>',
+  crown: '<path d="m5 13 11 10 8-17 8 17 11-10-5 28H10Z" fill="#ffd573"/><circle cx="24" cy="30" r="5" fill="#8ce1f4"/>',
+  rank_1: medal('#cb8f65'), rank_2: medal('#bcd0e1'), rank_3: medal('#ffd46e'), rank_4: medal('#72ddec', true), rank_5: medal('#ac82df', false, true),
+};
+export const SYMBOL_ICONS: Record<string, string> = {
+ '🎡':'wheel','🛍️':'life','👕':'outfit','🧥':'outfit','⌚':'jewel','⏱️':'jewel','📿':'lux_goldchain','💍':'lux_diamondring','👑':'crown',
+ '🚗':'car','🏎️':'lux_supercar','🚘':'lux_limo','🛵':'lux_deliverybike','🛴':'lux_scooter','🏍️':'lux_motorbike','🏠':'home','🛏️':'lux_parents','🏚️':'lux_haunted','🏢':'city','🌆':'lux_penthouse','🏡':'lux_villa','🏰':'lux_mansion','🏝️':'lux_island',
+ '🐶':'lux_dog','🐱':'lux_cat','🦜':'lux_parrot','🐯':'lux_tiger','🐧':'lux_penguin','🛥️':'lux_yacht','🛩️':'lux_jet','🚀':'lux_rocket','🎃':'lux_pumpkin','👻':'ghost','🍬':'candy','🧛':'lux_vampire','💀':'lux_skullring','⚰️':'lux_hearse',
+ '📦':'order','🧐':'critic','🔥':'hype','🧠':'research','🤖':'research','💻':'research','🎉':'event','🎊':'event','🤝':'invite','🥊':'rival','⚡':'bolt','📺':'video','🎬':'video','📱':'video','☁️':'cloud','🌙':'moon','🏁':'finish','🔓':'check','✨':'star','🥉':'rank_1','🥈':'rank_2','🥇':'rank_3','🤴':'exec_founder','🤵':'ch_vip_0','🚚':'veh_supply','💸':'cash',
+ '🇪🇸':'flag_madrid','🇺🇸':'flag_miami','🇦🇪':'flag_dubai','🇯🇵':'flag_tokyo','🌊':'extreme','👔':'outfit','👷':'manager','📈':'ipo','📉':'ipo','🍝':'item_dish','🌮':'item_taco','🏖️':'miami_plaza','🪙':'coin','🏘️':'home','🏨':'bld_hotel_1','🛒':'life','🧳':'execs','🕴️':'lux_designer','🎓':'missions','🔧':'settings','⏳':'jewel','⏰':'jewel','🕒':'jewel','📊':'ipo','🎲':'wheel','🎟️':'item_ticket','💫':'star','💪':'bolt','📣':'hype','🎵':'video','🔊':'video','🔇':'video','🔔':'item_bell','📜':'missions','❤️':'pet','🐷':'coin',
+};

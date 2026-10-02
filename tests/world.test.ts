@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as act from "../src/game/actions";
-import { CITIES, FRANCHISE, OFFICE, TOURISM } from "../src/game/data";
+import { CITIES, FRANCHISE, GOLD, OFFICE, TOURISM } from "../src/game/data";
 import { bizList, passiveRate, saleMult, tapStation, tick } from "../src/game/economy";
 import { freshState, migrate, type GameState } from "../src/game/state";
 import * as world from "../src/game/world";
@@ -158,5 +158,63 @@ describe("partidas guardadas", () => {
     expect(loaded.world.upgrades.brand).toBe(2);
     expect(loaded.world.archive.madrid.biz.ai.owned).toBe(true);
     expect(loaded.biz.foodtruck.owned).toBe(true);
+  });
+});
+
+describe("Dubái y el precio del oro", () => {
+  const MIAMI = CITIES[1];
+  const dubaiState = () => {
+    const miami = world.expand(completedMadrid(), NOW)!.state;
+    for (const b of MIAMI.businesses) miami.biz[b.id].owned = true;
+    miami.totalEarned = MIAMI.goal;
+    return world.expand(miami, NOW)!.state;
+  };
+  const period = GOLD.periodMin * 60e3;
+  const start = Math.ceil(NOW / period) * period; // precio mínimo
+
+  it("se abre al completar Miami y es la última ciudad", () => {
+    const s = dubaiState();
+    expect(s.city).toBe("dubai");
+    expect(s.world.completed).toEqual(["madrid", "miami"]);
+    expect(s.biz.supercars.owned).toBe(true);
+    expect(world.nextCity(s)).toBeNull();
+  });
+
+  it("solo existe en Dubái", () => {
+    expect(world.gold(freshState(NOW), NOW)).toBeNull();
+    expect(world.gold(world.expand(completedMadrid(), NOW)!.state, NOW)).toBeNull();
+    expect(world.gold(dubaiState(), NOW)).not.toBeNull();
+  });
+
+  it("sube de x1 a x3 y vuelve a bajar en cada ciclo; offline no cuenta", () => {
+    const s = dubaiState();
+    expect(world.gold(s, start)!.mult).toBe(GOLD.min);
+    expect(world.gold(s, start + period / 4)!.rising).toBe(true);
+    expect(world.gold(s, start + period / 2)!.mult).toBe(GOLD.max);
+    expect(world.gold(s, start + (period * 3) / 4)!.rising).toBe(false);
+    expect(world.gold(s, start)!.peakIn).toBe(period / 2);
+    expect(world.goldMult(s, start + period / 2, true)).toBe(GOLD.max);
+    expect(world.goldMult(s, start + period / 2, false)).toBe(1);
+    expect(saleMult(s, "supercars", start + period / 2) / saleMult(s, "supercars", start)).toBeCloseTo(GOLD.max);
+  });
+
+  it("un anuncio fija el precio máximo unos minutos (no si ya está casi arriba)", () => {
+    const s = dubaiState();
+    expect(world.lockGold(s, start + period / 2)).toBe(false);
+    expect(world.lockGold(s, start)).toBe(true);
+    const g = world.gold(s, start + 1000)!;
+    expect(g.locked).toBe(true);
+    expect(g.mult).toBe(GOLD.max);
+    expect(world.lockGold(s, start + 1000)).toBe(false);
+    expect(world.gold(s, start + GOLD.adLockMin * 60e3 + 1)!.locked).toBe(false);
+  });
+
+  it("guardar y cargar conserva Dubái y el contrato", () => {
+    const s = dubaiState();
+    world.lockGold(s, start);
+    const loaded = migrate(JSON.parse(JSON.stringify(s)), NOW);
+    expect(loaded.city).toBe("dubai");
+    expect(loaded.goldEnd).toBe(s.goldEnd);
+    expect(loaded.world.archive.miami.biz.crypto.owned).toBe(true);
   });
 });

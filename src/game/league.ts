@@ -8,7 +8,7 @@ import type { GameState } from "./state";
  * Ni ver anuncios ni comprar generan eventos, y el tiempo viendo un anuncio no cuenta.
  */
 
-export type LeagueKind = "login" | "mission" | "missions_all" | "play" | "daily_reto" | "weekly_reto" | "weekly_all";
+export type LeagueKind = "login" | "mission" | "missions_all" | "play" | "daily_reto" | "weekly_reto" | "weekly_all" | "flag";
 
 export interface LeagueEvent {
   kind: LeagueKind;
@@ -27,7 +27,7 @@ export interface LeagueState {
 }
 
 /** Puntos de cada acción, solo para mostrarlos en la pantalla (los que cuentan son los del servidor). */
-export const LEAGUE_POINTS: Record<Exclude<LeagueKind, "play">, number> = {
+export const LEAGUE_POINTS: Record<Exclude<LeagueKind, "play" | "flag">, number> = {
   login: 10,
   mission: 15,
   missions_all: 20,
@@ -46,7 +46,7 @@ export const PLAY = { blockMs: 300e3, activeSec: 180, blockPoints: 4, halfPoints
 export const IDLE_MS = 60e3;
 
 export const MAX_QUEUE = 200;
-const KINDS: LeagueKind[] = ["login", "mission", "missions_all", "play", "daily_reto", "weekly_reto", "weekly_all"];
+const KINDS: LeagueKind[] = ["login", "mission", "missions_all", "play", "daily_reto", "weekly_reto", "weekly_all", "flag"];
 
 export const freshLeague = (): LeagueState => ({ id: null, secret: null, nickname: "", queue: [], play: { block: 0, sec: 0 } });
 
@@ -97,4 +97,18 @@ export function migrateLeague(raw: unknown): LeagueState {
       return { block: n(p.block), sec: n(p.sec) };
     })(),
   };
+}
+
+/** Señales de trampa que se pueden informar (no dan ni quitan puntos: el servidor las apunta para revisar). */
+export type SecurityFlag = "clock" | "clock_future" | "save";
+
+/** Al unirse a la Liga: informa las señales que se apuntaron antes (si no, una partida editada pasaría limpia). */
+export function reportFlags(s: GameState): void {
+  for (const f of s.meta.flags) leagueEvent(s, "flag", f);
+}
+
+/** Apunta una señal de trampa en la partida y, si está en la Liga, la informa una vez. */
+export function addFlag(s: GameState, flag: SecurityFlag): void {
+  if (!s.meta.flags.includes(flag)) s.meta.flags.push(flag);
+  leagueEvent(s, "flag", flag);
 }

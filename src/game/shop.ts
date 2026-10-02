@@ -10,7 +10,7 @@ import { t } from "../i18n";
  * Los ids tienen que coincidir con los productos creados en Google Play Console / App Store Connect.
  */
 
-export type ProductId = "vip" | "starter_pack" | "gems_200" | "gems_1200";
+export type ProductId = "vip" | "starter_pack" | "auto_manager" | "gems_200" | "gems_1200";
 
 export interface ProductDef {
   id: ProductId;
@@ -43,6 +43,14 @@ export const PRODUCTS: ProductDef[] = [
     consumable: false,
     highlight: "Oferta única",
   },
+  {
+    id: "auto_manager",
+    icon: "⚡",
+    name: "Gestor automático",
+    desc: "«Mejorar todo» sin límite: un toque y tu negocio se mejora solo con lo que más rinde. Para siempre.",
+    price: "0,99 €",
+    consumable: false,
+  },
   { id: "gems_200", icon: "💎", name: "200 diamantes", desc: "Para maletines y paquetes de dinero.", price: "1,99 €", consumable: true },
   { id: "gems_1200", icon: "💰", name: "1.200 diamantes", desc: "Un 20 % más de diamantes por euro que el pack pequeño.", price: "9,99 €", consumable: true },
 ];
@@ -52,11 +60,13 @@ export const productDef = (id: ProductId) => PRODUCTS.find((p) => p.id === id)!;
 export interface ShopState {
   vip: boolean;
   starter: boolean;
+  /** «Mejorar todo» sin límite (0,99 €). */
+  autoManager: boolean;
   /** Transacciones ya entregadas (para no dar dos veces la misma compra). */
   orders: string[];
 }
 
-export const freshShop = (): ShopState => ({ vip: false, starter: false, orders: [] });
+export const freshShop = (): ShopState => ({ vip: false, starter: false, autoManager: false, orders: [] });
 
 export const isVip = (s: GameState) => s.meta.shop.vip;
 
@@ -64,6 +74,7 @@ export const isVip = (s: GameState) => s.meta.shop.vip;
 export function canBuy(s: GameState, id: ProductId): boolean {
   if (id === "vip") return !s.meta.shop.vip;
   if (id === "starter_pack") return !s.meta.shop.starter;
+  if (id === "auto_manager") return !s.meta.shop.autoManager && !s.meta.shop.vip;
   return true;
 }
 
@@ -91,6 +102,11 @@ export function grantProduct(s: GameState, id: ProductId, order: string, now: nu
       msg = t("¡Pack de inicio! +300 💎, un ejecutivo Épico y 4 h x2");
       break;
     }
+    case "auto_manager":
+      if (shop.autoManager) break;
+      shop.autoManager = true;
+      msg = t("¡Gestor automático! «Mejorar todo» sin límite para siempre");
+      break;
     case "gems_200":
       s.meta.gems += 200;
       msg = "+200 💎";
@@ -110,6 +126,7 @@ export function migrateShop(raw: unknown): ShopState {
   return {
     vip: r.vip === true,
     starter: r.starter === true,
+    autoManager: r.autoManager === true,
     orders: Array.isArray(r.orders) ? r.orders.filter((x): x is string => typeof x === "string").slice(-200) : [],
   };
 }

@@ -1,3 +1,4 @@
+import { now as clockNow } from "../game/clock";
 import { money, t } from "../i18n";
 import { constructionPop, revealScene } from "./feedback";
 import { actorShadow, gait, loopPosition, streetLoop, type StreetLoop } from "./motion";
@@ -11,6 +12,7 @@ import { cityDef } from "../game/state";
 import { bizTier, businessRate } from "../game/economy";
 import { fmt } from "../game/format";
 import { DragScroll, reducedMotion, rewardCoins, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
+import { activeSeason } from "../game/season";
 
 /* Rejilla isométrica */
 const TW = 88;
@@ -33,15 +35,16 @@ const LOT_POSITIONS: { c: number; r: number }[] = [
   { c: 6, r: 9 },
 ];
 const SOON_LABELS = (): Record<string, string[]> => ({
-  madrid: ["🏋️ " + t("Gimnasio"), "🏨 " + t("Hotel")],
-  miami: ["🏨 " + t("Resort")],
+  madrid: [t("Gimnasio"), t("Hotel")],
+  miami: [t("Resort")],
+  dubai: [t("Centro comercial")],
 });
 
 function lotsFor(city: CityDef): { c: number; r: number; kind: LotKind }[] {
   const soon = SOON_LABELS()[city.id] ?? [];
   return LOT_POSITIONS.map((p, i) => ({
     ...p,
-    kind: i < city.businesses.length ? { id: city.businesses[i].id } : { soon: soon[i - city.businesses.length] ?? "🏗️ " + t("Solar") },
+    kind: i < city.businesses.length ? { id: city.businesses[i].id } : { soon: soon[i - city.businesses.length] ?? t("Solar") },
   }));
 }
 
@@ -64,6 +67,8 @@ interface Walker {
   phase: number;
   wait: number;
   crossing: string;
+  /** Cartel «Tú» encima del coche del personaje. */
+  tag?: Phaser.GameObjects.Text;
 }
 
 /** Semilla fija: la ciudad siempre tiene los mismos árboles. */
@@ -128,6 +133,7 @@ export class CityScene extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor(this.city.ground.water);
     this.drawWater(worldH);
+    if (this.city.id === "dubai") this.drawDesertBackdrop();
     this.drawGround();
     this.drawPublicSpaces();
     this.placeDecor();
@@ -153,6 +159,23 @@ export class CityScene extends Phaser.Scene {
       const x = rand() * this.worldW;
       const y = rand() * worldH;
       g.lineStyle(2, 0xffffff, 0.25).lineBetween(x, y, x + 14 + rand() * 12, y);
+    }
+  }
+
+  /** Dunes and a distant skyline, drawn once behind all interactive city content. */
+  private drawDesertBackdrop(): void {
+    const g = this.add.graphics().setDepth(-18);
+    const y = this.oy - 45;
+    for (let i = 0; i < 5; i++) {
+      const x = 70 + i * 190;
+      g.fillStyle(i % 2 ? 0xd8b47b : 0xe9cf9d, .52).fillEllipse(x, y + 40 + i % 2 * 10, 310, 120);
+      g.lineStyle(2, 0xffebbd, .5).lineBetween(x - 60, y + 18, x + 60, y + 28);
+    }
+    for (let i = 0; i < 11; i++) {
+      const x = 100 + i * 68, h = 22 + (i * 37 % 84);
+      g.fillStyle(0x8fadb0, .32).fillRoundedRect(x, y - h, 24, h, 3);
+      g.lineStyle(1.5, 0xf8d88f, .55).lineBetween(x + 7, y - h + 7, x + 7, y);
+      if (i % 3 === 0) g.lineBetween(x + 12, y - h, x + 12, y - h - 18);
     }
   }
 
@@ -237,7 +260,7 @@ export class CityScene extends Phaser.Scene {
             }
           }
         }
-        if (kind === "grass" || kind === "lot") groundDetail(g, cx, cy, kind === "grass" ? (this.city.id === "miami" ? "sand" : "grass") : kind === "lot" ? "paving" : "road", c + r * COLS);
+        if (kind === "grass" || kind === "lot") groundDetail(g, cx, cy, kind === "grass" ? (this.city.id === "miami" || this.city.id === "dubai" ? "sand" : "grass") : kind === "lot" ? "paving" : "road", c + r * COLS);
       }
   }
 
@@ -245,6 +268,7 @@ export class CityScene extends Phaser.Scene {
   private drawPublicSpaces(): void {
     const g = this.add.graphics().setDepth(-8);
     const tropical = this.city.id === "miami";
+    const halloween = activeSeason(clockNow())?.def.id === "halloween";
     for (const row of [1, 5, 9]) {
       const pts = [this.iso(5,row),this.iso(6,row),this.iso(6,row+2),this.iso(5,row+2)].map(p=>new Phaser.Math.Vector2(p.x,p.y));
       g.fillStyle(tropical ? 0xf4ddae : 0xe5d9c4).fillPoints(pts,true);
@@ -271,6 +295,12 @@ export class CityScene extends Phaser.Scene {
         g.lineStyle(1.5,0xe2fbff).lineBetween(p.x-5,p.y-17,p.x-10,p.y-2).lineBetween(p.x+5,p.y-17,p.x+10,p.y-2);
       }
       art(this,p.x-18,p.y+35,"bench").setDepth(p.y+35);
+      if (halloween) {
+        // Seasonal sprites use the same atlas and contact anchor as city props.
+        for (const [dx,dy] of [[-30,10],[26,14],[6,40]]) {
+          art(this,p.x+dx,p.y+dy,"pumpkin").setOrigin(0.5,0.9).setDepth(p.y+dy);
+        }
+      }
       art(this,p.x+4,p.y+46,"bush").setScale(artScale(this,"bush")*0.65).setDepth(p.y+46);
     }
     // Waterfront stone coping instead of an unfinished earth slab.
@@ -306,13 +336,13 @@ export class CityScene extends Phaser.Scene {
         const p = this.iso(c + 0.5, r + 0.5);
         const roll = rand();
         if (roll < 0.34) {
-          const key = this.city.trees[Math.floor(rand() * this.city.trees.length)];
+          const key = this.city.id === "dubai" ? "dubai_planter" : this.city.trees[Math.floor(rand() * this.city.trees.length)];
           const tree = art(this, p.x + (rand() - 0.5) * 14, p.y + 8, key).setOrigin(0.5, 0.92);
           tree.setDepth(tree.y);
         } else if (roll < 0.5) {
           art(this, p.x, p.y + 4, "bush").setOrigin(0.5, 0.8).setDepth(p.y);
         } else if (roll < 0.58 && (ROAD_ROWS.includes(r + 1) || ROAD_ROWS.includes(r - 1))) {
-          art(this, p.x, p.y, "lamp_post").setOrigin(0.5, 0.95).setDepth(p.y);
+          art(this, p.x, p.y, this.city.id === "dubai" ? "dubai_lamp" : "lamp_post").setOrigin(0.5, 0.95).setDepth(p.y);
         } else if (roll < 0.64) {
           art(this, p.x, p.y + 4, "bench").setDepth(p.y + 4);
         } else if (roll < 0.68) {
@@ -381,7 +411,7 @@ export class CityScene extends Phaser.Scene {
   /** Cambia al comprar un negocio o al subir de categoría: entonces se redibuja la ciudad. */
   private stateKey(): string {
     const s = this.bridge.state();
-    return s.city + this.city.businesses.map((b) => (s.biz[b.id]?.owned ? bizTier(s.biz[b.id]) : 0)).join("");
+    return s.city + this.city.businesses.map((b) => (s.biz[b.id]?.owned ? bizTier(s.biz[b.id]) : 0)).join("") + (s.meta.luxury.equipped.car ?? "") + (activeSeason(clockNow())?.key ?? "");
   }
 
   /* ---------- Tráfico, gente y nubes ---------- */
@@ -395,10 +425,13 @@ export class CityScene extends Phaser.Scene {
       [{c:0.32,r:3.32},{c:4.68,r:3.32},{c:4.68,r:7.68},{c:0.32,r:7.68}],
       [{c:4.32,r:3.32},{c:9.68,r:3.32},{c:9.68,r:7.68},{c:4.32,r:7.68}],
     ].map(points => streetLoop(points));
+    // El primero es el coche del personaje (lo que tenga en «Mi vida»), con su cartel.
+    const myCar = this.bridge.state().meta.luxury.equipped.car ?? "deliverybike";
     for (let i=0;i<8;i++) {
-      const obj = art(this,0,0,`car_${i%4}`).setOrigin(0.5,0.76);
+      const obj = art(this,0,0,i===0 ? `luxcar_${myCar}` : this.city.id === "miami" ? `car_miami_${i%2}` : `car_${i%4}`).setOrigin(0.5,0.76);
       const route = loops[i%loops.length];
-      this.movers.push({obj,shadow:actorShadow(this,obj.displayWidth),route,distance:route.total*(Math.floor(i/4)*0.5+rand()*0.2),speed:0.8+rand()*0.35,phase:rand()*6,wait:0,crossing:""});
+      const tag = i===0 ? label(this,0,0,t("Tú"),10,"#2e2200",{bold:true}).setBackgroundColor("#f5c542").setPadding(4,1,4,1).setOrigin(0.5) : undefined;
+      this.movers.push({obj,shadow:actorShadow(this,obj.displayWidth),route,distance:route.total*(Math.floor(i/4)*0.5+rand()*0.2),speed:0.8+rand()*0.35,phase:rand()*6,wait:0,crossing:"",tag});
     }
     // Walking loops follow the inner pavements, not the carriageway or the buildings.
     for (let i=0;i<8;i++) {
@@ -472,6 +505,7 @@ export class CityScene extends Phaser.Scene {
       m.obj.setPosition(p.x,p.y).setDepth(p.y+1);
       gait(m.obj,p.y,this.walkClock*m.speed*2.5+m.phase,!calm && m.wait===0,!m.role);
       m.shadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
+      m.tag?.setPosition(p.x,p.y-40).setDepth(9e4);
     }
     for (const cl of this.clouds) {
       cl.cloud.x += reducedMotion() ? 0 : cl.speed * dt;
@@ -481,7 +515,7 @@ export class CityScene extends Phaser.Scene {
         cl.shadow.x -= this.worldW + 260;
       }
     }
-    const now = Date.now();
+    const now = clockNow();
     for (const p of this.plots) {
       if (p.owned && p.bubbleText) {
         const rate = businessRate(s, p.id, now);

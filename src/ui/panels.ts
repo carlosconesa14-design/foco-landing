@@ -1,3 +1,4 @@
+import { now } from "../game/clock";
 import type { Placement } from "../ads";
 import type { Sfx } from "../audio/sound";
 import * as act from "../game/actions";
@@ -24,10 +25,12 @@ import {
 import { fmt } from "../game/format";
 import { cityDef, type BuyMode, type GameState, type View } from "../game/state";
 import type { Celebration } from "./celebrate";
-import { bizIcon, icon } from "./icons";
+import { bizIcon, icon, rankIcon } from "./icons";
+import { RANKS, nextRank, rankOf } from "../game/ranks";
 import { analytics, minutesSinceInstall } from "../platform/analytics";
 import { closeSheet, openSheet } from "./sheet";
 import { money, t } from "../i18n";
+import { maybeAskFeedback } from "./feedbackPanel";
 
 /** Lo que los paneles necesitan del controlador del juego. */
 export interface PanelCtx {
@@ -107,6 +110,7 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
     ctx.root,
     `<div class="sheet-head"><span class="sicon">${icon}</span><div><h3>${act.stationName(id, st)}</h3><p class="muted" data-lvl></p></div></div>
      <div data-stats></div>
+     <div class="ranktrack" data-ranks></div>
      <p class="small muted" data-ms></p>
      <div class="buyrow">${buyModes(s0)}<button class="buy big" data-up><span data-uq></span><b data-uc></b></button></div>
      <div class="mgrbox" data-mgr></div>
@@ -119,7 +123,19 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
       $(el, "[data-lvl]").textContent = t("Nivel {n}", { n: lvl });
       $(el, "[data-stats]").innerHTML = statRows(s, id, st, q.qty);
       const nm = nextMilestone(lvl);
-      $(el, "[data-ms]").textContent = nm ? t("Nivel {n}: rendimiento x2 (te faltan {left})", { n: nm, left: nm - lvl }) : t("Rendimiento máximo");
+      const nr = nextRank(lvl);
+      $(el, "[data-ms]").textContent = !nm
+        ? t("Rendimiento máximo")
+        : nr && nr.min === nm
+          ? t("Nivel {n}: rango {rank} y rendimiento x2 (te faltan {left})", { n: nm, rank: nr.name, left: nm - lvl })
+          : t("Nivel {n}: rendimiento x2 (te faltan {left})", { n: nm, left: nm - lvl });
+      const cur = rankOf(lvl);
+      const track = RANKS.map((r) => `<span class="rk ${r.n <= cur ? "on" : ""} ${r.n === cur ? "now" : ""}" title="${r.name} · ${t("Nv")} ${r.min}">${rankIcon(r.n)}<small>${r.min}</small></span>`).join("");
+      const tr = $(el, "[data-ranks]");
+      if (tr.dataset.html !== track) {
+        tr.dataset.html = track;
+        tr.innerHTML = track;
+      }
       $(el, "[data-uq]").textContent = t("Mejorar x{n}", { n: q.qty });
       $(el, "[data-uc]").textContent = money(q.cost);
       $<HTMLButtonElement>(el, "[data-up]").disabled = s.cash < q.cost;
@@ -145,10 +161,10 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
   );
   $<HTMLButtonElement>(sheet.el, "[data-up]").onclick = () => {
     const s = ctx.state();
-    const before = businessRate(s, id, Date.now()) || chainRates(bizDef(id), s.biz[id], false).total;
+    const before = businessRate(s, id, now()) || chainRates(bizDef(id), s.biz[id], false).total;
     const msg = act.upgrade(s, id, st);
     if (msg === null) return ctx.fx("error");
-    const after = businessRate(s, id, Date.now()) || chainRates(bizDef(id), s.biz[id], false).total;
+    const after = businessRate(s, id, now()) || chainRates(bizDef(id), s.biz[id], false).total;
     ctx.fx(msg ? "milestone" : "upgrade", !!msg);
     // Recompensa inmediata y visible: cuánto más ganas con esta mejora.
     if (after > before) ctx.floatAt($(sheet.el, "[data-up]"), `+${money(after - before)}/s`);
@@ -216,6 +232,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
     const msg = act.buyBusiness(ctx.state(), id);
     if (!msg) return ctx.fx("error");
     analytics.track("business_bought", { biz: id, minutes: minutesSinceInstall() });
+    if (Object.values(ctx.state().biz).filter((b) => b.owned).length === 2) maybeAskFeedback(ctx);
     closeSheet();
     ctx.goTo({ scene: "business", id });
     void ctx.celebrate({
@@ -270,7 +287,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
         return;
       }
       if (mult === 2 && !(await ctx.watchAd("ipo_x2"))) return;
-      const res = act.ipo(ctx.state(), mult, Date.now());
+      const res = act.ipo(ctx.state(), mult, now());
       if (!res) return;
       analytics.track("ipo", { shares: Math.round(res.gained), withAd: mult === 2, minutes: minutesSinceInstall() });
       ctx.replaceState(res.state);

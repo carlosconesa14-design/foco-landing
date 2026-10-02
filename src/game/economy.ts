@@ -1,8 +1,11 @@
+import { now } from "./clock";
 import { ALL_BUSINESSES, CHAIN, CONFIG, LIFE, MILESTONES, type BusinessDef } from "./data";
 import { NO_MULTS, execMults, type Mults } from "./execs";
 import { bump, cityDef, type BusinessState, type BuyMode, type GameState } from "./state";
 import { t } from "../i18n";
-import { luckyChance, offlineCapHours, tourismMult, upgradeDiscount, worldIncomeMult } from "./world";
+import { luxuryMult } from "./luxury";
+import { twistSaleMult } from "./twists";
+import { goldMult, luckyChance, offlineCapHours, tourismMult, upgradeDiscount, worldIncomeMult } from "./world";
 
 /* ---------- Utilidades ---------- */
 
@@ -53,6 +56,9 @@ export function saleMult(s: GameState, id: string, now: number, live = true): nu
     execMults(s, id, now, live).sale *
     worldIncomeMult(s) *
     tourismMult(s, now, live) *
+    goldMult(s, now, live) *
+    luxuryMult(s, now) * // «Mi vida»: prestigio y colecciones (también offline)
+    twistSaleMult(s, id, now, live) * // mecánicas del negocio: reputación, directo viral, investigación
     (s.meta.shop.vip ? 2 : 1) // VIP: x2 permanente (también offline)
   );
 }
@@ -344,7 +350,7 @@ export function tapStation(s: GameState, id: string, st: Station): string | null
   }
   if (b.sale.phase !== "idle") return null;
   if (b.topStock <= 0) return t("Aún no hay nada que vender arriba");
-  startSale(bizDef(id), b, execMults(s, id, Date.now()).log);
+  startSale(bizDef(id), b, execMults(s, id, now()).log);
   return null;
 }
 

@@ -1,0 +1,312 @@
+{
+  "frames": {
+    "avatar_tracksuit": {
+      "frame": {
+        "x": 22,
+        "y": 4,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "avatar_hoodie": {
+      "frame": {
+        "x": 406,
+        "y": 4,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "avatar_suit": {
+      "frame": {
+        "x": 790,
+        "y": 4,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "avatar_designer": {
+      "frame": {
+        "x": 1174,
+        "y": 4,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "avatar_goldtux": {
+      "frame": {
+        "x": 22,
+        "y": 516,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "avatar_neonsuit": {
+      "frame": {
+        "x": 406,
+        "y": 516,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "avatar_vampire": {
+      "frame": {
+        "x": 790,
+        "y": 516,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "avatar_founder": {
+      "frame": {
+        "x": 1174,
+        "y": 516,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "lux_tracksuit": {
+      "frame": {
+        "x": 22,
+        "y": 4,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "lux_hoodie": {
+      "frame": {
+        "x": 406,
+        "y": 4,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "lux_suit": {
+      "frame": {
+        "x": 790,
+        "y": 4,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "lux_designer": {
+      "frame": {
+        "x": 1174,
+        "y": 4,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "lux_goldtux": {
+      "frame": {
+        "x": 22,
+        "y": 516,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "lux_neonsuit": {
+      "frame": {
+        "x": 406,
+        "y": 516,
+        "w": 340,
+        "h": 504
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 504
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 504
+      }
+    },
+    "exec_founder": {
+      "frame": {
+        "x": 1174,
+        "y": 516,
+        "w": 340,
+        "h": 237
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 340,
+        "h": 237
+      },
+      "sourceSize": {
+        "w": 340,
+        "h": 237
+      }
+    }
+  },
+  "meta": {
+    "image": "avatars.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}

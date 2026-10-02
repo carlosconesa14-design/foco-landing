@@ -1,3 +1,4 @@
+import { now as clockNow } from "../game/clock";
 import type { StatKey } from "../game/data";
 import {
   EVENT_BOOST,
@@ -57,7 +58,7 @@ export function openEvent(ctx: PanelCtx): void {
        <p class="small muted">${t("Los puntos solo cuentan mientras juegas, de viernes a domingo. Los premios conseguidos se pueden cobrar hasta que empiece el siguiente evento.")}</p></details>`,
     (el) => {
       const s = ctx.state();
-      const now = Date.now();
+      const now = clockNow();
       const w = eventWindow(now);
       const ev = s.meta.event;
       // Progreso que se ve: el del evento en curso, o el del anterior si aún tiene premios por cobrar.
@@ -96,7 +97,7 @@ export function openEvent(ctx: PanelCtx): void {
         if (b)
           b.onclick = async () => {
             if (!(await ctx.watchAd("event_x2"))) return;
-            if (boostEvent(ctx.state(), Date.now())) {
+            if (boostEvent(ctx.state(), clockNow())) {
               analytics.track("event_boost", { week: ctx.state().meta.event.week });
               ctx.toast(t("¡Puntos x2 durante {min} min!", { min: EVENT_BOOST.minutes }));
             }
@@ -122,7 +123,7 @@ export function openEvent(ctx: PanelCtx): void {
           c.onclick = () => {
             const st = ctx.state();
             const tier = st.meta.event.claimed + 1;
-            const g = claimEventTier(st, Date.now());
+            const g = claimEventTier(st, clockNow());
             if (!g) return;
             analytics.track("event_claim", { week: st.meta.event.week, tier });
             ctx.fx(g.exec ? "chest" : "gems", true);

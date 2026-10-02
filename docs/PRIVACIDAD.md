@@ -9,7 +9,8 @@
 | Dato | Para qué | Dónde |
 | --- | --- | --- |
 | Partida guardada (progreso del juego) | Que puedas seguir jugando | Solo en tu móvil |
-| Estadísticas de uso anónimas (un identificador aleatorio de instalación, eventos del juego como sesiones o pasos del tutorial) | Mejorar el juego | Servidores de Supabase en la UE (París) |
+| Estadísticas de uso anónimas (un identificador aleatorio de instalación, eventos del juego como sesiones o pasos del tutorial, y los fallos técnicos del juego) | Mejorar el juego | Servidores de Supabase en la UE (París) |
+| Opiniones que envías desde el juego (puntuación y texto, con el idioma y tu progreso) | Mejorar el juego | Supabase (UE). Son anónimas: el juego pide no escribir datos personales |
 | Liga: nombre de jugador, puntos y un identificador aleatorio | Gestionar la clasificación y los premios | Supabase (UE) |
 | Liga, solo ganadores de premios en dinero: email y declaración de mayoría de edad | Contactar y entregar el premio | Supabase (UE) |
 | Publicidad: identificador de publicidad del móvil y datos técnicos | Mostrar anuncios bonificados | Google AdMob. Ver https://policies.google.com/privacy |

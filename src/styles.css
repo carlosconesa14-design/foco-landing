@@ -157,6 +157,21 @@ footer {
 .viral { position: absolute; right: 16px; bottom: 96px; width: 64px; height: 64px; border-radius: 18px; background: var(--red); font-size: 34px; display: grid; place-items: center; box-shadow: 0 6px 0 var(--red-dark), 0 10px 24px rgba(0, 0, 0, 0.4); animation: bob 1.4s ease-in-out infinite; z-index: 5; }
 .viral::after { content: "VIRAL"; position: absolute; bottom: -9px; font-size: 10px; font-weight: 700; background: var(--ink); color: var(--bg); padding: 1px 6px; border-radius: 6px; letter-spacing: 0.06em; }
 @keyframes bob { 50% { transform: translateY(-8px) rotate(-6deg); } }
+/* Visitas del negocio: camión de suministros y cliente VIP (se pueden cambiar por sprites en la escena). */
+.visitor { position: absolute; left: 16px; width: 72px; height: 72px; border-radius: 18px; font-size: 36px; display: grid; place-items: center; align-content: center; gap: 2px; line-height: 1; color: var(--ink); box-shadow: 0 6px 0 var(--vis-dark), 0 10px 24px rgba(0, 0, 0, 0.4); z-index: 5; animation: arrive 0.45s ease-out, bob 1.6s ease-in-out 0.45s infinite; }
+.visitor b { font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; background: var(--ink); color: var(--bg); padding: 1px 6px; border-radius: 6px; }
+.visitor.truck { background: #4aa8ff; --vis-dark: #2a6fb0; }
+.visitor.vip { background: var(--gold); --vis-dark: var(--gold-dark); }
+@keyframes arrive { from { transform: translateX(-120px); } }
+/* Ruleta diaria */
+.wheel-wrap { position: relative; width: min(280px, 74vw); aspect-ratio: 1; margin: 4px auto 8px; }
+.wheel { position: relative; width: 100%; height: 100%; border-radius: 50%; border: 6px solid var(--gold-dark); box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35), inset 0 0 0 3px rgba(255, 255, 255, 0.35); }
+.wheel::after { content: ""; position: absolute; left: 50%; top: 50%; width: 18%; height: 18%; transform: translate(-50%, -50%); border-radius: 50%; background: var(--panel); border: 4px solid var(--gold); }
+.wheel-slot { position: absolute; left: 50%; top: 0; width: 64px; height: 50%; margin-left: -32px; transform-origin: 50% 100%; transform: rotate(var(--a)); display: flex; flex-direction: column; align-items: center; padding-top: 10px; gap: 2px; color: #1a1406; text-align: center; }
+.wheel-slot b { font-size: 22px; line-height: 1; }
+.wheel-slot small { font-size: 9.5px; font-weight: 700; line-height: 1.1; max-width: 58px; }
+.wheel-pin { position: absolute; left: 50%; top: -8px; z-index: 2; width: 0; height: 0; margin-left: -13px; border-left: 13px solid transparent; border-right: 13px solid transparent; border-top: 24px solid var(--red); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5)); }
+@media (prefers-reduced-motion: reduce) { .visitor { animation: none; } }
 .float { position: fixed; pointer-events: none; font-family: var(--display); color: var(--green); font-size: 20px; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4); animation: up 0.9s ease-out forwards; z-index: 20; }
 @keyframes up { to { transform: translateY(-60px); opacity: 0; } }
 .toast { position: absolute; left: 16px; right: 16px; top: calc(14px + env(safe-area-inset-top, 0px)); background: var(--ink); color: var(--bg); font-weight: 700; border-radius: 12px; padding: 12px 14px; text-align: center; z-index: 30; animation: drop 0.25s ease-out; }
@@ -461,3 +476,236 @@ button:enabled:active { filter:brightness(1.12); }.buy:disabled,.claim:disabled,
 .legal-frame { width: 100%; height: 62vh; border: 0; border-radius: 12px; background: #0e1a2b; }
 .legal-links { text-align: center; margin-top: 8px; }
 .legal-links a, .lg-how a { color: var(--gold); }
+
+/* Rangos de los puestos (bronce … leyenda): medallas en la barra de la cadena y en el panel */
+.rank-ic { display: inline-flex; align-items: center; justify-content: center; margin-right: 3px; font-size: 1em; line-height: 1; vertical-align: -1px; }
+.rank-ic .ico, .rank-ic svg { width: 1.15em; height: 1.15em; }
+.ranktrack { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 2px; }
+.ranktrack .rk { display: grid; justify-items: center; gap: 2px; padding: 6px 0 4px; border-radius: 10px; background: var(--panel-2); border: 1.5px solid var(--line); opacity: 0.45; filter: grayscale(0.9); }
+.ranktrack .rk .rank-ic { font-size: 20px; margin: 0; }
+.ranktrack .rk small { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ranktrack .rk.on { opacity: 1; filter: none; }
+.ranktrack .rk.now { border-color: var(--gold, #f5c542); box-shadow: 0 0 0 2px rgba(245, 197, 66, 0.25); }
+@media (prefers-reduced-motion: no-preference) {
+  .ranktrack .rk.now .rank-ic { animation: rank-bob 1.6s ease-in-out infinite; }
+}
+@keyframes rank-bob { 50% { transform: translateY(-2px) scale(1.08); } }
+
+/* Precio del oro (Dubái): misma barra que la ola de Miami, en dorado */
+.wave.gold.on { border-color: #f5c542; background: linear-gradient(90deg, rgba(245, 197, 66, 0.35), rgba(14, 26, 43, 0.9)); }
+
+/* «Mi vida»: escenario del personaje y tienda de lujo */
+.life-stage { position: relative; height: 230px; border-radius: 16px; overflow: hidden; margin: 4px 0 8px; border: 1px solid var(--line);
+  background: linear-gradient(180deg, #7cc8f2 0%, #bfe6ff 58%, #8fd17a 58%, #6fbf5c 100%); }
+.life-stage.home-parents { background: linear-gradient(180deg, #8fb2c9 0%, #c9dbe6 58%, #9ab38a 58%, #7f9c72 100%); }
+.life-stage.home-penthouse { background: linear-gradient(180deg, #ff9a6b 0%, #ffd29a 58%, #7f8c99 58%, #5d6d7e 100%); }
+.life-stage.home-villa { background: linear-gradient(180deg, #5ec8f5 0%, #b9ecff 58%, #39c4d6 58%, #e9d8a6 78%); }
+.life-stage.home-mansion { background: linear-gradient(180deg, #2c3e8f 0%, #8e7cc3 58%, #5aa85b 58%, #3f8a46 100%); }
+.life-stage.home-island { background: linear-gradient(180deg, #ffb36b 0%, #ffe1a8 55%, #2ec4d6 55%, #f3d99b 82%); }
+.life-stage .lux-emoji { line-height: 1; }
+.life-stage .st-home { position: absolute; left: 50%; top: 22px; transform: translateX(-50%); font-size: 96px; opacity: 0.95; filter: drop-shadow(0 6px 6px #0004); }
+.life-stage .st-home .ico, .life-stage .st-home svg { width: 150px; height: 150px; }
+.life-stage .st-sky { position: absolute; right: 16px; top: 12px; font-size: 40px; }
+.life-stage .st-car { position: absolute; left: 10px; bottom: 10px; font-size: 64px; filter: drop-shadow(0 4px 3px #0005); }
+.life-stage .st-pet { position: absolute; right: 22px; bottom: 12px; font-size: 44px; filter: drop-shadow(0 3px 2px #0005); }
+.life-stage .st-car .ico, .life-stage .st-car svg { width: 96px; height: 96px; }
+.life-stage .st-pet .ico, .life-stage .st-pet svg, .life-stage .st-sky .ico, .life-stage .st-sky svg { width: 60px; height: 60px; }
+.life-stage .st-avatar { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); width: 120px; }
+.avatar-svg { display: block; width: 100%; height: auto; }
+.avatar-img .ico, .avatar-img svg { width: 120px; height: 172px; }
+@media (prefers-reduced-motion: no-preference) {
+  .life-stage .st-avatar { animation: life-idle 3s ease-in-out infinite; }
+  .life-stage .st-pet { animation: life-idle-pet 1.6s ease-in-out infinite; }
+}
+@keyframes life-idle { 50% { transform: translate(-50%, -3px); } }
+@keyframes life-idle-pet { 50% { transform: translateY(-4px); } }
+.life-tabs .tabbtn { font-size: 20px; padding: 6px 0; }
+.lux-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lux-card { display: grid; justify-items: center; text-align: center; gap: 3px; padding: 10px 8px; border-radius: 14px; background: var(--bg); border: 1.5px solid var(--line); }
+.lux-card .lux-ic { font-size: 38px; height: 46px; display: grid; place-items: center; }
+.lux-card .lux-ic .ico, .lux-card .lux-ic svg { width: 46px; height: 46px; }
+.lux-card b { font-size: 13px; line-height: 1.15; }
+.lux-card .lux-pr { color: var(--green); font-weight: 700; font-size: 11px; }
+.lux-card .lux-btns { display: grid; gap: 5px; width: 100%; margin-top: 3px; }
+.lux-card .lux-btns .buy, .lux-card .lux-btns .mini, .lux-card .lux-btns .ad-btn { width: 100%; justify-content: center; }
+.lux-card.owned { border-color: rgba(61, 220, 151, 0.45); }
+.lux-card.on { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245, 197, 66, 0.25); }
+.lux-card.exclusive { background: linear-gradient(160deg, rgba(181, 123, 255, 0.22), var(--bg) 60%); border-color: rgba(181, 123, 255, 0.55); }
+.lux-banner { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 14px; margin-bottom: 8px; background: linear-gradient(90deg, rgba(245, 197, 66, 0.22), var(--bg)); border: 1px solid rgba(245, 197, 66, 0.5); }
+.lux-banner.trial { grid-template-columns: 44px minmax(0, 1fr); background: linear-gradient(90deg, rgba(111, 227, 255, 0.2), var(--bg)); border-color: rgba(111, 227, 255, 0.5); }
+.lux-banner .lux-emoji { font-size: 32px; }
+.lux-banner b { display: block; font-size: 13px; }
+.lux-banner small { color: var(--muted); font-size: 12px; }
+
+/* Temporada: Halloween */
+.season-ghost { position: absolute; z-index: 7; font-size: 46px; line-height: 1; padding: 6px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 70%); filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
+@media (prefers-reduced-motion: no-preference) {
+  .season-ghost { animation: ghost-float 2.4s ease-in-out infinite, ghost-in 0.4s ease-out; }
+}
+@keyframes ghost-float { 50% { transform: translate(8px, -12px) rotate(6deg); } }
+@keyframes ghost-in { from { opacity: 0; transform: scale(0.4); } }
+.rail .season-btn { border-color: #ff8a2a; background: linear-gradient(160deg, rgba(255, 138, 42, 0.45), rgba(14, 26, 43, 0.92)); color: #ffd8b0; }
+.season-candy { display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 10px; border-radius: 14px; background: linear-gradient(90deg, rgba(255, 138, 42, 0.25), rgba(122, 63, 214, 0.25)); border: 1px solid rgba(255, 138, 42, 0.5); }
+.season-candy span { font-size: 30px; }
+.season-candy b { font-family: var(--display); font-size: 30px; color: #ffb35c; }
+.season-candy small { color: var(--muted); }
+.season-h { margin: 6px 0 0; font-family: var(--display); font-weight: 400; color: #ffb35c; }
+.lux-card.seasonal { background: linear-gradient(160deg, rgba(255, 138, 42, 0.22), var(--bg) 60%); border-color: rgba(255, 138, 42, 0.55); }
+.lux-card .lux-season { color: #ffb35c; font-size: 11px; font-weight: 700; }
+body.season-halloween header { box-shadow: 0 2px 0 #ff8a2a66 inset, 0 5px 16px #06172755; }
+
+/* Invitar a amigos y partida en la nube */
+.invite-code { display: grid; justify-items: center; gap: 6px; padding: 14px; border-radius: 16px; background: linear-gradient(160deg, rgba(61, 220, 151, 0.18), var(--bg) 70%); border: 1px solid rgba(61, 220, 151, 0.45); text-align: center; }
+.invite-code small { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; }
+.invite-code b { font-family: var(--display); font-weight: 400; font-size: 38px; letter-spacing: 0.12em; color: var(--green); user-select: text; -webkit-user-select: text; }
+.invite-code b.rec { font-size: 26px; letter-spacing: 0.06em; color: var(--gold); }
+.invite-how { display: grid; gap: 8px; margin: 10px 0; }
+.invite-how > div { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 8px; align-items: center; }
+.invite-how span { font-size: 24px; }
+.invite-how p { margin: 0; font-size: 13px; }
+.invite-use { display: grid; gap: 6px; margin-top: 10px; padding: 12px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line); }
+.invite-use p { margin: 0; }
+.invite-row { display: flex; gap: 8px; }
+.invite-row input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); font: inherit; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Mecánicas de cada negocio: tarjeta encima de la barra de la cadena */
+.twist { position: absolute; left: 12px; right: 12px; z-index: 6; }
+.tw-card { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 14px; background: rgba(14, 26, 43, 0.92); border: 1px solid var(--line); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
+.tw-ic { font-size: 24px; line-height: 1; text-align: center; letter-spacing: -6px; }
+.tw-txt { display: grid; gap: 2px; min-width: 0; }
+.tw-txt b { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tw-txt small { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tw-bar { display: block; height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.4); overflow: hidden; margin-top: 2px; }
+.tw-bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold), #ffdf7a); transition: width 0.25s ease; }
+.tw-btns { display: flex; gap: 6px; }
+.tw-btns .claim, .tw-btns .ad-btn { padding: 7px 10px; font-size: 13px; }
+.tw-card.tw-offer { border-color: var(--gold); background: linear-gradient(90deg, rgba(245, 197, 66, 0.22), rgba(14, 26, 43, 0.92)); }
+.tw-card.tw-on .tw-bar i { background: linear-gradient(90deg, var(--green), #9cf3c9); }
+.tw-card.tw-viral { border-color: #ff4d6d; background: linear-gradient(90deg, rgba(255, 77, 109, 0.35), rgba(14, 26, 43, 0.92)); }
+.tw-card.tw-viral .tw-bar i { background: linear-gradient(90deg, #ff4d6d, #ff9db0); }
+@media (prefers-reduced-motion: no-preference) {
+  .tw-card.tw-offer, .tw-card.tw-viral { animation: ready 1.2s ease-in-out infinite; }
+  .tw-card.tw-viral .tw-ic { animation: rank-bob 0.8s ease-in-out infinite; }
+}
+
+/* «Mejorar todo» (abajo a la derecha, en el negocio) */
+.auto-btn { position: absolute; right: 12px; z-index: 6; display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; column-gap: 6px; align-items: center; padding: 6px 12px 6px 8px; border-radius: 14px; background: linear-gradient(160deg, #ffd86b, var(--gold)); color: var(--gold-ink); border: 0; box-shadow: 0 4px 0 var(--gold-dark), 0 8px 18px rgba(0, 0, 0, 0.3); text-align: left; }
+.auto-btn .ic { grid-row: span 2; font-size: 22px; line-height: 1; }
+.auto-btn b { font-size: 12.5px; line-height: 1.1; }
+.auto-btn small { font-size: 10.5px; font-weight: 700; opacity: 0.8; line-height: 1.1; }
+.auto-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--gold-dark), 0 4px 10px rgba(0, 0, 0, 0.3); }
+
+/* Fusionar ejecutivos */
+.fuse-box { display: grid; gap: 6px; padding: 10px; border-radius: 14px; background: linear-gradient(160deg, rgba(181, 123, 255, 0.18), var(--bg) 70%); border: 1px solid rgba(181, 123, 255, 0.5); }
+.fuse-box p { margin: 0; }
+.fuse-btn { padding: 10px 12px; border-radius: 12px; border: 0; font-weight: 700; color: #14202f; background: linear-gradient(90deg, var(--from), var(--to)); box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35); text-align: left; }
+
+/* «Mientras no estabas»: lo que te espera */
+.modal-list { list-style: none; margin: 4px 0 12px; padding: 0; display: grid; gap: 6px; text-align: left; }
+.modal-list li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; align-items: center; padding: 7px 10px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); font-size: 13px; }
+.modal-list li span { font-size: 18px; text-align: center; }
+
+/* Rival de la semana (panel del Imperio) */
+.rival-card:empty { display: none; }
+.rival-card { display: grid; gap: 6px; padding: 12px; margin-bottom: 10px; border-radius: 14px; background: linear-gradient(160deg, rgba(255, 107, 91, 0.18), var(--bg) 70%); border: 1px solid rgba(255, 107, 91, 0.5); }
+.rival-card p { margin: 2px 0 0; }
+.rv-head { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.rv-face { font-size: 30px; text-align: center; }
+.rv-head b { display: block; font-size: 14px; }
+.rv-head small { color: var(--muted); font-size: 12px; }
+.rv-prize { font-weight: 700; font-size: 13px; white-space: nowrap; }
+.rv-row { display: grid; grid-template-columns: 60px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 12px; }
+.rv-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-row b { font-variant-numeric: tabular-nums; }
+.rv-bar { display: block; height: 10px; border-radius: 5px; background: rgba(0, 0, 0, 0.35); overflow: hidden; }
+.rv-bar i { display: block; height: 100%; border-radius: 5px; }
+.rv-bar.me i { background: linear-gradient(90deg, var(--green), #9cf3c9); }
+.rv-bar.him i { background: linear-gradient(90deg, var(--red), #ffa494); }
+.rival-card .warn { color: #ffb4a8; }
+.city-card.soon { opacity: 0.85; }
+
+/* Desbloqueo gradual: lo bloqueado se ve, con candado, y lo recién desbloqueado brilla. */
+.rail button.locked, .menu-grid button.locked { color: #8ea3b6; }
+.locked .ic, .locked .game-icon { filter: grayscale(1) brightness(0.8); opacity: 0.6; }
+.rail button.locked::after, .menu-grid button.locked::after, .auto-btn.locked::after { content: "🔒"; position: absolute; top: -4px; right: -4px; font-size: 13px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)); }
+.auto-btn.locked { background: linear-gradient(160deg, #50677d, #2c4257); color: #d9e6f2; box-shadow: 0 4px 0 #1b2b3a, 0 8px 18px rgba(0, 0, 0, 0.3); }
+.fresh-unlock { animation: unlockGlow 1.4s ease-in-out infinite; }
+@keyframes unlockGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 216, 107, 0.0); } 50% { box-shadow: 0 0 0 4px rgba(255, 216, 107, 0.85), 0 0 18px rgba(255, 216, 107, 0.7); } }
+.next-unlock { border: 1px dashed #6e94ad; border-radius: 12px; padding: 8px 10px; }
+@media (prefers-reduced-motion: reduce) { .fresh-unlock { animation: none; outline: 3px solid #ffd86b; } }
+
+/* Visual completion: one icon language and scene-anchored opportunities. */
+.inline-icon { display: inline-flex; width: 1.1em; height: 1.1em; vertical-align: -0.15em; align-items: center; justify-content: center; }
+.inline-icon .game-icon, .inline-icon .ico { width: 100%; height: 100%; object-fit: contain; }
+.tw-ic .game-icon, .rv-face .game-icon, .shop-ic .game-icon { width: 30px; height: 30px; }
+.life-tabs .game-icon { width: 24px; height: 24px; }
+.season-ghost .game-icon, .season-ghost .ico { width: 64px; height: 64px; }
+.viral .game-icon, .viral .ico { width: 42px; height: 42px; }
+.world-visitor { position: absolute; z-index: 7; display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 7px 12px; border: 2px solid #ffe5a1; border-radius: 14px; background: linear-gradient(160deg, #ffd970, #efb742); color: #2e2200; box-shadow: 0 3px 0 #aa7825, 0 6px 12px #14202f44; transform: translate(-50%, -100%); font: 700 12px var(--body); }
+.world-visitor::after { content: ""; position: absolute; left: calc(50% - 5px); bottom: -7px; width: 10px; height: 10px; background: #efb742; transform: rotate(45deg); border-right: 2px solid #ffe5a1; border-bottom: 2px solid #ffe5a1; }
+.world-visitor .visitor-dot { width: 7px; height: 7px; border-radius: 50%; background: #189768; box-shadow: 0 0 0 3px #18976822; }
+.world-visitor .visitor-arrow { font-size: 21px; line-height: 1; }
+.world-visitor.offscreen::after { display: none; }
+.world-visitor:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #9eefff; outline-offset: 3px; }
+.world-visitor:active { filter: brightness(1.1); }
+.avatar-img { position: relative; width: 120px; height: 172px; }
+.avatar-jewel { position: absolute; pointer-events: none; }
+.avatar-jewel .game-icon, .avatar-jewel .ico { width: 100%; height: 100%; }
+.avatar-jewel.jewel-digital, .avatar-jewel.jewel-luxwatch { left: 18px; top: 107px; width: 14px; height: 14px; transform: rotate(-12deg); }
+.avatar-jewel.jewel-goldchain { left: 45px; top: 69px; width: 29px; height: 25px; }
+.avatar-jewel.jewel-diamondring, .avatar-jewel.jewel-skullring { right: 21px; top: 117px; width: 12px; height: 12px; }
+.avatar-jewel.jewel-crown { left: 41px; top: 0; width: 39px; height: 27px; }
+.life-stage { isolation: isolate; height: 258px; background: linear-gradient(#91d6ed 0%, #e4f4ec 59%, #c6dccb 60%, #a4c7a8 100%); }
+.life-stage::before { content: ""; position: absolute; inset: 62% 0 0; background: repeating-linear-gradient(28deg, transparent 0 32px, #fff3 33px 34px); transform: scale(1.3); z-index: -1; }
+.life-stage::after { content: ""; position: absolute; left: 14%; right: 14%; bottom: 8px; height: 17px; border-radius: 50%; background: #183b482a; z-index: -1; }
+.life-stage.home-haunted { background: linear-gradient(#263859 0%, #667099 59%, #56736a 60%, #2f524d 100%); }
+.life-stage .st-home { top: 4px; left: 48%; }
+.life-stage .st-home .game-icon, .life-stage .st-home .ico { width: 180px; height: 160px; }
+.life-stage .st-avatar { bottom: 8px; }
+.life-stage .st-car { bottom: 4px; left: 5px; }
+.life-stage .st-sky { top: 8px; right: 8px; }
+.lux-card { min-width: 0; padding: 12px 10px; border-radius: 16px; background: linear-gradient(155deg, #25415b, #172c43); box-shadow: inset 0 1px 0 #bce8ff15, 0 4px 0 #0a172533; }
+.lux-card > b { min-height: 2.5em; line-height: 1.25; text-wrap: balance; overflow-wrap: anywhere; }
+.lux-card .lux-ic { height: 80px; width: 100%; overflow: hidden; }
+.lux-card .lux-ic .game-icon, .lux-card .lux-ic .ico { width: 76px; height: 76px; }
+.lux-card .lux-pr { color: #cde8e9; }
+.lux-card.on { border-color: #8be0bd; box-shadow: inset 0 0 0 1px #8be0bd44, 0 4px 0 #0a172533; }
+.lux-card.exclusive { background: linear-gradient(150deg, #4b365f, #182b43); border-color: #b8a0d7; }
+.lux-btns button, .life-tabs .tabbtn { min-height: 44px; }
+.lux-banner { min-width: 0; flex-wrap: wrap; }
+.lux-banner > span { min-width: 120px; flex: 1; }
+.lux-banner small { white-space: normal; line-height: 1.35; }
+.locked::after { content: "" !important; width: 14px; height: 17px; background: url("/sprites/ui-lock.svg") center / contain no-repeat; }
+.wave.gold { border-color: #d6aa5b; background: linear-gradient(110deg, #675325, #152a40 75%); box-shadow: inset 0 1px 0 #ffe7a244, 0 3px 0 #132438; }
+.wave.gold.on { background: linear-gradient(110deg, #96702a, #283e4b 78%); }
+.tw-txt b, .tw-txt small { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.25; }
+.tw-btns { flex-wrap: wrap; justify-content: flex-end; }
+.tw-btns button { min-height: 40px; }
+.modal { max-height: calc(100dvh - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; }
+.sheet { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+.menu-grid button, .rail button { min-height: 44px; }
+@media (max-width: 359px) {
+  .tw-card { grid-template-columns: 26px minmax(0, 1fr); gap: 6px; }
+  .tw-btns { grid-column: 2; }
+  .tw-ic .game-icon { width: 26px; height: 26px; }
+  .life-stage .st-home .game-icon { width: 150px; height: 145px; }
+  .life-stage .st-car .game-icon { width: 77px; height: 77px; }
+  .life-stage .st-pet { right: 5px; }
+  .life-stage .st-pet .game-icon { width: 46px; height: 46px; }
+  .lux-banner { gap: 6px; }
+  .lux-banner > button { margin-left: auto; }
+  .twist { left: 8px; right: 8px; }
+}
+.loading-app-icon { width: 112px; height: 112px; border-radius: 24px; box-shadow: 0 6px 0 #071a2b, 0 16px 30px #030f2555; }
+.loading-logo { width: min(328px, 88vw); height: auto; margin: 16px 0 0; }
+@media (max-width:359px) {
+  .lux-banner { grid-template-columns: 32px minmax(0, 1fr); }
+  .lux-banner > button { grid-column: 2; justify-self: end; }
+  .lux-banner > span { min-width: 0; }
+}
+
+/* Opiniones */
+.fb-stars { display: flex; justify-content: center; gap: 6px; margin: 4px 0 10px; }
+.fb-stars button { font-size: 36px; line-height: 1; padding: 2px 4px; background: none; border: 0; color: #4a6077; transition: transform 0.15s, color 0.15s; }
+.fb-stars button.on { color: var(--gold); transform: scale(1.08); }
+.fb-text { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: inherit; font: inherit; font-size: 14px; resize: vertical; }

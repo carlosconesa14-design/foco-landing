@@ -1,3 +1,4 @@
+import { decorateIcons } from "./icons";
 import { fmt } from "../game/format";
 
 /** Toasts, textos flotantes y ventanas modales. */
@@ -32,7 +33,7 @@ export interface ModalAction {
 let open = false;
 export const modalOpen = () => open;
 
-export function modal(root: HTMLElement, opts: { title: string; amount?: string; text: string; actions: ModalAction[] }): void {
+export function modal(root: HTMLElement, opts: { title: string; amount?: string; text: string; actions: ModalAction[]; list?: { icon: string; text: string }[] }): void {
   open = true;
   const scrim = document.createElement("div");
   scrim.className = "scrim";
@@ -52,6 +53,19 @@ export function modal(root: HTMLElement, opts: { title: string; amount?: string;
   const p = document.createElement("p");
   p.textContent = opts.text;
   box.appendChild(p);
+  if (opts.list?.length) {
+    // Lista corta de cosas pendientes (texto seguro: nunca HTML).
+    const ul = document.createElement("ul");
+    ul.className = "modal-list";
+    for (const item of opts.list) {
+      const li = document.createElement("li");
+      const ic = document.createElement("span");
+      ic.textContent = item.icon;
+      li.append(ic, item.text);
+      ul.appendChild(li);
+    }
+    box.appendChild(ul);
+  }
   const actions = document.createElement("div");
   actions.className = "actions col";
   for (const a of opts.actions) {
@@ -69,5 +83,6 @@ export function modal(root: HTMLElement, opts: { title: string; amount?: string;
   box.appendChild(actions);
   scrim.appendChild(box);
   root.appendChild(scrim);
+  decorateIcons(box);
   actions.querySelector("button")?.focus();
 }

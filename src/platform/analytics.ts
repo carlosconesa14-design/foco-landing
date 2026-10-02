@@ -30,7 +30,21 @@ export type AnalyticsName =
   | "purchase"
   | "offline_collect"
   | "event_claim"
-  | "event_boost";
+  | "event_boost"
+  | "offer_shown"
+  | "wheel_spin"
+  // beta 2: errores y funciones nuevas (ver docs/ANALITICA.md)
+  | "error"
+  | "unlock"
+  | "twist"
+  | "lux_buy"
+  | "auto_upgrade"
+  | "fusion"
+  | "rival_win"
+  | "season_buy"
+  | "ref_used"
+  | "cloud_recover"
+  | "founder";
 
 interface Ev {
   name: AnalyticsName;
@@ -53,7 +67,8 @@ function write(key: string, v: unknown): void {
   }
 }
 
-function deviceId(): string {
+/** Id anónimo del móvil (el mismo de la analítica). */
+export function deviceId(): string {
   let id = read<string | null>("analyticsDevice", null);
   if (!id) {
     id = crypto.randomUUID();
@@ -90,6 +105,23 @@ export const analytics = {
     queue.push({ name, props });
     if (queue.length > MAX) queue = queue.slice(-MAX);
     write(QKEY, queue);
+  },
+
+  /**
+   * Envía una opinión al momento (no va en la cola). Devuelve true si el servidor la ha guardado
+   * (como mucho 3 al día por dispositivo). Se envía también en `npm run dev` si se ha activado.
+   */
+  async feedback(rating: number | null, message: string, meta: Record<string, string | number>): Promise<boolean> {
+    try {
+      const res = await fetch(URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: KEY },
+        body: JSON.stringify({ device: deviceId(), platform: Capacitor.getPlatform(), version: VERSION, feedback: { rating, message: message.slice(0, 1000), meta } }),
+      });
+      return res.ok && ((await res.json()) as { stored?: boolean }).stored === true;
+    } catch {
+      return false;
+    }
   },
 
   /** Envía lo pendiente. `final` usa keepalive para que llegue aunque se cierre la app. */

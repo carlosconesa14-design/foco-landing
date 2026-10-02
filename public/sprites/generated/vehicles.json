@@ -1,0 +1,172 @@
+{
+  "frames": {
+    "veh_safari": {
+      "frame": {
+        "x": 27,
+        "y": 61,
+        "w": 416,
+        "h": 381
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 416,
+        "h": 381
+      },
+      "sourceSize": {
+        "w": 416,
+        "h": 381
+      }
+    },
+    "veh_crane": {
+      "frame": {
+        "x": 450,
+        "y": 53,
+        "w": 433,
+        "h": 383
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 433,
+        "h": 383
+      },
+      "sourceSize": {
+        "w": 433,
+        "h": 383
+      }
+    },
+    "veh_luggage": {
+      "frame": {
+        "x": 909,
+        "y": 90,
+        "w": 412,
+        "h": 353
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 412,
+        "h": 353
+      },
+      "sourceSize": {
+        "w": 412,
+        "h": 353
+      }
+    },
+    "veh_flatbed": {
+      "frame": {
+        "x": 1330,
+        "y": 99,
+        "w": 426,
+        "h": 332
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 426,
+        "h": 332
+      },
+      "sourceSize": {
+        "w": 426,
+        "h": 332
+      }
+    },
+    "veh_goldvan": {
+      "frame": {
+        "x": 24,
+        "y": 467,
+        "w": 420,
+        "h": 369
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 420,
+        "h": 369
+      },
+      "sourceSize": {
+        "w": 420,
+        "h": 369
+      }
+    },
+    "car_miami_0": {
+      "frame": {
+        "x": 448,
+        "y": 520,
+        "w": 438,
+        "h": 311
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 438,
+        "h": 311
+      },
+      "sourceSize": {
+        "w": 438,
+        "h": 311
+      }
+    },
+    "car_miami_1": {
+      "frame": {
+        "x": 889,
+        "y": 521,
+        "w": 441,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 441,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 441,
+        "h": 312
+      }
+    },
+    "dubai_lamp": {
+      "frame": {
+        "x": 1422,
+        "y": 443,
+        "w": 243,
+        "h": 401
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 243,
+        "h": 401
+      },
+      "sourceSize": {
+        "w": 243,
+        "h": 401
+      }
+    }
+  },
+  "meta": {
+    "image": "vehicles.png",
+    "size": {
+      "w": 1774,
+      "h": 887
+    },
+    "scale": "1"
+  }
+}

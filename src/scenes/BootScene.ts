@@ -2,6 +2,7 @@ import { GENERATED_SHEETS, configureGeneratedArt, hasGeneratedArt } from "../art
 import Phaser from "phaser";
 import { ART, BLD_W, buildArt } from "../art/catalog";
 import { DPR } from "./common";
+import { IMG_EXT } from "../art/imgExt";
 
 /**
  * Carga el arte. `public/sprites/manifest.json` lista las claves que tienen PNG propio
@@ -14,12 +15,12 @@ export class BootScene extends Phaser.Scene {
 
   preload(): void {
     for (const sheet of GENERATED_SHEETS) {
-      this.load.atlas(sheet.key, `sprites/generated/${sheet.file}.png`, `sprites/generated/${sheet.file}.json`);
+      this.load.atlas(sheet.key, `sprites/generated/${sheet.file}.${IMG_EXT}`, `sprites/generated/${sheet.file}.json`);
     }
     this.load.json("sprite-manifest", "sprites/manifest.json");
     this.load.once("filecomplete-json-sprite-manifest", (_key: string, _type: string, data: unknown) => {
       if (!Array.isArray(data)) return;
-      for (const key of data) if (typeof key === "string" && ART[key]) this.load.image(key, `sprites/${key}.png`);
+      for (const key of data) if (typeof key === "string" && ART[key]) this.load.image(key, `sprites/${key}.${IMG_EXT}`);
     });
   }
 

@@ -1,9 +1,20 @@
+import { now as clockNow } from "./clock";
 import { freshEvent, migrateEvent, type EventState } from "./event";
 import { freshRetos, migrateRetos, type RetosState } from "./challenges";
 import { freshAdLadder, migrateAdLadder, type AdLadderState } from "./adLadder";
+import { freshOffers, migrateOffers, type OffersState } from "./offers";
+import type { ClockState } from "./clock";
 import { freshShop, migrateShop, type ShopState } from "./shop";
 import { freshLeague, migrateLeague, type LeagueState } from "./league";
-import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
+import { freshFounder, migrateFounder, type FounderState } from "./founders";
+import { freshLuxury, migrateLuxury, type LuxuryState } from "./luxury";
+import { freshSeason, migrateSeason, type SeasonState } from "./season";
+import { freshAccount, migrateAccount, type AccountState } from "./account";
+import { migrateTwists, type TwistState } from "./twists";
+import { freshAuto, migrateAuto, type AutoState } from "./autoUpgrade";
+import { freshRival, migrateRival, type RivalState } from "./rival";
+import { migrateUnlocks, type FeatureId } from "./unlocks";
+import { ALL_BUSINESSES, CITIES, CONFIG, TUTORIAL, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
 
@@ -74,6 +85,8 @@ export interface Exec {
   assigned: string | null;
   abilityEnd: number;
   readyAt: number;
+  /** Ejecutivo fundador de Dubái: su puesto de llegada (ver founders.ts). */
+  founder?: number;
 }
 
 export interface Mission {
@@ -103,6 +116,26 @@ export interface MetaState {
   retos: RetosState;
   /** Escalera diaria de anuncios. */
   adLadder: AdLadderState;
+  /** Camión de suministros, cliente VIP y ruleta diaria. */
+  offers: OffersState;
+  /** Señales de trampa detectadas (hora del móvil cambiada, partida editada). Solo se informan a la Liga. */
+  flags: string[];
+  /** Carrera de fundadores de Dubái. */
+  founder: FounderState;
+  /** «Mi vida»: lo que se ha comprado el personaje. */
+  luxury: LuxuryState;
+  /** Evento de temporada (Halloween…). */
+  season: SeasonState;
+  /** Cuenta anónima: invitaciones y partida en la nube. */
+  account: AccountState;
+  /** Mecánicas propias de cada negocio (pedidos, crítico, hype, investigación). */
+  twists: TwistState;
+  /** Usos de «Mejorar todo» hoy. */
+  auto: AutoState;
+  /** Rival de la semana. */
+  rival: RivalState;
+  /** Funciones ya desbloqueadas (desbloqueo gradual). */
+  unlocked: FeatureId[];
 }
 
 export interface Settings {
@@ -146,6 +179,8 @@ export interface GameState {
   world: WorldState;
   /** Fin de la ola turística pedida con un anuncio (Miami). */
   waveEnd: number;
+  /** Fin del contrato de oro pedido con un anuncio (Dubái). */
+  goldEnd: number;
   cash: number;
   /** Ganado desde la última salida a bolsa: decide cuántas acciones recibes. */
   runEarned: number;
@@ -161,6 +196,8 @@ export interface GameState {
   nextViral: number;
   lifeSeen: number;
   ads: AdStats;
+  /** Reloj del juego (ver clock.ts); se guarda aparte del resto. */
+  clock?: ClockState;
 }
 
 export const freshFloor = (): FloorState => ({ level: 1, managed: false, stock: 0, prog: 0, running: false });
@@ -177,7 +214,7 @@ export function freshBusiness(owned: boolean): BusinessState {
   };
 }
 
-export function freshMeta(now = Date.now()): MetaState {
+export function freshMeta(now = clockNow()): MetaState {
   return {
     gems: 0,
     execs: [],
@@ -192,6 +229,16 @@ export function freshMeta(now = Date.now()): MetaState {
     event: freshEvent(),
     retos: freshRetos(),
     adLadder: freshAdLadder(),
+    offers: freshOffers(now),
+    flags: [],
+    founder: freshFounder(),
+    luxury: freshLuxury(),
+    season: freshSeason(),
+    account: freshAccount(),
+    twists: {},
+    auto: freshAuto(),
+    rival: freshRival(),
+    unlocked: [],
   };
 }
 
@@ -206,7 +253,7 @@ export const cityDef = (id: string): CityDef => CITIES.find((c) => c.id === id) 
 
 export const freshWorld = (): WorldState => ({ stars: 0, upgrades: {}, completed: [], archive: {}, lifetimeEarned: 0 });
 
-export function freshState(now = Date.now(), cityId = CITIES[0].id): GameState {
+export function freshState(now = clockNow(), cityId = CITIES[0].id): GameState {
   const city = cityDef(cityId);
   return {
     version: 2,
@@ -215,6 +262,7 @@ export function freshState(now = Date.now(), cityId = CITIES[0].id): GameState {
     city: city.id,
     world: freshWorld(),
     waveEnd: 0,
+    goldEnd: 0,
     cash: 0,
     runEarned: 0,
     totalEarned: 0,
@@ -277,6 +325,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
         assigned: typeof e.assigned === "string" && ALL_BUSINESSES.some((b) => b.id === e.assigned) ? (e.assigned as string) : null,
         abilityEnd: num(e.abilityEnd, 0),
         readyAt: num(e.readyAt, 0),
+        ...(typeof e.founder === "number" && e.founder > 0 ? { founder: Math.floor(e.founder) } : {}),
       }));
   }
   const st = obj(r.stats);
@@ -298,17 +347,28 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.event = migrateEvent(r.event);
   m.retos = migrateRetos(r.retos);
   m.adLadder = migrateAdLadder(r.adLadder);
+  m.offers = migrateOffers(r.offers, now);
+  m.founder = migrateFounder(r.founder);
+  m.luxury = migrateLuxury(r.luxury);
+  m.season = migrateSeason(r.season);
+  m.account = migrateAccount(r.account);
+  m.twists = migrateTwists(r.twists);
+  m.auto = migrateAuto(r.auto);
+  m.rival = migrateRival(r.rival);
+  m.unlocked = migrateUnlocks(r.unlocked, m.tutorial >= TUTORIAL.length);
+  m.flags = Array.isArray(r.flags) ? r.flags.filter((f): f is string => typeof f === "string").slice(0, 10) : [];
   return m;
 }
 
 /** Convierte una partida guardada en un estado válido. Las partidas de la versión 1 empiezan de cero. */
-export function migrate(raw: unknown, now = Date.now()): GameState {
+export function migrate(raw: unknown, now = clockNow()): GameState {
   const r = obj(raw);
   if (r.version !== 2) return freshState(now);
   // Las partidas anteriores a las ciudades pasan a ser Madrid.
   const s = freshState(now, typeof r.city === "string" ? cityDef(r.city).id : CITIES[0].id);
   s.world = migrateWorld(r.world, num(r.totalEarned, 0));
   s.waveEnd = num(r.waveEnd, 0);
+  s.goldEnd = num(r.goldEnd, 0);
   s.cash = num(r.cash, 0);
   s.runEarned = num(r.runEarned, 0);
   s.totalEarned = num(r.totalEarned, 0);
@@ -358,7 +418,7 @@ function migrateWorld(raw: unknown, totalEarned: number): WorldState {
       ipos: num(a.ipos, 0),
       biz,
       lifeSeen: num(a.lifeSeen, 0),
-      savedAt: num(a.savedAt, Date.now()),
+      savedAt: num(a.savedAt, clockNow()),
     };
   }
   return w;
@@ -373,11 +433,12 @@ function keepGlobal(from: GameState, to: GameState): GameState {
   to.ads = from.ads;
   to.buyMode = from.buyMode;
   to.waveEnd = from.waveEnd;
+  to.goldEnd = from.goldEnd;
   return to;
 }
 
 /** Empieza (o reanuda) otra ciudad. La actual queda guardada en el archivo. */
-export function switchCity(s: GameState, cityId: string, now = Date.now()): GameState {
+export function switchCity(s: GameState, cityId: string, now = clockNow()): GameState {
   s.world.archive[s.city] = {
     cash: s.cash,
     runEarned: s.runEarned,
@@ -399,7 +460,7 @@ export function switchCity(s: GameState, cityId: string, now = Date.now()): Game
 }
 
 /** Nueva partida tras salir a bolsa: se conserva lo permanente. */
-export function afterIpo(s: GameState, gained: number, now = Date.now()): GameState {
+export function afterIpo(s: GameState, gained: number, now = clockNow()): GameState {
   const n = keepGlobal(s, freshState(now, s.city));
   n.shares = s.shares + gained;
   n.ipos = s.ipos + 1;

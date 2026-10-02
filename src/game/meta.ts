@@ -1,3 +1,4 @@
+import { now } from "./clock";
 import {
   ACHIEVEMENTS,
   CHESTS,
@@ -159,7 +160,7 @@ function rollRarity(weights: number[], rand: Rand): number {
 export function newExec(rarity: number, rand: Rand): Exec {
   const kinds = Object.keys(EXEC_KINDS) as ExecKind[];
   return {
-    id: `e${Math.floor(rand() * 1e9).toString(36)}${Date.now().toString(36)}`,
+    id: `e${Math.floor(rand() * 1e9).toString(36)}${now().toString(36)}`,
     name: EXEC_NAMES[Math.floor(rand() * EXEC_NAMES.length)],
     face: EXEC_FACES[Math.floor(rand() * EXEC_FACES.length)],
     rarity,

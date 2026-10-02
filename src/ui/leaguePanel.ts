@@ -1,6 +1,7 @@
+import { now as clockNow } from "../game/clock";
 import { Capacitor } from "@capacitor/core";
 import { fmt, fmtTime } from "../game/format";
-import { LEAGUE_POINTS, PLAY, STREAK_POINTS, leagueEvent, leagueJoined } from "../game/league";
+import { LEAGUE_POINTS, PLAY, STREAK_POINTS, leagueEvent, leagueJoined, reportFlags } from "../game/league";
 import { dayKey } from "../game/meta";
 import type { GameState } from "../game/state";
 import { leagueApi, type LeagueStatus, type Payout } from "../platform/league";
@@ -60,7 +61,7 @@ let syncing = false;
 let loginDay = "";
 
 /** Envía los eventos pendientes. Devuelve los puntos sumados (0 si no hay conexión o nada nuevo). */
-export async function syncLeague(s: GameState, now = Date.now()): Promise<number> {
+export async function syncLeague(s: GameState, now = clockNow()): Promise<number> {
   if (!leagueJoined(s) || syncing) return 0;
   const today = dayKey(now);
   if (loginDay !== today) {
@@ -136,6 +137,7 @@ export function openLeague(ctx: PanelCtx): void {
         L.id = r.id;
         L.secret = r.secret;
         L.nickname = r.nickname;
+        reportFlags(ctx.state()); // las señales de antes de unirse también se informan
         analytics.track("league_join", { minutes: minutesSinceInstall() });
         ctx.fx("unlock", true);
         ctx.banner("🏅", t("¡Ya estás en la Liga!"));
@@ -165,7 +167,7 @@ export function openLeague(ctx: PanelCtx): void {
 
   const renderStatus = (st: LeagueStatus, payouts: Payout[] = []) => {
     const me = st.me;
-    const left = Math.max(0, (new Date(st.week.endsAt).getTime() - Date.now()) / 1000);
+    const left = Math.max(0, (new Date(st.week.endsAt).getTime() - clockNow()) / 1000);
     const anyCash = st.prizes.cents.some((c) => c > 0);
     const gems = st.prizes.gems;
     const won = st.unclaimed.reduce((a, u) => a + u.gems, 0); // los premios en dinero van aparte (payouts)
@@ -185,17 +187,17 @@ export function openLeague(ctx: PanelCtx): void {
         <div class="lg-tix"><b>⏱️ ${playTime(me.todayBlocks)}</b><small>${me.todayBlocks < st.rules.fullBlocks ? t("hoy") : me.todayBlocks < st.rules.fullBlocks + st.rules.halfBlocks ? t("hoy · a mitad") : t("hoy · máximo")}</small></div>
       </div>
       <h4 class="lg-h">${t("Clasificación")}</h4>
-      <ol class="lg-top">${st.top.map((p) => `<li class="${p.me ? "me" : ""}"><span>${esc(p.nickname)}</span><b>${pts(p.points)}</b></li>`).join("") || `<li class="muted">${t("Sé el primero en sumar puntos esta semana")}</li>`}</ol>
+      <ol class="lg-top">${st.top.map((p) => `<li class="${p.me ? "me" : ""}"><span data-nickname>${esc(p.nickname)}</span><b>${pts(p.points)}</b></li>`).join("") || `<li class="muted">${t("Sé el primero en sumar puntos esta semana")}</li>`}</ol>
       ${
         st.lastWeek
           ? `<h4 class="lg-h">${t("Ganadores de la semana pasada")}</h4>
-        <ul class="lg-win">${st.lastWeek.winners.map((w) => `<li><span>${w.rank ? place(w.rank) : "🏆"} · ${esc(w.nickname)}</span><b>${prize(w.cents, w.gems)}${w.cents > 0 && w.gems > 0 ? ` + ${w.gems} ${gem()}` : ""}</b></li>`).join("") || `<li class="muted">${t("Sin ganadores")}</li>`}</ul>`
+        <ul class="lg-win">${st.lastWeek.winners.map((w) => `<li><span>${w.rank ? place(w.rank) : "🏆"} · <span data-nickname>${esc(w.nickname)}</span></span><b>${prize(w.cents, w.gems)}${w.cents > 0 && w.gems > 0 ? ` + ${w.gems} ${gem()}` : ""}</b></li>`).join("") || `<li class="muted">${t("Sin ganadores")}</li>`}</ul>`
           : ""
       }
       ${
         st.fame.length
           ? `<h4 class="lg-h">🏆 ${t("Muro de la fama")}</h4>
-        <ul class="lg-win">${st.fame.map((f) => `<li><span>${t("Semana {n}", { n: esc(f.week.split("-W")[1] ?? f.week) })}</span><b>${esc(f.nickname)}</b></li>`).join("")}</ul>`
+        <ul class="lg-win">${st.fame.map((f) => `<li><span>${t("Semana {n}", { n: esc(f.week.split("-W")[1] ?? f.week) })}</span><b data-nickname>${esc(f.nickname)}</b></li>`).join("")}</ul>`
           : ""
       }
       <div class="lg-nick"><input data-nick maxlength="16" value="${esc(me.nickname)}" aria-label="${t("Tu nombre en la Liga")}"><button class="btn ghost" data-save>${t("Cambiar nombre")}</button></div>
@@ -216,7 +218,14 @@ export function openLeague(ctx: PanelCtx): void {
           void load();
         } catch (e) {
           btn.disabled = false;
-          ctx.toast((e as Error).message === "email" ? t("Ese email no parece válido") : t("No hay conexión. Inténtalo en un momento."));
+          const code = (e as Error).message;
+          ctx.toast(
+            code === "email"
+              ? t("Ese email no parece válido")
+              : code === "email_used"
+                ? t("Ese email ya se usó con otra cuenta. Cada persona puede cobrar con una sola cuenta.")
+                : t("No hay conexión. Inténtalo en un momento."),
+          );
         }
       };
     });

@@ -7,7 +7,8 @@ El catálogo `src/art/catalog.ts` define las claves y tamaños lógicos. El jueg
 1. Genera el PNG con **fondo transparente**.
 2. Guárdalo como `public/sprites/<clave>.png`, por ejemplo `public/sprites/bld_restaurant.png`.
 3. Añade la clave a `public/sprites/manifest.json`, por ejemplo `["bld_restaurant", "ch_cook_0"]`.
-4. Recarga el juego.
+4. Ejecuta `npm run art:webp`: crea la copia `.webp`, que es la que carga el juego (5 veces más ligera). El PNG sigue siendo la fuente; `npm test` avisa si falta alguna copia.
+5. Recarga el juego.
 
 Recomendaciones:
 - Exporta a **3 veces el tamaño lógico** (por ejemplo, un personaje de 44×60 se exporta a 132×180) para que se vea nítido en pantallas retina.
@@ -120,6 +121,71 @@ Mismo estilo común, con luz de playa soleada. Para la arena y las palmeras, añ
 | `ch_coder_0` | 44×60 | Chibi crypto developer, purple hoodie, headphones |
 | `ch_trader_0` | 44×60 | Chibi trader, green shirt, purple tie |
 
+### Mecánicas de cada negocio (Madrid)
+
+Hoy son una tarjeta HTML con emojis encima de la barra de la cadena (`.tw-card` en `styles.css`, `src/ui/twistUi.ts`). Ideas para que luzcan en la escena: una furgoneta de «pedido urgente» con un reloj, un **crítico** con monóculo y libreta que se sienta en una mesa del restaurante (`ch_critic_0`, 44×60), un **cartel de «EN DIRECTO»** rojo que parpadea sobre el estudio de TikTok durante el directo viral y una pantalla de datos 🧠 en la agencia de IA. Iconos para la tarjeta: `ic_order`, `ic_critic`, `ic_hype`, `ic_research` (48×48).
+
+### «Mi vida»: personaje y objetos de lujo
+
+Hoy el personaje es un SVG sencillo (`src/ui/avatar.ts`) y los objetos son emojis. Para el arte propio, basta con añadir los PNG (y apuntarlos en `public/sprites/manifest.json`):
+
+| Clave | Tamaño | Qué es |
+| --- | --- | --- |
+| `avatar_<ropa>` | 240×344 (se ve a 120×172) | El personaje de cuerpo entero con cada ropa: `tracksuit` (chándal verde de rider con gorra), `hoodie`, `suit`, `designer` (traje granate con gafas de sol), `goldtux` (esmoquin negro con solapas doradas), `neonsuit` (exclusivo, rosa y cian con brillo). Mismo personaje y pose en todos, de frente, fondo transparente. Las joyas hoy se dibujan encima del SVG; con PNG, mejor una versión por joya más adelante |
+| `lux_<id>` | 96×96 | Icono de cada objeto (ids en `src/game/luxury.ts`): ropa, joyas, coches, casas, mascotas, yate, jet y cohete. Los de casa también se ven grandes de fondo (hasta 150×150): mejor como edificio con algo de suelo |
+| `luxcar_<id>` | 50×42 | El coche del personaje visto en isométrico para circular por la ciudad (como `car_0`). Hoy es su emoji con un halo dorado |
+| `ic_life` | 48×48 | Icono del botón «Mi vida» (hoy 🛍️) |
+
+**Halloween:** iconos `lux_vampire`, `lux_skullring`, `lux_hearse`, `lux_haunted`, `lux_pumpkin`, el personaje `avatar_vampire` (traje negro, capa roja, colmillos), `luxcar_hearse` y la calabaza `pumpkin` (40×40) para las plazas de la ciudad (hoy son emojis). Un fantasma `ghost` (64×64) para el botón flotante sería un buen extra.
+
+Ideas: que el fondo del escenario cambie con la casa (piso compartido, ático con vistas, villa con piscina, mansión, isla) y que los exclusivos tengan un brillo propio.
+
+### Rangos de los puestos (bronce … leyenda)
+
+Cada parte de la cadena sube de rango en los niveles 10, 25, 50, 100 y 200 (`src/game/ranks.ts`). Hoy el rango se ve con efectos hechos por código (pedestal y brillo del color, medalla y destellos, en `src/scenes/rankFx.ts`). Para que además **el puesto, el trabajador y el vehículo cambien de aspecto**, basta con añadir PNG con estas claves (y apuntarlas en `public/sprites/manifest.json`). Si falta la de un rango, se usa la del rango anterior; si no hay ninguna, la normal. Mismo tamaño que la pieza base.
+
+| Clave | Qué es | Idea para el prompt |
+| --- | --- | --- |
+| `rank_1` … `rank_5` | Medalla de cada rango, 24×24 | Bronze / silver / gold medal with a star, a cut diamond, a purple crown; glossy, readable at small size |
+| `st_<negocio>_r1` … `_r5` | Puesto con mejoras (también `wh_shelf_r<n>` en el almacén) | Same station, progressively upgraded: bronze = tidier and new paint; silver = better tools and lights; gold = premium materials with gold trim; diamond = futuristic, glowing cyan details; legend = over-the-top luxury with purple neon and gold |
+| `ch_<rol>_r<n>_0` (y `_1`, `_2` al andar) | Trabajador con uniforme mejorado | Same character: bronze badge → silver vest → gold uniform → diamond suit with cyan glow → legendary outfit with cape/crown accent |
+| `rest_chef_a_r<n>`, `rest_chef_b_r<n>`, `rest_waiter_a_r<n>`, `rest_waiter_b_r<n>` | Restaurante | Chef hat and waiter uniform upgrades, same poses |
+| `veh_forklift_r<n>`, `veh_van_r<n>` | Vehículos (fuera del almacén, que usa poses propias) | Same vehicle: new paint → chrome → gold livery → glowing diamond edition → legendary limousine-like |
+| `decor_<negocio>_2`, `decor_<negocio>_3` | Decoración extra del recinto con ★★ y ★★★ (se pone junto al edificio principal) | Small isometric props cluster on a transparent background: fountain, statue, neon sign… matching the business |
+
+Prioridad recomendada: medallas `rank_*` → puestos `st_*_r3` (oro) y `_r5` (leyenda) de los negocios iniciales (almacén, restaurante, food trucks) → personajes → vehículos.
+
+### Dubái (tercera ciudad)
+
+Mismo estilo común, con luz cálida de desierto y toques dorados. Añade "Dubai luxury, desert sand, gold accents, glass towers" al prompt. **Ahora mismo Dubái usa arte provisional**: cada edificio toma la forma de uno existente (`BLD_SHAPE` en `src/art/catalog.ts`) y los puestos y personajes reutilizan los de Madrid y Miami (`BIZ_ART`). En cuanto exista el PNG de una clave, el juego lo usa sin tocar código. Cuando estén los edificios, borra `BLD_SHAPE`.
+
+| Clave | Tamaño lógico | Prompt |
+| --- | --- | --- |
+| `bld_supercars` (`_1`, `_2`, `_3`) | 172×164 (+24 por nivel) | Isometric 2:1 view of a sleek glass supercar showroom with a red sports car on display and a black-and-red facade, on a light stone diamond-shaped base |
+| `bld_hotel` (`_1`, `_2`, `_3`) | 172×260 | Isometric 2:1 view of a sail-shaped white luxury hotel tower with gold details and a fountain at the entrance, on a light stone diamond-shaped base |
+| `bld_safari` (`_1`, `_2`, `_3`) | 172×140 | Isometric 2:1 view of a desert safari camp with beige tents, a camel and an orange 4x4 on sand dunes, on a sandy diamond-shaped base |
+| `bld_souk` (`_1`, `_2`, `_3`) | 172×170 | Isometric 2:1 view of an arabic gold market building with arches, wooden lattice windows and shining gold jewellery on display, on a sandy diamond-shaped base |
+| `bld_tower` (`_1`, `_2`, `_3`) | 172×300 | Isometric 2:1 view of a super tall needle-like glass skyscraper with blue-green windows and a spire, on a light grey diamond-shaped base |
+| `st_supercars` | 100×86 | Side view car lift in a garage with a red sports car and a tool cart |
+| `st_hotel` | 100×86 | Side view luxury hotel suite bed with gold headboard and a room service trolley |
+| `st_safari` | 100×86 | Side view bedouin tent with carpets, lanterns and a sitting camel |
+| `st_souk` | 100×86 | Side view goldsmith workbench with rings, necklaces and a small scale |
+| `st_tower` | 100×86 | Side view construction floor with steel beams, a small crane hook and stacked glass panels |
+| `item_carkey` | 26×26 | Black car key with red logo-less fob |
+| `item_bell` | 26×26 | Golden hotel service bell |
+| `item_camel` | 26×26 | Cute cartoon camel |
+| `item_ring` | 26×26 | Gold ring with a diamond |
+| `item_beam` | 26×26 | Orange steel construction beam |
+| `ch_mechanic_0` | 44×60 | Chibi supercar mechanic, red overalls, black cap |
+| `ch_valet_0` | 44×60 | Chibi valet, black waistcoat, white shirt, red bow tie |
+| `ch_butler_0` | 44×60 | Chibi hotel butler, white jacket with gold buttons |
+| `ch_guide_0` | 44×60 | Chibi desert guide, beige clothes, sunglasses |
+| `ch_goldsmith_0` | 44×60 | Chibi goldsmith, brown apron, magnifier glasses |
+| `ch_builder_0` | 44×60 | Chibi construction worker, orange vest, white helmet |
+| `exec_founder` | 64×64 | Portrait of a confident founder executive in a white suit with a gold pin, golden glowing frame, Dubai skyline behind (exclusive, must look special) |
+
+Para usar los puestos, objetos y personajes nuevos, cambia la línea del negocio en `BIZ_ART` (`src/art/catalog.ts`) y añade los personajes a `LOOKS`. El retrato `exec_founder` se usa solo con guardarlo (`execFace` en `src/ui/icons.ts`). Ideas de ambiente: la fuente de las plazas ya encaja con Dubái; faltan dunas al fondo, skyline y un brillo dorado en la barra del oro (`.wave.gold` en `styles.css`).
+
 ## Plan de mejora gráfica (para ChatGPT)
 
 Revisión del juego actual, ordenada por impacto: lo que más se nota en pantalla va primero.
@@ -186,6 +252,7 @@ Estas piezas ya se pueden sustituir por PNG igual que el resto: se dejan en `pub
 | `ic_star` | ⭐ | Estrellas de franquicia |
 | `ic_city`, `ic_ipo`, `ic_world` | 🏙️ 📈 🌍 | Barra inferior |
 | `ic_missions`, `ic_daily`, `ic_execs`, `ic_trophy`, `ic_league`, `ic_settings` | 📋 🎁 💼 🏆 🏅 ⚙️ | Menú lateral |
+| `ic_wheel` | 🎡 | Menú: ruleta diaria |
 | `ic_biz_<id>` (`ic_biz_dropship`, `ic_biz_restaurant`, `ic_biz_tiktok`, `ic_biz_ai`, `ic_biz_foodtruck`, `ic_biz_beachclub`, `ic_biz_yachts`, `ic_biz_realestate`, `ic_biz_crypto`) | 📦 🍝 📱 🤖 🌮 🏖️ 🛥️ 🏘️ 🪙 | Barra, paneles y ejecutivos |
 | `ic_life_0` … `ic_life_9` | 🛏️ 🏚️ 🏠 🏢 🌆 🏡 🏰 🛥️ 🏝️ 🚀 | Estilo de vida en la cabecera |
 | `ic_office_<id>` (`brand`, `team`, `floors`, `suppliers`, `offline`, `hustle`, `luck`) | 🌍 👔 🏗️ 🤝 🌙 ⚡ 🔥 | Oficina central |
@@ -526,3 +593,65 @@ físico conectado; esa prueba sigue pendiente.
 El patio del almacén queda reservado a su logística: los coches decorativos
 se mantienen en los demás recintos. La furgoneta se desvanece al salir de la
 calzada del almacén, junto con su sombra y rótulos, para no circular por el vacío.
+
+## Cierre visual — 2 de octubre de 2026
+
+Esta sección describe el arte integrado y sustituye las descripciones históricas de piezas provisionales anteriores. Las fuentes originales son PNG RGBA generados con ImageGen; no hay marcas reales. Los recortes y alias exactos están en `src/art/visualFrames.ts` y en los seis JSON de `public/sprites/generated/`: 119 claves comparten seis texturas, sin duplicar sus píxeles. La prioridad sigue siendo PNG individual → atlas → respaldo procedural.
+
+### Familias entregadas
+
+| Claves | Tamaño lógico / presentación | Archivo, uso y dirección |
+| --- | --- | --- |
+| `bld_{supercars,hotel,safari,souk,tower}_{1,2,3}` | Ancho 172; alturas base 164/260/140/170/300, +24 por evolución; ajustadas a parcela 2:1 | `dubai-buildings.png`, 1536×1024. Quince edificios propios: concesionario, hotel, safari, zoco y torre. Piedra clara, arena, cristal cian, acentos dorados; luz superior izquierda |
+| `st_{supercars,hotel,safari,souk,tower}` | 100×86 | `dubai-details.png`, 1448×1086. Taller, suite, tienda beduina, banco de joyero y estructura de obra |
+| `item_{carkey,bell,camel,ring,beam}` | 26×26 | Mismo atlas: objetos de producción propios |
+| `ch_{mechanic,valet,butler,guide,goldsmith,builder}_0` | 44×60 | Mismo atlas: roles propios. Las poses de desplazamiento reutilizan el frame quieto, como admite el contrato existente; no son ciclos nuevos de tres dibujos |
+| `avatar_{tracksuit,hoodie,suit,designer,goldtux,neonsuit,vampire,founder}` | Recorte uniforme 340×504; mostrado a 120×172 | `avatars.png`, 1536×1024. Misma cara, pose y proporciones; siete vestuarios y fundador. Las joyas seleccionadas se superponen en HTML |
+| `exec_founder` | 64×64 | Retrato recortado del fundador en `avatars.png`; marco por rareza existente |
+| `lux_{digital,luxwatch,goldchain,diamondring,crown,deliverybike,scooter,motorbike,sportscar,supercar,limo,goldcar,parents,flat,penthouse,villa,mansion,island,hearse,haunted}` | Iconos de tarjeta 76×76; viviendas también en el escenario de Mi vida | `luxury.png`, 1536×1024. Relojes, joyas, vehículos y casas originales, estilo juguete 3D |
+| `lux_{tracksuit,hoodie,suit,designer,goldtux,neonsuit}` | 76×76 | Alias de los avatares; no hay copia de textura |
+| `lux_{cat,dog,parrot,tiger,penguin,pumpkin,yacht,jet,rocket,vampire,skullring}` | 76×76 | `lifestyle-extras.png`, 1254×1254. Mascotas, lujo extremo y exclusivos estacionales |
+| `luxcar_{deliverybike,scooter,motorbike,sportscar,supercar,limo,goldcar,hearse}` | 50×42 | Alias del vehículo correspondiente de `luxury.png`; circula en la ciudad con sombra y halo existentes |
+| `ghost`, `pumpkin` | 64×64 / 40×40 | `lifestyle-extras.png`. Fantasma interactivo y decoración de Halloween; se corrigió la colisión de la clase `.ghost` con botones de cancelar |
+| `veh_supply`, `ch_vip_0` | 96×78 / 48×68 | Mismo atlas. Visitantes físicos con entrada, halo, sombra, interacción y salida; objetivo HTML accesible de 44 px sigue su posición. No cambia ninguna oferta ni recompensa |
+| `veh_safari`, `veh_crane`, `veh_luggage`, `veh_flatbed`, `veh_goldvan` | 62×48, 68×60 y 68×54 | `vehicles.png`, 1774×887. Vehículos exclusivos de Dubái |
+| `car_miami_0`, `car_miami_1`, `dubai_lamp` | 44×34 / 22×60 | Mismo atlas. Tráfico pastel de Miami y farolas de Dubái |
+| `dubai_planter`, `miami_plaza`, `decor_<negocio>_{2,3}` | 58×76, 66×80 | Atlas extras: jardineras doradas y decoración costera; alias por ciudad para recintos. Dunas y skyline de Dubái son geometría agrupada, no otra textura grande |
+| `rank_1`…`rank_5` | 24×24; PNG 96×96 + SVG | `public/sprites/`. Bronce, plata, oro, diamante y leyenda, pictogramas propios sin letras |
+| `<pieza>_r1`…`_r5`, `ch_<rol>_r<n>_<pose>` | Igual a base; textura ≤300×258 | `src/art/rankArt.ts`. Composición diferida sobre el arte real: herramientas, soportes, marquesinas, terminales, herrajes, insignias y uniformes. No es un recoloreado global ni cientos de PNG independientes. Incluye las poses propias del almacén y restaurante. Un PNG específico puede sustituirla |
+| `coin`, `ic_wheel`, `ic_hand`, `ic_manager`, `ic_construction` | 20×20, 48×48, 26×28, 18×18, 32×24 | SVG original y PNG 96×96 en `public/sprites/`; moneda con estrella neutral. Los importes siguen usando €/$ mediante `money()` |
+| UI: categorías, ciudades, banderas, oficina, misiones, eventos, rival, invitaciones, nube y controles | Canvas vectorial 48×48; inline 1 em | `src/ui/visualIcons.ts` y `icons.ts`; conserva gemas, cofres y ejecutivos PNG existentes. Iconos de negocio usan sus edificios. Sustituye glifos decorativos en etiquetas traducidas sin cambiar cifras ni nombres escritos por jugadores |
+
+### Prompts de las familias generadas
+
+Dirección común utilizada: **original premium mobile idle tycoon, polished toy-like 3D cartoon, clean navy outlines, warm top-left lighting, transparent background, isolated objects in a strict grid, consistent scale, no text, no letters, no watermark, no real brands**. Los prompts solicitaban estas composiciones y orden de celdas (registro reproducible de dirección y contenido; las imágenes generadas no son deterministas):
+
+- **Dubái, 5×3:** five distinct Dubai businesses, supercar showroom, sail hotel, desert safari camp, gold souk, construction skyscraper; three progressively larger evolutions in rows; 2:1 isometric diamond foundations; cream stone, turquoise glass and gold details.
+- **Avatares, 4×2:** the same friendly tan male with brown hair, identical frontal relaxed pose, face and proportions; green rider tracksuit, blue hoodie, business suit, burgundy designer outfit, black gold tuxedo, cyan pink neon suit, vampire costume, white gold founder suit.
+- **Detalles de Dubái, 4×4:** five production stations, car key, hotel bell, camel, gold ring, steel beam; mechanic, valet, butler, guide, goldsmith and construction worker; each in its own transparent cell.
+- **Lujo, 5×4:** digital watch, luxury watch, gold necklace, diamond ring, crown; delivery bike, scooter, motorcycle, sports car, supercar; limousine, gold car, family home, apartment, penthouse; pool villa, mansion, private island, hearse, haunted mansion.
+- **Extras, 4×4:** cat, dog, parrot, tiger; penguin, jack-o-lantern, yacht, private jet; rocket, vampire costume, skull ring, friendly ghost; supply truck, premium suited VIP, gold Dubai planter, tropical Miami plaza.
+- **Vehículos, 4×2:** desert safari off-road car, small mobile construction crane, hotel luggage cart, vehicle transporter; gold delivery van, two pastel Miami convertibles, gold luxury street lamp; readable isolated isometric silhouettes.
+- **Icono de app:** original premium mobile tycoon app icon, navy background, green delivery scooter, gold coin with a star and small growing city buildings; bold central silhouette, no small text, no currency sign, no real brand.
+
+### Marca y tienda
+
+`public/brand/` contiene el original del icono, exportaciones 512/1024, `logo-dark.svg`, `logo-light.svg` y `splash.svg` (1080×1920). El logotipo convierte la fuente Lilita ya incluida en curvas SVG, sin dependencia de fuentes externas. La carga web utiliza icono y logo. Android incluye las cinco densidades, icono redondo/adaptativo y splash marino compartido, con ajustes para Android 12. **No se ha compilado ni probado un APK en este entorno.**
+
+`public/brand/store/` entrega cinco capturas reales 1080×1920 y un feature graphic 1024×500 compuesto a partir del logo y de esas capturas. La partida local avanzada está preparada para mostrar funciones existentes; Supabase está simulado, sin registros, guardados o analítica remotos. No es una captura de una cuenta real ni gameplay inventado.
+
+### Reproducción y comprobaciones
+
+```sh
+npm ci
+npm run capture:visuals                        # 320/390/560, español/inglés
+VISUAL_OUTPUT=artifacts/store npm run capture:visuals -- --store
+npm run brand:store                            # exporta capturas y gráfico
+npm run art:export                             # Vite en 5173, SVG → PNG y Android
+python scripts/register-visual-atlases.py       # Pillow, NumPy y SciPy
+python scripts/build-brand.py                  # fontTools con soporte Brotli
+```
+
+Los exportadores de navegador requieren Chromium instalado (`CHROMIUM_PATH`). Los scripts Python son herramientas opcionales de edición; el juego consume los archivos entregados y no los necesita. `artifacts/` está ignorado. Comparación reproducible en `docs/visual-review/`: antes de esta rama, commit `8b0f8a2`, y después, misma partida preparada, idioma y resolución.
+
+Verificaciones: 217 tests y build de producción correctos; cobertura de todas las claves de lujo y Dubái, límites reales de los atlas, 110 comprobaciones de navegador, compra/equipamiento, visitantes, rangos, ausencia de desbordamientos y errores JS, y movimiento reducido. Se conserva Madrid y sus tres frames de caminar originales 132×180 con el mismo apoyo. Se mantienen los efectos de monedas, rangos, colecciones y celebraciones existentes. La prueba en móvil físico de gama media y la revisión nativa siguen siendo necesarias antes de publicar: Chromium con renderizado software no permite certificar esos resultados.

@@ -1,7 +1,10 @@
+import { now as clockNow } from "../game/clock";
 import { ACHIEVEMENTS, ALL_BUSINESSES, CHESTS, DAILY_REWARDS, EXEC_KINDS, META, MISSIONS, RARITIES, type ChestType, type DailyReward } from "../game/data";
 import { fmt, fmtTime } from "../game/format";
 import * as meta from "../game/meta";
 import type { Exec } from "../game/state";
+import { execBonus } from "../game/founders";
+import { fuseExecs, fusableRarities } from "../game/fusion";
 import { revealChest } from "./celebrate";
 import { modal } from "./overlays";
 import type { PanelCtx } from "./panels";
@@ -25,6 +28,7 @@ import {
   type WeeklyRetoId,
 } from "../game/challenges";
 import { LANGS, lang, money, saveLang, t, type Lang } from "../i18n";
+import { analytics } from "../platform/analytics";
 
 /** Paneles de la fase 2: misiones, premio diario, ejecutivos y maletines, logros. */
 
@@ -55,11 +59,11 @@ export function openMissions(ctx: PanelCtx): void {
      <p class="small muted">${t("Los retos dan diamantes y, si estás en la Liga, puntos de Liga.")}</p>`,
     (el) => {
       const s = ctx.state();
-      meta.ensureDay(s, Date.now());
-      ensureRetos(s, Date.now());
+      meta.ensureDay(s, clockNow());
+      ensureRetos(s, clockNow());
       paintRetos(ctx, el);
-      const tomorrow = new Date(meta.dayKey(Date.now()) + "T00:00:00Z").getTime() + 86400e3;
-      $(el, "[data-left]").textContent = t("Nuevas misiones en {time}", { time: fmtTime((tomorrow - Date.now()) / 1000) });
+      const tomorrow = new Date(meta.dayKey(clockNow()) + "T00:00:00Z").getTime() + 86400e3;
+      $(el, "[data-left]").textContent = t("Nuevas misiones en {time}", { time: fmtTime((tomorrow - clockNow()) / 1000) });
       const rows = s.meta.missions.list.map((mi, i) => {
         const def = MISSIONS[mi.id];
         const v = meta.missionProgress(s, mi);
@@ -179,7 +183,7 @@ export function openDaily(ctx: PanelCtx): void {
      <div class="actions col" data-actions></div>`,
     (el) => {
       const s = ctx.state();
-      const st = meta.dailyStatus(s, Date.now());
+      const st = meta.dailyStatus(s, clockNow());
       $(el, "[data-streak]").textContent = st.canClaim
         ? t("Entra cada día para no perder la racha. Hoy toca el día {n}.", { n: st.index + 1 })
         : st.streak === 1 ? t("Racha de 1 día. Vuelve mañana.") : t("Racha de {n} días. Vuelve mañana.", { n: st.streak });
@@ -202,7 +206,7 @@ export function openDaily(ctx: PanelCtx): void {
       ) {
         const claim = async (double: boolean) => {
           if (double && !(await ctx.watchAd("daily_double"))) return;
-          const g = meta.claimDaily(ctx.state(), Date.now(), double);
+          const g = meta.claimDaily(ctx.state(), clockNow(), double);
           if (g) {
             ctx.fx(g.exec ? "chest" : "gems", true);
             if (g.exec) void showExec(ctx, g.exec, g);
@@ -233,6 +237,9 @@ async function showExec(ctx: PanelCtx, e: Exec, g: meta.Grant, chestIcon = "💼
   });
 }
 
+/** Nombre para mostrar: el fundador se llama «Fundador #N» en el idioma del jugador. */
+export const execName = (e: Exec) => (e.founder ? t("Fundador #{n}", { n: e.founder }) : e.name);
+
 function execRow(e: Exec, here: string | null, now: number): string {
   const r = RARITIES[e.rarity];
   const at = e.assigned ? ALL_BUSINESSES.find((b) => b.id === e.assigned) : null;
@@ -245,9 +252,9 @@ function execRow(e: Exec, here: string | null, now: number): string {
     else if (ready) buttons += `<button class="claim" data-ability="${e.id}">⚡ ${t("x{n} ventas", { n: r.ability })}</button>`;
     else buttons += `<button class="ad-btn" data-recharge="${e.id}"><span class="play"></span>${fmtTime((e.readyAt - now) / 1000)}</button>`;
   }
-  return `<div class="row"><span class="face" style="box-shadow:inset 0 0 0 2px ${r.color}">${execFace(e)}</span>
-    <div><b>${e.name} <span class="rar" style="color:${r.color}">${r.name}</span></b>
-    <span class="sub">+${r.bonus * 100}% ${EXEC_KINDS[e.kind].desc} · ${at ? t("en {biz}", { biz: `${bizIcon(at)} ${at.name}` }) : t("sin asignar")}</span></div>
+  return `<div class="row${e.founder ? " founder" : ""}"><span class="face" style="box-shadow:inset 0 0 0 2px ${r.color}">${execFace(e)}</span>
+    <div><b>${execName(e)} <span class="rar" style="color:${r.color}">${e.founder ? t("Fundador") : r.name}</span></b>
+    <span class="sub">+${Math.round(execBonus(e) * 100)}% ${EXEC_KINDS[e.kind].desc} · ${at ? t("en {biz}", { biz: `${bizIcon(at)} ${at.name}` }) : t("sin asignar")}</span></div>
     <div class="btnrow">${buttons}</div></div>`;
 }
 
@@ -263,7 +270,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
      <div data-body style="display:grid;gap:8px"></div>`,
     (el) => {
       const s = ctx.state();
-      const now = Date.now();
+      const now = clockNow();
       $(el, "[data-gems]").innerHTML = `${fmt(s.meta.gems)} ${gem()}`;
       $(el, "[data-freedot]").hidden = !meta.freeChestReady(s, now);
       el.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === current)));
@@ -290,7 +297,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
             b.onclick = async () => {
               const type = b.dataset.chest as ChestType;
               if (type === "free" && !(await ctx.watchAd("free_chest"))) return;
-              const g = meta.openChest(ctx.state(), type, Date.now());
+              const g = meta.openChest(ctx.state(), type, clockNow());
               if (!g) return ctx.fx("error");
               ctx.fx("chest", true);
               if (g.exec) void showExec(ctx, g.exec, g, CHESTS[type].icon);
@@ -299,7 +306,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
           const cash = body.querySelector<HTMLButtonElement>("[data-cash]");
           if (cash)
             cash.onclick = () => {
-              const c = meta.buyCashPack(ctx.state(), Date.now());
+              const c = meta.buyCashPack(ctx.state(), clockNow());
               if (!c) return ctx.fx("error");
               ctx.fx("coin", true);
               ctx.toast(`+${money(c)}`);
@@ -310,10 +317,23 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
         const intro = hereDef
           ? `<p class="small muted">${t("Estás en {biz}. «Asignar aquí» pone al ejecutivo en este negocio.", { biz: `${bizIcon(hereDef)} ${hereDef.name}` })}</p>`
           : `<p class="small muted">${t("Entra en un negocio para asignarle un ejecutivo.")}</p>`;
+        // Fusión: 3 iguales → 1 de la rareza siguiente
+        const fuse = fusableRarities(s)
+          .map((r) => `<button class="fuse-btn" data-fuse="${r}" style="--from:${RARITIES[r].color};--to:${RARITIES[r + 1].color}">🔀 ${t("Fusionar 3 {from} → 1 {to}", { from: RARITIES[r].name.toLowerCase(), to: RARITIES[r + 1].name.toLowerCase() })}</button>`)
+          .join("");
         const html = execs.length
-          ? intro + execs.map((e) => execRow(e, here, now)).join("")
+          ? (fuse ? `<div class="fuse-box"><p class="small muted">${t("Tienes ejecutivos repetidos: fusiona 3 de la misma rareza y consigue uno mejor.")}</p>${fuse}</div>` : "") + intro + execs.map((e) => execRow(e, here, now)).join("")
           : `<p class="muted">${t("Aún no tienes ejecutivos. Abre un maletín para conseguir el primero.")}</p>`;
         if (paint(body, html)) {
+          body.querySelectorAll<HTMLButtonElement>("[data-fuse]").forEach((b) => {
+            b.onclick = () => {
+              const e = fuseExecs(ctx.state(), Number(b.dataset.fuse));
+              if (!e) return ctx.fx("error");
+              analytics.track("fusion", { rarity: e.rarity });
+              ctx.fx("chest", true);
+              void showExec(ctx, e, { exec: e }, "🔀");
+            };
+          });
           body.querySelectorAll<HTMLButtonElement>("[data-assign]").forEach((b) => {
             b.onclick = () => {
               if (here && meta.assignExec(ctx.state(), b.dataset.assign!, here)) {
@@ -324,7 +344,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
           });
           body.querySelectorAll<HTMLButtonElement>("[data-ability]").forEach((b) => {
             b.onclick = () => {
-              if (meta.activateAbility(ctx.state(), b.dataset.ability!, Date.now())) {
+              if (meta.activateAbility(ctx.state(), b.dataset.ability!, clockNow())) {
                 ctx.fx("ability", true);
                 ctx.toast("⚡ " + t("¡Habilidad activada!"));
               }
@@ -332,7 +352,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
           });
           body.querySelectorAll<HTMLButtonElement>("[data-recharge]").forEach((b) => {
             b.onclick = async () => {
-              if (await ctx.watchAd("ability_recharge")) meta.rechargeAbility(ctx.state(), b.dataset.recharge!, Date.now());
+              if (await ctx.watchAd("ability_recharge")) meta.rechargeAbility(ctx.state(), b.dataset.recharge!, clockNow());
             };
           });
         }
@@ -362,7 +382,9 @@ export function openSettings(ctx: PanelCtx): void {
      <div data-list style="display:grid;gap:8px"></div>
      <div class="row"><span class="face">🌐</span><div><b>${t("Idioma")}</b><span class="sub">${t("Se aplica al momento")}</span></div>
        <div class="seg" data-langs>${LANGS.map((l) => `<button data-lang="${l.id}" aria-pressed="${l.id === lang}">${l.name}</button>`).join("")}</div></div>
-     <button class="btn ghost wide" data-diag style="margin-top:12px">🩺 ${t("Diagnóstico del móvil")}</button>
+     <button class="btn ghost wide" data-open="feedback" style="margin-top:12px">💬 ${t("Danos tu opinión")}</button>
+     <button class="btn ghost wide" data-open="cloud" style="margin-top:8px">☁️ ${t("Partida en la nube")}</button>
+     <button class="btn ghost wide" data-diag style="margin-top:8px">🩺 ${t("Diagnóstico del móvil")}</button>
      <p class="small muted legal-links"><a href="#" data-legal="privacidad">${t("Política de privacidad")}</a> · <a href="#" data-legal="bases-liga">${t("Bases de la Liga")}</a></p>`,
     (el) => {
       const set = ctx.state().settings;

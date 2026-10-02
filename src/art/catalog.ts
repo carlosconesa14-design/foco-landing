@@ -1,7 +1,9 @@
+import { ensureRankArt } from "./rankArt";
 import { artRef, hasGeneratedArt } from "./generated";
 import Phaser from "phaser";
 import { EMOJI_FONT } from "../scenes/common";
 import { ALL_BUSINESSES, CITIES } from "../game/data";
+import { LUXURY } from "../game/luxury";
 import { Pen, faceQuad, isoBox, leftFace, rightFace, shade } from "./pen";
 
 /**
@@ -57,6 +59,12 @@ export const LOOKS: Record<string, Look> = {
   clerk: { skin: 0x8d5524, shirt: 0xc8d6e5, pants: 0x576574, hat: "bun", hatColor: 0x222222 },
   coder: { skin: 0xf1c27d, shirt: 0x341f97, pants: 0x222f3e, hat: "headset", hatColor: 0x2d3436 },
   trader: { skin: 0xc68642, shirt: 0x10ac84, pants: 0x222f3e, hat: "hair", hatColor: 0x111111, extra: "tie", extraColor: 0x341f97 },
+  mechanic: { skin: 0xe0ac69, shirt: 0xe84118, pants: 0x2f3640, hat: "cap", hatColor: 0x222222, extra: "vest", extraColor: 0xe84118 },
+  valet: { skin: 0xf1c27d, shirt: 0xffffff, pants: 0x222222, hat: "hair", hatColor: 0x392b24, extra: "bowtie", extraColor: 0xe84118 },
+  butler: { skin: 0xc68642, shirt: 0xfff8e7, pants: 0x1b2631, hat: "hair", hatColor: 0x392b24, extra: "tie", extraColor: 0xf5c542 },
+  guide: { skin: 0xc68642, shirt: 0xdcc397, pants: 0xb89564, hat: "cap", hatColor: 0xe7d0a7, extra: "glasses", extraColor: 0x222222 },
+  goldsmith: { skin: 0xe0ac69, shirt: 0xf7dfb2, pants: 0x62432b, hat: "hair", hatColor: 0x706254, extra: "apron", extraColor: 0x9a6236 },
+  builder: { skin: 0xf1c27d, shirt: 0xffa13b, pants: 0x34495e, hat: "cap", hatColor: 0xfff8e7, extra: "vest", extraColor: 0xff9f1c },
   ped0: { skin: 0xf1c27d, shirt: 0xe74c3c, pants: 0x34495e, hat: "hair", hatColor: 0x2c1e12 },
   ped1: { skin: 0x8d5524, shirt: 0xf1c40f, pants: 0x2980b9, hat: "bun", hatColor: 0x111111 },
   ped2: { skin: 0xe0ac69, shirt: 0x27ae60, pants: 0x7f8c8d, hat: "cap", hatColor: 0x8e44ad },
@@ -76,6 +84,11 @@ export const BIZ_ART: Record<string, { worker: string; mover: string; seller: st
   yachts: { worker: "captain", mover: "sailor", seller: "agent", item: "item_ticket", station: "st_yachts" },
   realestate: { worker: "broker", mover: "clerk", seller: "sales", item: "item_key", station: "st_realestate" },
   crypto: { worker: "coder", mover: "tech", seller: "trader", item: "item_token", station: "st_crypto" },
+  supercars: { worker: "mechanic", mover: "veh_flatbed", seller: "valet", item: "item_carkey", station: "st_supercars" },
+  hotel: { worker: "butler", mover: "veh_luggage", seller: "valet", item: "item_bell", station: "st_hotel" },
+  safari: { worker: "guide", mover: "veh_safari", seller: "guide", item: "item_camel", station: "st_safari" },
+  souk: { worker: "goldsmith", mover: "goldsmith", seller: "veh_goldvan", item: "item_ring", station: "st_souk" },
+  tower: { worker: "builder", mover: "veh_crane", seller: "builder", item: "item_beam", station: "st_tower" },
 };
 
 for (const role of Object.keys(LOOKS)) for (const f of [0, 1, 2]) def(`ch_${role}_${f}`, 44, 60);
@@ -197,7 +210,7 @@ def("item_dish", 26, 26);
 def("item_clip", 26, 26);
 def("item_chip", 26, 26);
 const MIAMI_ITEMS = ["item_taco", "item_cocktail", "item_ticket", "item_key", "item_token"];
-for (const k of MIAMI_ITEMS) def(k, 26, 26);
+for (const k of [...MIAMI_ITEMS, "item_carkey", "item_bell", "item_camel", "item_ring", "item_beam"]) def(k, 26, 26);
 def("coin", 20, 20);
 def("spark", 10, 10);
 def("puff", 24, 24);
@@ -272,7 +285,7 @@ function drawPulley(p: Pen): void {
 
 /* ---------- Estaciones de trabajo (interior) ---------- */
 
-const STATIONS = ["st_dropship", "st_restaurant", "st_tiktok", "st_ai", "st_foodtruck", "st_beachclub", "st_yachts", "st_realestate", "st_crypto"];
+const STATIONS = ["st_dropship", "st_restaurant", "st_tiktok", "st_ai", "st_foodtruck", "st_beachclub", "st_yachts", "st_realestate", "st_crypto", "st_supercars", "st_hotel", "st_safari", "st_souk", "st_tower"];
 for (const k of STATIONS) def(k, 100, 86);
 
 function drawStation(p: Pen, key: string): void {
@@ -477,13 +490,68 @@ function drawLampPost(p: Pen): void {
   p.fill(0xfff3b0).circle(8, 11, 3);
 }
 
+/* Shared visual completion sources: physical visitors, seasonal props and city decorations. */
+def("veh_supply", 96, 78);
+def("ic_hand", 26, 28);
+def("ic_manager", 18, 18);
+def("ic_construction", 32, 24);
+def("ch_vip_0", 48, 68);
+def("ghost", 64, 64);
+def("pumpkin", 40, 40);
+def("dubai_planter", 58, 76);
+def("miami_plaza", 66, 80);
+def("veh_safari", 62, 48);
+def("veh_crane", 68, 60);
+for (const key of ["veh_luggage", "veh_flatbed", "veh_goldvan"]) def(key, 68, 54);
+for (const key of ["car_miami_0", "car_miami_1"]) def(key, 44, 34);
+def("dubai_lamp", 22, 60);
+for (const id of ["supercars", "hotel", "safari", "souk", "tower", "foodtruck", "beachclub", "yachts", "realestate", "crypto"])
+  for (const tier of [2, 3]) def(`decor_${id}_${tier}`, 66, 80);
+
+/* ---------- Arte por rango (bronce … leyenda, ver src/game/ranks.ts y docs/ART.md, «Rangos») ---------- */
+
+/**
+ * Cada pieza del recinto puede tener una versión por rango: `<clave>_r1` (bronce) … `<clave>_r5` (leyenda).
+ * Personajes: `ch_<rol>_r<n>_<pose>`. Si no existe la del rango, se usa la del rango anterior y, si
+ * no hay ninguna, la normal. Se registran las claves; sin PNG específico se compone una mejora sobre el arte base.
+ */
+export const RANK_LEVELS = [1, 2, 3, 4, 5];
+
+/** El coche del personaje («Mi vida») circulando por la ciudad: `luxcar_<id>` (atlas o PNG). */
+for (const i of LUXURY) if (i.cat === "car") def(`luxcar_${i.id}`, 50, 42);
+for (const n of RANK_LEVELS) {
+  def(`rank_${n}`, 24, 24);
+  for (const k of [...STATIONS, "wh_shelf", "veh_forklift", "veh_van", "wh_forklift_loaded", "wh_forklift_rear", "wh_van_open", "wh_van_rear", "veh_safari", "veh_crane", "veh_luggage", "veh_flatbed", "veh_goldvan", "rest_chef_a", "rest_chef_b", "rest_waiter_a", "rest_waiter_b"]) {
+    if (ART[k]) def(`${k}_r${n}`, ART[k].w, ART[k].h);
+  }
+  for (const role of Object.keys(LOOKS)) for (const f of [0, 1, 2]) def(`ch_${role}_r${n}_${f}`, 44, 60);
+}
+
+/** La mejor versión disponible de una pieza para un rango (o la normal). */
+export function rankedKey(scene: Phaser.Scene, key: string, rank: number): string {
+  const ch = /^(ch_\w+?)_([012])$/.exec(key);
+  for (let n = rank; n >= 1; n--) {
+    const k = ch ? `${ch[1]}_r${n}_${ch[2]}` : `${key}_r${n}`;
+    if (!ART[k]) continue;
+    if (scene.textures.exists(k) || hasGeneratedArt(scene, k)) return k;
+    if (ART[key] && ensureRankArt(scene, key, k, n, ART[key])) {
+      ART[k] = { ...ART[key] };
+      return k;
+    }
+  }
+  return key;
+}
+
 /* ---------- Edificios isométricos ---------- */
 
 export const BLD_W = 172;
 const BLD: Record<string, number> = {
   dropship: 150, restaurant: 164, tiktok: 236, ai: 270, soon: 170,
   foodtruck: 140, beachclub: 170, yachts: 180, realestate: 260, crypto: 300,
+  supercars: 164, hotel: 260, safari: 140, souk: 170, tower: 300,
 };
+
+
 for (const [id, h] of Object.entries(BLD)) {
   def(`bld_${id}`, BLD_W, h);
   if (id !== "soon") for (const tier of [1, 2, 3]) def(`bld_${id}_${tier}`, BLD_W, h + (tier - 1) * 24);
@@ -531,8 +599,9 @@ function buildingEmblem(p: Pen, x: number, y: number, id: string): void {
   }
 }
 
-function drawBuilding(p: Pen, id: string, tier = 1): void {
-  const h = BLD[id] + (tier - 1) * 24;
+function drawBuilding(p: Pen, key: string, tier = 1): void {
+  const h = BLD[key] + (tier - 1) * 24;
+  const id = key;
   const growth = (tier - 1) * 18;
   const cx = BLD_W / 2;
   const by = h - 6;
@@ -553,7 +622,21 @@ function drawBuilding(p: Pen, id: string, tier = 1): void {
       }
   };
 
-  if (id === "dropship") {
+  if (["supercars", "hotel", "safari", "souk", "tower"].includes(id)) {
+    const tall = id === "tower" || id === "hotel";
+    const H = tall ? h - 100 : 38 + growth;
+    const color = id === "supercars" ? 0x303742 : id === "safari" ? 0xdfc390 : id === "souk" ? 0xd8aa42 : 0xcdebf2;
+    isoBox(p, cx, by - 12, tall ? 34 : 62, tall ? 17 : 31, H, color, 0xf5c542);
+    if (tall) {
+      win(leftFace(cx, by - 12, 34, 17), 3, tier * 3 + 4, 12, H - 8, 0x4c9bad, 2);
+      p.stroke(3, 0xf5c542).line(cx, by - H - 45, cx, by - H - 20);
+    } else if (id === "safari") {
+      p.fill(0xffe5b0).poly([[cx - 40, by - 35], [cx, by - H - 50], [cx + 40, by - 35]]);
+    } else if (id === "souk") {
+      for (const x of [-30, 0, 30]) p.fill(0x76552b).rrect(cx + x - 9, by - 50, 18, 28, 9);
+      p.fill(0xf5c542).ellipse(cx, by - H - 28, 46, 24);
+    } else p.fill(0x66c8da).rrect(cx - 38, by - 55, 76, 28, 5);
+  } else if (id === "dropship") {
     const H = 52 + growth, wall = 0xe8b04b;
     isoBox(p, cx, by - 6, a - 8, b - 4, H, wall, 0xb0b6bf);
     const L = leftFace(cx, by - 6, a - 8, b - 4);
@@ -781,6 +864,7 @@ function make(scene: Phaser.Scene, key: string, k: number, draw: (p: Pen, emoji:
 
 /** Crea todas las texturas que no se hayan cargado como PNG. */
 export function buildArt(scene: Phaser.Scene, k: number): void {
+  for (const i of LUXURY) if (i.cat === "car") make(scene, `luxcar_${i.id}`, k, p => drawCar(p, i.id === "goldcar" ? 0xf5c542 : i.id === "hearse" ? 0x513869 : 0x49adc7));
   for (const [role, look] of [["chef", LOOKS.cook], ["waiter", LOOKS.waiter], ["guest", LOOKS.ped0]] as const) {
     for (const [pose, frame] of [["a", 1], ["b", 2]] as const) make(scene, `rest_${role}_${pose}`, k, p => drawChar(p, look, frame));
   }
@@ -807,6 +891,19 @@ export function buildArt(scene: Phaser.Scene, k: number): void {
   make(scene, "van", k, drawVan);
   CAR_COLORS.forEach((c, i) => make(scene, `car_${i}`, k, (p) => drawCar(p, c)));
   for (const key of ["item_box", "item_dish", "item_clip", "item_chip", ...MIAMI_ITEMS]) make(scene, key, k, (p) => drawItem(p, key));
+  make(scene, "veh_safari", k, p => { drawCar(p, 0xe39b45); p.fill(0xeee1bb).rrect(18, 9, 26, 8, 2); });
+  make(scene, "veh_crane", k, p => { drawCar(p, 0xf5c542); p.stroke(4, 0xf5c542).line(32, 28, 32, 5).line(32, 5, 53, 5); p.stroke(1.5, 0x263b50).line(53, 5, 53, 22); });
+  for (const key of ["veh_luggage", "veh_flatbed", "veh_goldvan"]) make(scene, key, k, p => drawCar(p, 0xdec083));
+  make(scene, "pumpkin", k, p => {
+    p.fill(0x624f37).rect(18, 1, 5, 10);
+    p.fill(0xd96325).ellipse(20, 24, 36, 28);
+    p.fill(0xffa444).ellipse(17, 22, 16, 26).ellipse(26, 22, 12, 24);
+    p.fill(0x61382a).poly([[8,22],[14,14],[18,23]]).poly([[23,23],[28,14],[33,22]]);
+    p.fill(0xffe188).poly([[12,29],[20,33],[30,27],[27,35],[16,36]]);
+  });
+  make(scene, "ic_construction", k, p => p.fill(0xffcd61).rect(1, 6, 30, 9).fill(0x334c63).rect(5, 3, 3, 21).rect(25, 3, 3, 21));
+  make(scene, "ic_manager", k, p => p.fill(0x67a6cf).rrect(3, 8, 12, 9, 3).fill(0xffd5a2).circle(9, 5, 4));
+  make(scene, "ic_hand", k, p => p.fill(0xfff2d0).rrect(10, 1, 5, 18, 3).rrect(7, 11, 17, 15, 6));
   make(scene, "coin", k, drawCoin);
   make(scene, "spark", k, (p) => p.fill(0xffffff).circle(5, 5, 5));
   make(scene, "puff", k, (p) => p.fill(0xffffff, 0.8).circle(12, 12, 11));
