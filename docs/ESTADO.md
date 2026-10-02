@@ -15,6 +15,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Área | Qué | Dónde |
 | --- | --- | --- |
 | Juego | Ciudad isométrica y recintos por negocio. Madrid (4 negocios), Miami (5, con olas turísticas) y **Dubái** (5, con el precio del oro y la carrera de fundadores; arte provisional). Gerentes, ejecutivos y maletines, bolsa, expansión, Oficina central y edificios que crecen | `src/game`, `src/scenes`, [`GDD.md`](GDD.md) |
+| Mecánicas por negocio | Madrid: **pedidos urgentes** (almacén), **críticos** con estrellas (restaurante), **hype** y directo viral (TikTok) e **investigación** (IA). Reutilizables para Miami y Dubái | `twists.ts`, `twistUi.ts` |
 | Ajustes remotos | Números de ofertas, viral, «Mi vida» y temporada cambiables desde Supabase sin publicar versión (¼–4× del valor de fábrica) | `remote.ts`, migración 0015, [`AJUSTES.md`](AJUSTES.md) |
 | Amigos y nube | Cuenta anónima automática: **invitar a amigos** (50 💎 + maletín para el amigo, 100 💎 + maletín para quien invita) y **partida en la nube** con clave de recuperación | `account.ts`, `invitePanel.ts`, migración 0014, función `account` |
 | Temporada | **Halloween** (24 oct – 1 nov): fantasmas con caramelos (x3 con anuncio), tienda con 5 objetos exclusivos de «Mi vida», diamantes y maletines, y calabazas en la ciudad | `season.ts`, `seasonPanel.ts` |
@@ -65,6 +66,7 @@ Icono, logotipo «Rider Millionaire», gráfico destacado y capturas para la tie
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
 2. ~~Panel de números de la beta~~ ✅ ([`ANALITICA.md`](ANALITICA.md), «Informes»).
 3. ~~Dubái, con la carrera de fundadores~~ ✅ (`founders.ts`, migración 0013). Falta su arte (Codex).
+3c. Mecánicas de cada negocio: ~~fase 1 (Madrid)~~ ✅. Fase 2: Miami y Dubái con los mismos módulos.
 3b. ~~Rangos de los puestos, «Mi vida», Halloween, invitar a amigos, nube y ajustes remotos~~ ✅. Falta su arte (Codex, ver `ART.md`).
 4. Rendimiento en móviles de gama media (antes de salir en Google Play: ahora hay más efectos).
 5. Revisar la primera partida con datos reales.

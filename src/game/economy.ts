@@ -4,6 +4,7 @@ import { NO_MULTS, execMults, type Mults } from "./execs";
 import { bump, cityDef, type BusinessState, type BuyMode, type GameState } from "./state";
 import { t } from "../i18n";
 import { luxuryMult } from "./luxury";
+import { twistSaleMult } from "./twists";
 import { goldMult, luckyChance, offlineCapHours, tourismMult, upgradeDiscount, worldIncomeMult } from "./world";
 
 /* ---------- Utilidades ---------- */
@@ -57,6 +58,7 @@ export function saleMult(s: GameState, id: string, now: number, live = true): nu
     tourismMult(s, now, live) *
     goldMult(s, now, live) *
     luxuryMult(s, now) * // «Mi vida»: prestigio y colecciones (también offline)
+    twistSaleMult(s, id, now, live) * // mecánicas del negocio: reputación, directo viral, investigación
     (s.meta.shop.vip ? 2 : 1) // VIP: x2 permanente (también offline)
   );
 }

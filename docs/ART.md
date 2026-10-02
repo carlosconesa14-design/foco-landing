@@ -120,6 +120,10 @@ Mismo estilo común, con luz de playa soleada. Para la arena y las palmeras, añ
 | `ch_coder_0` | 44×60 | Chibi crypto developer, purple hoodie, headphones |
 | `ch_trader_0` | 44×60 | Chibi trader, green shirt, purple tie |
 
+### Mecánicas de cada negocio (Madrid)
+
+Hoy son una tarjeta HTML con emojis encima de la barra de la cadena (`.tw-card` en `styles.css`, `src/ui/twistUi.ts`). Ideas para que luzcan en la escena: una furgoneta de «pedido urgente» con un reloj, un **crítico** con monóculo y libreta que se sienta en una mesa del restaurante (`ch_critic_0`, 44×60), un **cartel de «EN DIRECTO»** rojo que parpadea sobre el estudio de TikTok durante el directo viral y una pantalla de datos 🧠 en la agencia de IA. Iconos para la tarjeta: `ic_order`, `ic_critic`, `ic_hype`, `ic_research` (48×48).
+
 ### «Mi vida»: personaje y objetos de lujo
 
 Hoy el personaje es un SVG sencillo (`src/ui/avatar.ts`) y los objetos son emojis. Para el arte propio, basta con añadir los PNG (y apuntarlos en `public/sprites/manifest.json`):

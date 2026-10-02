@@ -73,6 +73,15 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
 - **Carrera de fundadores:** los **100 primeros** jugadores en llegar a Dubái reciben un **ejecutivo fundador** exclusivo: legendario, con +100 % extra sobre su bonus y su número («Fundador #12»). Solo premios del juego, nunca dinero real. Los demás ven en qué puesto llegaron. El mapa del mundo enseña las plazas que quedan. El puesto lo da el servidor (`founder_claim`, migración 0013) una sola vez por jugador. Hace falta estar en la Liga, que es la cuenta con la que el servidor reconoce al jugador: al llegar a Dubái sin estar en la Liga, se le propone unirse una vez. Contra trampas: no hay puesto para partidas editadas sin revisar ni para quien llega en menos de 3 días desde que empezó a jugar (`league_config.founders_min_days`).
 - **Siguientes ciudades:** Tokio (tecnología, turnos de noche), Nueva York… Solo hay que añadir un `CityDef` en `src/game/data.ts` y su arte.
 
+### Mecánicas de cada negocio (fase 1: Madrid ✅)
+Cada negocio de Madrid tiene una regla propia, para que no se sientan todos iguales. Son módulos reutilizables (`src/game/twists.ts`) que luego se pueden poner en Miami y Dubái con su temática. Reglas: **nunca castigan** (si no haces nada, el negocio va igual), se entienden en 5 segundos y tienen un anuncio opcional natural. Se muestran en una tarjeta encima de la barra de la cadena y se explican la primera vez que entras.
+- **📦 Almacén: pedidos urgentes.** Cada 4–7 min llega un pedido: «gana X € en 3 min» (1,25 veces lo que el negocio gana en ese tiempo: hay que mejorar algo o usar la hora punta). Si lo cumples, 10 min de ingresos y 3 💎 (x2 con anuncio, `order_x2`). Si no, no pasa nada.
+- **🧐 Restaurante: críticos gastronómicos.** Cada 4–8 min viene un crítico que quiere ver la cocina en marcha: tocar las cocinas 12 veces en 45 s (o «Atender ya» con anuncio, `critic_now`). Da 6 min de ingresos de propina y una **estrella de reputación**: +5 % de ventas en el restaurante para siempre (hasta 10).
+- **🔥 TikTok: hype.** Cada venta (+4) y cada toque (+2) suben el hype, que baja 0,5 por segundo. Con gerentes se llena solo en unos 3 min; tocando, antes. Lleno: **¡directo viral! Ventas x3 durante 90 s**. Con anuncio, «Colaboración» lo lanza al momento (cada 10 min, `hype_collab`).
+- **🧠 Agencia de IA: investigación.** Cada venta da 1 dato. 6 mejoras permanentes en orden (de 50 a 6000 datos): +25 % ventas, +25 % producción, +25 % transporte y venta, +50 % ventas, **+10 % ventas en toda la ciudad** y x2 ventas.
+- Las estrellas, los datos y la investigación se conservan al salir a bolsa. Todo es solo jugando y el bot de equilibrado no las usa: no cambian los tests de ritmo, son extra para quien juega. Números ajustables desde el servidor (grupo `twists`, [`AJUSTES.md`](AJUSTES.md)).
+- **Siguiente fase:** pedidos en el safari (excursiones) y la inmobiliaria (proyectos), hype en el club de playa y reseñas ⭐ en el hotel, investigación en el rascacielos, y «guardar o vender» en el exchange de cripto y el zoco del oro.
+
 ### «Mi vida»: el personaje y su tienda de lujo ✅
 Un sitio en el que gastar el dinero aparte de las mejoras, para que apetezca ganar más. Botón «Mi vida» en el lateral (con punto rojo cuando hay algo que te puedes permitir) y en el menú.
 - **El personaje:** empieza en chándal de rider, en moto de reparto y en casa de sus padres. Lo que compras se le ve encima (ropa, joyas), y se ve su casa al fondo, su coche, su mascota y su capricho de lujo. **Tu coche circula por la ciudad** con un cartel «Tú».
@@ -207,6 +216,9 @@ Anuncios bonificados, siempre opcionales:
 | `lux_trial` | «Mi vida»: probar un objeto 1 hora, con su bonus (5 al día) | 4 ✅ |
 | `lux_deal` | «Mi vida»: oferta del día a mitad de precio | 4 ✅ |
 | `season_x3` | Halloween: triple de caramelos del fantasma | 4 ✅ |
+| `order_x2` | Almacén: doble premio del pedido urgente | 4 ✅ |
+| `critic_now` | Restaurante: atender al crítico al momento | 4 ✅ |
+| `hype_collab` | TikTok: directo viral al momento (cada 10 min) | 4 ✅ |
 | `supply_truck` | Camión de suministros: llega al negocio que estás viendo cada 5–9 min y trae lo que vende en 15 min a pleno rendimiento | 4 ✅ |
 | `vip_client` | Cliente VIP: cada 7–13 min, paga 10 💎 (4 al día como máximo) | 4 ✅ |
 | `wheel_spin` | Ruleta diaria: un giro gratis al día y 3 más con anuncio (dinero, diamantes o maletines) | 4 ✅ |

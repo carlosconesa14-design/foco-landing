@@ -10,6 +10,7 @@ import { freshFounder, migrateFounder, type FounderState } from "./founders";
 import { freshLuxury, migrateLuxury, type LuxuryState } from "./luxury";
 import { freshSeason, migrateSeason, type SeasonState } from "./season";
 import { freshAccount, migrateAccount, type AccountState } from "./account";
+import { migrateTwists, type TwistState } from "./twists";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
@@ -124,6 +125,8 @@ export interface MetaState {
   season: SeasonState;
   /** Cuenta anónima: invitaciones y partida en la nube. */
   account: AccountState;
+  /** Mecánicas propias de cada negocio (pedidos, crítico, hype, investigación). */
+  twists: TwistState;
 }
 
 export interface Settings {
@@ -223,6 +226,7 @@ export function freshMeta(now = clockNow()): MetaState {
     luxury: freshLuxury(),
     season: freshSeason(),
     account: freshAccount(),
+    twists: {},
   };
 }
 
@@ -336,6 +340,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.luxury = migrateLuxury(r.luxury);
   m.season = migrateSeason(r.season);
   m.account = migrateAccount(r.account);
+  m.twists = migrateTwists(r.twists);
   m.flags = Array.isArray(r.flags) ? r.flags.filter((f): f is string => typeof f === "string").slice(0, 10) : [];
   return m;
 }

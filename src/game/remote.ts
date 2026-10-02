@@ -2,6 +2,7 @@ import { CONFIG } from "./data";
 import { LUX } from "./luxury";
 import { OFFERS } from "./offers";
 import { SEASON } from "./season";
+import { TW } from "./twists";
 
 /**
  * Ajustes desde el servidor (ver docs/AJUSTES.md): cambiar algunos números del juego sin publicar
@@ -18,6 +19,7 @@ const GROUPS: Record<string, { target: Numbers; keys: string[] }> = {
   viral: { target: CONFIG as unknown as Numbers, keys: ["viralMinSec", "viralMaxSec", "viralVisibleSec", "rushMinutes", "boostHours"] },
   lux: { target: LUX as unknown as Numbers, keys: ["trialMin", "trialsPerDay", "dealOff"] },
   season: { target: SEASON as unknown as Numbers, keys: ["visitorMinSec", "visitorMaxSec", "visitorMin", "visitorMax", "adMult", "salesPer"] },
+  twists: { target: TW as unknown as Numbers, keys: ["orderMinMin", "orderMaxMin", "orderMinutes", "orderTarget", "orderRewardMin", "orderGems", "criticMinMin", "criticMaxMin", "criticWaitSec", "criticTaps", "criticTipMin", "hypePerSale", "hypePerTap", "hypeDecay", "viralSec", "hypeAdCooldownMin"] },
 };
 
 /** Valores de fábrica, para poder volver a ellos y para los límites. */
@@ -52,7 +54,7 @@ export function applyRemoteConfig(raw: unknown): number {
     }
   }
   // Los rangos «mínimo–máximo» nunca quedan al revés.
-  for (const [g, lo, hi] of [["offers", "truckMinSec", "truckMaxSec"], ["offers", "vipMinSec", "vipMaxSec"], ["viral", "viralMinSec", "viralMaxSec"], ["season", "visitorMinSec", "visitorMaxSec"], ["season", "visitorMin", "visitorMax"]]) {
+  for (const [g, lo, hi] of [["offers", "truckMinSec", "truckMaxSec"], ["offers", "vipMinSec", "vipMaxSec"], ["viral", "viralMinSec", "viralMaxSec"], ["season", "visitorMinSec", "visitorMaxSec"], ["season", "visitorMin", "visitorMax"], ["twists", "orderMinMin", "orderMaxMin"], ["twists", "criticMinMin", "criticMaxMin"]]) {
     const t = GROUPS[g].target;
     if (t[lo] > t[hi]) t[hi] = t[lo];
   }

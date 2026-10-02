@@ -25,7 +25,7 @@ import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
 import { CityScene } from "./scenes/CityScene";
-import { COLORS, DPR, type Bridge } from "./scenes/common";
+import { COLORS, DPR, overlayHeight, type Bridge } from "./scenes/common";
 import { banner, celebrate, floatAt } from "./ui/celebrate";
 import { renderBar, updateBar, updateHeader } from "./ui/hud";
 import { modal, modalOpen, toast } from "./ui/overlays";
@@ -37,6 +37,7 @@ import { openLife } from "./ui/lifePanel";
 import { openSeason } from "./ui/seasonPanel";
 import { openCloud, openInvite, syncAccount } from "./ui/invitePanel";
 import { applyRemoteConfig, remoteVersion } from "./game/remote";
+import { maybeIntro, twistAction, twistCardHtml, twistTap, twistTick } from "./ui/twistUi";
 import { cachedConfig, fetchConfig } from "./platform/account";
 import { LUXURY, affordable, owns } from "./game/luxury";
 import { SEASON, activeSeason, collectVisitor, ensureSeason, scheduleVisitor, seasonOpen, visitorCandy, visitorDue } from "./game/season";
@@ -180,6 +181,7 @@ const bridge: Bridge = {
   state: () => S,
   tapStation: (id, st) => {
     const err = tapStation(S, id, st);
+    twistTap(id); // cuenta aunque esa parte ya trabaje sola (hype, crítico)
     fx(err ? "error" : "tap");
     say(err);
   },
@@ -524,6 +526,32 @@ document.getElementById("waveBtn")!.addEventListener("click", async () => {
   } else if (await watchAd("tourist_wave")) callWave(S, clockNow());
 });
 
+/* ---------- Mecánicas de cada negocio (pedidos, crítico, hype, investigación) ---------- */
+
+const twistEl = document.getElementById("twist")!;
+
+function updateTwist(): void {
+  const html = meta.tutorialStep(S) === null ? twistCardHtml(S) : null;
+  twistEl.hidden = !html;
+  if (!html) return;
+  if (twistEl.dataset.html !== html) {
+    twistEl.dataset.html = html;
+    twistEl.innerHTML = html;
+  }
+  const wave = document.getElementById("wave")!;
+  twistEl.style.bottom = `${document.getElementById("bar")!.offsetHeight + 10 + (wave.hidden ? 0 : wave.offsetHeight + 8)}px`;
+  if (!modalOpen() && !activeSheet())
+    maybeIntro(ctx, (title, icon, text, done) => {
+      done();
+      modal(root, { title, amount: icon, text, actions: [{ label: t("¡Entendido!"), run: () => {} }] });
+    });
+}
+
+twistEl.addEventListener("click", (e) => {
+  const b = (e.target as HTMLElement).closest<HTMLElement>("[data-tw]");
+  if (b) void twistAction(ctx, b.dataset.tw!);
+});
+
 /* ---------- Rangos de los puestos (bronce … leyenda) ---------- */
 
 let rankState: GameState | null = null;
@@ -734,7 +762,7 @@ function visitorTick(now: number): void {
   el.innerHTML = kind === "truck" ? `🚚<b>${t("Suministros")}</b>` : `🤵<b>VIP</b>`;
   el.setAttribute("aria-label", kind === "truck" ? t("Camión de suministros") : t("Cliente VIP"));
   // Por encima de los botones de cámara (centrar, cuadrícula y zoom).
-  el.style.bottom = `${document.getElementById("bar")!.offsetHeight + 72}px`;
+  el.style.bottom = `${document.getElementById("bar")!.offsetHeight + overlayHeight() + 72}px`;
   el.onclick = () => (kind === "truck" ? offerTruck(here) : offerVip());
   visitorEl = el;
   visitorKind = kind;
@@ -871,6 +899,7 @@ game.events.on("step", (time: number) => {
   // Tras volver de segundo plano no se simula el hueco: lo paga offerOffline().
   const dt = elapsed > 2 ? 0 : elapsed;
   frameSales = tick(S, dt, now);
+  twistTick(ctx, frameSales, dt);
   if (playingNow(now)) trackPlay(S, now, dt);
   // Monedas al vender: más fuerte en el negocio que estás viendo, suave desde la ciudad.
   if (frameSales.length) {
@@ -897,6 +926,7 @@ game.events.on("step", (time: number) => {
     activeSheet()?.update?.();
     updateMeta(now);
     updateWave(now);
+    updateTwist();
     watchRanks();
     const li = lifeIndex(S.totalEarned);
     if (li > S.lifeSeen) {
