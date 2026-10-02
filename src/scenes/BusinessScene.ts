@@ -1,3 +1,5 @@
+import { WorldVisitor } from "./WorldVisitor";
+import type { OfferKind } from "../game/offers";
 import { money, t } from "../i18n";
 import { WarehouseRoom, WAREHOUSE_SLOTS, WAREHOUSE_DOOR, WAREHOUSE_ROUTE, WAREHOUSE_STOPS } from "./WarehouseRoom";
 import { RestaurantRoom, RESTAURANT_SLOTS, RESTAURANT_DOOR, RESTAURANT_ROUTE, RESTAURANT_STOPS } from "./RestaurantRoom";
@@ -14,7 +16,7 @@ import { CHAIN, TUTORIAL } from "../game/data";
 import { bizDef, bizList, bizTier, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
 import { fmt } from "../game/format";
 import { cityDef, type BusinessState } from "../game/state";
-import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, emoji, floatText, label, setupCamera, type Bridge } from "./common";
+import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
 
 /* Rejilla isométrica del recinto */
 const TW = 88;
@@ -77,9 +79,9 @@ interface SlotView {
   stock: Phaser.GameObjects.Text;
   barBg: Phaser.GameObjects.Rectangle;
   bar: Phaser.GameObjects.Rectangle;
-  hint: Phaser.GameObjects.Text;
+  hint: Phaser.GameObjects.Image;
   pill: Pill;
-  manager: Phaser.GameObjects.Text;
+  manager: Phaser.GameObjects.Image;
   station: Phaser.GameObjects.Image;
   x: number;
   y: number;
@@ -132,6 +134,7 @@ const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_va
  */
 export class BusinessScene extends Phaser.Scene {
   private bridge!: Bridge;
+  private visitor: WorldVisitor | null = null;
   private restaurant: RestaurantRoom | null = null;
   private warehouse: WarehouseRoom | null = null;
   private get layout() { return this.bizId === "restaurant" ? RESTAURANT_LAYOUT : this.bizId === "dropship" ? WAREHOUSE_LAYOUT : DEFAULT_LAYOUT; }
@@ -145,7 +148,7 @@ export class BusinessScene extends Phaser.Scene {
   private mover!: Phaser.GameObjects.Image;
   private moverItem!: Phaser.GameObjects.Image;
   private moverCarry!: Phaser.GameObjects.Text;
-  private moverHint!: Phaser.GameObjects.Text;
+  private moverHint!: Phaser.GameObjects.Image;
   private moverTag!: Phaser.GameObjects.Text;
   private moverRing!: Phaser.GameObjects.Ellipse;
   private sellerRing!: Phaser.GameObjects.Ellipse;
@@ -153,7 +156,7 @@ export class BusinessScene extends Phaser.Scene {
   private seller!: Phaser.GameObjects.Image;
   private sellerItem!: Phaser.GameObjects.Image;
   private sellerCarry!: Phaser.GameObjects.Text;
-  private sellerHint!: Phaser.GameObjects.Text;
+  private sellerHint!: Phaser.GameObjects.Image;
   private topPile: Phaser.GameObjects.Image[] = [];
   private topStock!: Phaser.GameObjects.Text;
   private unlockPill: Pill | null = null;
@@ -184,8 +187,19 @@ export class BusinessScene extends Phaser.Scene {
     this.topPile = [];
     this.traffic = [];
     this.unlockPill = null;
+    this.visitor = null;
     this.restaurant = null;
     this.warehouse = null;
+  }
+
+  presentVisitor(kind: OfferKind, button: HTMLButtonElement): void {
+    if (this.visitor) return;
+    this.visitor = new WorldVisitor(this, kind, button, this.iso(10.5, 9.5), this.iso(kind === "truck" ? 5.6 : 4.9, 8.4), () => this.drag.wasDrag());
+  }
+
+  dismissVisitor(): void {
+    this.visitor?.depart();
+    this.visitor = null;
   }
 
   private get look() {
@@ -406,7 +420,7 @@ export class BusinessScene extends Phaser.Scene {
         // Siguiente puesto: en obras, con el precio
         g.fillStyle(0xc19a6b, 1).fillPoints(this.diamond(c, r, 2), true);
         g.lineStyle(2, 0xf5c542, 1).strokePoints(this.diamond(c, r, 6), true);
-        emoji(this, center.x, center.y - 10, "🚧", 26).setDepth(center.y);
+        art(this, center.x, center.y - 10, "ic_construction").setDepth(center.y);
         this.unlockPill = new Pill(this, center.x, center.y - 44, "").setDepth(9.3e4);
         this.unlockPill.setInteractive({ useHandCursor: true });
         this.unlockPill.on("pointerup", () => {
@@ -448,10 +462,10 @@ export class BusinessScene extends Phaser.Scene {
     const stock = label(this, center.x - 4, center.y - 8, "", 11, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(9e4);
     const barBg = this.add.rectangle(center.x, center.y + 26, 44, 5, 0x14202f, 0.6).setDepth(center.y + 30);
     const bar = this.add.rectangle(center.x - 22, center.y + 26, 0, 5, COLORS.green).setOrigin(0, 0.5).setDepth(center.y + 31);
-    const hint = emoji(this, center.x - 24, center.y - 44, "👆", 22).setDepth(9.4e4);
+    const hint = art(this, center.x - 24, center.y - 44, "ic_hand").setDepth(9.4e4);
     if (!reducedMotion()) this.tweens.add({ targets: hint, y: center.y - 36, yoyo: true, repeat: -1, duration: 500 });
     const pill = this.pill(center.x, center.y - 62, { kind: "floor", index: i });
-    const manager = emoji(this, center.x + 38, center.y - 62, "👔", 14).setDepth(9.2e4);
+    const manager = art(this, center.x + 38, center.y - 62, "ic_manager").setDepth(9.2e4);
     const badge = rankBadge(this, center.x - 40, center.y - 62, rank).setDepth(9.31e4);
     const nameTag = label(this, center.x, center.y + 40, `${def.floorName} ${i + 1}`, 10, "#ffffff", { bold: true, stroke: "#14202f" });
     nameTag.setDepth(9e4);
@@ -478,7 +492,7 @@ export class BusinessScene extends Phaser.Scene {
     });
     this.moverItem = art(this, 0, 0, this.look.item).setVisible(false);
     this.moverCarry = label(this, 0, 0, "", 11, "#ffffff", { bold: true, stroke: "#14202f" });
-    this.moverHint = emoji(this, 0, 0, "👆", 22);
+    this.moverHint = art(this, 0, 0, "ic_hand");
     // Durante el tutorial, cartel con el nombre encima: si no, no se sabe cuál es «la carretilla».
     // Aro dorado en el suelo bajo quien hay que tocar en el tutorial (que no haya dudas entre dos vehículos)
     const ring = () => {
@@ -501,7 +515,7 @@ export class BusinessScene extends Phaser.Scene {
     });
     this.sellerItem = art(this, 0, 0, this.look.item).setVisible(false);
     this.sellerCarry = label(this, 0, 0, "", 11, "#ffffff", { bold: true, stroke: "#14202f" });
-    this.sellerHint = emoji(this, 0, 0, "👆", 22);
+    this.sellerHint = art(this, 0, 0, "ic_hand");
     this.sellerTag = label(this, 0, 0, bizDef(this.bizId).saleName, 12, "#14202f", { bold: true }).setBackgroundColor("#f5c542").setPadding(6, 2, 6, 2).setVisible(false);
 
     // Tráfico por la calle de delante
@@ -524,7 +538,7 @@ export class BusinessScene extends Phaser.Scene {
         const pose = key === "veh_forklift"
           ? (rear ? "wh_forklift_rear" : b.transport.carry > 0 ? "wh_forklift_loaded" : "veh_forklift")
           : loading ? "wh_van_open" : parked || rear ? "wh_van_rear" : "veh_van";
-        swapArt(img,pose);
+        swapArt(img, rankedKey(this, pose, img === this.mover ? this.ranks.transport : this.ranks.sale));
         img.setFlipX(parked ? false : dc-dr < 0);
       } else img.setFlipX(Math.abs(dr) > Math.abs(dc));
     } else {
@@ -542,7 +556,7 @@ export class BusinessScene extends Phaser.Scene {
 
   /** Vehículo con arte propio del rango (si existe; los del almacén cambian de pose y no se tocan). */
   private vehicleRank(img: Phaser.GameObjects.Image, key: string, rank: number): void {
-    if (rank && isVehicle(key) && !this.warehouse) swapArt(img, rankedKey(this, key, rank));
+    if (rank && isVehicle(key)) swapArt(img, rankedKey(this, key, rank));
   }
 
   /** Cambia el aspecto de un puesto a su rango; con `burst`, lo celebra en la escena. */
@@ -693,6 +707,7 @@ export class BusinessScene extends Phaser.Scene {
   /* ---------- Actualización ---------- */
 
   update(_t: number, dtMs: number): void {
+    this.visitor?.update();
     const s = this.bridge.state();
     const b = this.biz();
     if (!b) return;

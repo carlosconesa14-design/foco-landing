@@ -58,7 +58,7 @@ import { adLadderStep, nextAdStep } from "./game/adLadder";
 import { rewardLabel, showGrant } from "./ui/metaPanels";
 import { ensureEvent, eventTiersReached, eventToClaim, eventWindow } from "./game/event";
 import { fmtWait, openEvent } from "./ui/eventPanel";
-import { loadIcons } from "./ui/icons";
+import { icon, loadIcons } from "./ui/icons";
 import { WEB_BETA } from "./platform/web";
 import { OFFERS, claimVip, dueOffer, rescheduleOffer, truckReward, wheelStatus, type OfferKind } from "./game/offers";
 import { openWheel } from "./ui/wheelPanel";
@@ -761,7 +761,7 @@ function viralTick(now: number): void {
   if (!viralEl && now >= S.nextViral && !modalOpen() && !activeSheet() && S.totalEarned > 50) {
     viralEl = document.createElement("button");
     viralEl.className = "viral";
-    viralEl.textContent = "💸";
+    viralEl.innerHTML = icon("coin");
     viralEl.setAttribute("aria-label", t("Oportunidad"));
     viralUntil = now + CONFIG.viralVisibleSec * 1000;
     viralEl.onclick = () => {
@@ -808,8 +808,8 @@ function ghostTick(now: number): void {
   const season = activeSeason(now)!;
   const amount = visitorCandy();
   const el = document.createElement("button");
-  el.className = "ghost";
-  el.textContent = season.def.visitor;
+  el.className = "season-ghost";
+  el.innerHTML = icon("ghost", season.def.visitor);
   el.setAttribute("aria-label", t("Fantasma con caramelos"));
   el.style.left = `${12 + Math.random() * 60}%`;
   el.style.top = `${30 + Math.random() * 30}%`;
@@ -847,6 +847,7 @@ let visitorUntil = 0;
 
 function hideVisitor(): void {
   if (visitorKind) rescheduleOffer(S, visitorKind, clockNow());
+  if (game.scene.isActive("business")) (game.scene.getScene("business") as BusinessScene).dismissVisitor();
   visitorEl?.remove();
   visitorEl = null;
   visitorKind = null;
@@ -856,21 +857,24 @@ function visitorTick(now: number): void {
   // Se van si cambias de negocio o de escena; nunca a la vez que el 💸 viral.
   const here = S.view.scene === "business" ? S.view.id : null;
   if (visitorEl && (now > visitorUntil || visitorEl.dataset.biz !== here)) hideVisitor();
+  if (visitorEl && visitorKind && game.scene.isActive("business")) {
+    (game.scene.getScene("business") as BusinessScene).presentVisitor(visitorKind, visitorEl);
+    return;
+  }
   if (visitorEl || viralEl || !here || modalOpen() || activeSheet()) return;
   const kind = dueOffer(S, now);
   if (!kind) return;
   const el = document.createElement("button");
-  el.className = `visitor ${kind}`;
+  el.className = `world-visitor ${kind}`;
   el.dataset.biz = here;
-  el.innerHTML = kind === "truck" ? `🚚<b>${t("Suministros")}</b>` : `🤵<b>VIP</b>`;
+  el.innerHTML = `<span class="visitor-dot"></span><b>${kind === "truck" ? t("Suministros") : "VIP"}</b><span class="visitor-arrow" aria-hidden="true">›</span>`;
   el.setAttribute("aria-label", kind === "truck" ? t("Camión de suministros") : t("Cliente VIP"));
-  // Por encima de los botones de cámara (centrar, cuadrícula y zoom).
-  el.style.bottom = `${document.getElementById("bar")!.offsetHeight + overlayHeight() + 72}px`;
   el.onclick = () => (kind === "truck" ? offerTruck(here) : offerVip());
   visitorEl = el;
   visitorKind = kind;
   visitorUntil = now + OFFERS.visibleSec * 1000;
   root.appendChild(el);
+  (game.scene.getScene("business") as BusinessScene).presentVisitor(kind, el);
   fx("click");
   analytics.track("offer_shown", { kind });
 }
@@ -1033,6 +1037,7 @@ game.events.on("step", (time: number) => {
     updateTwist();
     updateAuto(now);
     watchRanks();
+    decorateIcons(root);
     const li = lifeIndex(S.totalEarned);
     if (li > S.lifeSeen) {
       S.lifeSeen = li;
