@@ -6,8 +6,8 @@ Auditoría del 2 de octubre de 2026: qué se revisó, qué se arregló y qué fa
 
 | Riesgo | Antes | Ahora |
 | --- | --- | --- |
-| Cambiar la hora del móvil (premio diario, maletines, ruleta, ganancias offline) | Funcionaba: el juego usaba la hora del móvil | **Arreglado.** Hora del servidor y reloj que nunca va hacia atrás |
-| Editar la partida guardada (dinero, diamantes) | Sin detección | **Detectado.** Firma en cada guardado; se informa a la Liga |
+| Cambiar la hora del móvil (premio diario, maletines, ruleta, ganancias offline), con o sin conexión | Funcionaba: el juego usaba la hora del móvil | **Arreglado.** El juego nunca usa la hora del móvil: solo la del servidor y el tiempo con la app abierta |
+| Editar la partida guardada (dinero, diamantes) | Sin detección | **La edición no sirve.** Se recupera la última copia válida y el jugador queda fuera de los premios de la Liga hasta que se revise |
 | Liga: enviar de golpe todos los bloques de juego de la semana sin jugar | Posible con un script | **Arreglado.** Solo cuentan bloques de la última media hora |
 | Liga: inventar misiones | Cualquier texto valía | **Arreglado.** Solo las misiones que existen |
 | Liga: un jugador de la web se hace pasar por la app para cobrar dinero | Posible (la plataforma la decía el móvil) | **Arreglado.** El dinero exige dispositivo verificado |
@@ -22,14 +22,21 @@ Auditoría del 2 de octubre de 2026: qué se revisó, qué se arregló y qué fa
 
 ### Reloj del juego (`src/game/clock.ts`)
 - Todo lo que da premios o mide esperas usa `now()`, nunca `Date.now()`.
-- **Con conexión** se usa la hora del servidor (`action: "time"` de la función `league`). Se sincroniza al abrir, al volver a la app y cada 15 min. Las ganancias offline esperan a esa hora (como mucho 2,5 s).
-- **Sin conexión** se usa la del móvil, pero el reloj **nunca va hacia atrás**. Quien adelanta la hora sin conexión para cobrar antes y luego la retrasa se queda "en el futuro": no vuelve a cobrar nada hasta que el tiempo real le alcanza. Solo adelanta premios que, de todas formas, iba a recibir.
-- Si el móvil se desvía más de 10 min de la hora del servidor, se apunta la señal `clock`. Si la partida ya había estado en el futuro, `clock_future`.
+- **La hora del móvil nunca cuenta.** El tiempo del juego sale de dos fuentes que no se pueden tocar:
+  - la **hora del servidor** (`action: "time"` de la función `league`), que se sincroniza al abrir, al volver a la app y cada 15 min;
+  - el **contador interno** (`performance.now()`), que mide el tiempo con la app abierta y no cambia aunque se cambie la hora del sistema.
+- **Sin conexión**, el tiempo del juego solo avanza mientras se juega. El tiempo con la app cerrada (ganancias offline, premio diario, maletines, ruleta, retos, evento) se cuenta al volver a tener conexión: entonces se ofrecen las ganancias offline. Adelantar la hora un año sin conexión no da nada.
+- Una partida que aparece en el futuro respecto al servidor (guardado editado o primera partida con el móvil adelantado) **vuelve a la hora real** al sincronizar y se apunta la señal `clock_future`. Si la hora del móvil se desvía más de 10 min, se apunta `clock`.
 
 ### Firma del guardado (`src/platform/storage.ts`)
-- Cada guardado es `s1:<firma>:<json>`, en una sola escritura.
-- Si alguien edita la partida, la firma no cuadra: la partida **se carga igual** (nunca se castiga ni se borra) y se apunta la señal `save`.
-- No es infalible: la clave va dentro de la app. Frena la edición casual y sirve como pista al revisar a un ganador.
+- Cada guardado es `s1:<firma>:<json>` y se escribe dos veces: partida y copia de seguridad.
+- Si alguien edita la partida, la firma no cuadra y **la edición no sirve**:
+  - se carga la última copia válida;
+  - si también se ha tocado la copia, se empieza una partida nueva;
+  - quitar la firma tampoco cuela, porque ya existe una copia firmada.
+
+  El jugador ve un aviso, se apunta la señal `save` y en la Liga queda **fuera de todos los premios**, también de los diamantes, hasta que se revise (migración 0011).
+- No es infalible: la clave va dentro de la app, y alguien con conocimientos podría volver a firmar una partida editada. Por eso lo que da dinero real también se comprueba en el servidor: tiempo de juego, retos, topes y Play Integrity.
 
 ### Señales de trampa
 - Se guardan en `meta.flags` y, si el jugador está en la Liga, se envían una vez como evento `flag` (no dan ni quitan puntos).

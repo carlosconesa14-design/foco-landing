@@ -75,15 +75,20 @@ function save(): void {
 
 let timeSync: Promise<void> | null = null;
 
-/** Sincroniza el reloj del juego con el servidor. Sin conexión no hace nada (se usa la hora del móvil). */
+/**
+ * Sincroniza el reloj del juego con el servidor. Sin conexión no hace nada: el tiempo del juego
+ * solo avanza mientras se juega (nunca con la hora del móvil). Si al sincronizar el reloj avanza
+ * (tiempo con la app cerrada), se ofrecen las ganancias offline de ese tiempo.
+ */
 function syncTime(): Promise<void> {
   timeSync ??= (async () => {
     try {
-      const sent = Date.now();
+      const sent = performance.now();
       const { now } = await leagueApi.time();
-      const r = syncClock(now, sent, Date.now());
+      const r = syncClock(now, sent, performance.now());
       if (r.skew) addFlag(S, "clock");
       if (r.future) addFlag(S, "clock_future");
+      if (booted && r.jumpMs > 60e3) offerOffline();
     } catch {
       /* sin conexión */
     } finally {
@@ -725,13 +730,30 @@ game.events.on("step", (time: number) => {
   }
 });
 
+let booted = false;
+
 async function boot(): Promise<void> {
   await loadIcons();
   const loaded = await loadSave();
   // Primero el reloj guardado (nunca hacia atrás); luego la hora del servidor.
   restoreClock((loaded.data as { clock?: unknown } | null)?.clock);
-  S = migrate(loaded.data);
-  if (loaded.tampered) addFlag(S, "save");
+  S = migrate(loaded.data, clockNow());
+  if (loaded.tampered) {
+    // La partida se editó fuera del juego: la edición no se aplica y la Liga lo sabrá.
+    addFlag(S, "save");
+    save();
+    setTimeout(
+      () =>
+        modal(root, {
+          title: t("Partida modificada"),
+          text: loaded.restored
+            ? t("La partida guardada se ha modificado fuera del juego. Hemos recuperado la última partida válida. Los cambios hechos a mano no cuentan y la cuenta queda en revisión para la Liga.")
+            : t("La partida guardada se ha modificado fuera del juego y no se puede usar. Empiezas una partida nueva y la cuenta queda en revisión para la Liga."),
+          actions: [{ label: t("Entendido"), run: () => {} }],
+        }),
+      1200,
+    );
+  }
   const firstSync = waitTime();
   applySettings();
   updateHeader(S, clockNow());
@@ -741,6 +763,7 @@ async function boot(): Promise<void> {
   startView();
   await firstSync;
   offerOffline();
+  booted = true;
   setInterval(() => void syncTime(), 15 * 60e3);
   setInterval(save, 5000);
   analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial, lang });

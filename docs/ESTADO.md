@@ -25,7 +25,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Android | Capacitor, `com.carlosconesa.ridermillionaire`. Hay un APK en cada subida y un AAB firmado manual (`release.yml`) | `android/`, [`TIENDA.md`](TIENDA.md) |
 
 **Servidor (Supabase):** proyecto `de-rider-a-millonario` (id `jpdvpbqiasyjzbdaiedh`, París).
-- **Migraciones aplicadas:** de la 0001 a la 0010 (`supabase/migrations`). La 0010 es la de seguridad.
+- **Migraciones aplicadas:** de la 0001 a la 0011 (`supabase/migrations`). La 0010 es la de seguridad y la 0011 deja sin premios las partidas editadas.
 - **Edge Functions:** `league` (v4, con la hora del servidor) y `track` (v2).
 - **Seguridad:** RLS sin políticas y ningún permiso para anónimos; solo se accede a través de las funciones. Auditoría completa, defensas y pendientes en [`SEGURIDAD.md`](SEGURIDAD.md).
 
@@ -34,7 +34,10 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 2. **La Liga premia el esfuerzo de la semana, no la antigüedad.** El tiempo activo cuenta poco y con techo: 2 h a puntos completos y 4 h como máximo al día. No es un sorteo.
 3. **Nada de prometer premios y no darlos** ni de jugar con el número de ganadores. Es ilegal.
 4. **Premios en dinero solo cuando un asesor revise las bases** y esté hecha la verificación Play Integrity ([`SEGURIDAD.md`](SEGURIDAD.md), «Pendiente»). Es cambiar `prize_cents` en `league_config`.
-8. **Contra trampas, el juego usa la hora del servidor** (`src/game/clock.ts`), nunca `Date.now()`. Las señales de trampa no castigan la partida: solo impiden cobrar dinero hasta revisarlas.
+8. **Contra trampas:**
+   - el juego nunca usa la hora del móvil, solo la del servidor y el tiempo con la app abierta (`src/game/clock.ts`);
+   - una partida editada no sirve: se recupera la última copia válida y el jugador queda fuera de los premios de la Liga hasta que se revise (`storage.ts`, migración 0011);
+   - las demás señales impiden cobrar dinero hasta revisarlas.
 5. **Aviso «el dinero del juego es ficticio»:** en las bases, la tienda y el juego.
 6. **Nombre:** «Rider Millionaire: Idle Tycoon». «Idle Millionaire» chocaba con *Cash Masters: Idle Millionaire*.
 7. **Moneda:** € en español y $ en inglés. Los premios reales, siempre en euros.

@@ -538,4 +538,12 @@ export const EN: Record<string, string> = {
   "Ver anuncio y atender": "Watch ad and serve",
   "+{n} 💎 del cliente VIP": "+{n} 💎 from the VIP customer",
   "Ese email ya se usó con otra cuenta. Cada persona puede cobrar con una sola cuenta.": "That email was already used with another account. Each person can only collect prizes with one account.",
+
+  /* ---------- Partida modificada ---------- */
+  "Partida modificada": "Game save modified",
+  "La partida guardada se ha modificado fuera del juego. Hemos recuperado la última partida válida. Los cambios hechos a mano no cuentan y la cuenta queda en revisión para la Liga.":
+    "Your saved game was modified outside the game. We've restored your last valid save. Manual changes don't count and your account is under review for the League.",
+  "La partida guardada se ha modificado fuera del juego y no se puede usar. Empiezas una partida nueva y la cuenta queda en revisión para la Liga.":
+    "Your saved game was modified outside the game and can't be used. You're starting a new game and your account is under review for the League.",
+  Entendido: "Got it",
 };

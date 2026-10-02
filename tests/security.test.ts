@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { CLOCK_TOLERANCE_MS, _resetClock, clockSnapshot, now, restoreClock, syncClock } from "../src/game/clock";
+import { CLOCK_TOLERANCE_MS, _resetClock, clockSnapshot, clockTrusted, now, restoreClock, syncClock } from "../src/game/clock";
 import { addFlag, freshLeague } from "../src/game/league";
 import { dailyStatus, claimDaily } from "../src/game/meta";
 import { freshState, migrate } from "../src/game/state";
-import { decodeSave, encodeSave } from "../src/platform/storage";
+import { decodeSave, encodeSave, pickSave } from "../src/platform/storage";
 
 const T0 = new Date(2026, 9, 2, 12).getTime();
 const DAY = 86400e3;
@@ -11,63 +11,76 @@ const DAY = 86400e3;
 afterEach(() => _resetClock());
 
 describe("reloj del juego", () => {
-  it("nunca va hacia atrás aunque se retrase la hora del móvil", () => {
-    let device = T0;
-    _resetClock(() => device);
-    expect(now()).toBe(T0);
-    device = T0 + DAY; // adelanta un día
-    expect(now()).toBe(T0 + DAY);
-    device = T0; // y la vuelve a poner bien
-    expect(now()).toBe(T0 + DAY);
-    device = T0 + DAY + 5000; // hasta que el tiempo real le alcanza
-    expect(now()).toBe(T0 + DAY + 5000);
+  /** Móvil y contador interno simulados: `dev` es la hora del móvil y `run` el tiempo con la app abierta. */
+  function sim(startDev = T0) {
+    const c = { dev: startDev, run: 0 };
+    _resetClock(() => c.dev, () => c.run);
+    return c;
+  }
+
+  it("cambiar la hora del móvil no adelanta el juego", () => {
+    const c = sim();
+    const t0 = now();
+    c.dev += 365 * DAY; // adelanta un año
+    expect(now()).toBe(t0);
+    c.run += 5000; // solo avanza el tiempo jugado de verdad
+    expect(now()).toBe(t0 + 5000);
   });
 
-  it("adelantar la hora y volver no permite cobrar el premio diario dos veces", () => {
-    let device = T0;
-    _resetClock(() => device);
-    const s = freshState(T0);
-    device = T0 + DAY;
+  it("adelantar la hora no permite cobrar el premio diario antes de tiempo", () => {
+    const c = sim();
+    const s = freshState(now());
     expect(claimDaily(s, now())).not.toBeNull();
-    device = T0;
+    c.dev += 3 * DAY;
     expect(dailyStatus(s, now()).canClaim).toBe(false);
   });
 
-  it("con conexión manda la hora del servidor", () => {
-    let device = T0 + 3 * DAY; // móvil adelantado 3 días
-    _resetClock(() => device);
-    const r = syncClock(T0, device, device);
-    expect(r.skew).toBe(true);
-    // Aún no se había usado la hora del móvil: el reloj pasa a la del servidor
+  it("sin conexión, el tiempo con la app cerrada no cuenta hasta sincronizar", () => {
+    let c = sim();
+    now();
+    c.run = 1000;
+    now();
+    const snap = JSON.parse(JSON.stringify(clockSnapshot()));
+    // La app se cierra un día; al abrirla sin conexión (y con la hora del móvil adelantada un año)…
+    c = sim(T0 + 365 * DAY);
+    restoreClock(snap);
+    expect(now()).toBe(T0 + 1000);
+    expect(clockTrusted()).toBe(false);
+    // …y al volver la conexión, el reloj salta a la hora real y se puede cobrar lo ganado offline.
+    const r = syncClock(T0 + DAY, 0, 0);
+    expect(now()).toBe(T0 + DAY);
+    expect(r.jumpMs).toBe(DAY - 1000);
+    expect(r.skew).toBe(true); // el móvil iba un año adelantado
+    expect(clockTrusted()).toBe(true);
+  });
+
+  it("partida nueva con el móvil adelantado: al sincronizar vuelve a la hora real", () => {
+    const c = sim(T0 + 3 * DAY);
+    const r = syncClock(T0, 0, 0);
+    expect(r).toMatchObject({ skew: true, future: true });
     expect(now()).toBe(T0);
-    device += 1000;
+    c.dev = T0 + 100 * DAY; // la hora del móvil ya no cuenta…
+    c.run += 1000; // …solo el tiempo que la app sigue abierta
     expect(now()).toBe(T0 + 1000);
   });
 
-  it("detecta una partida que ya estuvo en el futuro", () => {
-    let device = T0 + DAY;
-    _resetClock(() => device);
-    now();
-    device = T0;
-    const r = syncClock(T0, T0, T0);
+  it("una partida en el futuro (guardado editado) vuelve a la hora real al sincronizar", () => {
+    sim();
+    restoreClock({ floor: T0 + 30 * DAY });
+    const r = syncClock(T0, 0, 0);
     expect(r.future).toBe(true);
-    expect(r.skew).toBe(false);
-    expect(now()).toBe(T0 + DAY); // sigue sin ir hacia atrás
+    expect(now()).toBe(T0);
   });
 
   it("un desvío pequeño no es sospechoso", () => {
-    _resetClock(() => T0 + 60e3);
-    expect(syncClock(T0, T0 + 60e3, T0 + 60e3).skew).toBe(false);
+    sim(T0 + 60e3);
+    expect(syncClock(T0, 0, 0).skew).toBe(false);
     expect(CLOCK_TOLERANCE_MS).toBeGreaterThan(60e3);
   });
 
-  it("se guarda y se recupera", () => {
-    let device = T0 + DAY;
-    _resetClock(() => device);
-    now();
-    const snap = clockSnapshot();
-    _resetClock(() => T0);
-    restoreClock(JSON.parse(JSON.stringify(snap)));
+  it("se guarda y se recupera, ignorando valores raros", () => {
+    sim();
+    restoreClock({ floor: T0 + DAY });
     expect(now()).toBe(T0 + DAY);
     restoreClock({ floor: "x", offset: NaN });
     expect(now()).toBe(T0 + DAY);
@@ -82,19 +95,40 @@ describe("firma del guardado", () => {
     expect((out.data as typeof s).cash).toBe(0);
   });
 
-  it("detecta una partida editada a mano", async () => {
+  it("una partida editada no sirve: se recupera la última copia válida", async () => {
     const s = freshState(T0);
     const raw = await encodeSave(s);
     const edited = raw.replace('"gems":0', '"gems":999999');
     expect(edited).not.toBe(raw);
-    const out = await decodeSave(edited);
-    expect(out.tampered).toBe(true);
-    expect(migrate(out.data, T0).meta.gems).toBe(999999); // se carga igual: solo se informa
+    const out = await pickSave(edited, raw, true);
+    expect(out).toMatchObject({ tampered: true, restored: true });
+    expect(migrate(out.data, T0).meta.gems).toBe(0);
   });
 
-  it("acepta partidas antiguas sin firma", async () => {
-    const out = await decodeSave(JSON.stringify(freshState(T0)));
+  it("si también se edita la copia, se empieza de cero", async () => {
+    const raw = await encodeSave(freshState(T0));
+    const edited = raw.replace('"gems":0', '"gems":5');
+    const out = await pickSave(edited, edited, true);
+    expect(out).toMatchObject({ data: null, tampered: true, restored: false });
+  });
+
+  it("quitar la firma tampoco sirve si ya había partidas firmadas", async () => {
+    const raw = await encodeSave(freshState(T0));
+    const unsigned = JSON.stringify({ ...freshState(T0), cash: 1e30 });
+    const out = await pickSave(unsigned, raw, true);
+    expect(out).toMatchObject({ tampered: true, restored: true });
+  });
+
+  it("acepta partidas antiguas sin firma (sin copia previa)", async () => {
+    const out = await pickSave(JSON.stringify(freshState(T0)), null, true);
     expect(out.tampered).toBe(false);
+  });
+
+  it("sin partida principal usa la copia", async () => {
+    const raw = await encodeSave({ ...freshState(T0), cash: 42 });
+    const out = await pickSave(null, raw, true);
+    expect(out.tampered).toBe(false);
+    expect((out.data as { cash: number }).cash).toBe(42);
   });
 });
 
