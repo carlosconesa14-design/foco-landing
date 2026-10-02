@@ -571,4 +571,14 @@ export const EN: Record<string, string> = {
   "Únete a la Liga para reservar tu puesto.": "Join the League to save your spot.",
   "Centro comercial": "Shopping mall",
   "Tokio, Nueva York… nuevas ciudades con sus propias reglas.": "Tokyo, New York… new cities with their own rules.",
+
+  /* ---------- Rangos de los puestos ---------- */
+  "(y {n} más)": "(and {n} more)",
+  "¡Rango {rank}!": "{rank} rank!",
+  "{part} de tu {biz} sube a {rank}. Se nota en el recinto: pedestal, brillo y medalla nuevos.":
+    "{part} at your {biz} reaches {rank}. You can see it on site: new pedestal, glow and medal.",
+  "{part} sube a {rank}": "{part} reaches {rank}",
+  "Siguiente: {icon} {rank} en el nivel {n}": "Next: {icon} {rank} at level {n}",
+  "¡Rango máximo!": "Top rank!",
+  "Nivel {n}: rango {rank} y rendimiento x2 (te faltan {left})": "Level {n}: {rank} rank and x2 output ({left} to go)",
 };

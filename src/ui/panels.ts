@@ -25,7 +25,8 @@ import {
 import { fmt } from "../game/format";
 import { cityDef, type BuyMode, type GameState, type View } from "../game/state";
 import type { Celebration } from "./celebrate";
-import { bizIcon, icon } from "./icons";
+import { bizIcon, icon, rankIcon } from "./icons";
+import { RANKS, nextRank, rankOf } from "../game/ranks";
 import { analytics, minutesSinceInstall } from "../platform/analytics";
 import { closeSheet, openSheet } from "./sheet";
 import { money, t } from "../i18n";
@@ -108,6 +109,7 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
     ctx.root,
     `<div class="sheet-head"><span class="sicon">${icon}</span><div><h3>${act.stationName(id, st)}</h3><p class="muted" data-lvl></p></div></div>
      <div data-stats></div>
+     <div class="ranktrack" data-ranks></div>
      <p class="small muted" data-ms></p>
      <div class="buyrow">${buyModes(s0)}<button class="buy big" data-up><span data-uq></span><b data-uc></b></button></div>
      <div class="mgrbox" data-mgr></div>
@@ -120,7 +122,19 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
       $(el, "[data-lvl]").textContent = t("Nivel {n}", { n: lvl });
       $(el, "[data-stats]").innerHTML = statRows(s, id, st, q.qty);
       const nm = nextMilestone(lvl);
-      $(el, "[data-ms]").textContent = nm ? t("Nivel {n}: rendimiento x2 (te faltan {left})", { n: nm, left: nm - lvl }) : t("Rendimiento máximo");
+      const nr = nextRank(lvl);
+      $(el, "[data-ms]").textContent = !nm
+        ? t("Rendimiento máximo")
+        : nr && nr.min === nm
+          ? t("Nivel {n}: rango {rank} y rendimiento x2 (te faltan {left})", { n: nm, rank: nr.name, left: nm - lvl })
+          : t("Nivel {n}: rendimiento x2 (te faltan {left})", { n: nm, left: nm - lvl });
+      const cur = rankOf(lvl);
+      const track = RANKS.map((r) => `<span class="rk ${r.n <= cur ? "on" : ""} ${r.n === cur ? "now" : ""}" title="${r.name} · ${t("Nv")} ${r.min}">${rankIcon(r.n)}<small>${r.min}</small></span>`).join("");
+      const tr = $(el, "[data-ranks]");
+      if (tr.dataset.html !== track) {
+        tr.dataset.html = track;
+        tr.innerHTML = track;
+      }
       $(el, "[data-uq]").textContent = t("Mejorar x{n}", { n: q.qty });
       $(el, "[data-uc]").textContent = money(q.cost);
       $<HTMLButtonElement>(el, "[data-up]").disabled = s.cash < q.cost;

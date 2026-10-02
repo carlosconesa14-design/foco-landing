@@ -1,3 +1,4 @@
+import { RANKS } from "../game/ranks";
 import {
   ACHIEVEMENTS,
   ALL_BUSINESSES,
@@ -132,6 +133,8 @@ const PRODUCTS_EN: Record<string, { name: string; desc: string; price: string; h
   gems_1200: { name: "1,200 gems", desc: "20% more gems per euro than the small pack.", price: "€9.99" },
 };
 
+const RANKS_EN = ["Bronze", "Silver", "Gold", "Diamond", "Legend"];
+
 let done = false;
 
 export function localizeData(): void {
@@ -143,6 +146,7 @@ export function localizeData(): void {
   LIFE.forEach((l, i) => (l.name = LIFE_EN[i] ?? l.name));
   VIRAL_TITLES.splice(0, VIRAL_TITLES.length, ...VIRAL_EN);
   RARITIES.forEach((r, i) => (r.name = RARITIES_EN[i] ?? r.name));
+  RANKS.forEach((r, i) => (r.name = RANKS_EN[i] ?? r.name));
   for (const k of Object.keys(EXEC_KINDS) as (keyof typeof EXEC_KINDS)[]) Object.assign(EXEC_KINDS[k], EXEC_KINDS_EN[k]);
   for (const k of Object.keys(CHESTS) as (keyof typeof CHESTS)[]) CHESTS[k].name = CHESTS_EN[k];
   for (const k of Object.keys(MISSIONS) as (keyof typeof MISSIONS)[]) MISSIONS[k].text = MISSIONS_EN[k] ?? MISSIONS[k].text;
@@ -152,4 +156,4 @@ export function localizeData(): void {
 }
 
 /** Para el test de cobertura: que no falte ningún elemento del contenido. */
-export const EN_DATA = { BUSINESSES_EN, CITIES_EN, OFFICE_EN, LIFE_EN, VIRAL_EN, RARITIES_EN, MISSIONS_EN, ACHIEVEMENTS_EN, TUTORIAL_EN, PRODUCTS_EN };
+export const EN_DATA = { RANKS_EN, BUSINESSES_EN, CITIES_EN, OFFICE_EN, LIFE_EN, VIRAL_EN, RARITIES_EN, MISSIONS_EN, ACHIEVEMENTS_EN, TUTORIAL_EN, PRODUCTS_EN };

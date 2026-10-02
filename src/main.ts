@@ -10,6 +10,7 @@ import { sound, type Sfx } from "./audio/sound";
 import * as act from "./game/actions";
 import { CITIES, CONFIG, FOUNDERS, GOLD, LIFE, TOURISM, VIRAL_TITLES } from "./game/data";
 import { boostHours, callWave, gold, lockGold, tourism } from "./game/world";
+import { BIG_RANK, rankInfo, rankSnapshot, rankUps } from "./game/ranks";
 import { applyFounderError, applyFounderRank, founderPending, reachedFounderCity } from "./game/founders";
 import { bizList, earn, lifeIndex, offlineEarnings, passiveRate, setLuck, tapStation, tick, type SaleEvent } from "./game/economy";
 import { fmtTime } from "./game/format";
@@ -506,6 +507,50 @@ document.getElementById("waveBtn")!.addEventListener("click", async () => {
   } else if (await watchAd("tourist_wave")) callWave(S, clockNow());
 });
 
+/* ---------- Rangos de los puestos (bronce … leyenda) ---------- */
+
+let rankState: GameState | null = null;
+let rankPrev: Record<string, number> = {};
+
+/**
+ * Celebra cada ascenso de rango una sola vez, venga de donde venga la mejora (panel, Imperio, comprar
+ * al máximo). Al cambiar de partida (ciudad nueva, salir a bolsa, cargar) solo se toma la foto.
+ */
+function watchRanks(): void {
+  const snap = rankSnapshot(S);
+  if (rankState !== S) {
+    rankState = S;
+    rankPrev = snap;
+    return;
+  }
+  const ups = rankUps(rankPrev, snap);
+  rankPrev = snap;
+  if (!ups.length) return;
+  const top = ups.reduce((a, u) => (u.rank > a.rank ? u : a));
+  const r = rankInfo(top.rank)!;
+  const def = bizList(S).find((d) => d.id === top.bizId);
+  if (!def) return;
+  const part = top.station.kind === "floor" ? `${def.floorName} ${top.station.index + 1}` : top.station.kind === "transport" ? def.transportName : def.saleName;
+  const more = ups.length > 1 ? " " + t("(y {n} más)", { n: ups.length - 1 }) : "";
+  if (top.rank >= BIG_RANK && !modalOpen()) {
+    void celebrate(root, {
+      icon: r.icon,
+      title: t("¡Rango {rank}!", { rank: r.name }),
+      subtitle: t("{part} de tu {biz} sube a {rank}. Se nota en el recinto: pedestal, brillo y medalla nuevos.", { part, biz: def.name, rank: r.name }) + more,
+      highlight: nextRankText(top.rank),
+      color: `#${r.color.toString(16).padStart(6, "0")}`,
+    });
+  } else {
+    fx("milestone", true);
+    banner(root, r.icon, t("{part} sube a {rank}", { part, rank: r.name }) + more);
+  }
+}
+
+const nextRankText = (rank: number) => {
+  const next = rankInfo(rank + 1);
+  return next ? t("Siguiente: {icon} {rank} en el nivel {n}", { icon: next.icon, rank: next.name, n: next.min }) : t("¡Rango máximo!");
+};
+
 /* ---------- Carrera de fundadores (Dubái) ---------- */
 
 let founderBusy = false;
@@ -785,6 +830,7 @@ game.events.on("step", (time: number) => {
     activeSheet()?.update?.();
     updateMeta(now);
     updateWave(now);
+    watchRanks();
     const li = lifeIndex(S.totalEarned);
     if (li > S.lifeSeen) {
       S.lifeSeen = li;

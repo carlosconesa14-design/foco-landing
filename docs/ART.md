@@ -120,6 +120,21 @@ Mismo estilo común, con luz de playa soleada. Para la arena y las palmeras, añ
 | `ch_coder_0` | 44×60 | Chibi crypto developer, purple hoodie, headphones |
 | `ch_trader_0` | 44×60 | Chibi trader, green shirt, purple tie |
 
+### Rangos de los puestos (bronce … leyenda)
+
+Cada parte de la cadena sube de rango en los niveles 10, 25, 50, 100 y 200 (`src/game/ranks.ts`). Hoy el rango se ve con efectos hechos por código (pedestal y brillo del color, medalla y destellos, en `src/scenes/rankFx.ts`). Para que además **el puesto, el trabajador y el vehículo cambien de aspecto**, basta con añadir PNG con estas claves (y apuntarlas en `public/sprites/manifest.json`). Si falta la de un rango, se usa la del rango anterior; si no hay ninguna, la normal. Mismo tamaño que la pieza base.
+
+| Clave | Qué es | Idea para el prompt |
+| --- | --- | --- |
+| `rank_1` … `rank_5` | Medalla de cada rango, 24×24 | Bronze / silver / gold medal with a star, a cut diamond, a purple crown; glossy, readable at small size |
+| `st_<negocio>_r1` … `_r5` | Puesto con mejoras (también `wh_shelf_r<n>` en el almacén) | Same station, progressively upgraded: bronze = tidier and new paint; silver = better tools and lights; gold = premium materials with gold trim; diamond = futuristic, glowing cyan details; legend = over-the-top luxury with purple neon and gold |
+| `ch_<rol>_r<n>_0` (y `_1`, `_2` al andar) | Trabajador con uniforme mejorado | Same character: bronze badge → silver vest → gold uniform → diamond suit with cyan glow → legendary outfit with cape/crown accent |
+| `rest_chef_a_r<n>`, `rest_chef_b_r<n>`, `rest_waiter_a_r<n>`, `rest_waiter_b_r<n>` | Restaurante | Chef hat and waiter uniform upgrades, same poses |
+| `veh_forklift_r<n>`, `veh_van_r<n>` | Vehículos (fuera del almacén, que usa poses propias) | Same vehicle: new paint → chrome → gold livery → glowing diamond edition → legendary limousine-like |
+| `decor_<negocio>_2`, `decor_<negocio>_3` | Decoración extra del recinto con ★★ y ★★★ (se pone junto al edificio principal) | Small isometric props cluster on a transparent background: fountain, statue, neon sign… matching the business |
+
+Prioridad recomendada: medallas `rank_*` → puestos `st_*_r3` (oro) y `_r5` (leyenda) de los negocios iniciales (almacén, restaurante, food trucks) → personajes → vehículos.
+
 ### Dubái (tercera ciudad)
 
 Mismo estilo común, con luz cálida de desierto y toques dorados. Añade "Dubai luxury, desert sand, gold accents, glass towers" al prompt. **Ahora mismo Dubái usa arte provisional**: cada edificio toma la forma de uno existente (`BLD_SHAPE` en `src/art/catalog.ts`) y los puestos y personajes reutilizan los de Madrid y Miami (`BIZ_ART`). En cuanto exista el PNG de una clave, el juego lo usa sin tocar código. Cuando estén los edificios, borra `BLD_SHAPE`.

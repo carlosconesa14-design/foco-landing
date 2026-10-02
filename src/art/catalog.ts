@@ -483,6 +483,32 @@ function drawLampPost(p: Pen): void {
   p.fill(0xfff3b0).circle(8, 11, 3);
 }
 
+/* ---------- Arte por rango (bronce … leyenda, ver src/game/ranks.ts y docs/ART.md, «Rangos») ---------- */
+
+/**
+ * Cada pieza del recinto puede tener una versión por rango: `<clave>_r1` (bronce) … `<clave>_r5` (leyenda).
+ * Personajes: `ch_<rol>_r<n>_<pose>`. Si no existe la del rango, se usa la del rango anterior y, si
+ * no hay ninguna, la normal. Aquí solo se registran las claves y tamaños para que el PNG se cargue.
+ */
+export const RANK_LEVELS = [1, 2, 3, 4, 5];
+for (const n of RANK_LEVELS) {
+  def(`rank_${n}`, 24, 24);
+  for (const k of [...STATIONS, "wh_shelf", "veh_forklift", "veh_van", "rest_chef_a", "rest_chef_b", "rest_waiter_a", "rest_waiter_b"]) {
+    if (ART[k]) def(`${k}_r${n}`, ART[k].w, ART[k].h);
+  }
+  for (const role of Object.keys(LOOKS)) for (const f of [0, 1, 2]) def(`ch_${role}_r${n}_${f}`, 44, 60);
+}
+
+/** La mejor versión disponible de una pieza para un rango (o la normal). */
+export function rankedKey(scene: Phaser.Scene, key: string, rank: number): string {
+  const ch = /^(ch_\w+?)_([012])$/.exec(key);
+  for (let n = rank; n >= 1; n--) {
+    const k = ch ? `${ch[1]}_r${n}_${ch[2]}` : `${key}_r${n}`;
+    if (ART[k] && (scene.textures.exists(k) || hasGeneratedArt(scene, k))) return k;
+  }
+  return key;
+}
+
 /* ---------- Edificios isométricos ---------- */
 
 export const BLD_W = 172;

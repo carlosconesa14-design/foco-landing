@@ -4,7 +4,8 @@ import { fmt, fmtTime } from "../game/format";
 import { boostHours, canExpand, upgradeDiscount } from "../game/world";
 import { cityDef, type GameState } from "../game/state";
 import { CUR, money, t } from "../i18n";
-import { bizIcon, decorateIcons, flagIcon, gem, icon, lifeIcon } from "./icons";
+import { bizIcon, decorateIcons, flagIcon, gem, icon, lifeIcon, rankIcon } from "./icons";
+import { rankOf } from "../game/ranks";
 
 /** Cabecera (dinero, estilo de vida, modo hustle) y barra inferior según la escena. */
 
@@ -160,8 +161,8 @@ function chainCards(s: GameState, id: string, now: number): string {
   };
   const allManaged = b.floors.every((f) => f.managed);
   return (
-    card("production", `floor:${floorIdx}`, id === "dropship" ? icon("wh_shelf") : def.worker, t("Producción"), `${b.floors.length} ${b.floors.length === 1 ? t("puesto") : t("puest.")}`, r.production, allManaged, canFloor, managerCost(def, floorSt)) +
-    card("transport", "transport", id === "dropship" ? icon("veh_forklift") : def.transportIcon, def.transportName, `${t("Nv")} ${b.transport.level}`, r.transport, b.transport.managed, s.cash >= nextLevelCost(s, def, { kind: "transport" }, b.transport.level), managerCost(def, { kind: "transport" })) +
-    card("sale", "sale", id === "dropship" ? icon("veh_van") : def.saleWorker, def.saleName, `${t("Nv")} ${b.sale.level}`, r.sale, b.sale.managed, s.cash >= nextLevelCost(s, def, { kind: "sale" }, b.sale.level), managerCost(def, { kind: "sale" }))
+    card("production", `floor:${floorIdx}`, id === "dropship" ? icon("wh_shelf") : def.worker, t("Producción"), `${rankIcon(Math.min(...b.floors.map((f) => rankOf(f.level))))}${b.floors.length} ${b.floors.length === 1 ? t("puesto") : t("puest.")}`, r.production, allManaged, canFloor, managerCost(def, floorSt)) +
+    card("transport", "transport", id === "dropship" ? icon("veh_forklift") : def.transportIcon, def.transportName, `${rankIcon(rankOf(b.transport.level))}${t("Nv")} ${b.transport.level}`, r.transport, b.transport.managed, s.cash >= nextLevelCost(s, def, { kind: "transport" }, b.transport.level), managerCost(def, { kind: "transport" })) +
+    card("sale", "sale", id === "dropship" ? icon("veh_van") : def.saleWorker, def.saleName, `${rankIcon(rankOf(b.sale.level))}${t("Nv")} ${b.sale.level}`, r.sale, b.sale.managed, s.cash >= nextLevelCost(s, def, { kind: "sale" }, b.sale.level), managerCost(def, { kind: "sale" }))
   );
 }

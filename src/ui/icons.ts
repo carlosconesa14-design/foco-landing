@@ -1,3 +1,4 @@
+import { rankInfo } from "../game/ranks";
 import { CHESTS, EXEC_FACES, LIFE, type BusinessDef, type ChestType, type CityDef, type OfficeUpgrade } from "../game/data";
 import type { Exec } from "../game/state";
 
@@ -80,3 +81,10 @@ export const execFace = (e: Pick<Exec, "face" | "founder">) => {
   const i = EXEC_FACES.indexOf(e.face);
   return i >= 0 ? icon(`exec_${i}`, e.face) : e.face;
 };
+
+/** Medalla de un rango (1 bronce … 5 leyenda) para la interfaz: PNG `rank_<n>` si existe, si no el emoji. */
+export function rankIcon(n: number): string {
+  const r = rankInfo(n);
+  if (!r) return "";
+  return `<span class="rank-ic r${n}">${available.has(`rank_${n}`) || generatedIcon(`rank_${n}`) ? icon(`rank_${n}`) : r.icon}</span>`;
+}

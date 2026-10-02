@@ -15,6 +15,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Área | Qué | Dónde |
 | --- | --- | --- |
 | Juego | Ciudad isométrica y recintos por negocio. Madrid (4 negocios), Miami (5, con olas turísticas) y **Dubái** (5, con el precio del oro y la carrera de fundadores; arte provisional). Gerentes, ejecutivos y maletines, bolsa, expansión, Oficina central y edificios que crecen | `src/game`, `src/scenes`, [`GDD.md`](GDD.md) |
+| Mejoras visibles | **Rangos de los puestos** (bronce, plata, oro, diamante y leyenda en los niveles 10–200): pedestal, brillo, medalla y celebración, en todos los negocios. Decoración del recinto con ★★ y ★★★ | `ranks.ts`, `rankFx.ts`, [`GDD.md`](GDD.md) |
 | Retención | Tutorial, misiones diarias, premio diario, logros, avisos en el móvil, **evento del fin de semana** (10 premios, tema semanal) y **retos del día y de la semana** | `meta.ts`, `event.ts`, `challenges.ts`, `notify.ts` |
 | Anuncios | 14 ubicaciones (x2 4 h, hora punta, offline x3, viral, maletín, habilidad, diario, bolsa, expandir, ola, evento, **camión de suministros, cliente VIP y ruleta diaria**) y una **escalera diaria**: a los 3, 6 y 10 anuncios, maletín, 40 💎 y maletín de oro | `src/ads`, `adLadder.ts`, `offers.ts`, [`GDD.md`](GDD.md) («Monetización») |
 | Compras | VIP (sin anuncios y x2), pack de inicio y diamantes. En la web, desactivadas | `shop.ts`, `platform/store.ts`, [`COMPRAS.md`](COMPRAS.md) |
@@ -53,7 +54,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 - [ ] Asesor: bases de la Liga, privacidad e impuestos.
 
 ## Pendiente de ChatGPT/Codex
-Icono, logotipo «Rider Millionaire», gráfico destacado y capturas para la tienda. Arte de Miami. Una moneda sin €, o en $, para el juego en inglés. El camión de suministros y el cliente VIP son ahora botones HTML (`.visitor` en `styles.css`): mejor como sprites que entren en la escena del negocio. Icono `ic_wheel` para la ruleta. **Dubái:** edificios, puestos, objetos, personajes y el retrato `exec_founder` (lista y prompts en [`ART.md`](ART.md), «Dubái»).
+Icono, logotipo «Rider Millionaire», gráfico destacado y capturas para la tienda. Arte de Miami. Una moneda sin €, o en $, para el juego en inglés. El camión de suministros y el cliente VIP son ahora botones HTML (`.visitor` en `styles.css`): mejor como sprites que entren en la escena del negocio. Icono `ic_wheel` para la ruleta. **Rangos:** medallas `rank_1…5` y versiones `_r1…_r5` de puestos, personajes y vehículos (ver [`ART.md`](ART.md), «Rangos»). **Dubái:** edificios, puestos, objetos, personajes y el retrato `exec_founder` (lista y prompts en [`ART.md`](ART.md), «Dubái»).
 
 ## Próximos pasos (Claude)
 0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.

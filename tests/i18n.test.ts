@@ -6,6 +6,7 @@ import { PRODUCTS } from "../src/game/shop";
 import { lang, money, t } from "../src/i18n";
 import { EN } from "../src/i18n/en";
 import { EN_DATA } from "../src/i18n/data";
+import { RANKS } from "../src/game/ranks";
 
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((f) => {
@@ -49,6 +50,7 @@ describe("traducción al inglés", () => {
     expect(ACHIEVEMENTS.filter((a) => !EN_DATA.ACHIEVEMENTS_EN[a.id]).map((a) => a.id)).toEqual([]);
     expect(PRODUCTS.filter((p) => !EN_DATA.PRODUCTS_EN[p.id]).map((p) => p.id)).toEqual([]);
     expect(EN_DATA.LIFE_EN).toHaveLength(LIFE.length);
+    expect(EN_DATA.RANKS_EN).toHaveLength(RANKS.length);
     expect(EN_DATA.TUTORIAL_EN).toHaveLength(TUTORIAL.length);
     expect(EN_DATA.VIRAL_EN).toHaveLength(VIRAL_TITLES.length);
   });
