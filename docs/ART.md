@@ -655,3 +655,43 @@ python scripts/build-brand.py                  # fontTools con soporte Brotli
 Los exportadores de navegador requieren Chromium instalado (`CHROMIUM_PATH`). Los scripts Python son herramientas opcionales de edición; el juego consume los archivos entregados y no los necesita. `artifacts/` está ignorado. Comparación reproducible en `docs/visual-review/`: antes de esta rama, commit `8b0f8a2`, y después, misma partida preparada, idioma y resolución.
 
 Verificaciones: 217 tests y build de producción correctos; cobertura de todas las claves de lujo y Dubái, límites reales de los atlas, 110 comprobaciones de navegador, compra/equipamiento, visitantes, rangos, ausencia de desbordamientos y errores JS, y movimiento reducido. Se conserva Madrid y sus tres frames de caminar originales 132×180 con el mismo apoyo. Se mantienen los efectos de monedas, rangos, colecciones y celebraciones existentes. La prueba en móvil físico de gama media y la revisión nativa siguen siendo necesarias antes de publicar: Chromium con renderizado software no permite certificar esos resultados.
+
+## Encargo: mundo integrado y pantalla limpia (lo pide Carlos tras probar la beta 2 en el móvil)
+
+Opinión de Carlos jugando en el móvil (2 de octubre):
+1. *«No se ven animaciones ni nada moviéndose.»* — **Arreglado por Claude.** Muchos Android activan «reducir movimiento» con el ahorro de batería, y el juego paraba la vida del mundo. Ahora hay dos niveles en `src/scenes/common.ts`:
+   - `calmWorld()`: la vida del mundo (gente, coches, nubes, agua, trabajadores). Solo se para si el jugador lo pide en Ajustes → «Reducir movimiento».
+   - `reducedMotion()`: efectos fuertes (sacudidas, ráfagas de partículas, rebotes). Sigue respetando el sistema.
+   - **Regla para el arte nuevo:** el movimiento ambiental va con `calmWorld()`; los efectos fuertes, con `reducedMotion()`.
+2. *«Demasiadas cosas en la pantalla todo el rato.»* — **Primera pasada hecha por Claude:**
+   - la tarjeta de la mecánica solo sale cuando hay algo que hacer;
+   - en pantallas táctiles solo queda el botón ⌖ (el zoom es con dos dedos);
+   - «Mejorar todo» es un botón redondo con un número;
+   - los nombres de los puestos solo se ven con 1 o 2 puestos.
+   - **Regla:** nada fijo nuevo en pantalla. Lo que se añada aparece solo cuando hay una acción y se va después.
+   - **Pendiente para Codex:**
+     - cabecera en una sola fila (el estilo de vida podría ir dentro del menú);
+     - la barra de abajo, menos cargada;
+     - menos etiquetas flotantes en el recinto (por ejemplo, el dinero de cada puesto solo al tocar o al estar lleno).
+3. *«Los negocios individuales hay que mejorarlos mucho visualmente, y la ciudad también: que no sean unos cuadrados y ya está. Que estén integrados como parte de un mundo y que puedas ver qué hay alrededor.»* — **Para Codex, el encargo grande:**
+   - **Ciudad (`CityScene`):** que no sea una isla cuadrada flotando en el agua. Alrededor de las parcelas jugables, un barrio que continúa:
+     - manzanas de fondo no jugables, edificios y tejados;
+     - avenidas que salen del mapa;
+     - un puerto o paseo marítimo con barcos;
+     - montañas o el skyline a lo lejos;
+     - el borde se funde con niebla o con perspectiva, sin cortes rectos.
+     - Cada ciudad, con su paisaje: en Madrid, tejados rojos y la sierra; en Miami, la playa y el océano; en Dubái, el desierto y las torres.
+   - **Negocios (`BusinessScene`, `WarehouseRoom`, `RestaurantRoom`):** el recinto no es un rombo suelto.
+     - El suelo del negocio continúa en la acera, la calle y los edificios vecinos, con valla, aparcamiento, árboles y peatones fuera.
+     - Que se vea que el almacén está en un polígono, el restaurante en una calle con terrazas y TikTok en un barrio con neones.
+     - Las tres versiones del edificio (★, ★★, ★★★) siguen valiendo para crecer.
+   - **Vida:** más cosas moviéndose alrededor (peatones, tráfico, pájaros, barcos, luces de noche), siempre con `calmWorld()` y con pocas partículas: tiene que ir fluido en gama media.
+4. *«Que se limite el movimiento de cámara hasta donde se ha creado.»* — **Hecho por Claude:**
+   - La cámara no sale de la zona que cada escena pasa a `drag.addControls(home, bounds)`, contando lo que tapan la cabecera y la barra.
+   - Tampoco se puede alejar más de lo que hace falta para ver la zona entera.
+   - **Si Codex dibuja el mundo de alrededor, tiene que ampliar `bounds`** en `CityScene` y `BusinessScene` hasta donde llegue el arte. Así se puede mirar alrededor sin ver nunca el vacío.
+
+Recordatorios técnicos:
+- el canvas va a x2 como mucho (`DPR`);
+- las imágenes se cargan en WebP: después de añadir PNG, ejecutar `npm run art:webp`;
+- comprobar en 390×844 con «reducir movimiento» activado en el sistema: el mundo se tiene que mover igual.

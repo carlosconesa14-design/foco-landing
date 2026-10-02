@@ -600,6 +600,8 @@ export const EN: Record<string, string> = {
   "Complétala: +5 % de ingresos": "Complete it: +5% income",
   "El público descansa": "The audience is resting",
   "Danos tu opinión": "Tell us what you think",
+  "Reducir movimiento": "Reduce motion",
+  "Para la gente, los coches y los efectos": "Stops people, cars and effects",
   "La leemos toda. Nos ayuda a mejorar el juego.": "We read all of it. It helps us improve the game.",
   "Puntuación": "Rating",
   "¿Qué te gusta? ¿Qué cambiarías? ¿Algo no funciona?": "What do you like? What would you change? Is anything broken?",

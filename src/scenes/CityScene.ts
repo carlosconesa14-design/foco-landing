@@ -11,7 +11,7 @@ import { ALL_BUSINESSES, type CityDef } from "../game/data";
 import { cityDef } from "../game/state";
 import { bizTier, businessRate } from "../game/economy";
 import { fmt } from "../game/format";
-import { DragScroll, reducedMotion, rewardCoins, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
+import { DragScroll, reducedMotion, rewardCoins, bridgeOf, floatText, label, setupCamera, type Bridge, calmWorld } from "./common";
 import { activeSeason } from "../game/season";
 
 /* Rejilla isométrica */
@@ -468,13 +468,13 @@ export class CityScene extends Phaser.Scene {
     const dt = Math.min(dtMs, 100) / 1000;
     this.walkClock += dt;
     this.atmosphereClock += dt;
-    if (!reducedMotion() && this.atmosphereClock > 0.1) {
+    if (!calmWorld() && this.atmosphereClock > 0.1) {
       this.drawAtmosphere(this.walkClock);
       this.atmosphereClock=0;
     }
-    this.waterLines.x = reducedMotion() ? 0 : Math.sin(this.walkClock * 0.6) * 6;
-    this.waterLines.alpha = reducedMotion() ? 1 : 0.75 + Math.sin(this.walkClock * 0.8) * 0.2;
-    const calm = reducedMotion();
+    this.waterLines.x = calmWorld() ? 0 : Math.sin(this.walkClock * 0.6) * 6;
+    this.waterLines.alpha = calmWorld() ? 1 : 0.75 + Math.sin(this.walkClock * 0.8) * 0.2;
+    const calm = calmWorld();
     const frame = calm ? 0 : Math.floor(this.walkClock * 6) % 2 ? 1 : 2;
     for (const m of this.movers) {
       // Ambient traffic respects reduced motion; production actors remain informative.
@@ -508,8 +508,8 @@ export class CityScene extends Phaser.Scene {
       m.tag?.setPosition(p.x,p.y-40).setDepth(9e4);
     }
     for (const cl of this.clouds) {
-      cl.cloud.x += reducedMotion() ? 0 : cl.speed * dt;
-      cl.shadow.x += reducedMotion() ? 0 : cl.speed * dt;
+      cl.cloud.x += calmWorld() ? 0 : cl.speed * dt;
+      cl.shadow.x += calmWorld() ? 0 : cl.speed * dt;
       if (cl.cloud.x > this.worldW + 100) {
         cl.cloud.x -= this.worldW + 260;
         cl.shadow.x -= this.worldW + 260;

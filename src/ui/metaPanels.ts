@@ -29,6 +29,7 @@ import {
 } from "../game/challenges";
 import { LANGS, lang, money, saveLang, t, type Lang } from "../i18n";
 import { analytics } from "../platform/analytics";
+import { calmWorld, setReducedMotion } from "../scenes/common";
 
 /** Paneles de la fase 2: misiones, premio diario, ejecutivos y maletines, logros. */
 
@@ -382,6 +383,8 @@ export function openSettings(ctx: PanelCtx): void {
      <div data-list style="display:grid;gap:8px"></div>
      <div class="row"><span class="face">🌐</span><div><b>${t("Idioma")}</b><span class="sub">${t("Se aplica al momento")}</span></div>
        <div class="seg" data-langs>${LANGS.map((l) => `<button data-lang="${l.id}" aria-pressed="${l.id === lang}">${l.name}</button>`).join("")}</div></div>
+     <div class="row"><span class="face">🎞️</span><div><b>${t("Reducir movimiento")}</b><span class="sub">${t("Para la gente, los coches y los efectos")}</span></div>
+       <button class="switch" role="switch" aria-checked="${calmWorld()}" data-motion aria-label="${t("Reducir movimiento")}"><i></i></button></div>
      <button class="btn ghost wide" data-open="feedback" style="margin-top:12px">💬 ${t("Danos tu opinión")}</button>
      <button class="btn ghost wide" data-open="cloud" style="margin-top:8px">☁️ ${t("Partida en la nube")}</button>
      <button class="btn ghost wide" data-diag style="margin-top:8px">🩺 ${t("Diagnóstico del móvil")}</button>
@@ -409,6 +412,13 @@ export function openSettings(ctx: PanelCtx): void {
       }
     },
   );
+  const motion = sheet.el.querySelector<HTMLButtonElement>("[data-motion]")!;
+  motion.onclick = () => {
+    const on = !calmWorld();
+    setReducedMotion(on);
+    motion.setAttribute("aria-checked", String(on));
+    ctx.fx("click");
+  };
   sheet.el.querySelectorAll<HTMLButtonElement>("[data-lang]").forEach((b) => {
     b.onclick = () => {
       const l = b.dataset.lang as Lang;
