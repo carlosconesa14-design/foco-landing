@@ -367,7 +367,8 @@ export function openSettings(ctx: PanelCtx): void {
      <div data-list style="display:grid;gap:8px"></div>
      <div class="row"><span class="face">🌐</span><div><b>${t("Idioma")}</b><span class="sub">${t("Se aplica al momento")}</span></div>
        <div class="seg" data-langs>${LANGS.map((l) => `<button data-lang="${l.id}" aria-pressed="${l.id === lang}">${l.name}</button>`).join("")}</div></div>
-     <button class="btn ghost wide" data-diag style="margin-top:12px">🩺 ${t("Diagnóstico del móvil")}</button>
+     <button class="btn ghost wide" data-open="cloud" style="margin-top:12px">☁️ ${t("Partida en la nube")}</button>
+     <button class="btn ghost wide" data-diag style="margin-top:8px">🩺 ${t("Diagnóstico del móvil")}</button>
      <p class="small muted legal-links"><a href="#" data-legal="privacidad">${t("Política de privacidad")}</a> · <a href="#" data-legal="bases-liga">${t("Bases de la Liga")}</a></p>`,
     (el) => {
       const set = ctx.state().settings;

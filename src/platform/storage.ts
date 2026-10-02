@@ -98,7 +98,11 @@ export async function loadSave(): Promise<LoadedSave> {
 /** Los guardados van en fila: uno lento nunca pisa a uno más reciente. */
 let queue: Promise<void> = Promise.resolve();
 
+/** Tras recuperar una partida de la nube no se guarda nada más hasta recargar (no se pisa la recuperada). */
+let locked = false;
+
 export function writeSave(data: unknown): Promise<void> {
+  if (locked) return queue;
   const value = encodeSave(data);
   queue = queue.then(async () => {
     try {
@@ -110,6 +114,25 @@ export function writeSave(data: unknown): Promise<void> {
     }
   });
   return queue;
+}
+
+/**
+ * Sustituye la partida por una ya firmada (la recuperada de la nube) y bloquea los guardados hasta
+ * recargar. Devuelve false si la firma no cuadra (partida editada): entonces no se toca nada.
+ */
+export async function replaceSave(value: string): Promise<boolean> {
+  const d = await decodeSave(value);
+  if (d.tampered || !d.signed) return false;
+  locked = true;
+  await queue;
+  try {
+    await Preferences.set({ key: KEY, value });
+    await Preferences.set({ key: BACKUP, value });
+  } catch {
+    locked = false;
+    return false;
+  }
+  return true;
 }
 
 export async function clearSave(): Promise<void> {

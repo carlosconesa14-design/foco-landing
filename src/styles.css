@@ -553,3 +553,17 @@ button:enabled:active { filter:brightness(1.12); }.buy:disabled,.claim:disabled,
 .lux-card.seasonal { background: linear-gradient(160deg, rgba(255, 138, 42, 0.22), var(--bg) 60%); border-color: rgba(255, 138, 42, 0.55); }
 .lux-card .lux-season { color: #ffb35c; font-size: 11px; font-weight: 700; }
 body.season-halloween header { box-shadow: 0 2px 0 #ff8a2a66 inset, 0 5px 16px #06172755; }
+
+/* Invitar a amigos y partida en la nube */
+.invite-code { display: grid; justify-items: center; gap: 6px; padding: 14px; border-radius: 16px; background: linear-gradient(160deg, rgba(61, 220, 151, 0.18), var(--bg) 70%); border: 1px solid rgba(61, 220, 151, 0.45); text-align: center; }
+.invite-code small { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; }
+.invite-code b { font-family: var(--display); font-weight: 400; font-size: 38px; letter-spacing: 0.12em; color: var(--green); user-select: text; -webkit-user-select: text; }
+.invite-code b.rec { font-size: 26px; letter-spacing: 0.06em; color: var(--gold); }
+.invite-how { display: grid; gap: 8px; margin: 10px 0; }
+.invite-how > div { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 8px; align-items: center; }
+.invite-how span { font-size: 24px; }
+.invite-how p { margin: 0; font-size: 13px; }
+.invite-use { display: grid; gap: 6px; margin-top: 10px; padding: 12px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line); }
+.invite-use p { margin: 0; }
+.invite-row { display: flex; gap: 8px; }
+.invite-row input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--ink); font: inherit; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }

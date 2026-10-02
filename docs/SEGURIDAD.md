@@ -54,6 +54,12 @@ Auditoría del 2 de octubre de 2026: qué se revisó, qué se arregló y qué fa
 - Un email no puede cobrar premios de dos cuentas distintas.
 - Ver anuncios o comprar nunca da puntos (política de AdMob y bases de la Liga).
 
+### Cuentas anónimas, invitaciones y nube (migración 0014)
+- Función `account` con la misma autenticación que la Liga (id + clave secreta con hash en la base de datos). Sin datos personales; la IP solo se guarda como hash.
+- Altas y recuperaciones limitadas por IP y día (`account_per_ip_day`): no se pueden probar claves de recuperación a lo bruto (12 caracteres de 31 posibles).
+- Invitaciones: una por cuenta, solo en los primeros 7 días, nunca la propia ni entre cuentas con la misma IP, y el amigo cuenta solo con más de 15 min de antigüedad; máximo 10 con premio. Solo dan premios del juego.
+- La nube guarda la partida **firmada** y el juego comprueba la firma al recuperarla: una partida editada no se acepta. Recuperar cambia la clave secreta (la del móvil anterior deja de valer).
+
 ### Carrera de fundadores (migración 0013)
 - El puesto de llegada a Dubái lo da el servidor (`founder_claim`): uno por jugador, en orden y sin huecos (bloqueo por ciudad).
 - No hay puesto para jugadores bloqueados ni con la señal `save` sin revisar.

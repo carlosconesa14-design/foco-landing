@@ -9,6 +9,7 @@ import { freshLeague, migrateLeague, type LeagueState } from "./league";
 import { freshFounder, migrateFounder, type FounderState } from "./founders";
 import { freshLuxury, migrateLuxury, type LuxuryState } from "./luxury";
 import { freshSeason, migrateSeason, type SeasonState } from "./season";
+import { freshAccount, migrateAccount, type AccountState } from "./account";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
@@ -121,6 +122,8 @@ export interface MetaState {
   luxury: LuxuryState;
   /** Evento de temporada (Halloween…). */
   season: SeasonState;
+  /** Cuenta anónima: invitaciones y partida en la nube. */
+  account: AccountState;
 }
 
 export interface Settings {
@@ -219,6 +222,7 @@ export function freshMeta(now = clockNow()): MetaState {
     founder: freshFounder(),
     luxury: freshLuxury(),
     season: freshSeason(),
+    account: freshAccount(),
   };
 }
 
@@ -331,6 +335,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.founder = migrateFounder(r.founder);
   m.luxury = migrateLuxury(r.luxury);
   m.season = migrateSeason(r.season);
+  m.account = migrateAccount(r.account);
   m.flags = Array.isArray(r.flags) ? r.flags.filter((f): f is string => typeof f === "string").slice(0, 10) : [];
   return m;
 }

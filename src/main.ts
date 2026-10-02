@@ -35,6 +35,7 @@ import { activeSheet, closeSheet } from "./ui/sheet";
 import { openWorld } from "./ui/worldPanels";
 import { openLife } from "./ui/lifePanel";
 import { openSeason } from "./ui/seasonPanel";
+import { openCloud, openInvite, syncAccount } from "./ui/invitePanel";
 import { LUXURY, affordable, owns } from "./game/luxury";
 import { SEASON, activeSeason, collectVisitor, ensureSeason, scheduleVisitor, seasonOpen, visitorCandy, visitorDue } from "./game/season";
 import { openEmpire } from "./ui/empirePanel";
@@ -327,6 +328,8 @@ root.addEventListener("click", (e) => {
   else if (which === "settings") openSettings(ctx);
   else if (which === "life") openLife(ctx);
   else if (which === "season") openSeason(ctx);
+  else if (which === "invite") openInvite(ctx);
+  else if (which === "cloud") openCloud(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
@@ -825,6 +828,7 @@ function leaving(): void {
   analytics.track("session_end", { seconds: Math.round((clockNow() - sessionStart) / 1000) });
   void analytics.flush(true);
   void syncLeague(S);
+  void syncAccount(ctx, true);
   void notifications.schedule(planNotifications(S, clockNow()));
 }
 
@@ -951,6 +955,7 @@ async function boot(): Promise<void> {
       if (added > 0) banner(root, "🏅", t("+{n} puntos de Liga", { n: added }));
     });
     if (reachedFounderCity(S)) void syncFounder();
+    void syncAccount(ctx);
   }, 20_000);
   document.addEventListener("visibilitychange", () => {
     sound.setHidden(document.hidden);

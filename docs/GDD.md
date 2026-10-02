@@ -81,6 +81,12 @@ Un sitio en el que gastar el dinero aparte de las mejoras, para que apetezca gan
 - **Anuncios:** «**Probar 1 h**» (`lux_trial`, 5 al día): lo usas y lo ves puesto una hora, con su bonus, para que entren ganas de comprarlo. «**Oferta del día**» (`lux_deal`): uno de los 4 objetos más baratos que no tienes, a mitad de precio con un anuncio.
 - Lógica en `src/game/luxury.ts` (tests en `tests/luxury.test.ts`), pantalla en `src/ui/lifePanel.ts` y personaje en `src/ui/avatar.ts` (SVG por capas hasta que llegue el arte).
 
+### Invitar a amigos y partida en la nube ✅
+Ambas usan una **cuenta anónima** que se crea sola al terminar el tutorial (sin email ni datos personales): el servidor da un id y una clave secreta (se guardan con la partida), un **código de invitación** público de 6 caracteres y una **clave de recuperación** privada (`XXXX-XXXX-XXXX`). Migración 0014 y Edge Function `account`.
+- **Invitar** (menú → «Invita a amigos»): tu código, botón para compartir (enlace a la beta con `?ref=CÓDIGO`, que lo aplica solo) y cuántos amigos van. El amigo recibe al momento **50 💎 y un maletín**; tú, **100 💎 y un maletín** por cada amigo que abre su segundo negocio (hasta 10). Solo premios del juego.
+- **Contra abusos:** un código por persona y solo en sus primeros 7 días; no vale el propio ni el de alguien con la misma conexión; el amigo cuenta solo si su cuenta tiene más de 15 min; máximo de altas por IP y día.
+- **Nube** (Ajustes → «Partida en la nube»): la partida firmada se sube sola cada 5 min y al salir. Con la clave de recuperación se recupera en otro móvil (se comprueba la firma; la clave secreta anterior deja de valer). Límites ajustables en `league_config`.
+
 ### Eventos de temporada: Halloween ✅
 Del **24 de octubre al 1 de noviembre** (calendario local, con la hora del juego). Botón 🎃 en el lateral mientras dura y calabazas en las plazas de la ciudad.
 - **Fantasmas 👻:** aparecen cada 1–2 min mientras juegas y se van a los 20 s. Al tocarlos dan 5–10 **caramelos 🍬**, **x3 con un anuncio** (`season_x3`). Las ventas también dan 1 caramelo cada 50.
