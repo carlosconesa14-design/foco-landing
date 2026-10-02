@@ -15,6 +15,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Área | Qué | Dónde |
 | --- | --- | --- |
 | Juego | Ciudad isométrica y recintos por negocio. Madrid (4 negocios), Miami (5, con olas turísticas) y **Dubái** (5, con el precio del oro y la carrera de fundadores; arte provisional). Gerentes, ejecutivos y maletines, bolsa, expansión, Oficina central y edificios que crecen | `src/game`, `src/scenes`, [`GDD.md`](GDD.md) |
+| Ajustes remotos | Números de ofertas, viral, «Mi vida» y temporada cambiables desde Supabase sin publicar versión (¼–4× del valor de fábrica) | `remote.ts`, migración 0015, [`AJUSTES.md`](AJUSTES.md) |
 | Amigos y nube | Cuenta anónima automática: **invitar a amigos** (50 💎 + maletín para el amigo, 100 💎 + maletín para quien invita) y **partida en la nube** con clave de recuperación | `account.ts`, `invitePanel.ts`, migración 0014, función `account` |
 | Temporada | **Halloween** (24 oct – 1 nov): fantasmas con caramelos (x3 con anuncio), tienda con 5 objetos exclusivos de «Mi vida», diamantes y maletines, y calabazas en la ciudad | `season.ts`, `seasonPanel.ts` |
 | Mi vida | Tienda de lujo con personaje: 32 objetos en 6 colecciones, prestigio (+1 % de ingresos por punto, +10 % por colección), exclusivos con 💎, probar 1 h y oferta del día con anuncio. Tu coche circula por la ciudad | `luxury.ts`, `lifePanel.ts`, `avatar.ts` |
@@ -29,8 +30,8 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Android | Capacitor, `com.carlosconesa.ridermillionaire`. Hay un APK en cada subida y un AAB firmado manual (`release.yml`) | `android/`, [`TIENDA.md`](TIENDA.md) |
 
 **Servidor (Supabase):** proyecto `de-rider-a-millonario` (id `jpdvpbqiasyjzbdaiedh`, París).
-- **Migraciones aplicadas:** de la 0001 a la 0014 (`supabase/migrations`). La 0014 son las cuentas anónimas (invitaciones y nube). La 0010 es la de seguridad, la 0011 deja sin premios las partidas editadas, la 0012 es la función del panel y la 0013 la carrera de fundadores.
-- **Edge Functions:** `league` (v5, con la hora del servidor y la carrera de fundadores), `track` (v2) y `account` (v1, invitaciones y nube).
+- **Migraciones aplicadas:** de la 0001 a la 0015 (`supabase/migrations`). La 0014 son las cuentas anónimas (invitaciones y nube) y la 0015 los ajustes remotos. La 0010 es la de seguridad, la 0011 deja sin premios las partidas editadas, la 0012 es la función del panel y la 0013 la carrera de fundadores.
+- **Edge Functions:** `league` (v5, con la hora del servidor y la carrera de fundadores), `track` (v2) y `account` (v2, invitaciones, nube y ajustes).
 - **Seguridad:** RLS sin políticas y ningún permiso para anónimos; solo se accede a través de las funciones. Auditoría completa, defensas y pendientes en [`SEGURIDAD.md`](SEGURIDAD.md).
 
 ## Decisiones tomadas (no volver a discutir sin motivo)
@@ -64,7 +65,8 @@ Icono, logotipo «Rider Millionaire», gráfico destacado y capturas para la tie
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
 2. ~~Panel de números de la beta~~ ✅ ([`ANALITICA.md`](ANALITICA.md), «Informes»).
 3. ~~Dubái, con la carrera de fundadores~~ ✅ (`founders.ts`, migración 0013). Falta su arte (Codex).
-4. Rendimiento en móviles de gama media.
+3b. ~~Rangos de los puestos, «Mi vida», Halloween, invitar a amigos, nube y ajustes remotos~~ ✅. Falta su arte (Codex, ver `ART.md`).
+4. Rendimiento en móviles de gama media (antes de salir en Google Play: ahora hay más efectos).
 5. Revisar la primera partida con datos reales.
 
 ## Cómo se trabaja

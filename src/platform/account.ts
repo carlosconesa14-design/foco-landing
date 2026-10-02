@@ -44,6 +44,8 @@ async function call<T>(body: Record<string, unknown>, timeoutMs = 10000): Promis
 }
 
 export const accountApi = {
+  /** Ajustes del juego desde el servidor (ver docs/AJUSTES.md). No necesita cuenta. */
+  config: () => call<{ config: unknown }>({ action: "config" }, 6000),
   register: () => call<{ id: string; secret: string; code: string; recovery: string }>({ action: "register" }),
   refStatus: (c: Creds) => call<RefStatus>({ action: "ref_status", ...c }),
   refUse: (c: Creds, code: string) => call<{ ok: true }>({ action: "ref_use", ...c, code }),
@@ -63,5 +65,31 @@ export function refFromUrl(): string {
     return /^[A-Za-z0-9]{4,12}$/.test(v) ? v.toUpperCase() : "";
   } catch {
     return "";
+  }
+}
+
+const CFG_KEY = "remoteConfig";
+
+/** Últimos ajustes recibidos (para aplicarlos al arrancar, aunque no haya conexión). */
+export function cachedConfig(): unknown {
+  try {
+    return JSON.parse(localStorage.getItem(CFG_KEY) ?? "null");
+  } catch {
+    return null;
+  }
+}
+
+/** Pide los ajustes al servidor y los guarda para el próximo arranque. */
+export async function fetchConfig(): Promise<unknown | null> {
+  try {
+    const { config } = await accountApi.config();
+    try {
+      localStorage.setItem(CFG_KEY, JSON.stringify(config ?? {}));
+    } catch {
+      /* sin almacenamiento: se aplican igual */
+    }
+    return config ?? {};
+  } catch {
+    return null;
   }
 }

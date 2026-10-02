@@ -109,6 +109,8 @@ docs/GDD.md           documento de diseño y hoja de ruta
 
 **Seguridad y trampas** (hora del móvil, partidas editadas, Liga, secretos): [`docs/SEGURIDAD.md`](docs/SEGURIDAD.md).
 
+**Ajustes desde el servidor** (cambiar ofertas y premios sin publicar versión): [`docs/AJUSTES.md`](docs/AJUSTES.md).
+
 El consentimiento GDPR (formulario UMP de Google) y el permiso ATT de iOS ya se piden en `AdMobAds.init()`. Solo tienes que crear el mensaje de consentimiento en la consola de AdMob, en **Privacidad y mensajes**.
 
 ## Próximos pasos

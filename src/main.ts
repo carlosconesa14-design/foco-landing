@@ -36,6 +36,8 @@ import { openWorld } from "./ui/worldPanels";
 import { openLife } from "./ui/lifePanel";
 import { openSeason } from "./ui/seasonPanel";
 import { openCloud, openInvite, syncAccount } from "./ui/invitePanel";
+import { applyRemoteConfig, remoteVersion } from "./game/remote";
+import { cachedConfig, fetchConfig } from "./platform/account";
 import { LUXURY, affordable, owns } from "./game/luxury";
 import { SEASON, activeSeason, collectVisitor, ensureSeason, scheduleVisitor, seasonOpen, visitorCandy, visitorDue } from "./game/season";
 import { openEmpire } from "./ui/empirePanel";
@@ -835,7 +837,7 @@ function leaving(): void {
 /** Al volver: ya no hacen falta los avisos; se ofrecen las ganancias offline. */
 async function returning(): Promise<void> {
   sessionStart = clockNow();
-  analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial, lang });
+  analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial, lang, cfg: remoteVersion });
   void notifications.cancelAll();
   // Lo ganado fuera se calcula con la hora del servidor: adelantar la del móvil no da más.
   await waitTime();
@@ -914,6 +916,9 @@ game.events.on("step", (time: number) => {
 let booted = false;
 
 async function boot(): Promise<void> {
+  // Ajustes desde el servidor: los últimos guardados al momento y los nuevos en cuanto lleguen.
+  applyRemoteConfig(cachedConfig());
+  void fetchConfig().then((cfg) => cfg && applyRemoteConfig(cfg));
   await loadIcons();
   const loaded = await loadSave();
   // Primero el reloj guardado (nunca hacia atrás); luego la hora del servidor.
@@ -947,7 +952,7 @@ async function boot(): Promise<void> {
   booted = true;
   setInterval(() => void syncTime(), 15 * 60e3);
   setInterval(save, 5000);
-  analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial, lang });
+  analytics.track("session_start", { day: daysSinceInstall(), city: S.city, tutorial: S.meta.tutorial, lang, cfg: remoteVersion });
   setInterval(() => void analytics.flush(), 30_000);
   // Liga: envía los puntos pendientes cada 20 s (si no hay conexión, esperan en la cola)
   setInterval(() => {

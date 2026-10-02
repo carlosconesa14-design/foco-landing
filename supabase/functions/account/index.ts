@@ -45,6 +45,9 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Ajustes del juego (públicos, sin cuenta): ver docs/AJUSTES.md.
+    if (body.action === "config") return json({ config: await rpc("config_get", {}) });
+
     // La IP solo se guarda como hash: limita altas y que se prueben claves a lo bruto.
     const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
     if (body.action === "register") return json(await rpc("account_register", { p_ip_hash: await sha256(`account:${ip}`) }));
