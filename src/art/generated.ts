@@ -1,10 +1,11 @@
 import type Phaser from "phaser";
 import { GENERATED_FRAMES as BASE_FRAMES, GENERATED_SHEETS as BASE_SHEETS } from "./generatedFrames";
 import { WAREHOUSE_FRAMES } from "./warehouseFrames";
+import { VISUAL_FRAMES, VISUAL_SHEETS } from "./visualFrames";
 import { RESTAURANT_FRAMES } from "./restaurantFrames";
 
-export const GENERATED_SHEETS = [...BASE_SHEETS, { key: "generated-restaurant", file: "restaurant" }, { key: "generated-warehouse", file: "warehouse" }];
-const GENERATED_FRAMES: typeof BASE_FRAMES = { ...BASE_FRAMES, ...RESTAURANT_FRAMES, ...WAREHOUSE_FRAMES };
+export const GENERATED_SHEETS = [...BASE_SHEETS, ...VISUAL_SHEETS, { key: "generated-restaurant", file: "restaurant" }, { key: "generated-warehouse", file: "warehouse" }];
+const GENERATED_FRAMES: typeof BASE_FRAMES = { ...BASE_FRAMES, ...RESTAURANT_FRAMES, ...WAREHOUSE_FRAMES, ...VISUAL_FRAMES };
 type Spec = { w: number; h: number };
 const aliases: Record<string, string> = {};
 for (const key of Object.keys(GENERATED_FRAMES)) {
@@ -58,5 +59,5 @@ export function swapArt(image: Phaser.GameObjects.Image, key: string): void {
 export function generatedIcon(key: string, className = "game-icon"): string {
   const ref = GENERATED_FRAMES[key];
   if (!ref) return "";
-  return `<svg class="${className}" viewBox="${ref.x} ${ref.y} ${ref.w} ${ref.h}" aria-hidden="true" focusable="false" overflow="hidden"><image href="sprites/generated/${ref.file}.png" width="${ref.sheetW}" height="${ref.sheetH}"/></svg>`;
+  return `<svg class="${className}" viewBox="${ref.x} ${ref.y} ${ref.w} ${ref.h}" aria-hidden="true" focusable="false" overflow="hidden"><svg x="${ref.x}" y="${ref.y}" width="${ref.w}" height="${ref.h}" overflow="hidden"><image href="sprites/generated/${ref.file}.png" x="${-ref.x}" y="${-ref.y}" width="${ref.sheetW}" height="${ref.sheetH}"/></svg></svg>`;
 }
