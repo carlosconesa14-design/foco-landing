@@ -1,0 +1,572 @@
+{
+  "frames": {
+    "lux_digital": {
+      "frame": {
+        "x": 44,
+        "y": 27,
+        "w": 208,
+        "h": 236
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 208,
+        "h": 236
+      },
+      "sourceSize": {
+        "w": 208,
+        "h": 236
+      }
+    },
+    "lux_luxwatch": {
+      "frame": {
+        "x": 334,
+        "y": 21,
+        "w": 196,
+        "h": 246
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 196,
+        "h": 246
+      },
+      "sourceSize": {
+        "w": 196,
+        "h": 246
+      }
+    },
+    "lux_goldchain": {
+      "frame": {
+        "x": 619,
+        "y": 41,
+        "w": 299,
+        "h": 211
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 299,
+        "h": 211
+      },
+      "sourceSize": {
+        "w": 299,
+        "h": 211
+      }
+    },
+    "lux_diamondring": {
+      "frame": {
+        "x": 1002,
+        "y": 35,
+        "w": 183,
+        "h": 226
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 183,
+        "h": 226
+      },
+      "sourceSize": {
+        "w": 183,
+        "h": 226
+      }
+    },
+    "lux_crown": {
+      "frame": {
+        "x": 1276,
+        "y": 21,
+        "w": 240,
+        "h": 246
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 240,
+        "h": 246
+      },
+      "sourceSize": {
+        "w": 240,
+        "h": 246
+      }
+    },
+    "lux_deliverybike": {
+      "frame": {
+        "x": 44,
+        "y": 277,
+        "w": 234,
+        "h": 236
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 234,
+        "h": 236
+      },
+      "sourceSize": {
+        "w": 234,
+        "h": 236
+      }
+    },
+    "lux_scooter": {
+      "frame": {
+        "x": 344,
+        "y": 282,
+        "w": 205,
+        "h": 224
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 205,
+        "h": 224
+      },
+      "sourceSize": {
+        "w": 205,
+        "h": 224
+      }
+    },
+    "lux_motorbike": {
+      "frame": {
+        "x": 625,
+        "y": 294,
+        "w": 275,
+        "h": 209
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 275,
+        "h": 209
+      },
+      "sourceSize": {
+        "w": 275,
+        "h": 209
+      }
+    },
+    "lux_sportscar": {
+      "frame": {
+        "x": 929,
+        "y": 319,
+        "w": 298,
+        "h": 170
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 298,
+        "h": 170
+      },
+      "sourceSize": {
+        "w": 298,
+        "h": 170
+      }
+    },
+    "lux_supercar": {
+      "frame": {
+        "x": 1242,
+        "y": 302,
+        "w": 279,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 279,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 279,
+        "h": 192
+      }
+    },
+    "lux_limo": {
+      "frame": {
+        "x": 10,
+        "y": 548,
+        "w": 297,
+        "h": 175
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 297,
+        "h": 175
+      },
+      "sourceSize": {
+        "w": 297,
+        "h": 175
+      }
+    },
+    "lux_goldcar": {
+      "frame": {
+        "x": 313,
+        "y": 557,
+        "w": 284,
+        "h": 162
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 284,
+        "h": 162
+      },
+      "sourceSize": {
+        "w": 284,
+        "h": 162
+      }
+    },
+    "lux_parents": {
+      "frame": {
+        "x": 614,
+        "y": 516,
+        "w": 308,
+        "h": 235
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 308,
+        "h": 235
+      },
+      "sourceSize": {
+        "w": 308,
+        "h": 235
+      }
+    },
+    "lux_flat": {
+      "frame": {
+        "x": 941,
+        "y": 515,
+        "w": 288,
+        "h": 237
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 288,
+        "h": 237
+      },
+      "sourceSize": {
+        "w": 288,
+        "h": 237
+      }
+    },
+    "lux_penthouse": {
+      "frame": {
+        "x": 1245,
+        "y": 515,
+        "w": 283,
+        "h": 239
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 283,
+        "h": 239
+      },
+      "sourceSize": {
+        "w": 283,
+        "h": 239
+      }
+    },
+    "lux_villa": {
+      "frame": {
+        "x": 12,
+        "y": 754,
+        "w": 295,
+        "h": 246
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 295,
+        "h": 246
+      },
+      "sourceSize": {
+        "w": 295,
+        "h": 246
+      }
+    },
+    "lux_mansion": {
+      "frame": {
+        "x": 313,
+        "y": 756,
+        "w": 301,
+        "h": 229
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 301,
+        "h": 229
+      },
+      "sourceSize": {
+        "w": 301,
+        "h": 229
+      }
+    },
+    "lux_island": {
+      "frame": {
+        "x": 621,
+        "y": 759,
+        "w": 301,
+        "h": 233
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 301,
+        "h": 233
+      },
+      "sourceSize": {
+        "w": 301,
+        "h": 233
+      }
+    },
+    "lux_hearse": {
+      "frame": {
+        "x": 926,
+        "y": 789,
+        "w": 303,
+        "h": 177
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 303,
+        "h": 177
+      },
+      "sourceSize": {
+        "w": 303,
+        "h": 177
+      }
+    },
+    "lux_haunted": {
+      "frame": {
+        "x": 1247,
+        "y": 754,
+        "w": 281,
+        "h": 244
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 281,
+        "h": 244
+      },
+      "sourceSize": {
+        "w": 281,
+        "h": 244
+      }
+    },
+    "luxcar_deliverybike": {
+      "frame": {
+        "x": 44,
+        "y": 277,
+        "w": 234,
+        "h": 236
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 234,
+        "h": 236
+      },
+      "sourceSize": {
+        "w": 234,
+        "h": 236
+      }
+    },
+    "luxcar_scooter": {
+      "frame": {
+        "x": 344,
+        "y": 282,
+        "w": 205,
+        "h": 224
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 205,
+        "h": 224
+      },
+      "sourceSize": {
+        "w": 205,
+        "h": 224
+      }
+    },
+    "luxcar_motorbike": {
+      "frame": {
+        "x": 625,
+        "y": 294,
+        "w": 275,
+        "h": 209
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 275,
+        "h": 209
+      },
+      "sourceSize": {
+        "w": 275,
+        "h": 209
+      }
+    },
+    "luxcar_sportscar": {
+      "frame": {
+        "x": 929,
+        "y": 319,
+        "w": 298,
+        "h": 170
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 298,
+        "h": 170
+      },
+      "sourceSize": {
+        "w": 298,
+        "h": 170
+      }
+    },
+    "luxcar_supercar": {
+      "frame": {
+        "x": 1242,
+        "y": 302,
+        "w": 279,
+        "h": 192
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 279,
+        "h": 192
+      },
+      "sourceSize": {
+        "w": 279,
+        "h": 192
+      }
+    },
+    "luxcar_limo": {
+      "frame": {
+        "x": 10,
+        "y": 548,
+        "w": 297,
+        "h": 175
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 297,
+        "h": 175
+      },
+      "sourceSize": {
+        "w": 297,
+        "h": 175
+      }
+    },
+    "luxcar_goldcar": {
+      "frame": {
+        "x": 313,
+        "y": 557,
+        "w": 284,
+        "h": 162
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 284,
+        "h": 162
+      },
+      "sourceSize": {
+        "w": 284,
+        "h": 162
+      }
+    },
+    "luxcar_hearse": {
+      "frame": {
+        "x": 926,
+        "y": 789,
+        "w": 303,
+        "h": 177
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 303,
+        "h": 177
+      },
+      "sourceSize": {
+        "w": 303,
+        "h": 177
+      }
+    }
+  },
+  "meta": {
+    "image": "luxury.png",
+    "size": {
+      "w": 1536,
+      "h": 1024
+    },
+    "scale": "1"
+  }
+}

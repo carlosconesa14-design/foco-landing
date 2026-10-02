@@ -1,0 +1,752 @@
+{
+  "frames": {
+    "lux_cat": {
+      "frame": {
+        "x": 29,
+        "y": 0,
+        "w": 274,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 274,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 274,
+        "h": 313
+      }
+    },
+    "lux_dog": {
+      "frame": {
+        "x": 336,
+        "y": 0,
+        "w": 282,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 282,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 282,
+        "h": 312
+      }
+    },
+    "lux_parrot": {
+      "frame": {
+        "x": 675,
+        "y": 0,
+        "w": 232,
+        "h": 315
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 232,
+        "h": 315
+      },
+      "sourceSize": {
+        "w": 232,
+        "h": 315
+      }
+    },
+    "lux_tiger": {
+      "frame": {
+        "x": 971,
+        "y": 1,
+        "w": 257,
+        "h": 314
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 257,
+        "h": 314
+      },
+      "sourceSize": {
+        "w": 257,
+        "h": 314
+      }
+    },
+    "lux_penguin": {
+      "frame": {
+        "x": 0,
+        "y": 315,
+        "w": 314,
+        "h": 311
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 314,
+        "h": 311
+      },
+      "sourceSize": {
+        "w": 314,
+        "h": 311
+      }
+    },
+    "lux_pumpkin": {
+      "frame": {
+        "x": 322,
+        "y": 333,
+        "w": 295,
+        "h": 284
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 295,
+        "h": 284
+      },
+      "sourceSize": {
+        "w": 295,
+        "h": 284
+      }
+    },
+    "lux_yacht": {
+      "frame": {
+        "x": 627,
+        "y": 342,
+        "w": 313,
+        "h": 254
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 313,
+        "h": 254
+      },
+      "sourceSize": {
+        "w": 313,
+        "h": 254
+      }
+    },
+    "lux_jet": {
+      "frame": {
+        "x": 940,
+        "y": 351,
+        "w": 314,
+        "h": 259
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 314,
+        "h": 259
+      },
+      "sourceSize": {
+        "w": 314,
+        "h": 259
+      }
+    },
+    "lux_rocket": {
+      "frame": {
+        "x": 16,
+        "y": 626,
+        "w": 255,
+        "h": 309
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 255,
+        "h": 309
+      },
+      "sourceSize": {
+        "w": 255,
+        "h": 309
+      }
+    },
+    "lux_vampire": {
+      "frame": {
+        "x": 314,
+        "y": 626,
+        "w": 313,
+        "h": 292
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 313,
+        "h": 292
+      },
+      "sourceSize": {
+        "w": 313,
+        "h": 292
+      }
+    },
+    "lux_skullring": {
+      "frame": {
+        "x": 647,
+        "y": 654,
+        "w": 293,
+        "h": 252
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 293,
+        "h": 252
+      },
+      "sourceSize": {
+        "w": 293,
+        "h": 252
+      }
+    },
+    "ghost": {
+      "frame": {
+        "x": 950,
+        "y": 631,
+        "w": 291,
+        "h": 291
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 291,
+        "h": 291
+      },
+      "sourceSize": {
+        "w": 291,
+        "h": 291
+      }
+    },
+    "veh_supply": {
+      "frame": {
+        "x": 10,
+        "y": 935,
+        "w": 304,
+        "h": 305
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 304,
+        "h": 305
+      },
+      "sourceSize": {
+        "w": 304,
+        "h": 305
+      }
+    },
+    "ch_vip_0": {
+      "frame": {
+        "x": 376,
+        "y": 935,
+        "w": 198,
+        "h": 319
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 198,
+        "h": 319
+      },
+      "sourceSize": {
+        "w": 198,
+        "h": 319
+      }
+    },
+    "dubai_planter": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "miami_plaza": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "pumpkin": {
+      "frame": {
+        "x": 322,
+        "y": 333,
+        "w": 295,
+        "h": 284
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 295,
+        "h": 284
+      },
+      "sourceSize": {
+        "w": 295,
+        "h": 284
+      }
+    },
+    "decor_supercars_2": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_supercars_3": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_hotel_2": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_hotel_3": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_safari_2": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_safari_3": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_souk_2": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_souk_3": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_tower_2": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_tower_3": {
+      "frame": {
+        "x": 660,
+        "y": 935,
+        "w": 262,
+        "h": 313
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 262,
+        "h": 313
+      },
+      "sourceSize": {
+        "w": 262,
+        "h": 313
+      }
+    },
+    "decor_foodtruck_2": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "decor_foodtruck_3": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "decor_beachclub_2": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "decor_beachclub_3": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "decor_yachts_2": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "decor_yachts_3": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "decor_realestate_2": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "decor_realestate_3": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "decor_crypto_2": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    },
+    "decor_crypto_3": {
+      "frame": {
+        "x": 945,
+        "y": 935,
+        "w": 294,
+        "h": 312
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 294,
+        "h": 312
+      },
+      "sourceSize": {
+        "w": 294,
+        "h": 312
+      }
+    }
+  },
+  "meta": {
+    "image": "lifestyle-extras.png",
+    "size": {
+      "w": 1254,
+      "h": 1254
+    },
+    "scale": "1"
+  }
+}
