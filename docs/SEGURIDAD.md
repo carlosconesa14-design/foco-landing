@@ -54,6 +54,12 @@ Auditoría del 2 de octubre de 2026: qué se revisó, qué se arregló y qué fa
 - Un email no puede cobrar premios de dos cuentas distintas.
 - Ver anuncios o comprar nunca da puntos (política de AdMob y bases de la Liga).
 
+### Carrera de fundadores (migración 0013)
+- El puesto de llegada a Dubái lo da el servidor (`founder_claim`): uno por jugador, en orden y sin huecos (bloqueo por ciudad).
+- No hay puesto para jugadores bloqueados ni con la señal `save` sin revisar.
+- Nadie llega a Dubái en menos de `league_config.founders_min_days` (3) días desde que empezó a jugar: se toma lo más antiguo entre el alta en la Liga y el primer evento de analítica de su móvil. Quien llega antes se queda en espera y lo vuelve a pedir más tarde.
+- El premio es solo del juego (un ejecutivo). Alguien que edite el código podría darse el ejecutivo en su propia partida, pero no puede quitarle el puesto a nadie ni conseguir nada con valor real.
+
 ## Revisión antes de pagar un premio en dinero
 
 En Supabase → **SQL Editor**:

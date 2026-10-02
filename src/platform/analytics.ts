@@ -55,7 +55,8 @@ function write(key: string, v: unknown): void {
   }
 }
 
-function deviceId(): string {
+/** Id anónimo del móvil (el mismo de la analítica). */
+export function deviceId(): string {
   let id = read<string | null>("analyticsDevice", null);
   if (!id) {
     id = crypto.randomUUID();

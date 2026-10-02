@@ -1,5 +1,7 @@
 import { now } from "../game/clock";
-import { CITIES, FRANCHISE, OFFICE, TOURISM } from "../game/data";
+import { CITIES, FOUNDERS, FRANCHISE, GOLD, OFFICE, TOURISM } from "../game/data";
+import { isFounder, reachedFounderCity } from "../game/founders";
+import { leagueApi } from "../platform/league";
 import { earn, passiveRate } from "../game/economy";
 import { fmt, fmtTime } from "../game/format";
 import * as world from "../game/world";
@@ -25,8 +27,25 @@ const logPct = (v: number, goal: number) => Math.max(0, Math.min(100, (Math.log1
 
 /* ---------- Mapa del mundo ---------- */
 
+/** Plazas ocupadas en la carrera de fundadores (se pide al abrir el mapa). */
+let founderCount: { spots: number; taken: number } | null = null;
+
+function founderLine(s: ReturnType<PanelCtx["state"]>): string {
+  const f = s.meta.founder;
+  if (f.rank !== null) {
+    return `<span class="tag gold">🏁 ${isFounder(s) ? t("Fundador #{n}", { n: f.rank }) : t("Llegaste el n.º {n}", { n: f.rank })}</span>`;
+  }
+  const left = founderCount ? Math.max(0, founderCount.spots - founderCount.taken) : null;
+  if (left === 0) return "";
+  const txt = t("Carrera de fundadores: los {n} primeros en llegar reciben un ejecutivo exclusivo", { n: FOUNDERS.spots });
+  return `<span class="tag gold">🏁 ${txt}${left !== null ? ` · ${t("quedan {n} plazas", { n: left })}` : ""}</span>${
+    reachedFounderCity(s) && !s.meta.league.id ? `<p class="small muted">${t("Únete a la Liga para reservar tu puesto.")}</p>` : ""
+  }`;
+}
+
 export function openWorld(ctx: PanelCtx): void {
   let expandArmed = false;
+  if (!founderCount) leagueApi.founders(FOUNDERS.city).then((c) => { founderCount = c; sheet.update?.(); }).catch(() => {});
   const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">${icon("ic_world", "🌍")}</span><div><h3>${t("Expansión mundial")}</h3><p class="muted" data-sub></p></div></div>
@@ -68,12 +87,14 @@ export function openWorld(ctx: PanelCtx): void {
         } else {
           body = `<span class="sub">${prevDone || i === 0 ? "" : "🔒 " + t("Completa {city} para abrirla", { city: CITIES[i - 1].name })}</span>`;
         }
-        const extra = c.mechanic === "tourism" ? `<span class="tag">🌊 ${t("Olas turísticas: ventas x{n}", { n: TOURISM.mult })}</span>` : "";
+        let extra = c.mechanic === "tourism" ? `<span class="tag">🌊 ${t("Olas turísticas: ventas x{n}", { n: TOURISM.mult })}</span>` : "";
+        if (c.mechanic === "gold") extra = `<span class="tag">🥇 ${t("Precio del oro: ventas hasta x{n}", { n: GOLD.max })}</span>`;
+        if (c.id === FOUNDERS.city) extra += founderLine(s);
         return `<div class="city-card ${here ? "here" : ""} ${locked ? "locked" : ""}">
           <div class="city-top"><span class="flag">${flagIcon(c)}</span><div><b>${c.name}</b>${here ? `<span class="tag here">${t("Estás aquí")}</span>` : ""}<p class="small muted">${c.blurb}</p>${extra}</div></div>
           <div class="city-body">${body}</div></div>`;
       });
-      cards.push(`<div class="city-card locked"><div class="city-top"><span class="flag">🗺️</span><div><b>${t("Próximamente")}</b><p class="small muted">${t("Dubái, Tokio… nuevas ciudades con sus propias reglas.")}</p></div></div></div>`);
+      cards.push(`<div class="city-card locked"><div class="city-top"><span class="flag">🗺️</span><div><b>${t("Próximamente")}</b><p class="small muted">${t("Tokio, Nueva York… nuevas ciudades con sus propias reglas.")}</p></div></div></div>`);
       const map = $(el, "[data-map]");
       if (!paint(map, cards.join(""))) return;
       map.querySelectorAll<HTMLButtonElement>("[data-expand]").forEach((b) => {

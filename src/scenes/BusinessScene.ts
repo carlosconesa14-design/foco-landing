@@ -61,6 +61,11 @@ const GROUND: Record<string, { a: number; b: number; path: number; pad: number }
   yachts: { a: 0xd9c3a5, b: 0xd0b999, path: 0x1e3799, pad: 0x576574 },
   realestate: { a: 0xe9e4d6, b: 0xe0dac9, path: 0xfeca57, pad: 0x8395a7 },
   crypto: { a: 0xd9d3ee, b: 0xcfc8e8, path: 0xff9f1a, pad: 0x341f97 },
+  supercars: { a: 0xe2e4e8, b: 0xd8dbe0, path: 0xe84118, pad: 0x2f3640 },
+  hotel: { a: 0xf3ead6, b: 0xebe0c8, path: 0xc8a24a, pad: 0x8c6d2e },
+  safari: { a: 0xebcf9c, b: 0xe2c48e, path: 0x8c5a2b, pad: 0xb7793d },
+  souk: { a: 0xf2e2bd, b: 0xead6aa, path: 0xf6c344, pad: 0x7d5a14 },
+  tower: { a: 0xdbe6ec, b: 0xd0dde4, path: 0x9fd3e6, pad: 0x34495e },
 };
 
 interface SlotView {

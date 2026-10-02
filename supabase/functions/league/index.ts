@@ -34,7 +34,7 @@ async function rpc(fn: string, args: Record<string, unknown>) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "method" }, 405);
-  let body: { action?: string; id?: string; secret?: string; events?: unknown; nickname?: string; week?: string; email?: string; adult?: boolean; platform?: string };
+  let body: { action?: string; id?: string; secret?: string; events?: unknown; nickname?: string; week?: string; email?: string; adult?: boolean; platform?: string; city?: string; device?: string };
   try {
     const text = await req.text();
     if (text.length > MAX_BODY) return json({ error: "size" }, 413);
@@ -48,6 +48,9 @@ Deno.serve(async (req) => {
   if (body.action === "time") return json({ now: Date.now() });
 
   try {
+    // Carrera de fundadores: plazas ocupadas (público, para el mapa del mundo).
+    if (body.action === "founders") return json(await rpc("founder_count", { p_city: String(body.city ?? "dubai") }));
+
     if (body.action === "register") {
       // La IP solo se guarda como hash, para limitar altas masivas.
       const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
@@ -74,6 +77,15 @@ Deno.serve(async (req) => {
         return json(await rpc("league_set_nickname", { p_player: body.id, p_nick: String(body.nickname ?? "") }));
       case "claim":
         return json(await rpc("league_claim", { p_player: body.id }));
+      case "founder":
+        // Puesto de llegada a una ciudad nueva (los primeros reciben un ejecutivo exclusivo del juego).
+        return json(
+          await rpc("founder_claim", {
+            p_player: body.id,
+            p_city: String(body.city ?? ""),
+            p_device: typeof body.device === "string" && UUID.test(body.device) ? body.device : null,
+          }),
+        );
       case "payouts":
         return json({ payouts: await rpc("league_payouts", { p_player: body.id }) });
       case "payout":

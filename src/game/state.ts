@@ -6,6 +6,7 @@ import { freshOffers, migrateOffers, type OffersState } from "./offers";
 import type { ClockState } from "./clock";
 import { freshShop, migrateShop, type ShopState } from "./shop";
 import { freshLeague, migrateLeague, type LeagueState } from "./league";
+import { freshFounder, migrateFounder, type FounderState } from "./founders";
 import { ALL_BUSINESSES, CITIES, CONFIG, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
@@ -77,6 +78,8 @@ export interface Exec {
   assigned: string | null;
   abilityEnd: number;
   readyAt: number;
+  /** Ejecutivo fundador de Dubái: su puesto de llegada (ver founders.ts). */
+  founder?: number;
 }
 
 export interface Mission {
@@ -110,6 +113,8 @@ export interface MetaState {
   offers: OffersState;
   /** Señales de trampa detectadas (hora del móvil cambiada, partida editada). Solo se informan a la Liga. */
   flags: string[];
+  /** Carrera de fundadores de Dubái. */
+  founder: FounderState;
 }
 
 export interface Settings {
@@ -153,6 +158,8 @@ export interface GameState {
   world: WorldState;
   /** Fin de la ola turística pedida con un anuncio (Miami). */
   waveEnd: number;
+  /** Fin del contrato de oro pedido con un anuncio (Dubái). */
+  goldEnd: number;
   cash: number;
   /** Ganado desde la última salida a bolsa: decide cuántas acciones recibes. */
   runEarned: number;
@@ -203,6 +210,7 @@ export function freshMeta(now = clockNow()): MetaState {
     adLadder: freshAdLadder(),
     offers: freshOffers(now),
     flags: [],
+    founder: freshFounder(),
   };
 }
 
@@ -226,6 +234,7 @@ export function freshState(now = clockNow(), cityId = CITIES[0].id): GameState {
     city: city.id,
     world: freshWorld(),
     waveEnd: 0,
+    goldEnd: 0,
     cash: 0,
     runEarned: 0,
     totalEarned: 0,
@@ -288,6 +297,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
         assigned: typeof e.assigned === "string" && ALL_BUSINESSES.some((b) => b.id === e.assigned) ? (e.assigned as string) : null,
         abilityEnd: num(e.abilityEnd, 0),
         readyAt: num(e.readyAt, 0),
+        ...(typeof e.founder === "number" && e.founder > 0 ? { founder: Math.floor(e.founder) } : {}),
       }));
   }
   const st = obj(r.stats);
@@ -310,6 +320,7 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.retos = migrateRetos(r.retos);
   m.adLadder = migrateAdLadder(r.adLadder);
   m.offers = migrateOffers(r.offers, now);
+  m.founder = migrateFounder(r.founder);
   m.flags = Array.isArray(r.flags) ? r.flags.filter((f): f is string => typeof f === "string").slice(0, 10) : [];
   return m;
 }
@@ -322,6 +333,7 @@ export function migrate(raw: unknown, now = clockNow()): GameState {
   const s = freshState(now, typeof r.city === "string" ? cityDef(r.city).id : CITIES[0].id);
   s.world = migrateWorld(r.world, num(r.totalEarned, 0));
   s.waveEnd = num(r.waveEnd, 0);
+  s.goldEnd = num(r.goldEnd, 0);
   s.cash = num(r.cash, 0);
   s.runEarned = num(r.runEarned, 0);
   s.totalEarned = num(r.totalEarned, 0);
@@ -386,6 +398,7 @@ function keepGlobal(from: GameState, to: GameState): GameState {
   to.ads = from.ads;
   to.buyMode = from.buyMode;
   to.waveEnd = from.waveEnd;
+  to.goldEnd = from.goldEnd;
   return to;
 }
 

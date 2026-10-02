@@ -14,7 +14,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 
 | Área | Qué | Dónde |
 | --- | --- | --- |
-| Juego | Ciudad isométrica y recintos por negocio. Madrid (4 negocios) y Miami (5, con olas turísticas). Gerentes, ejecutivos y maletines, bolsa, expansión, Oficina central y edificios que crecen | `src/game`, `src/scenes`, [`GDD.md`](GDD.md) |
+| Juego | Ciudad isométrica y recintos por negocio. Madrid (4 negocios), Miami (5, con olas turísticas) y **Dubái** (5, con el precio del oro y la carrera de fundadores; arte provisional). Gerentes, ejecutivos y maletines, bolsa, expansión, Oficina central y edificios que crecen | `src/game`, `src/scenes`, [`GDD.md`](GDD.md) |
 | Retención | Tutorial, misiones diarias, premio diario, logros, avisos en el móvil, **evento del fin de semana** (10 premios, tema semanal) y **retos del día y de la semana** | `meta.ts`, `event.ts`, `challenges.ts`, `notify.ts` |
 | Anuncios | 14 ubicaciones (x2 4 h, hora punta, offline x3, viral, maletín, habilidad, diario, bolsa, expandir, ola, evento, **camión de suministros, cliente VIP y ruleta diaria**) y una **escalera diaria**: a los 3, 6 y 10 anuncios, maletín, 40 💎 y maletín de oro | `src/ads`, `adLadder.ts`, `offers.ts`, [`GDD.md`](GDD.md) («Monetización») |
 | Compras | VIP (sin anuncios y x2), pack de inicio y diamantes. En la web, desactivadas | `shop.ts`, `platform/store.ts`, [`COMPRAS.md`](COMPRAS.md) |
@@ -25,8 +25,8 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Android | Capacitor, `com.carlosconesa.ridermillionaire`. Hay un APK en cada subida y un AAB firmado manual (`release.yml`) | `android/`, [`TIENDA.md`](TIENDA.md) |
 
 **Servidor (Supabase):** proyecto `de-rider-a-millonario` (id `jpdvpbqiasyjzbdaiedh`, París).
-- **Migraciones aplicadas:** de la 0001 a la 0012 (`supabase/migrations`). La 0010 es la de seguridad, la 0011 deja sin premios las partidas editadas y la 0012 es la función del panel.
-- **Edge Functions:** `league` (v4, con la hora del servidor) y `track` (v2).
+- **Migraciones aplicadas:** de la 0001 a la 0013 (`supabase/migrations`). La 0010 es la de seguridad, la 0011 deja sin premios las partidas editadas, la 0012 es la función del panel y la 0013 la carrera de fundadores.
+- **Edge Functions:** `league` (v5, con la hora del servidor y la carrera de fundadores) y `track` (v2).
 - **Seguridad:** RLS sin políticas y ningún permiso para anónimos; solo se accede a través de las funciones. Auditoría completa, defensas y pendientes en [`SEGURIDAD.md`](SEGURIDAD.md).
 
 ## Decisiones tomadas (no volver a discutir sin motivo)
@@ -53,13 +53,13 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 - [ ] Asesor: bases de la Liga, privacidad e impuestos.
 
 ## Pendiente de ChatGPT/Codex
-Icono, logotipo «Rider Millionaire», gráfico destacado y capturas para la tienda. Arte de Miami. Una moneda sin €, o en $, para el juego en inglés. El camión de suministros y el cliente VIP son ahora botones HTML (`.visitor` en `styles.css`): mejor como sprites que entren en la escena del negocio. Icono `ic_wheel` para la ruleta.
+Icono, logotipo «Rider Millionaire», gráfico destacado y capturas para la tienda. Arte de Miami. Una moneda sin €, o en $, para el juego en inglés. El camión de suministros y el cliente VIP son ahora botones HTML (`.visitor` en `styles.css`): mejor como sprites que entren en la escena del negocio. Icono `ic_wheel` para la ruleta. **Dubái:** edificios, puestos, objetos, personajes y el retrato `exec_founder` (lista y prompts en [`ART.md`](ART.md), «Dubái»).
 
 ## Próximos pasos (Claude)
 0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
 2. ~~Panel de números de la beta~~ ✅ ([`ANALITICA.md`](ANALITICA.md), «Informes»).
-3. Dubái, con la carrera de fundadores: los 100 primeros reciben un ejecutivo exclusivo, sin dinero real.
+3. ~~Dubái, con la carrera de fundadores~~ ✅ (`founders.ts`, migración 0013). Falta su arte (Codex).
 4. Rendimiento en móviles de gama media.
 5. Revisar la primera partida con datos reales.
 

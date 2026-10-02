@@ -8,8 +8,9 @@ import Phaser from "phaser";
 import { createAds, type Placement } from "./ads";
 import { sound, type Sfx } from "./audio/sound";
 import * as act from "./game/actions";
-import { CITIES, CONFIG, LIFE, TOURISM, VIRAL_TITLES } from "./game/data";
-import { boostHours, callWave, tourism } from "./game/world";
+import { CITIES, CONFIG, FOUNDERS, GOLD, LIFE, TOURISM, VIRAL_TITLES } from "./game/data";
+import { boostHours, callWave, gold, lockGold, tourism } from "./game/world";
+import { applyFounderError, applyFounderRank, founderPending, reachedFounderCity } from "./game/founders";
 import { bizList, earn, lifeIndex, offlineEarnings, passiveRate, setLuck, tapStation, tick, type SaleEvent } from "./game/economy";
 import { fmtTime } from "./game/format";
 import { nextGoal } from "./game/goal";
@@ -18,7 +19,7 @@ import { freshState, migrate, type GameState, type View } from "./game/state";
 import { haptics } from "./platform/haptics";
 import { notifications } from "./platform/notifications";
 import { planNotifications } from "./game/notify";
-import { analytics, daysSinceInstall, minutesSinceInstall } from "./platform/analytics";
+import { analytics, daysSinceInstall, deviceId, minutesSinceInstall } from "./platform/analytics";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
@@ -456,32 +457,101 @@ document.getElementById("boostBtn")!.addEventListener("click", async () => {
   }
 });
 
-/* ---------- Olas turísticas (Miami) ---------- */
+/* ---------- Olas turísticas (Miami) y precio del oro (Dubái) ---------- */
 
 let waveWasActive = false;
+let goldWasTop = false;
 
 function updateWave(now: number): void {
   const el = document.getElementById("wave")!;
   const tw = tourism(S, now);
-  el.hidden = !tw;
-  if (!tw) return;
+  const g = gold(S, now);
+  el.hidden = !tw && !g;
+  el.classList.toggle("gold", !!g);
+  if (!tw && !g) return;
   el.style.bottom = `${document.getElementById("bar")!.offsetHeight + 10}px`;
-  el.classList.toggle("on", tw.active);
   const btn = document.getElementById("waveBtn") as HTMLButtonElement;
-  btn.hidden = tw.active;
-  document.getElementById("waveTxt")!.innerHTML = tw.active
-    ? `<b>🌊 ${t("¡Ola de turistas! Ventas x{n}", { n: TOURISM.mult })}</b>${fmtTime(tw.left / 1000)}`
-    : `<b>🌊 ${t("Próxima ola")}</b>${t("en {time}", { time: fmtTime(tw.next / 1000) })}`;
-  if (tw.active && !waveWasActive) {
-    fx("milestone", true);
-    banner(root, "🌊", t("¡Llegan los turistas! Ventas x{n} durante {time}", { n: TOURISM.mult, time: fmtTime(tw.left / 1000) }));
+  const txt = document.getElementById("waveTxt")!;
+  if (g) {
+    const top = g.locked || g.mult >= GOLD.max * 0.9;
+    el.classList.toggle("on", top);
+    btn.hidden = top;
+    btn.lastChild!.textContent = t("Fijar x{n}", { n: GOLD.max });
+    txt.innerHTML = g.locked
+      ? `<b>🥇 ${t("Contrato de oro: ventas x{n}", { n: GOLD.max })}</b>${fmtTime(g.left / 1000)}`
+      : `<b>🥇 ${t("Oro: ventas x{n}", { n: g.mult.toFixed(1).replace(".", lang === "es" ? "," : ".") })} ${g.rising ? "📈" : "📉"}</b>${top ? t("¡Precio máximo!") : t("Máximo en {time}", { time: fmtTime(g.peakIn / 1000) })}`;
+    if (top && !goldWasTop && !g.locked) {
+      fx("milestone", true);
+      banner(root, "🥇", t("¡El oro está en máximos! Ventas x{n}", { n: GOLD.max }));
+    }
+    goldWasTop = top;
+    return;
   }
-  waveWasActive = tw.active;
+  el.classList.toggle("on", tw!.active);
+  btn.hidden = tw!.active;
+  btn.lastChild!.textContent = t("Atraer ya");
+  txt.innerHTML = tw!.active
+    ? `<b>🌊 ${t("¡Ola de turistas! Ventas x{n}", { n: TOURISM.mult })}</b>${fmtTime(tw!.left / 1000)}`
+    : `<b>🌊 ${t("Próxima ola")}</b>${t("en {time}", { time: fmtTime(tw!.next / 1000) })}`;
+  if (tw!.active && !waveWasActive) {
+    fx("milestone", true);
+    banner(root, "🌊", t("¡Llegan los turistas! Ventas x{n} durante {time}", { n: TOURISM.mult, time: fmtTime(tw!.left / 1000) }));
+  }
+  waveWasActive = tw!.active;
 }
 
 document.getElementById("waveBtn")!.addEventListener("click", async () => {
-  if (await watchAd("tourist_wave")) callWave(S, clockNow());
+  if (gold(S, clockNow())) {
+    if (await watchAd("gold_lock")) lockGold(S, clockNow());
+  } else if (await watchAd("tourist_wave")) callWave(S, clockNow());
 });
+
+/* ---------- Carrera de fundadores (Dubái) ---------- */
+
+let founderBusy = false;
+
+/** Pide al servidor el puesto de llegada a Dubái y, si está entre los primeros, da el ejecutivo fundador. */
+async function syncFounder(): Promise<void> {
+  const now = clockNow();
+  if (founderBusy || !founderPending(S, now)) return;
+  if (!leagueJoined(S)) {
+    if (S.meta.founder.asked || modalOpen()) return;
+    S.meta.founder.asked = true;
+    modal(root, {
+      title: t("Carrera de fundadores"),
+      amount: "🏁",
+      text: t("Los {n} primeros jugadores en llegar a Dubái reciben un ejecutivo fundador exclusivo. Únete a la Liga (es gratis) para reservar tu puesto.", { n: FOUNDERS.spots }),
+      actions: [
+        { label: t("Ver la Liga"), run: () => openLeague(ctx) },
+        { label: t("Ahora no"), run: () => {} },
+      ],
+    });
+    return;
+  }
+  founderBusy = true;
+  const L = S.meta.league;
+  try {
+    const r = await leagueApi.founder({ id: L.id!, secret: L.secret! }, FOUNDERS.city, deviceId());
+    const exec = applyFounderRank(S, r.rank);
+    save();
+    if (exec) {
+      void celebrate(root, {
+        icon: "🤴",
+        title: t("¡Eres fundador de Dubái!"),
+        subtitle: t("Llegaste el n.º {n}. Tu ejecutivo fundador es legendario y da +{pct} % extra. Asígnalo desde Ejecutivos.", { n: r.rank, pct: FOUNDERS.bonus * 100 }),
+        highlight: t("Fundador #{n}", { n: r.rank }),
+        color: "#f5c542",
+      });
+    } else {
+      banner(root, "🏁", t("Llegaste a Dubái el n.º {n}", { n: r.rank }));
+    }
+  } catch (e) {
+    const code = e instanceof Error ? e.message : "";
+    if (code === "review" || code === "too_fast") applyFounderError(S, code, clockNow());
+  } finally {
+    founderBusy = false;
+  }
+}
 
 /* ---------- Evento viral ---------- */
 
@@ -773,6 +843,7 @@ async function boot(): Promise<void> {
     void syncLeague(S).then((added) => {
       if (added > 0) banner(root, "🏅", t("+{n} puntos de Liga", { n: added }));
     });
+    if (reachedFounderCity(S)) void syncFounder();
   }, 20_000);
   document.addEventListener("visibilitychange", () => {
     sound.setHidden(document.hidden);

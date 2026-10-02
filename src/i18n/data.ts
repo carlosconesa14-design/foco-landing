@@ -33,11 +33,17 @@ const BUSINESSES_EN: Record<string, BizText> = {
   yachts: { name: "Yacht rental", blurb: "Luxury trips around Biscayne Bay.", floorName: "Berth", transportName: "Speedboats", saleName: "Travel agents" },
   realestate: { name: "Real estate", blurb: "Oceanfront penthouses that sell before they're built.", floorName: "Office", transportName: "Managers", saleName: "Agents" },
   crypto: { name: "Crypto exchange", blurb: "Millions of trades per second in the crypto capital.", floorName: "Server", transportName: "Bots", saleName: "Traders" },
+  supercars: { name: "Supercar rental", blurb: "Hourly supercar rentals for a spin down Sheikh Zayed Road.", floorName: "Garage", transportName: "Valets", saleName: "Front desk" },
+  hotel: { name: "Luxury hotel", blurb: "Butler suites with views over the Gulf.", floorName: "Suite", transportName: "Bellhops", saleName: "Concierges" },
+  safari: { name: "Desert safari", blurb: "Dune bashing, camels and dinners under the stars.", floorName: "Camp", transportName: "4x4s", saleName: "Agencies" },
+  souk: { name: "Gold souk", blurb: "Gold jewellery by weight in the world's shiniest market.", floorName: "Workshop", transportName: "Guards", saleName: "Jewellers" },
+  tower: { name: "Skyscraper", blurb: "Glass towers taller than the clouds.", floorName: "Floor under construction", transportName: "Cranes", saleName: "Investors" },
 };
 
-const CITIES_EN: Record<string, { blurb: string }> = {
+const CITIES_EN: Record<string, { blurb: string; name?: string }> = {
   madrid: { blurb: "Where it all begins: from rider to owner of an AI agency." },
   miami: { blurb: "Sun, beach and tourists: demand comes in waves." },
+  dubai: { name: "Dubai", blurb: "Luxury in the desert: sell when gold is expensive." },
 };
 
 const OFFICE_EN: Record<string, { name: string; desc: string }> = {

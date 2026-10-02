@@ -546,4 +546,29 @@ export const EN: Record<string, string> = {
   "La partida guardada se ha modificado fuera del juego y no se puede usar. Empiezas una partida nueva y la cuenta queda en revisión para la Liga.":
     "Your saved game was modified outside the game and can't be used. You're starting a new game and your account is under review for the League.",
   Entendido: "Got it",
+
+  /* ---------- Dubái: precio del oro y carrera de fundadores ---------- */
+  "Fijar x{n}": "Lock x{n}",
+  "Contrato de oro: ventas x{n}": "Gold contract: sales x{n}",
+  "Oro: ventas x{n}": "Gold: sales x{n}",
+  "¡Precio máximo!": "Top price!",
+  "Máximo en {time}": "Peak in {time}",
+  "¡El oro está en máximos! Ventas x{n}": "Gold is at its peak! Sales x{n}",
+  "Precio del oro: ventas hasta x{n}": "Gold price: sales up to x{n}",
+  "Carrera de fundadores": "Founders race",
+  "Los {n} primeros jugadores en llegar a Dubái reciben un ejecutivo fundador exclusivo. Únete a la Liga (es gratis) para reservar tu puesto.":
+    "The first {n} players to reach Dubai get an exclusive founder executive. Join the League (it's free) to save your spot.",
+  "Ver la Liga": "See the League",
+  "¡Eres fundador de Dubái!": "You're a founder of Dubai!",
+  "Llegaste el n.º {n}. Tu ejecutivo fundador es legendario y da +{pct} % extra. Asígnalo desde Ejecutivos.":
+    "You arrived #{n}. Your founder executive is legendary and gives an extra +{pct}%. Assign them from Executives.",
+  "Fundador #{n}": "Founder #{n}",
+  Fundador: "Founder",
+  "Llegaste a Dubái el n.º {n}": "You reached Dubai #{n}",
+  "Llegaste el n.º {n}": "You arrived #{n}",
+  "Carrera de fundadores: los {n} primeros en llegar reciben un ejecutivo exclusivo": "Founders race: the first {n} to arrive get an exclusive executive",
+  "quedan {n} plazas": "{n} spots left",
+  "Únete a la Liga para reservar tu puesto.": "Join the League to save your spot.",
+  "Centro comercial": "Shopping mall",
+  "Tokio, Nueva York… nuevas ciudades con sus propias reglas.": "Tokyo, New York… new cities with their own rules.",
 };

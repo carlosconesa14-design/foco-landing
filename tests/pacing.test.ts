@@ -70,3 +70,27 @@ describe("ritmo de Miami (segunda ciudad, con 10 ⭐ repartidas)", () => {
     expect(res.at["biz_crypto"]).toBeLessThan(90 * h);
   });
 }, 300_000);
+
+describe("ritmo de Dubái (tercera ciudad, con unas 20 ⭐ repartidas)", () => {
+  const res = simulate({
+    hours: 130,
+    dt: 2,
+    city: "dubai",
+    setup: (s) => {
+      s.world.completed = ["madrid", "miami"];
+      s.world.upgrades = { brand: 3, team: 1, floors: 1, suppliers: 1 };
+      applyStartPerks(s);
+    },
+  });
+
+  it("el hotel llega pronto", () => {
+    expect(res.at["biz_hotel"]).toBeLessThan(2 * h);
+  });
+
+  it("es la ciudad más larga: el rascacielos tarda más que el exchange de Miami", () => {
+    expect(res.at["biz_safari"]).toBeGreaterThan(3 * h);
+    expect(res.at["biz_souk"]).toBeGreaterThan(30 * h);
+    expect(res.at["biz_tower"]).toBeGreaterThan(80 * h);
+    expect(res.at["biz_tower"]).toBeLessThan(130 * h);
+  });
+}, 600_000);

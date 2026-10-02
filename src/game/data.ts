@@ -135,9 +135,43 @@ export const MIAMI_BUSINESSES: BusinessDef[] = [
   },
 ];
 
+/** Negocios de Dubái: el lujo. Cinco negocios, más lentos que los de Miami. */
+export const DUBAI_BUSINESSES: BusinessDef[] = [
+  {
+    id: "supercars", name: "Alquiler de superdeportivos", icon: "🏎️", blurb: "Deportivos de alquiler por horas para dar una vuelta por Sheikh Zayed Road.",
+    price: 0, mult: 1, pace: 4, wall: 0xe84118, roof: 0x2f3640,
+    floorName: "Garaje", worker: "🧑‍🔧", item: "🔑", transportName: "Aparcacoches", transportIcon: "🏎️",
+    saleName: "Recepción", saleWorker: "🤵", customer: "🏨",
+  },
+  {
+    id: "hotel", name: "Hotel de lujo", icon: "🏨", blurb: "Suites con mayordomo y vistas al golfo.",
+    price: 4e9, mult: 6e5, pace: 12, wall: 0xf5f0e1, roof: 0xc8a24a,
+    floorName: "Suite", worker: "🤵", item: "🛎️", transportName: "Botones", transportIcon: "🧳",
+    saleName: "Conserjes", saleWorker: "💁", customer: "✈️",
+  },
+  {
+    id: "safari", name: "Safari en el desierto", icon: "🐪", blurb: "Dunas en 4x4, camellos y cenas bajo las estrellas.",
+    price: 1e17, mult: 2e12, pace: 50, wall: 0xe1b382, roof: 0x8c5a2b,
+    floorName: "Campamento", worker: "🧑‍🌾", item: "🐪", transportName: "Todoterrenos", transportIcon: "🚙",
+    saleName: "Agencias", saleWorker: "🧳", customer: "🏨",
+  },
+  {
+    id: "souk", name: "Zoco del oro", icon: "💍", blurb: "Joyas de oro al peso en el mercado más brillante del mundo.",
+    price: 3e24, mult: 1e19, pace: 130, wall: 0xf6c344, roof: 0x7d5a14,
+    floorName: "Taller", worker: "🧑‍🏭", item: "💍", transportName: "Escoltas", transportIcon: "🛡️",
+    saleName: "Joyeros", saleWorker: "💎", customer: "🏬",
+  },
+  {
+    id: "tower", name: "Rascacielos", icon: "🏙️", blurb: "Torres de cristal más altas que las nubes.",
+    price: 1e31, mult: 3e24, pace: 300, wall: 0x9fd3e6, roof: 0x34495e,
+    floorName: "Planta en obras", worker: "👷", item: "🏗️", transportName: "Grúas", transportIcon: "🏗️",
+    saleName: "Inversores", saleWorker: "💼", customer: "🏦",
+  },
+];
+
 /* ---------- Ciudades ---------- */
 
-export type CityMechanic = "none" | "tourism";
+export type CityMechanic = "none" | "tourism" | "gold";
 
 export interface CityDef {
   id: string;
@@ -168,12 +202,27 @@ export const CITIES: CityDef[] = [
     ground: { grass: 0xf3d99b, grassAlt: 0xeccf8a, water: 0x2ec4d6, edge: 0xc79a55 },
     trees: ["palm", "palm", "bush"],
   },
+  {
+    id: "dubai", name: "Dubái", flag: "🇦🇪", blurb: "Lujo en el desierto: vende cuando el oro está caro.",
+    businesses: DUBAI_BUSINESSES, goal: 1e41, shareDivisor: 3e28, mechanic: "gold",
+    ground: { grass: 0xe9c98f, grassAlt: 0xe2c083, water: 0x1fa3b8, edge: 0xb88a4a },
+    trees: ["palm", "bush"],
+  },
 ];
 
 export const ALL_BUSINESSES: BusinessDef[] = CITIES.flatMap((c) => c.businesses);
 
 /** Olas turísticas de Miami: cada 15 min llega una ola de 3 min que triplica las ventas. */
 export const TOURISM = { periodMin: 15, waveMin: 3, mult: 3, adWaveMin: 3 } as const;
+
+/**
+ * Precio del oro en Dubái: sube y baja en ciclos de 20 min entre x1 y x3 (multiplica las ventas,
+ * solo jugando). Con un anuncio se firma un contrato que fija el precio máximo durante 4 min.
+ */
+export const GOLD = { periodMin: 20, min: 1, max: 3, adLockMin: 4 } as const;
+
+/** Carrera de fundadores: los primeros en llegar a Dubái reciben un ejecutivo exclusivo (solo premios del juego). */
+export const FOUNDERS = { city: "dubai", spots: 100, bonus: 1 } as const;
 
 /* ---------- Oficina central: mejoras permanentes con estrellas de franquicia ---------- */
 

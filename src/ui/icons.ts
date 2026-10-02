@@ -75,7 +75,8 @@ export const lifeIcon = (i: number) => icon(`ic_life_${i}`, LIFE[i].icon);
 export const flagIcon = (c: Pick<CityDef, "id" | "flag">) => icon(`flag_${c.id}`, c.flag);
 export const officeIcon = (o: Pick<OfficeUpgrade, "id" | "icon">) => icon(`ic_office_${o.id}`, o.icon);
 export const chestIcon = (t: ChestType) => icon(`chest_${t}`, CHESTS[t].icon);
-export const execFace = (e: Pick<Exec, "face">) => {
+export const execFace = (e: Pick<Exec, "face" | "founder">) => {
+  if (e.founder) return icon("exec_founder", e.face);
   const i = EXEC_FACES.indexOf(e.face);
   return i >= 0 ? icon(`exec_${i}`, e.face) : e.face;
 };

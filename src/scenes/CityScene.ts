@@ -36,6 +36,7 @@ const LOT_POSITIONS: { c: number; r: number }[] = [
 const SOON_LABELS = (): Record<string, string[]> => ({
   madrid: ["🏋️ " + t("Gimnasio"), "🏨 " + t("Hotel")],
   miami: ["🏨 " + t("Resort")],
+  dubai: ["🛍️ " + t("Centro comercial")],
 });
 
 function lotsFor(city: CityDef): { c: number; r: number; kind: LotKind }[] {
@@ -238,7 +239,7 @@ export class CityScene extends Phaser.Scene {
             }
           }
         }
-        if (kind === "grass" || kind === "lot") groundDetail(g, cx, cy, kind === "grass" ? (this.city.id === "miami" ? "sand" : "grass") : kind === "lot" ? "paving" : "road", c + r * COLS);
+        if (kind === "grass" || kind === "lot") groundDetail(g, cx, cy, kind === "grass" ? (this.city.id === "miami" || this.city.id === "dubai" ? "sand" : "grass") : kind === "lot" ? "paving" : "road", c + r * COLS);
       }
   }
 

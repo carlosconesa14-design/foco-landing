@@ -120,6 +120,37 @@ Mismo estilo común, con luz de playa soleada. Para la arena y las palmeras, añ
 | `ch_coder_0` | 44×60 | Chibi crypto developer, purple hoodie, headphones |
 | `ch_trader_0` | 44×60 | Chibi trader, green shirt, purple tie |
 
+### Dubái (tercera ciudad)
+
+Mismo estilo común, con luz cálida de desierto y toques dorados. Añade "Dubai luxury, desert sand, gold accents, glass towers" al prompt. **Ahora mismo Dubái usa arte provisional**: cada edificio toma la forma de uno existente (`BLD_SHAPE` en `src/art/catalog.ts`) y los puestos y personajes reutilizan los de Madrid y Miami (`BIZ_ART`). En cuanto exista el PNG de una clave, el juego lo usa sin tocar código. Cuando estén los edificios, borra `BLD_SHAPE`.
+
+| Clave | Tamaño lógico | Prompt |
+| --- | --- | --- |
+| `bld_supercars` (`_1`, `_2`, `_3`) | 172×164 (+24 por nivel) | Isometric 2:1 view of a sleek glass supercar showroom with a red sports car on display and a black-and-red facade, on a light stone diamond-shaped base |
+| `bld_hotel` (`_1`, `_2`, `_3`) | 172×260 | Isometric 2:1 view of a sail-shaped white luxury hotel tower with gold details and a fountain at the entrance, on a light stone diamond-shaped base |
+| `bld_safari` (`_1`, `_2`, `_3`) | 172×140 | Isometric 2:1 view of a desert safari camp with beige tents, a camel and an orange 4x4 on sand dunes, on a sandy diamond-shaped base |
+| `bld_souk` (`_1`, `_2`, `_3`) | 172×170 | Isometric 2:1 view of an arabic gold market building with arches, wooden lattice windows and shining gold jewellery on display, on a sandy diamond-shaped base |
+| `bld_tower` (`_1`, `_2`, `_3`) | 172×300 | Isometric 2:1 view of a super tall needle-like glass skyscraper with blue-green windows and a spire, on a light grey diamond-shaped base |
+| `st_supercars` | 100×86 | Side view car lift in a garage with a red sports car and a tool cart |
+| `st_hotel` | 100×86 | Side view luxury hotel suite bed with gold headboard and a room service trolley |
+| `st_safari` | 100×86 | Side view bedouin tent with carpets, lanterns and a sitting camel |
+| `st_souk` | 100×86 | Side view goldsmith workbench with rings, necklaces and a small scale |
+| `st_tower` | 100×86 | Side view construction floor with steel beams, a small crane hook and stacked glass panels |
+| `item_carkey` | 26×26 | Black car key with red logo-less fob |
+| `item_bell` | 26×26 | Golden hotel service bell |
+| `item_camel` | 26×26 | Cute cartoon camel |
+| `item_ring` | 26×26 | Gold ring with a diamond |
+| `item_beam` | 26×26 | Orange steel construction beam |
+| `ch_mechanic_0` | 44×60 | Chibi supercar mechanic, red overalls, black cap |
+| `ch_valet_0` | 44×60 | Chibi valet, black waistcoat, white shirt, red bow tie |
+| `ch_butler_0` | 44×60 | Chibi hotel butler, white jacket with gold buttons |
+| `ch_guide_0` | 44×60 | Chibi desert guide, beige clothes, sunglasses |
+| `ch_goldsmith_0` | 44×60 | Chibi goldsmith, brown apron, magnifier glasses |
+| `ch_builder_0` | 44×60 | Chibi construction worker, orange vest, white helmet |
+| `exec_founder` | 64×64 | Portrait of a confident founder executive in a white suit with a gold pin, golden glowing frame, Dubai skyline behind (exclusive, must look special) |
+
+Para usar los puestos, objetos y personajes nuevos, cambia la línea del negocio en `BIZ_ART` (`src/art/catalog.ts`) y añade los personajes a `LOOKS`. El retrato `exec_founder` se usa solo con guardarlo (`execFace` en `src/ui/icons.ts`). Ideas de ambiente: la fuente de las plazas ya encaja con Dubái; faltan dunas al fondo, skyline y un brillo dorado en la barra del oro (`.wave.gold` en `styles.css`).
+
 ## Plan de mejora gráfica (para ChatGPT)
 
 Revisión del juego actual, ordenada por impacto: lo que más se nota en pantalla va primero.

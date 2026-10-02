@@ -59,17 +59,19 @@ Cada negocio es un recinto isométrico vallado, con el edificio principal, camin
 - **Salida a bolsa (prestigio):** acciones con +2 % permanente cada una.
 - **💎 Diamantes (fase 2 ✅):** se ganan con las misiones, el premio diario, los logros, el tutorial y los maletines. Se gastan en maletines y en paquetes de dinero. Nunca se pierden, tampoco al salir a bolsa.
 
-### Expansión mundial: varias ciudades (fase 3 ✅ Madrid + Miami)
+### Expansión mundial: varias ciudades (fase 3 ✅ Madrid, Miami y Dubái)
 Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. Así el juego dura semanas en vez de días.
 
-- **Completar una ciudad:** tener todos sus negocios y haber ganado su objetivo (Madrid 1 Qn = 10^30 €, Miami 10^36 €). Aparece el objetivo "¡Expándete a…!" y un punto rojo en el botón 🌍 Mundo.
+- **Completar una ciudad:** tener todos sus negocios y haber ganado su objetivo (Madrid 1 Qn = 10^30 €, Miami 10^36 €, Dubái 10^41 €). Aparece el objetivo "¡Expándete a…!" y un punto rojo en el botón 🌍 Mundo.
 - **Expandirse:** la ciudad queda como franquicia y da **+50 % de ingresos en todas las ciudades** para siempre. Además ganas **⭐ estrellas de franquicia**: 10 × (ganado / objetivo)^¼, o el doble con un anuncio (`expand_x2`).
 - **Qué se conserva:** diamantes, ejecutivos, logros, misiones, estilo de vida máximo, ajustes y estrellas. **Qué se reinicia:** dinero, negocios y acciones de la nueva ciudad (cada ciudad tiene su propia bolsa).
 - **Viajar:** puedes volver a cualquier ciudad abierta desde el mapa. Al llegar cobras lo que ganaron tus gerentes mientras no estabas (con el tope offline).
 - **Oficina central (se paga con ⭐):** Marca global (+25 % por nivel), Equipo inicial (gerentes del primer negocio desde el inicio), Local reformado (+1 puesto inicial por nivel), Proveedores (−8 % en mejoras), Turno de noche (+2 h de offline), Coach de productividad (+1 h de modo hustle por anuncio) y Marketing viral (+1 % de ventas virales).
 - **Cada ciudad tiene una regla propia.** Miami tiene **olas turísticas**: cada 15 min llegan turistas durante 3 min y las ventas se multiplican por 3 (solo jugando, no offline). Un anuncio (`tourist_wave`) atrae una ola al momento. Premia abrir la app a menudo.
 - **Miami:** 5 negocios (Food trucks → Club de playa → Alquiler de yates → Inmobiliaria → Exchange de cripto), arena y palmeras. Es más lenta que Madrid: un jugador activo sin anuncios la completa en unos 6–7 días (con anuncios, unos 3).
-- **Siguientes ciudades:** Dubái (mecánica: petróleo que sube y baja de precio), Tokio (tecnología, turnos de noche)… Solo hay que añadir un `CityDef` en `src/game/data.ts` y su arte.
+- **Dubái (tercera ciudad):** 5 negocios (Alquiler de superdeportivos → Hotel de lujo → Safari en el desierto → Zoco del oro → Rascacielos). Regla propia: **precio del oro**. Sube y baja en ciclos de 20 min entre x1 y x3 (multiplica las ventas, solo jugando). Con un anuncio (`gold_lock`) se firma un contrato que fija x3 durante 4 min; no se ofrece cuando el precio ya está casi en el máximo. Es la ciudad más larga: con unas 20 ⭐ repartidas, el hotel llega en ~40 min, el safari en ~6 h, el zoco en ~2 días y el rascacielos en ~4,5 días de juego activo sin anuncios (`tests/pacing.test.ts`).
+- **Carrera de fundadores:** los **100 primeros** jugadores en llegar a Dubái reciben un **ejecutivo fundador** exclusivo: legendario, con +100 % extra sobre su bonus y su número («Fundador #12»). Solo premios del juego, nunca dinero real. Los demás ven en qué puesto llegaron. El mapa del mundo enseña las plazas que quedan. El puesto lo da el servidor (`founder_claim`, migración 0013) una sola vez por jugador. Hace falta estar en la Liga, que es la cuenta con la que el servidor reconoce al jugador: al llegar a Dubái sin estar en la Liga, se le propone unirse una vez. Contra trampas: no hay puesto para partidas editadas sin revisar ni para quien llega en menos de 3 días desde que empezó a jugar (`league_config.founders_min_days`).
+- **Siguientes ciudades:** Tokio (tecnología, turnos de noche), Nueva York… Solo hay que añadir un `CityDef` en `src/game/data.ts` y su arte.
 
 ### Retención (fase 2 ✅)
 - **Tutorial guiado** de 6 pasos, con premio en diamantes al terminar. En cada paso solo se señala lo que hay que tocar: mano, aro dorado en el suelo y cartel con el nombre (Carretilla, Furgonetas). Las etiquetas de la barra de la cadena no aparecen hasta el paso 4.
@@ -170,6 +172,7 @@ Anuncios bonificados, siempre opcionales:
 | `daily_double` | Doble premio diario | 2 ✅ |
 | `expand_x2` | Doble de estrellas al expandirse a otra ciudad | 3 ✅ |
 | `tourist_wave` | Atraer una ola turística al momento en Miami (ventas x3 durante 3 min) | 3 ✅ |
+| `gold_lock` | Contrato de oro en Dubái: fija el precio máximo (ventas x3) durante 4 min | 3 ✅ |
 | `supply_truck` | Camión de suministros: llega al negocio que estás viendo cada 5–9 min y trae lo que vende en 15 min a pleno rendimiento | 4 ✅ |
 | `vip_client` | Cliente VIP: cada 7–13 min, paga 10 💎 (4 al día como máximo) | 4 ✅ |
 | `wheel_spin` | Ruleta diaria: un giro gratis al día y 3 más con anuncio (dinero, diamantes o maletines) | 4 ✅ |
@@ -182,5 +185,5 @@ Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2
 | --- | --- |
 | **1. Núcleo jugable** ✅ | Motor Phaser, ciudad isométrica con 4 negocios, recintos con puestos animados, gerentes básicos, mejoras, offline, anuncios, bolsa, guardado, arte sustituible |
 | **2. Retención** | ✅ 💎, ejecutivos con rareza y habilidades, maletines, misiones diarias, premio diario, logros, tutorial guiado · ✅ sonido, música, vibración y ajustes · Pendiente: Liga Millonario (servidor) |
-| **3. Contenido** | ✅ Expansión mundial: Miami, estrellas y Oficina central · Pendiente: más ciudades, eventos de temporada, avatar |
+| **3. Contenido** | ✅ Expansión mundial: Miami, Dubái (precio del oro y carrera de fundadores), estrellas y Oficina central · Pendiente: más ciudades, eventos de temporada, avatar |
 | **4. Lanzamiento** | Arte profesional (sprites), analítica, tiendas, compras dentro de la app, SSV de AdMob |

@@ -1,4 +1,5 @@
 import { RARITIES } from "./data";
+import { execBonus } from "./founders";
 import type { GameState } from "./state";
 
 export interface Mults {
@@ -18,7 +19,7 @@ export function execMults(s: GameState, bizId: string, now: number, live = true)
   for (const e of s.meta.execs) {
     if (e.assigned !== bizId) continue;
     const r = RARITIES[e.rarity];
-    m[e.kind] += r.bonus;
+    m[e.kind] += execBonus(e);
     if (live && e.abilityEnd > now) m.sale *= r.ability;
   }
   return m;

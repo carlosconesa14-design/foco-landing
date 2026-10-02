@@ -76,6 +76,12 @@ export const BIZ_ART: Record<string, { worker: string; mover: string; seller: st
   yachts: { worker: "captain", mover: "sailor", seller: "agent", item: "item_ticket", station: "st_yachts" },
   realestate: { worker: "broker", mover: "clerk", seller: "sales", item: "item_key", station: "st_realestate" },
   crypto: { worker: "coder", mover: "tech", seller: "trader", item: "item_token", station: "st_crypto" },
+  // Dubái: arte provisional con piezas existentes hasta que lleguen las propias (ver docs/ART.md, «Dubái»).
+  supercars: { worker: "engineer", mover: "agent", seller: "broker", item: "item_key", station: "st_crypto" },
+  hotel: { worker: "waiter", mover: "clerk", seller: "promoter", item: "item_ticket", station: "st_beachclub" },
+  safari: { worker: "captain", mover: "veh_forklift", seller: "agent", item: "item_ticket", station: "st_foodtruck" },
+  souk: { worker: "bartender", mover: "tech", seller: "trader", item: "item_token", station: "st_realestate" },
+  tower: { worker: "engineer", mover: "veh_forklift", seller: "sales", item: "item_chip", station: "st_ai" },
 };
 
 for (const role of Object.keys(LOOKS)) for (const f of [0, 1, 2]) def(`ch_${role}_${f}`, 44, 60);
@@ -483,7 +489,11 @@ export const BLD_W = 172;
 const BLD: Record<string, number> = {
   dropship: 150, restaurant: 164, tiktok: 236, ai: 270, soon: 170,
   foodtruck: 140, beachclub: 170, yachts: 180, realestate: 260, crypto: 300,
+  supercars: 164, hotel: 260, safari: 140, souk: 170, tower: 300,
 };
+
+/** Dubái usa de momento la forma de un edificio existente (arte provisional, ver docs/ART.md). */
+const BLD_SHAPE: Record<string, string> = { supercars: "restaurant", hotel: "realestate", safari: "foodtruck", souk: "beachclub", tower: "crypto" };
 for (const [id, h] of Object.entries(BLD)) {
   def(`bld_${id}`, BLD_W, h);
   if (id !== "soon") for (const tier of [1, 2, 3]) def(`bld_${id}_${tier}`, BLD_W, h + (tier - 1) * 24);
@@ -531,8 +541,9 @@ function buildingEmblem(p: Pen, x: number, y: number, id: string): void {
   }
 }
 
-function drawBuilding(p: Pen, id: string, tier = 1): void {
-  const h = BLD[id] + (tier - 1) * 24;
+function drawBuilding(p: Pen, key: string, tier = 1): void {
+  const h = BLD[key] + (tier - 1) * 24;
+  const id = BLD_SHAPE[key] ?? key;
   const growth = (tier - 1) * 18;
   const cx = BLD_W / 2;
   const by = h - 6;

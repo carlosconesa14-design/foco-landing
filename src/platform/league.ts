@@ -63,6 +63,11 @@ export const leagueApi = {
   nickname: (c: Creds, nickname: string) => call<{ nickname: string }>({ action: "nickname", ...c, nickname }),
   claim: (c: Creds) => call<{ gems: number }>({ action: "claim", ...c }),
   /** Premios en dinero del jugador (fase 1) y su estado. */
+  /** Carrera de fundadores: plazas ocupadas en una ciudad. No necesita estar apuntado. */
+  founders: (city: string) => call<{ spots: number; taken: number }>({ action: "founders", city }, 6000),
+  /** Pide el puesto de llegada a una ciudad. Errores: `too_fast`, `review`, `player`. */
+  founder: (c: Creds, city: string, device: string) =>
+    call<{ rank: number; founder: boolean; spots: number; taken: number }>({ action: "founder", ...c, city, device }),
   payouts: (c: Creds) => call<{ payouts: Payout[] }>({ action: "payouts", ...c }),
   /** El ganador deja su email y declara ser mayor de 18 para cobrar. */
   payout: (c: Creds, week: string, email: string, adult: boolean) => call<{ ok: boolean }>({ action: "payout", ...c, week, email, adult }),

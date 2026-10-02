@@ -14,6 +14,7 @@ import { fmt, fmtTime } from "../src/game/format";
 const ads = process.argv.includes("--ads");
 const hours = Number(process.argv.find((a) => a.startsWith("--hours="))?.split("=")[1] ?? 72);
 const city = process.argv.find((a) => a.startsWith("--city="))?.split("=")[1] ?? "madrid";
+const before: Record<string, string[]> = { madrid: [], miami: ["madrid"], dubai: ["madrid", "miami"] };
 /** --stars=N reparte N estrellas en la Oficina central como haría un jugador típico. */
 const stars = Number(process.argv.find((a) => a.startsWith("--stars="))?.split("=")[1] ?? 0);
 const res: SimResult = simulate({
@@ -21,7 +22,7 @@ const res: SimResult = simulate({
   ads,
   city,
   setup: (s) => {
-    s.world.completed = city === "madrid" ? [] : ["madrid"];
+    s.world.completed = before[city] ?? [];
     if (stars >= 10) s.world.upgrades = { brand: 1, team: 1, floors: 1 };
     if (stars >= 20) s.world.upgrades = { brand: 3, team: 1, floors: 1, suppliers: 1 };
     applyStartPerks(s);

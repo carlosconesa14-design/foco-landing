@@ -3,6 +3,7 @@ import { ACHIEVEMENTS, ALL_BUSINESSES, CHESTS, DAILY_REWARDS, EXEC_KINDS, META, 
 import { fmt, fmtTime } from "../game/format";
 import * as meta from "../game/meta";
 import type { Exec } from "../game/state";
+import { execBonus } from "../game/founders";
 import { revealChest } from "./celebrate";
 import { modal } from "./overlays";
 import type { PanelCtx } from "./panels";
@@ -234,6 +235,9 @@ async function showExec(ctx: PanelCtx, e: Exec, g: meta.Grant, chestIcon = "💼
   });
 }
 
+/** Nombre para mostrar: el fundador se llama «Fundador #N» en el idioma del jugador. */
+export const execName = (e: Exec) => (e.founder ? t("Fundador #{n}", { n: e.founder }) : e.name);
+
 function execRow(e: Exec, here: string | null, now: number): string {
   const r = RARITIES[e.rarity];
   const at = e.assigned ? ALL_BUSINESSES.find((b) => b.id === e.assigned) : null;
@@ -246,9 +250,9 @@ function execRow(e: Exec, here: string | null, now: number): string {
     else if (ready) buttons += `<button class="claim" data-ability="${e.id}">⚡ ${t("x{n} ventas", { n: r.ability })}</button>`;
     else buttons += `<button class="ad-btn" data-recharge="${e.id}"><span class="play"></span>${fmtTime((e.readyAt - now) / 1000)}</button>`;
   }
-  return `<div class="row"><span class="face" style="box-shadow:inset 0 0 0 2px ${r.color}">${execFace(e)}</span>
-    <div><b>${e.name} <span class="rar" style="color:${r.color}">${r.name}</span></b>
-    <span class="sub">+${r.bonus * 100}% ${EXEC_KINDS[e.kind].desc} · ${at ? t("en {biz}", { biz: `${bizIcon(at)} ${at.name}` }) : t("sin asignar")}</span></div>
+  return `<div class="row${e.founder ? " founder" : ""}"><span class="face" style="box-shadow:inset 0 0 0 2px ${r.color}">${execFace(e)}</span>
+    <div><b>${execName(e)} <span class="rar" style="color:${r.color}">${e.founder ? t("Fundador") : r.name}</span></b>
+    <span class="sub">+${Math.round(execBonus(e) * 100)}% ${EXEC_KINDS[e.kind].desc} · ${at ? t("en {biz}", { biz: `${bizIcon(at)} ${at.name}` }) : t("sin asignar")}</span></div>
     <div class="btnrow">${buttons}</div></div>`;
 }
 

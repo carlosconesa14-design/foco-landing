@@ -3,7 +3,7 @@ import { ALL_BUSINESSES, CHAIN, CONFIG, LIFE, MILESTONES, type BusinessDef } fro
 import { NO_MULTS, execMults, type Mults } from "./execs";
 import { bump, cityDef, type BusinessState, type BuyMode, type GameState } from "./state";
 import { t } from "../i18n";
-import { luckyChance, offlineCapHours, tourismMult, upgradeDiscount, worldIncomeMult } from "./world";
+import { goldMult, luckyChance, offlineCapHours, tourismMult, upgradeDiscount, worldIncomeMult } from "./world";
 
 /* ---------- Utilidades ---------- */
 
@@ -54,6 +54,7 @@ export function saleMult(s: GameState, id: string, now: number, live = true): nu
     execMults(s, id, now, live).sale *
     worldIncomeMult(s) *
     tourismMult(s, now, live) *
+    goldMult(s, now, live) *
     (s.meta.shop.vip ? 2 : 1) // VIP: x2 permanente (también offline)
   );
 }
