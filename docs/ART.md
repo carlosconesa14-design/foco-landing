@@ -918,3 +918,49 @@ Los coches (`car_0`…`car_3`, `van`, `car_miami_*`, `luxcar_*`) solo tienen la 
 Para tener tráfico en los dos sentidos:
 - **Qué hace falta:** una vista trasera de cada vehículo, `<clave>_rear`. Es el mismo coche visto desde atrás, alejándose hacia arriba y a la izquierda. Mismo tamaño lógico, mismo punto de apoyo y fondo transparente. Con `flipX` vale también para subir hacia arriba y a la derecha.
 - **Prompt:** «same vehicle, rear three-quarter view driving away toward the upper-left, identical scale, colours and ground anchor, transparent background, no text».
+
+## Encargo: pantallas de negocio de primera (5 de octubre de 2026)
+
+Carlos quiere que las pantallas de cada negocio mejoren mucho. Esta es la revisión de Claude tras jugarlas a 390×844.
+
+### Qué falla hoy
+1. **Solo 2 de los 14 negocios tienen un recinto propio:** el almacén (`WarehouseRoom.ts`) y el restaurante (`RestaurantRoom.ts`). Los otros 12 usan el recinto genérico de `BusinessScene` (`drawGround`, `drawFence`, `drawDecor`, `drawTierDecor`). Son una explanada de baldosas con farolas y mucho hueco vacío, sobre todo al principio, con 1 o 2 puestos. Cripto, yates y rascacielos se ven casi vacíos.
+2. **El edificio del negocio es pequeño** comparado con los vecinos y no parece «la sede».
+3. **Los puestos flotan sobre el suelo,** sin zona de trabajo propia (alfombra, mostrador, cinta, muelle…), y los caminos entre puestos son genéricos.
+4. **El relleno del barrio se parece demasiado al negocio:** usa los mismos `district_*` y `bld_*`. Claude lo ha atenuado con un tinte, pero falta arte pensado como fondo.
+5. **Los coches solo se ven de frente** (ver «Encargo: coches vistos de espaldas»).
+
+### Qué pedimos
+1. **Un recinto propio para cada uno de los 12 negocios restantes**, como el almacén y el restaurante:
+   - suelo con su textura y su forma: muelle de madera y agua en yates, sala de servidores con suelo técnico en cripto, obra con zanjas y grúas en el rascacielos, arena con hamacas en el club de playa, explanada de exposición en superdeportivos, etc.;
+   - muros, vallas o límites con personalidad;
+   - mobiliario fijo que llene el espacio desde el primer minuto, aunque solo haya un puesto;
+   - el camino de la venta: puerta, mostrador, salida de clientes.
+
+   **Técnica:** una clase `XxxRoom` por negocio, con la misma interfaz que `WarehouseRoom` y `RestaurantRoom`: `create()` y una `layout` con `slots`, `door`, `route`, `stops` y `saleRoute`. Se engancha en `BusinessScene.create()`.
+2. **Sede del negocio más grande y reconocible,** en tres versiones (★, ★★, ★★★) como ahora. Que sea lo que más destaca de la pantalla.
+3. **Base para cada puesto:** una plataforma o zona marcada debajo de cada `st_<negocio>` (alfombra, foso, muelle, mesa). Así no flotan y se ve dónde irá el siguiente puesto: una huella tenue en los huecos aún no comprados.
+4. **Arte de fondo para el barrio,** pensado para no competir con el negocio: 6–8 manzanas de relleno por ciudad, más bajas, menos saturadas y sin rótulos (`filler_<ciudad>_<n>`, unos 270×190). Además:
+   - un aparcamiento (`lot_parking`);
+   - un parque (`lot_park`);
+   - un solar en obras (`lot_empty`).
+
+   `Neighborhood.ts` los usaría en vez de `district_*` y `bld_*`.
+5. **Suelo urbano en baldosas:**
+   - acera, bordillo, paso de cebra y asfalto con línea, en 88×44 y en sus giros;
+   - Claude sustituye las baldosas dibujadas por código (`tile_road_*`, `tile_walk_*`).
+6. **Vistas traseras de los vehículos:** ver «Encargo: coches vistos de espaldas».
+
+### Reglas
+- Las de siempre: `AGENTS.md`, `calmWorld()` para el movimiento ambiental, `npm run art:webp` y documentar claves y prompts aquí.
+- No tocar `src/game/*`.
+- Rendimiento: 1–2 texturas grandes por recinto (≤2048 px) mejor que cientos de piezas.
+- Comprobar cada negocio con 1 puesto y con 8 puestos, y alejando el zoom al máximo, a 390×844.
+- Orden de dibujo: la profundidad de un objeto es su `y` en pantalla. El fondo del barrio está a profundidad -1e6, y nada del recinto puede quedar por debajo de su suelo.
+
+### Orden sugerido
+Por impacto, primero los que se ven más vacíos:
+1. cripto, yates, rascacielos y superdeportivos;
+2. TikTok e IA;
+3. el resto de Miami y Dubái;
+4. después, el arte de fondo del barrio, las baldosas y los coches de espaldas.
