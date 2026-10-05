@@ -3,6 +3,7 @@ import { now as clockNow } from "../game/clock";
 import { money, t } from "../i18n";
 import { constructionPop, revealScene } from "./feedback";
 import { actorShadow, gait, loopPosition, streetLoop, type StreetLoop } from "./motion";
+import { laneFade, streetLane } from "./streets";
 import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
 import { groundDetail } from "../art/ground";
 import Phaser from "phaser";
@@ -86,6 +87,8 @@ export class CityScene extends Phaser.Scene {
   private ox = 0;
   private oy = 0;
   private plots: PlotView[] = [];
+  /** Building footprints (2×2 lots) to sort cars and people correctly against tall buildings. */
+  private footprints: { c0: number; r0: number; c1: number; r1: number; depth: number }[] = [];
   private movers: Walker[] = [];
   private clouds: { cloud: Phaser.GameObjects.Image; shadow: Phaser.GameObjects.Image; speed: number }[] = [];
   private drag!: DragScroll;
@@ -112,6 +115,7 @@ export class CityScene extends Phaser.Scene {
   create(): void {
     this.bridge = bridgeOf(this);
     this.plots = [];
+    this.footprints = [];
     this.movers = [];
     this.clouds = [];
     setupCamera(this);
@@ -348,6 +352,7 @@ export class CityScene extends Phaser.Scene {
   private drawLot(c: number, r: number, kind: LotKind): void {
     const bottom = this.iso(c + 2, r + 2);
     const center = this.iso(c + 1, r + 1);
+    this.footprints.push({ c0: c, r0: r, c1: c + 2, r1: r + 2, depth: bottom.y });
     if ("soon" in kind) {
       const img = art(this, bottom.x, bottom.y + 2, "bld_soon");
       img.setOrigin(0.5, hasGeneratedArt(this, "bld_soon") ? 1 : (ART.bld_soon.h - 6) / ART.bld_soon.h).setDepth(bottom.y);
@@ -410,13 +415,16 @@ export class CityScene extends Phaser.Scene {
 
   private spawnTraffic(): void {
     const rand = rng(99);
-    // Opposing lanes run around real closed city blocks, never through water.
+    // One-way lanes down the screen (the cars only have a front view): +c along the road rows,
+    // +r along the side avenues. They fade in and out at the edge of the city.
     const loops = [
-      [{c:0.32,r:0.32},{c:9.68,r:0.32},{c:9.68,r:11.68},{c:0.32,r:11.68}],
-      [{c:0.68,r:0.68},{c:0.68,r:11.32},{c:9.32,r:11.32},{c:9.32,r:0.68}],
-      [{c:0.32,r:3.32},{c:4.68,r:3.32},{c:4.68,r:7.68},{c:0.32,r:7.68}],
-      [{c:4.32,r:3.32},{c:9.68,r:3.32},{c:9.68,r:7.68},{c:4.32,r:7.68}],
-    ].map(points => streetLoop(points));
+      streetLane({c:-0.6,r:0.68},{c:10.6,r:0.68}),
+      streetLane({c:0.32,r:-0.6},{c:0.32,r:12.6}),
+      streetLane({c:-0.6,r:3.68},{c:10.6,r:3.68}),
+      streetLane({c:9.32,r:-0.6},{c:9.32,r:12.6}),
+      streetLane({c:-0.6,r:7.68},{c:10.6,r:7.68}),
+      streetLane({c:-0.6,r:11.68},{c:10.6,r:11.68}),
+    ];
     // El primero es el coche del personaje (lo que tenga en «Mi vida»), con su cartel.
     const myCar = this.bridge.state().meta.luxury.equipped.car ?? "deliverybike";
     for (let i=0;i<8;i++) {
@@ -436,6 +444,24 @@ export class CityScene extends Phaser.Scene {
       const route = streetLoop(i%3===0 ? corners.reverse() : corners,0.1);
       this.movers.push({obj,role,shadow:actorShadow(this,obj.displayWidth),route,distance:rand()*route.total,speed:0.27+rand()*0.08,phase:rand()*6,wait:0,crossing:""});
     }
+  }
+
+  /**
+   * Painter's order against the buildings: sorting by screen y alone hides a car driving past the
+   * east or south face of a building behind it (or puts one behind a building on top of it).
+   * Only buildings that share screen columns with the actor matter.
+   */
+  private actorDepth(c: number, r: number, y: number): number {
+    let lo = -Infinity, hi = Infinity;
+    const x = c - r;
+    for (const f of this.footprints) {
+      if (x + 0.6 < f.c0 - f.r1 || x - 0.6 > f.c1 - f.r0) continue;
+      if (c >= f.c1 || r >= f.r1) lo = Math.max(lo, f.depth);
+      else if (c <= f.c0 || r <= f.r0) hi = Math.min(hi, f.depth);
+    }
+    if (y <= lo) y = lo + 0.5;
+    if (y >= hi && hi > lo) y = hi - 0.5;
+    return y;
   }
 
   private spawnClouds(_worldH: number): void {
@@ -495,10 +521,12 @@ export class CityScene extends Phaser.Scene {
       const dx=v.dc-v.dr;
       if (Math.abs(dx)>0.05) m.obj.setFlipX(dx<0);
       const p=this.iso(v.c,v.r);
-      m.obj.setPosition(p.x,p.y).setDepth(p.y+1);
+      m.obj.setPosition(p.x,p.y).setDepth(this.actorDepth(v.c,v.r,p.y+1));
       gait(m.obj,p.y,this.walkClock*m.speed*2.5+m.phase,!calm && m.wait===0,!m.role);
-      m.shadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
-      m.tag?.setPosition(p.x,p.y-40).setDepth(9e4);
+      const fade=laneFade(m.route,m.distance);
+      m.obj.setAlpha(fade);
+      m.shadow.setPosition(p.x,p.y+1).setDepth(p.y-1).setAlpha(fade);
+      m.tag?.setPosition(p.x,p.y-40).setDepth(9e4).setAlpha(fade);
     }
     for (const cl of this.clouds) {
       cl.cloud.x += calmWorld() ? 0 : cl.speed * dt;

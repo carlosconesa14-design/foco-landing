@@ -1,5 +1,22 @@
 export type GridPoint = { c: number; r: number };
-export type StreetLoop = { points: GridPoint[]; lengths: number[]; total: number };
+export type StreetLoop = { points: GridPoint[]; lengths: number[]; total: number; lane?: boolean };
+
+/**
+ * One-way lane from a to b; the vehicle reappears at a (fading in and out at the ends).
+ * The vehicle art only has a front three-quarter view, so traffic always drives down the screen
+ * (+c or +r): driving "up" would look like a car sliding sideways.
+ */
+export function streetLane(a: GridPoint, b: GridPoint): StreetLoop {
+  const len = Math.hypot(b.c - a.c, b.r - a.r);
+  return { points: [a, b], lengths: [len, 0], total: len, lane: true };
+}
+
+/** 0 at the ends of a lane, 1 in the middle stretch. */
+export function laneFade(loop: StreetLoop, distance: number): number {
+  if (!loop.lane) return 1;
+  const d = ((distance % loop.total) + loop.total) % loop.total;
+  return Math.max(0, Math.min(1, d / 0.8, (loop.total - d) / 0.8));
+}
 
 /** Round corners inside their road tile; distances make speed independent of segment length. */
 export function streetLoop(corners: GridPoint[], radius = 0.18): StreetLoop {
