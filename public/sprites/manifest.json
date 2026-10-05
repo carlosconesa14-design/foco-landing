@@ -128,5 +128,20 @@
   "prop_dj",
   "ch_photographer",
   "prop_mining",
-  "prop_blueprints"
+  "prop_blueprints",
+  "car_0_rear",
+  "car_1_rear",
+  "car_2_rear",
+  "car_3_rear",
+  "van_rear",
+  "car_miami_0_rear",
+  "car_miami_1_rear",
+  "luxcar_deliverybike_rear",
+  "luxcar_scooter_rear",
+  "luxcar_motorbike_rear",
+  "luxcar_sportscar_rear",
+  "luxcar_supercar_rear",
+  "luxcar_limo_rear",
+  "luxcar_goldcar_rear",
+  "luxcar_hearse_rear"
 ]

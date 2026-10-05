@@ -102,3 +102,7 @@ Fuentes, exportadores y detalle de los puntos 5/6 entregados al final de `ART.md
 ### 5 de octubre de 2026 — arte para landing y TikTok
 
 Codex entrega las 28 piezas del último encargo de ART en `site/img/` y `marketing/tiktok/arte/`, todas con WebP, fuentes originales, recortes y exportador reproducible. Guías y zonas seguras en sus README. 227 tests, build y 53 comprobaciones móviles sin errores. Arte listo para el montaje de Claude; no implica despliegue de landing ni vídeos publicados.
+
+### 5 de octubre de 2026 — tráfico en ambos sentidos
+
+Codex añade 15 sprites traseros PNG/WebP para coches urbanos, Miami, furgoneta y los ocho vehículos de Mi vida. La ciudad y los barrios muestran vistas delanteras/traseras según el sentido y el espejo correcto para los cuatro ejes isométricos. Fuente, recortes y exportador documentados en ART; no se incrementa el número de vehículos ni cambia la economía.

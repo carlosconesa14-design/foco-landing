@@ -529,6 +529,11 @@ export const RANK_LEVELS = [1, 2, 3, 4, 5];
 
 /** El coche del personaje («Mi vida») circulando por la ciudad: `luxcar_<id>` (atlas o PNG). */
 for (const i of LUXURY) if (i.cat === "car") def(`luxcar_${i.id}`, 50, 42);
+// Rear traffic variants share exactly the front sprite's logical box.
+for (const key of ['car_0','car_1','car_2','car_3','van','car_miami_0','car_miami_1',...LUXURY.filter(i=>i.cat==='car').map(i=>`luxcar_${i.id}`)]) {
+  def(`${key}_rear`, ART[key].w, ART[key].h);
+}
+
 for (const n of RANK_LEVELS) {
   def(`rank_${n}`, 24, 24);
   for (const k of [...STATIONS, "wh_shelf", "veh_forklift", "veh_van", "wh_forklift_loaded", "wh_forklift_rear", "wh_van_open", "wh_van_rear", "veh_safari", "veh_crane", "veh_luggage", "veh_flatbed", "veh_goldvan", "rest_chef_a", "rest_chef_b", "rest_waiter_a", "rest_waiter_b"]) {

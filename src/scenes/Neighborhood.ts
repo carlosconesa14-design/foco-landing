@@ -1,3 +1,4 @@
+import { vehicleFacing } from './streets';
 import { BUSINESS_DISTRICTS } from '../art/businessWorld';
 import Phaser from 'phaser';
 import { art } from '../art/catalog';
@@ -75,8 +76,9 @@ export class Neighborhood {
       this.birds.push({image,x:p.x,y:p.y-75,phase:n*2});
     }
     for(let n=0;n<2;n++){
-      const a=iso(1+n*.35,rows+.35),b=iso(cols-1+n*.35,rows+.35);
-      const image=art(scene,a.x,a.y,`car_${n}`).setOrigin(.5,1).setDisplaySize(38,28);
+      const r=rows+.35+n*.3;
+      const a=iso(n?cols-1:1,r),b=iso(n?1:cols-1,r);
+      const image=art(scene,a.x,a.y,`car_${n}${n?'_rear':''}`).setOrigin(.5,1).setDisplaySize(38,28);
       this.traffic.push({image,a,b,phase:n/2});
     }
     this.update(0);
@@ -213,14 +215,13 @@ export class Neighborhood {
       [-1,mid+.5,-E,mid+.5],[cols+1,mid+.5,cols+E,mid+.5],
     ];
     // (The avenue hugging the plot stays free of through traffic: cars there brushed the walls.)
-    // The vehicle art only has a front view: every lane runs down the screen (+c or +r),
-    // otherwise cars would look like they slide sideways.
+    // Rear art makes the opposing lanes read as cars driving away.
     lanes.forEach(([c0,r0,c1,r1],i)=>{
-      if(c1<c0||r1<r0)[c0,r0,c1,r1]=[c1,r1,c0,r0];
       if(miami&&(c0>cols+1||c1>cols+1))return;
       const a=iso(c0,r0);
-      const image=art(scene,a.x,a.y,cars[i%cars.length]).setOrigin(.5,.72);
-      image.setFlipX((c1-c0)-(r1-r0)<0);
+      const facing=vehicleFacing(cars[i%cars.length],c1-c0,r1-r0);
+      const image=art(scene,a.x,a.y,facing.key).setOrigin(.5,.72);
+      image.setFlipX(facing.flipX);
       this.cars.push({image,a:iso(c0,r0),b:iso(c1,r1),g:[c0,r0,c1,r1],t:(i*.37)%1,speed:.035+(i%3)*.01});
     });
     // The business plot stands out: a gold kerb with a soft glow and a name sign at the entrance corner.
@@ -252,7 +253,8 @@ export class Neighborhood {
     }
     this.update(0);
     const span=R+2.5,corners=[iso(-span,-span),iso(cols+span,-span),iso(cols+span,rows+span),iso(-span,rows+span)];
-    return {left:Math.min(...corners.map(p=>p.x)),top:Math.min(...corners.map(p=>p.y))-160,right:Math.max(...corners.map(p=>p.x)),bottom:Math.max(...corners.map(p=>p.y))};
+    const silhouettes=scene.children.list.filter((obj):obj is Phaser.GameObjects.Image=>obj instanceof Phaser.GameObjects.Image && /^(district_|bld_)/.test(obj.texture.key)).map(img=>img.getBounds());
+    return {left:Math.min(...corners.map(p=>p.x),...silhouettes.map(b=>b.left)),top:Math.min(...corners.map(p=>p.y-160),...silhouettes.map(b=>b.top)),right:Math.max(...corners.map(p=>p.x),...silhouettes.map(b=>b.right)),bottom:Math.max(...corners.map(p=>p.y),...silhouettes.map(b=>b.bottom))};
   }
   /** Painter's order against neighbour buildings (see CityScene.actorDepth). */
   private depthAt(c:number,r:number,y:number){

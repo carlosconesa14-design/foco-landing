@@ -13,9 +13,10 @@ const out = resolve(root, process.env.VISUAL_OUTPUT || 'artifacts/visual');
 const port = Number(process.env.VISUAL_PORT || 5175);
 const url = process.env.VISUAL_BASE_URL || `http://127.0.0.1:${port}`;
 const baseline = process.argv.includes('--baseline');
+const trafficOnly = process.argv.includes('--traffic-only');
 const storeOnly = process.argv.includes('--store-only');
 const store = storeOnly || process.argv.includes('--store');
-const full = !baseline && !store && !process.argv.includes('--quick');
+const full = !baseline && !store && !trafficOnly && !process.argv.includes('--quick');
 const service = process.env.VISUAL_BASE_URL ? null : spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { cwd: root, stdio: 'pipe' });
 let serverLog = '';
 service?.stdout.on('data', d => serverLog += d);
@@ -104,11 +105,26 @@ async function neighborhood(page,sceneName,label) {
     const sc=__game.game.scene.getScene(name),n=sc.neighborhood;
     const districts=sc.children.list.filter(o=>o.type==='Image'&&o.texture.key.startsWith('district_'));
     const expected=name==='city'?__game.state.city:(await import('/src/art/businessWorld.ts')).BUSINESS_DISTRICTS[__game.state.view.id];
-    return {count:districts.length,keys:[...new Set(districts.map(o=>o.texture.key))],expected,traffic:n?.traffic.length,missing:districts.some(o=>o.texture.key==='__MISSING'),walkers:n?.walkers.length,birds:n?.birds.length,
+    return {count:districts.length,keys:[...new Set(districts.map(o=>o.texture.key))],expected,traffic:n?.traffic.length,cars:n?.cars.length,missing:districts.some(o=>o.texture.key==='__MISSING'),walkers:n?.walkers.length,birds:n?.birds.length,
       fits:districts.every(o=>{const b=o.getBounds();return b.left>=n.bounds.left&&b.right<=n.bounds.right&&b.top>=n.bounds.top&&b.bottom<=n.bounds.bottom})};
   },sceneName);
-  assert(result.count===6&&!result.missing&&result.walkers===6&&result.birds===3&&result.traffic===2&&result.keys.length===1&&result.keys[0]===`district_${result.expected}`&&result.fits,`${label}: neighborhood assets/bounds ${JSON.stringify(result)}`);
-  findings.push(`${label}: six districts, eleven ambient actors and camera coverage`);
+  assert(!result.missing&&result.walkers===6&&result.birds===3&&result.fits,`${label}: neighborhood assets/bounds ${JSON.stringify(result)}`);
+  if(sceneName==='city')assert(result.count===6&&result.traffic===2&&result.keys.length===1&&result.keys[0]===`district_${result.expected}`,`${label}: city scenery`);
+  else assert(result.cars>=4&&result.cars<=9,`${label}: bounded district traffic`);
+  findings.push(`${label}: neighborhood assets, bounded actors and camera coverage`);
+  const traffic=await page.evaluate(async name=>{
+    const sc=__game.game.scene.getScene(name),n=sc.neighborhood;
+    const {loopPosition,vehicleFacing}=await import('/src/scenes/streets.ts');
+    const {ART}=await import('/src/art/catalog.ts');
+    const items=[];
+    const inspect=(im,dx,dy)=>({key:im.texture.key,valid:im.texture.key.endsWith('_rear')===(dy<0)&&im.flipX===(dy<0?dx>0:dx<0)});
+    for(const m of sc.movers??[])if(m.vehicleKey){const v=loopPosition(m.route,m.distance);items.push(inspect(m.obj,v.dc-v.dr,v.dc+v.dr));}
+    for(const car of [...n.traffic,...n.cars])items.push(inspect(car.image,car.b.x-car.a.x,car.b.y-car.a.y));
+    const loaded=Object.keys(ART).filter(k=>/^(car_|car_miami_|luxcar_|van_rear)/.test(k)&&k.endsWith('_rear')).every(k=>sc.textures.exists(k)&&ART[k].w===ART[k.slice(0,-5)].w&&ART[k].h===ART[k.slice(0,-5)].h);
+    return {items,loaded};
+  },sceneName);
+  assert(traffic.loaded&&traffic.items.every(c=>c.valid)&&traffic.items.some(c=>c.key.endsWith('_rear'))&&traffic.items.some(c=>!c.key.endsWith('_rear')),`${label}: traffic facing ${JSON.stringify(traffic)}`);
+  findings.push(`${label}: front/rear views follow both directions, all rear textures loaded with matching sizes`);
 }
 async function snap(page,name) {await page.screenshot({path:resolve(out,`${name}.png`)});}
 try {
@@ -131,7 +147,7 @@ try {
     await snap(page,`${locale}-starter`);
     assert.equal(await page.locator('canvas').count(),1);
     if(!storeOnly) {
-    for(const width of widths) {
+    if(!trafficOnly) for(const width of widths) {
       await page.setViewportSize({width,height:844});
       await seed(page);
       await layout(page,`${locale}/${width}/HUD`);
@@ -159,6 +175,7 @@ try {
         }
       }
     }
+    if(trafficOnly){await ctx.close();continue;}
     if(!baseline) {
       const baselines=await page.evaluate(async()=>{
         const result=[];

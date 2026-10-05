@@ -918,3 +918,19 @@ Los coches (`car_0`…`car_3`, `van`, `car_miami_*`, `luxcar_*`) solo tienen la 
 Para tener tráfico en los dos sentidos:
 - **Qué hace falta:** una vista trasera de cada vehículo, `<clave>_rear`. Es el mismo coche visto desde atrás, alejándose hacia arriba y a la izquierda. Mismo tamaño lógico, mismo punto de apoyo y fondo transparente. Con `flipX` vale también para subir hacia arriba y a la derecha.
 - **Prompt:** «same vehicle, rear three-quarter view driving away toward the upper-left, identical scale, colours and ground anchor, transparent background, no text».
+
+### Vistas traseras de tráfico — entregado por Codex, 5 de octubre de 2026
+
+Se añaden las **15 vistas** `car_{0,1,2,3}_rear`, `van_rear`, `car_miami_{0,1}_rear` y `luxcar_{deliverybike,scooter,motorbike,sportscar,supercar,limo,goldcar,hearse}_rear`. PNG y WebP transparentes, sin texto ni marcas. Las vistas conservan carrocería, color y accesorios: franja naranja de la furgoneta, asientos crema de los descapotables, caja del repartidor, alerón del supercoche y cortinas moradas del coche fúnebre.
+
+Tamaños PNG: coches normales/Miami 132×102; furgoneta 228×138; vehículos de Mi vida 150×126. Las cajas lógicas parten de 44×34, 76×46 y 50×42; al ajustar los atlas delanteros, la caja trasera copia su tamaño lógico efectivo. Se conservan los puntos de apoyo existentes de cada escena y se normaliza el recorte dentro de la misma caja. No se crean texturas 4K ni actores adicionales.
+
+Fuente intacta: `public/sprites/source/traffic-rear.png`, atlas 1536×1024. Recortes: `traffic-rear.json`. Reproducción: `node scripts/export-traffic-rear.mjs` y después `npm run art:webp`.
+
+Prompt: edit the exact 5×3 reference contact sheet into rear three-quarter views of all fifteen vehicles, same order, color, accessories, elevated camera, scale and ground anchor; driving away toward upper-left, rear window/bumper/red tail lights; toy mobile tycoon navy contours warm upper-left light, isolated transparent RGBA, no text/logos. Referencias: PNG originales y recortes de los atlas existentes, sin redibujar los vehículos delanteros.
+
+`vehicleFacing` elige frente para +c/+r y trasera para −c/−r; el espejo cambia según la vista para cubrir los cuatro sentidos. La ciudad utiliza dos calzadas paralelas con sentidos opuestos; los barrios recuperan sus trayectos de ida/vuelta y la ciudad exterior tiene un coche en cada sentido. Fundidos, sombras, orden de profundidad, pausas de movimiento y presupuesto de actores se conservan. Solo presentación; sin cambios en economía o guardado.
+
+Limpieza final mediante generación de edición: conservar los 15 vehículos y su orientación, separar sus siluetas con amplios márgenes transparentes, especialmente descapotables y limusina/oro, sin piezas vecinas ni texto. Se conserva también el atlas inicial (`traffic-rear-initial.png`). Para recalcular metadatos: `python scripts/register-traffic-rear.py` (Pillow/NumPy/SciPy; solo cajas de recorte).
+
+Verificación: **229 tests**, build y una pasada de **70 comprobaciones móviles** sin errores; tras limpiar el atlas, **48 comprobaciones finales** a 390×844 por tres ciudades y catorce negocios, todas correctas. Comprueban sprites traseros cargados, tamaños iguales a los delanteros, vista/espejo para cada trayectoria y límites de cámara. Pruebas de WebP y rutas repetidas sobre los archivos finales. Galería `docs/visual-review/traffic-rear.png`, informe `traffic-rear-report.json`; receta `npm run capture:visuals -- --traffic-only`.

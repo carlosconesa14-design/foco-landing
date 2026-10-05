@@ -3,7 +3,7 @@ import { now as clockNow } from "../game/clock";
 import { money, t } from "../i18n";
 import { constructionPop, revealScene } from "./feedback";
 import { actorShadow, gait, loopPosition, streetLoop, type StreetLoop } from "./motion";
-import { laneFade, streetLane } from "./streets";
+import { laneFade, streetLane, vehicleFacing } from "./streets";
 import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
 import { groundDetail } from "../art/ground";
 import Phaser from "phaser";
@@ -62,6 +62,7 @@ interface Walker {
   obj: Phaser.GameObjects.Image;
   shadow: Phaser.GameObjects.Ellipse;
   role?: string;
+  vehicleKey?: string;
   route: StreetLoop;
   distance: number;
   speed: number;
@@ -415,23 +416,26 @@ export class CityScene extends Phaser.Scene {
 
   private spawnTraffic(): void {
     const rand = rng(99);
-    // One-way lanes down the screen (the cars only have a front view): +c along the road rows,
-    // +r along the side avenues. They fade in and out at the edge of the city.
+    // Parallel carriageways: front view toward the city, rear view driving away.
     const loops = [
       streetLane({c:-0.6,r:0.68},{c:10.6,r:0.68}),
+      streetLane({c:10.6,r:0.32},{c:-0.6,r:0.32}),
       streetLane({c:0.32,r:-0.6},{c:0.32,r:12.6}),
+      streetLane({c:0.68,r:12.6},{c:0.68,r:-0.6}),
       streetLane({c:-0.6,r:3.68},{c:10.6,r:3.68}),
+      streetLane({c:10.6,r:3.32},{c:-0.6,r:3.32}),
       streetLane({c:9.32,r:-0.6},{c:9.32,r:12.6}),
-      streetLane({c:-0.6,r:7.68},{c:10.6,r:7.68}),
-      streetLane({c:-0.6,r:11.68},{c:10.6,r:11.68}),
+      streetLane({c:9.68,r:12.6},{c:9.68,r:-0.6}),
     ];
     // El primero es el coche del personaje (lo que tenga en «Mi vida»), con su cartel.
     const myCar = this.bridge.state().meta.luxury.equipped.car ?? "deliverybike";
     for (let i=0;i<8;i++) {
-      const obj = art(this,0,0,i===0 ? `luxcar_${myCar}` : this.city.id === "miami" ? `car_miami_${i%2}` : `car_${i%4}`).setOrigin(0.5,0.76);
-      const route = loops[i%loops.length];
+      const vehicleKey = i===0 ? `luxcar_${myCar}` : this.city.id === "miami" ? `car_miami_${i%2}` : `car_${i%4}`;
+      const route = loops[(i+1)%loops.length];
+      const v=loopPosition(route,0), facing=vehicleFacing(vehicleKey,v.dc,v.dr);
+      const obj = art(this,0,0,facing.key).setOrigin(0.5,0.76).setFlipX(facing.flipX);
       const tag = i===0 ? label(this,0,0,t("Tú"),10,"#2e2200",{bold:true}).setBackgroundColor("#f5c542").setPadding(4,1,4,1).setOrigin(0.5) : undefined;
-      this.movers.push({obj,shadow:actorShadow(this,obj.displayWidth),route,distance:route.total*(Math.floor(i/4)*0.5+rand()*0.2),speed:0.8+rand()*0.35,phase:rand()*6,wait:0,crossing:"",tag});
+      this.movers.push({obj,vehicleKey,shadow:actorShadow(this,obj.displayWidth),route,distance:route.total*(Math.floor(i/4)*0.5+rand()*0.2),speed:0.8+rand()*0.35,phase:rand()*6,wait:0,crossing:"",tag});
     }
     // Walking loops follow the inner pavements, not the carriageway or the buildings.
     for (let i=0;i<8;i++) {
@@ -519,7 +523,11 @@ export class CityScene extends Phaser.Scene {
       }
       if (m.role) swapArt(m.obj,`ch_${m.role}_${frame}`);
       const dx=v.dc-v.dr;
-      if (Math.abs(dx)>0.05) m.obj.setFlipX(dx<0);
+      if (m.vehicleKey) {
+        const facing=vehicleFacing(m.vehicleKey,v.dc,v.dr);
+        swapArt(m.obj,facing.key);
+        m.obj.setFlipX(facing.flipX);
+      } else if (Math.abs(dx)>0.05) m.obj.setFlipX(dx<0);
       const p=this.iso(v.c,v.r);
       m.obj.setPosition(p.x,p.y).setDepth(this.actorDepth(v.c,v.r,p.y+1));
       gait(m.obj,p.y,this.walkClock*m.speed*2.5+m.phase,!calm && m.wait===0,!m.role);

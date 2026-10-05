@@ -85,3 +85,9 @@ acepta tanto el frame base de PNG individuales como recortes de atlas.
 `sold-sign-report.json`: cuatro comprobaciones adicionales en español e inglés.
 El cartel está oculto durante la oferta y muestra «Vendido»/«Sold» al completarla.
 Pasan los 227 tests y la compilación de producción.
+
+### Tráfico con vistas traseras — 5 de octubre de 2026
+
+![Las quince vistas traseras originales](traffic-rear.png)
+
+15 PNG/WebP propios y vistas correctas para los cuatro sentidos. 229 tests, build y 70 comprobaciones móviles; 48 verificaciones finales con atlas limpio en las tres ciudades y catorce negocios. Informe: [traffic-rear-report.json](traffic-rear-report.json). Receta: `npm run capture:visuals -- --traffic-only`. No cambia economía ni número de actores. Se incluyen también los límites de cámara corregidos del barrio ampliado.
