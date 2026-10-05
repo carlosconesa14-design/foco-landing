@@ -24,8 +24,7 @@ import { analytics, daysSinceInstall, deviceId, minutesSinceInstall } from "./pl
 import { installErrorReporting } from "./platform/errors";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
-import { BusinessScene } from "./scenes/BusinessScene";
-import { RouteScene, ROUTE_VIEW } from "./scenes/RouteScene";
+import { RouteScene } from "./scenes/RouteScene";
 import { CityScene } from "./scenes/CityScene";
 import { COLORS, DPR, overlayHeight, type Bridge } from "./scenes/common";
 import { banner, celebrate, floatAt } from "./ui/celebrate";
@@ -218,14 +217,12 @@ const game = new Phaser.Game({
 });
 game.scene.add("boot", BootScene, true);
 game.scene.add("city", CityScene);
-game.scene.add("business", BusinessScene);
 game.scene.add("route", RouteScene);
-/** Escena de un negocio: la vista en ruta donde ya está (docs/DISENO_RUTA.md), si no el recinto. */
-const bizScene = (id: string) => (ROUTE_VIEW.has(id) ? "route" : "business");
+/** Escena de un negocio: la vista en ruta (docs/DISENO_RUTA.md). */
+const bizScene = (_id: string) => "route";
 /** La escena de negocio activa, si hay una (para los visitantes con oferta). */
-function activeBizScene(): BusinessScene | RouteScene | null {
-  for (const key of ["business", "route"]) if (game.scene.isActive(key)) return game.scene.getScene(key) as BusinessScene | RouteScene;
-  return null;
+function activeBizScene(): RouteScene | null {
+  return game.scene.isActive("route") ? (game.scene.getScene("route") as RouteScene) : null;
 }
 
 let artReady = false;

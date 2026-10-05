@@ -90,25 +90,25 @@ export const BUSINESSES: BusinessDef[] = [
   {
     id: "dropship", name: "Almacén de dropshipping", icon: "📦", blurb: "Tu primer negocio de verdad. Pedidos online que salen solos.",
     price: 4000, mult: 1, pace: 1, wall: 0xe8b04b, roof: 0x9c5b2e,
-    floorName: "Estantería", worker: "🧑‍🔧", item: "📦", transportName: "Carretilla", transportIcon: "🛻",
+    floorNames: ["Juguetes", "Móviles", "Ropa", "Hogar", "Belleza", "Deporte", "Gaming", "Lujo"], floorName: "Estantería", worker: "🧑‍🔧", item: "📦", transportName: "Carretilla", transportIcon: "🛻",
     saleName: "Furgonetas", saleWorker: "🚚", customer: "🏠",
   },
   {
     id: "restaurant", name: "Restaurante", icon: "🍝", blurb: "Cocinas, camareros y repartidores. Si uno falla, se atasca todo.",
     price: 2e8, mult: 2e5, pace: 3, wall: 0xd9534f, roof: 0x7a2323,
-    floorName: "Cocina", worker: "🧑‍🍳", item: "🍝", transportName: "Camareros", transportIcon: "🤵",
+    floorNames: ["Pastas", "Pizzas", "Parrilla", "Arroces", "Tapas", "Postres", "Marisco", "Menú degustación"], floorName: "Cocina", worker: "🧑‍🍳", item: "🍝", transportName: "Camareros", transportIcon: "🤵",
     saleName: "Repartidores", saleWorker: "🛵", customer: "🏠",
   },
   {
     id: "tiktok", name: "Estudio de TikTok", icon: "📱", blurb: "Creadores grabando sin parar y marcas pagando por salir.",
     price: 6e14, mult: 5e11, pace: 10, wall: 0x6f5bd6, roof: 0x2e2270,
-    floorName: "Set de grabación", worker: "🤳", item: "🎬", transportName: "Editores", transportIcon: "✂️",
+    floorNames: ["Bailes", "Recetas", "Bromas", "Gaming", "Belleza", "Viajes", "Deportes", "Directo 24 h"], floorName: "Set de grabación", worker: "🤳", item: "🎬", transportName: "Editores", transportIcon: "✂️",
     saleName: "Marcas", saleWorker: "🤝", customer: "🏢",
   },
   {
     id: "ai", name: "Agencia de IA", icon: "🤖", blurb: "GPUs a tope y clientes que pagan por automatizarlo todo.",
     price: 6e21, mult: 5e18, pace: 30, wall: 0x2bb5a0, roof: 0x145c52,
-    floorName: "Rack de GPUs", worker: "🦾", item: "🧠", transportName: "Técnicos", transportIcon: "🧑‍🔧",
+    floorNames: ["Chatbots", "Visión", "Voz", "Traducción", "Código", "Medicina", "Finanzas", "Robótica"], floorName: "Rack de GPUs", worker: "🦾", item: "🧠", transportName: "Técnicos", transportIcon: "🧑‍🔧",
     saleName: "Comerciales", saleWorker: "💼", customer: "🏦",
   },
 ];
@@ -118,31 +118,31 @@ export const MIAMI_BUSINESSES: BusinessDef[] = [
   {
     id: "foodtruck", name: "Food trucks", icon: "🌮", blurb: "Tacos y batidos para los turistas del paseo marítimo.",
     price: 0, mult: 1, pace: 2.5, wall: 0xff9f43, roof: 0xee5253,
-    floorName: "Food truck", worker: "🧑‍🍳", item: "🌮", transportName: "Patinadores", transportIcon: "🛼",
+    floorNames: ["Tacos", "Burritos", "Batidos", "Perritos", "Arepas", "Helados", "Hamburguesas", "Poke"], floorName: "Food truck", worker: "🧑‍🍳", item: "🌮", transportName: "Patinadores", transportIcon: "🛼",
     saleName: "Puestos de playa", saleWorker: "🏖️", customer: "🏖️",
   },
   {
     id: "beachclub", name: "Club de playa", icon: "🏖️", blurb: "Tumbonas, cócteles y música hasta que se pone el sol.",
     price: 1.5e9, mult: 4e5, pace: 8, wall: 0x48dbfb, roof: 0x0abde3,
-    floorName: "Barra", worker: "🍹", item: "🍹", transportName: "Camareros", transportIcon: "🤵",
+    floorNames: ["Mojitos", "Piña colada", "Daiquiri", "Margarita", "Sangría", "Sin alcohol", "Champán", "Barra VIP"], floorName: "Barra", worker: "🍹", item: "🍹", transportName: "Camareros", transportIcon: "🤵",
     saleName: "Relaciones públicas", saleWorker: "📣", customer: "🏖️",
   },
   {
     id: "yachts", name: "Alquiler de yates", icon: "🛥️", blurb: "Excursiones de lujo por la bahía de Biscayne.",
     price: 3e16, mult: 1e12, pace: 25, wall: 0xf5f6fa, roof: 0x1e3799,
-    floorName: "Amarre", worker: "🧑‍✈️", item: "🎫", transportName: "Lanchas", transportIcon: "🚤",
+    floorNames: ["Lancha", "Velero", "Catamarán", "Yate", "Yate de fiesta", "Megayate", "Submarino", "Superyate"], floorName: "Amarre", worker: "🧑‍✈️", item: "🎫", transportName: "Lanchas", transportIcon: "🚤",
     saleName: "Agentes de viaje", saleWorker: "🧳", customer: "🛳️",
   },
   {
     id: "realestate", name: "Inmobiliaria", icon: "🏘️", blurb: "Áticos frente al mar que se venden antes de construirse.",
     price: 2e23, mult: 4e18, pace: 60, wall: 0xfeca57, roof: 0x8395a7,
-    floorName: "Oficina", worker: "🧑‍💼", item: "🔑", transportName: "Gestores", transportIcon: "📁",
+    floorNames: ["Estudio", "Apartamento", "Ático", "Casa", "Chalet", "Villa", "Mansión", "Isla privada"], floorName: "Oficina", worker: "🧑‍💼", item: "🔑", transportName: "Gestores", transportIcon: "📁",
     saleName: "Agentes", saleWorker: "🤝", customer: "🏘️",
   },
   {
     id: "crypto", name: "Exchange de cripto", icon: "🪙", blurb: "Millones de operaciones por segundo en la capital cripto.",
     price: 2e29, mult: 1e24, pace: 150, wall: 0x341f97, roof: 0x5f27cd,
-    floorName: "Servidor", worker: "🧑‍💻", item: "🪙", transportName: "Bots", transportIcon: "🤖",
+    floorNames: ["Monederos", "Minería", "Exchange", "Coleccionables", "Staking", "Finanzas abiertas", "Metaverso", "Banco digital"], floorName: "Servidor", worker: "🧑‍💻", item: "🪙", transportName: "Bots", transportIcon: "🤖",
     saleName: "Traders", saleWorker: "📊", customer: "🏦",
   },
 ];
@@ -152,31 +152,31 @@ export const DUBAI_BUSINESSES: BusinessDef[] = [
   {
     id: "supercars", name: "Alquiler de superdeportivos", icon: "🏎️", blurb: "Deportivos de alquiler por horas para dar una vuelta por Sheikh Zayed Road.",
     price: 0, mult: 1, pace: 4, wall: 0xe84118, roof: 0x2f3640,
-    floorName: "Garaje", worker: "🧑‍🔧", item: "🔑", transportName: "Aparcacoches", transportIcon: "🏎️",
+    floorNames: ["Compactos", "Deportivos", "Descapotables", "Clásicos", "Eléctricos", "Superdeportivos", "Hiperdeportivos", "Edición única"], floorName: "Garaje", worker: "🧑‍🔧", item: "🔑", transportName: "Aparcacoches", transportIcon: "🏎️",
     saleName: "Recepción", saleWorker: "🤵", customer: "🏨",
   },
   {
     id: "hotel", name: "Hotel de lujo", icon: "🏨", blurb: "Suites con mayordomo y vistas al golfo.",
     price: 4e9, mult: 6e5, pace: 12, wall: 0xf5f0e1, roof: 0xc8a24a,
-    floorName: "Suite", worker: "🤵", item: "🛎️", transportName: "Botones", transportIcon: "🧳",
+    floorNames: ["Recepción", "Habitaciones", "Suites", "Spa", "Piscina", "Restaurante", "Ático", "Suite real"], floorName: "Suite", worker: "🤵", item: "🛎️", transportName: "Botones", transportIcon: "🧳",
     saleName: "Conserjes", saleWorker: "💁", customer: "✈️",
   },
   {
     id: "safari", name: "Safari en el desierto", icon: "🐪", blurb: "Dunas en 4x4, camellos y cenas bajo las estrellas.",
     price: 1e17, mult: 2e12, pace: 50, wall: 0xe1b382, roof: 0x8c5a2b,
-    floorName: "Campamento", worker: "🧑‍🌾", item: "🐪", transportName: "Todoterrenos", transportIcon: "🚙",
+    floorNames: ["Camellos", "Dunas", "Halcones", "Oasis", "Campamento", "Globo", "Quads", "Noche estrellada"], floorName: "Campamento", worker: "🧑‍🌾", item: "🐪", transportName: "Todoterrenos", transportIcon: "🚙",
     saleName: "Agencias", saleWorker: "🧳", customer: "🏨",
   },
   {
     id: "souk", name: "Zoco del oro", icon: "💍", blurb: "Joyas de oro al peso en el mercado más brillante del mundo.",
     price: 3e24, mult: 1e19, pace: 130, wall: 0xf6c344, roof: 0x7d5a14,
-    floorName: "Taller", worker: "🧑‍🏭", item: "💍", transportName: "Escoltas", transportIcon: "🛡️",
+    floorNames: ["Especias", "Alfombras", "Lámparas", "Perfumes", "Telas", "Oro", "Perlas", "Diamantes"], floorName: "Taller", worker: "🧑‍🏭", item: "💍", transportName: "Escoltas", transportIcon: "🛡️",
     saleName: "Joyeros", saleWorker: "💎", customer: "🏬",
   },
   {
     id: "tower", name: "Rascacielos", icon: "🏙️", blurb: "Torres de cristal más altas que las nubes.",
     price: 1e31, mult: 3e24, pace: 300, wall: 0x9fd3e6, roof: 0x34495e,
-    floorName: "Planta en obras", worker: "👷", item: "🏗️", transportName: "Grúas", transportIcon: "🏗️",
+    floorNames: ["Cimientos", "Estructura", "Fachada", "Ascensores", "Oficinas", "Hotel", "Mirador", "Aguja"], floorName: "Planta en obras", worker: "👷", item: "🏗️", transportName: "Grúas", transportIcon: "🏗️",
     saleName: "Inversores", saleWorker: "💼", customer: "🏦",
   },
 ];

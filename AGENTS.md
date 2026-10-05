@@ -4,6 +4,8 @@
 
 ## Tu misión: todo lo visual
 
+**Empieza por [`docs/VISUAL.md`](docs/VISUAL.md): la biblia visual con todas las pantallas, la frontera lógica/visual y las fases de entrega.** Las secciones de abajo son contexto adicional.
+
 Tienes vía libre para mejorar **todo lo que se ve**: arte, animaciones, efectos, interfaz, tipografía, colores y sensación de juego ("juice"). No esperes una lista cerrada. Juega, detecta tú qué se ve pobre, genérico o poco claro, y mejóralo. El listón son los tycoons de éxito del móvil (Idle Miner Tycoon, Idle Theme Park Tycoon, Eatventure): mundo vivo, recompensas visuales en cada acción y una interfaz con personalidad propia.
 
 Punto de partida: el apartado **"Plan de mejora gráfica"** de `docs/ART.md`. Es una revisión ya hecha, ordenada por impacto. Úsala como guía, no como límite.
