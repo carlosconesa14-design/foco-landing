@@ -50,6 +50,8 @@ Deno.serve(async (req) => {
   try {
     // Carrera de fundadores: plazas ocupadas (público, para el mapa del mundo).
     if (body.action === "founders") return json(await rpc("founder_count", { p_city: String(body.city ?? "dubai") }));
+    // Premios de la semana y últimos ganadores (público, para la landing page).
+    if (body.action === "prizes") return json(await rpc("league_prizes", {}));
 
     if (body.action === "register") {
       // La IP solo se guarda como hash, para limitar altas masivas.
