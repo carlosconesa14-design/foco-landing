@@ -103,7 +103,7 @@ Misma ruta y mismas reglas; cambian el camino, quién lo recorre y su mecánica 
 2. **ChatGPT/Codex:**
    - rider, restaurantes y tramos de ruta de Madrid;
    - después Miami y Dubái.
-3. **Claude:** extender la vista en ruta a todos los negocios a medida que llega el arte. Quitar el recinto isométrico (`BusinessScene`) cuando ya no lo use nadie.
+3. ✅ **Claude:** los 15 negocios ya usan la vista en ruta (`RouteScene`, sobre `businessView`). El recinto isométrico (`BusinessScene`) se ha eliminado. El encargo visual completo está en `VISUAL.md`.
 
 ## Preguntas para Carlos
 - **Pedalear:** ¿te gusta como toque activo del reparto, o prefieres que también sea idle puro?

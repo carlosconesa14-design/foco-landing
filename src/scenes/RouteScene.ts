@@ -4,8 +4,9 @@ import { ART, BIZ_ART, art, artScale, buildingKey, rankedKey } from "../art/cata
 import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
 import { mix, shade } from "../art/pen";
 import { BUSINESS_DISTRICTS } from "../art/businessWorld";
-import { CHAIN, TUTORIAL, floorLabel } from "../game/data";
-import { bizDef, bizList, chainRates, floorUnlockCost, managerCost, setPedal, upgradeQuote, type Station } from "../game/economy";
+import { CHAIN, floorLabel } from "../game/data";
+import { bizDef, floorUnlockCost, setPedal } from "../game/economy";
+import { now as clockNow } from "../game/clock";
 import { fmt } from "../game/format";
 import { rankInfo, rankOf } from "../game/ranks";
 import type { BusinessState } from "../game/state";
@@ -16,6 +17,8 @@ import { constructionPop, revealScene, transferProduct, upgradePop } from "./fee
 import { rankBadge, rankBurst } from "./rankFx";
 import { TwistWorld } from "./TwistWorld";
 import { WorldVisitor } from "./WorldVisitor";
+import { businessView } from "../view/businessView";
+import { screenOf } from "../view/screens";
 
 /**
  * Pantalla de un negocio «en ruta» (docs/DISENO_RUTA.md): arriba la sede y la venta; debajo, una
@@ -27,27 +30,6 @@ import { WorldVisitor } from "./WorldVisitor";
 const STOP_H = 172;
 const SURFACE_H = 250;
 const ROAD_W = 30;
-/** Negocio con «pedalear»: mantener pulsado al transporte lo acelera (economy.setPedal). */
-const PEDAL_BIZ = "bike";
-
-/** Colores del suelo y de la ruta de cada negocio (arte provisional, ver docs/ART.md). */
-const THEME: Record<string, { ground: number; road: number; line: number }> = {
-  bike: { ground: 0xd9e4c9, road: 0x56606e, line: 0xf5f1dc },
-  dropship: { ground: 0xd9dde2, road: 0x6b7480, line: 0xf1c40f },
-  restaurant: { ground: 0xf3dcc0, road: 0xb5654f, line: 0xfff4d7 },
-  tiktok: { ground: 0xe2d9f5, road: 0x3b2f73, line: 0xff6fb5 },
-  ai: { ground: 0xd6ebe8, road: 0x2c3e50, line: 0x1abc9c },
-  foodtruck: { ground: 0xf8e8bf, road: 0xc9a46a, line: 0xffffff },
-  beachclub: { ground: 0xfaeccb, road: 0xb98a5a, line: 0xf8e7c0 },
-  yachts: { ground: 0xbfe3ef, road: 0x9c6b3f, line: 0xf3d9b0 },
-  realestate: { ground: 0xdfead2, road: 0x5d6a77, line: 0xfeca57 },
-  crypto: { ground: 0xdcd6f0, road: 0x241a5e, line: 0xff9f1a },
-  supercars: { ground: 0xe4e6ea, road: 0x2f3640, line: 0xe84118 },
-  hotel: { ground: 0xf5eddb, road: 0x8c2f39, line: 0xc8a24a },
-  safari: { ground: 0xefd6a8, road: 0xb7793d, line: 0xf6e1b8 },
-  souk: { ground: 0xf4e5c3, road: 0x9a7b4f, line: 0xf6c344 },
-  tower: { ground: 0xdfe8ee, road: 0x7f8c8d, line: 0xf1c40f },
-};
 
 const isVehicle = (key: string) => key.startsWith("car_") || key.startsWith("veh_");
 const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_van: "car_2" };
@@ -197,7 +179,7 @@ export class RouteScene extends Phaser.Scene {
   }
 
   private theme() {
-    return THEME[this.bizId] ?? THEME.dropship;
+    return screenOf(this.bizId).palette;
   }
 
   /* ---------- Geometría de la ruta ---------- */
@@ -328,8 +310,9 @@ export class RouteScene extends Phaser.Scene {
   private drawSurface(): void {
     const W = this.W, g0 = this.ground;
     const sky = this.add.graphics().setDepth(0);
-    sky.fillGradientStyle(0x7cc6f0, 0x7cc6f0, 0xcfeefc, 0xcfeefc, 1).fillRect(0, 0, W, g0);
-    const district = `district_${BUSINESS_DISTRICTS[this.bizId] ?? (this.bizId === PEDAL_BIZ ? "terrace" : this.bridge.state().city)}`;
+    const [top, bottom] = this.theme().sky;
+    sky.fillGradientStyle(top, top, bottom, bottom, 1).fillRect(0, 0, W, g0);
+    const district = `district_${BUSINESS_DISTRICTS[this.bizId] ?? (this.bizId === "bike" ? "terrace" : this.bridge.state().city)}`;
     for (const [fx, flip] of [[0.18, false], [0.86, true]] as [number, boolean][]) {
       const d = art(this, W * fx, g0 + 6, district).setOrigin(0.5, 1).setDepth(1).setFlipX(flip).setAlpha(0.55);
       d.setTint(mix(0xffffff, 0x9fc4dc, 0.45));
@@ -471,7 +454,7 @@ export class RouteScene extends Phaser.Scene {
     this.pedalFx = this.add.graphics().setDepth(39);
     this.pedalTip = label(this, 0, 0, t("¡Mantén pulsado para pedalear!"), 12, "#2e2200", { bold: true }).setOrigin(0.5).setBackgroundColor("#ffd36b").setPadding(6, 3, 6, 3).setDepth(91).setVisible(false);
     this.mover.on("pointerdown", () => {
-      if (this.bizId === PEDAL_BIZ && !this.biz().transport.managed) {
+      if (screenOf(this.bizId).mover === "bike" && !this.biz().transport.managed) {
         this.pedaling = true;
         setPedal(this.bizId);
       }
@@ -497,11 +480,6 @@ export class RouteScene extends Phaser.Scene {
     return spots.map(([dx, dy]) => art(this, x + dx * scale, y + dy * scale, this.look.item).setDisplaySize(spec.w * scale, spec.h * scale).setDepth(depth).setVisible(false));
   }
 
-  private showPile(pile: Phaser.GameObjects.Image[], amount: number, unit: number): void {
-    const n = amount <= 0 ? 0 : Math.min(pile.length, 1 + Math.floor(Math.log2(1 + amount / Math.max(unit, 1e-9))));
-    pile.forEach((img, i) => img.setVisible(i < n));
-  }
-
   private makeParticles(): void {
     const cs = artScale(this, "coin");
     const coinRef = artRef(this, "coin");
@@ -510,19 +488,13 @@ export class RouteScene extends Phaser.Scene {
     this.sparks = this.add.particles(0, 0, "spark", { speed: { min: 40, max: 120 }, lifespan: 600, scale: { start: ss * 0.9, end: 0 }, tint: [0xf5c542, 0xffffff, 0x3ddc97], emitting: false }).setDepth(95);
   }
 
-  private readyFor(st: Station, managed: boolean): boolean {
-    const s = this.bridge.state();
-    const def = bizDef(this.bizId);
-    return s.cash >= upgradeQuote(s, this.bizId, st).cost || (!managed && s.cash >= managerCost(def, st));
-  }
-
   /* ---------- Actualización ---------- */
 
   update(_t: number, dtMs: number): void {
     const s = this.bridge.state();
-    const b = this.biz();
-    if (!b) return;
-    if (b.floors.length !== this.floorCount) {
+    if (!this.biz()) return;
+    const v = businessView(s, this.bizId, clockNow());
+    if (v.stops.length !== this.floorCount) {
       this.scene.restart({ id: this.bizId, scrollY: this.cameras.main.scrollY, previousFloors: this.floorCount });
       return;
     }
@@ -534,50 +506,43 @@ export class RouteScene extends Phaser.Scene {
     }
     this.visitor?.update();
     this.twistWorld?.update(s);
-    const def = bizDef(this.bizId);
     const clk = this.time.now / 1000;
-    const unit = CHAIN.floorCycle * def.mult;
-    const tutorial = s.totalEarned < 30;
-    const tutStat = s.meta.tutorial < TUTORIAL.length && this.bizId === bizList(s)[0].id ? TUTORIAL[s.meta.tutorial].stat : null;
-    const rates = chainRates(def, b, false);
-    const auto = b.transport.managed || b.sale.managed || b.floors.some((f) => f.managed);
     this.sparkClock += dt;
     const sparkNow = this.sparkClock > 0.45;
     if (sparkNow) this.sparkClock = 0;
 
     // Paradas
-    b.floors.forEach((f, i) => {
-      const v = this.stops[i];
-      if (!v) return;
-      const active = f.running && !calmWorld();
-      v.worker.setAngle(active ? Math.sin(clk * 7 + i) * 4 : 0);
-      if (!calmWorld()) swapArt(v.worker, rankedKey(this, `ch_${this.look.worker}_${active ? (Math.floor(clk * 6 + i) % 2 ? 1 : 2) : 0}`, v.rank));
-      if (f.running && sparkNow && !reducedMotion()) this.sparks.emitParticleAt(v.station.x + (Math.random() - 0.5) * 40, v.station.y - 60, 1);
-      if (f.stock > v.lastStock) transferProduct(this, this.look.item, { x: v.station.x, y: v.station.y - 50 }, { x: v.pile[0].x, y: v.pile[0].y });
-      v.lastStock = f.stock;
-      this.showPile(v.pile, f.stock, unit);
-      v.stock.setText(f.stock > 0 ? fmt(f.stock) : "");
-      v.bar.width = 80 * (f.running ? f.prog / CHAIN.floorCycle : 0);
-      v.hint.setVisible(tutStat ? tutStat === "tapFloor" && !f.running : tutorial && !f.managed && !f.running);
-      v.manager.setAlpha(f.managed ? 1 : 0.25);
-      v.button.set(f.level, this.readyFor({ kind: "floor", index: i }, f.managed), auto && rates.bottleneck === "production").bob(clk);
-      if (f.level > v.level) {
-        if (!reducedMotion()) this.sparks.explode(14, v.station.x, v.station.y - 50);
-        upgradePop(this, v.station);
-        v.level = f.level;
-        const rank = rankOf(f.level);
-        if (rank > v.rank) {
-          v.rank = rank;
-          swapArt(v.station, rankedKey(this, v.stationKey, rank));
-          v.badge.destroy();
-          v.badge = rankBadge(this, v.button.x - 32, v.button.y - 26, rank).setDepth(71);
-          rankBurst(this, v.station.x, v.station.y - 40, rank, `${rankInfo(rank)!.name}!`);
+    v.stops.forEach((f, i) => {
+      const o = this.stops[i];
+      if (!o) return;
+      const active = f.working && !calmWorld();
+      o.worker.setAngle(active ? Math.sin(clk * 7 + i) * 4 : 0);
+      if (!calmWorld()) swapArt(o.worker, rankedKey(this, `ch_${this.look.worker}_${active ? (Math.floor(clk * 6 + i) % 2 ? 1 : 2) : 0}`, o.rank));
+      if (f.working && sparkNow && !reducedMotion()) this.sparks.emitParticleAt(o.station.x + (Math.random() - 0.5) * 40, o.station.y - 60, 1);
+      if (f.stock > o.lastStock) transferProduct(this, this.look.item, { x: o.station.x, y: o.station.y - 50 }, { x: o.pile[0].x, y: o.pile[0].y });
+      o.lastStock = f.stock;
+      o.pile.forEach((img, k) => img.setVisible(k < f.pile));
+      o.stock.setText(f.stock > 0 ? fmt(f.stock) : "");
+      o.bar.width = 80 * f.progress;
+      o.hint.setVisible(f.hint);
+      o.manager.setAlpha(f.managed ? 1 : 0.25);
+      o.button.set(f.level, f.button === "ready", f.button === "bottleneck").bob(clk);
+      if (f.level > o.level) {
+        if (!reducedMotion()) this.sparks.explode(14, o.station.x, o.station.y - 50);
+        upgradePop(this, o.station);
+        o.level = f.level;
+        if (f.rank > o.rank) {
+          o.rank = f.rank;
+          swapArt(o.station, rankedKey(this, o.stationKey, f.rank));
+          o.badge.destroy();
+          o.badge = rankBadge(this, o.button.x - 32, o.button.y - 26, f.rank).setDepth(71);
+          rankBurst(this, o.station.x, o.station.y - 40, f.rank, `${rankInfo(f.rank)!.name}!`);
         }
       }
     });
 
     // Transporte por la ruta
-    const tr = b.transport;
+    const tr = v.transport;
     const p = this.at(this.distOf(tr.pos));
     const moving = tr.phase === "down" || tr.phase === "up";
     const back = tr.phase === "up";
@@ -587,12 +552,10 @@ export class RouteScene extends Phaser.Scene {
     if (!isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, `ch_${this.look.mover}_${moving && !calmWorld() ? (Math.floor(clk * (this.pedaling ? 16 : 8)) % 2 ? 1 : 2) : 0}`, this.ranks.transport));
     this.moverItem.setVisible(tr.carry > 0).setPosition(p.x + (dx < 0 ? 14 : -14), this.mover.y - this.mover.displayHeight * 0.7);
     this.moverCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "").setPosition(p.x, this.mover.y - this.mover.displayHeight - 10);
-    const moverStep = tutStat === "tapTransport";
-    this.moverHint.setVisible((tutStat ? moverStep : tutorial && b.floors.some((f) => f.stock > 0)) && tr.phase === "idle" && !tr.managed);
+    this.moverHint.setVisible(tr.hint);
     this.moverHint.setPosition(p.x + 24, this.mover.y - this.mover.displayHeight - 4 + (reducedMotion() ? 0 : Math.sin(clk * 8) * 4));
     // Pedalear: rastro de velocidad y aviso mientras se aprende
-    const pedalBiz = this.bizId === PEDAL_BIZ && !tr.managed;
-    this.pedalTip.setVisible(pedalBiz && moverStep).setPosition(p.x + 70, this.mover.y - this.mover.displayHeight - 30);
+    this.pedalTip.setVisible(screenOf(this.bizId).mover === "bike" && !tr.managed && v.tutorial === "tapTransport").setPosition(p.x + 70, this.mover.y - this.mover.displayHeight - 30);
     this.pedalFx.clear();
     if (this.pedaling && moving && !reducedMotion()) {
       const back2 = dx < 0 ? 1 : -1;
@@ -601,55 +564,49 @@ export class RouteScene extends Phaser.Scene {
         this.pedalFx.lineStyle(2.5, 0xffffff, 0.8).lineBetween(lx, ly, lx + back2 * 14, ly);
       }
     }
-    this.transportButton.set(tr.level, this.readyFor({ kind: "transport" }, tr.managed), auto && rates.bottleneck === "transport").bob(clk);
+    this.transportButton.set(tr.level, tr.button === "ready", tr.button === "bottleneck").bob(clk);
     if (tr.level > this.levels.transport) {
       this.levels.transport = tr.level;
       if (!reducedMotion()) this.sparks.explode(14, p.x, p.y);
-      const rank = rankOf(tr.level);
-      if (rank > this.ranks.transport) {
-        this.ranks.transport = rank;
-        if (isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, this.look.mover, rank));
+      if (tr.rank > this.ranks.transport) {
+        this.ranks.transport = tr.rank;
+        if (isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, this.look.mover, tr.rank));
         this.transportBadge.destroy();
-        this.transportBadge = rankBadge(this, 14, this.ground - 176, rank).setDepth(71);
-        rankBurst(this, p.x, p.y, rank, `${rankInfo(rank)!.name}!`);
+        this.transportBadge = rankBadge(this, 14, this.ground - 176, tr.rank).setDepth(71);
+        rankBurst(this, p.x, p.y, tr.rank, `${rankInfo(tr.rank)!.name}!`);
       }
     }
-    if (b.topStock > this.lastTopStock) transferProduct(this, this.look.item, { x: p.x, y: p.y - 20 }, { x: this.topPile[0].x, y: this.topPile[0].y });
-    this.lastTopStock = b.topStock;
-    this.showPile(this.topPile, b.topStock, unit);
-    this.topStock.setText(b.topStock > 0 ? fmt(b.topStock) : "");
+    if (v.topStock > this.lastTopStock) transferProduct(this, this.look.item, { x: p.x, y: p.y - 20 }, { x: this.topPile[0].x, y: this.topPile[0].y });
+    this.lastTopStock = v.topStock;
+    this.topPile.forEach((img, k) => img.setVisible(k < v.topPile));
+    this.topStock.setText(v.topStock > 0 ? fmt(v.topStock) : "");
 
     // Venta: de la puerta a la calle (fuera por la derecha) y vuelta
-    const sl = b.sale, W = this.W, g0 = this.ground;
+    const sl = v.sale, W = this.W, g0 = this.ground;
     const home = W * 0.74, away = W + 70;
-    const prog = sl.phase === "out" ? sl.prog : sl.phase === "back" ? 1 - sl.prog : 0;
+    const prog = sl.phase === "out" ? sl.progress : sl.phase === "back" ? 1 - sl.progress : 0;
     const sx = home + (away - home) * prog;
     const vehicle = isVehicle(this.look.seller);
     this.seller.setPosition(sx, g0 + (vehicle ? 26 : 14)).setFlipX(sl.phase === "back");
     if (!vehicle) swapArt(this.seller, `ch_${this.look.seller}_${sl.phase !== "idle" && !calmWorld() ? (Math.floor(clk * 8) % 2 ? 1 : 2) : 0}`);
     this.sellerItem.setVisible(sl.carry > 0).setPosition(sx, this.seller.y - this.seller.displayHeight * 0.9);
     this.sellerCarry.setText(sl.carry > 0 ? fmt(sl.carry) : "").setPosition(sx, this.seller.y - this.seller.displayHeight - 16).setOrigin(0.5);
-    const sellerStep = tutStat === "sales";
-    this.sellerHint.setVisible((tutStat ? sellerStep : tutorial && b.topStock > 0) && sl.phase === "idle" && !sl.managed);
+    this.sellerHint.setVisible(sl.hint);
     this.sellerHint.setPosition(sx, this.seller.y - this.seller.displayHeight - 20 + (reducedMotion() ? 0 : Math.sin(clk * 8) * 4));
-    this.saleButton.set(sl.level, this.readyFor({ kind: "sale" }, sl.managed), auto && rates.bottleneck === "sale").bob(clk);
+    this.saleButton.set(sl.level, sl.button === "ready", sl.button === "bottleneck").bob(clk);
     if (sl.level > this.levels.sale) {
       this.levels.sale = sl.level;
       if (!reducedMotion()) this.sparks.explode(14, sx, this.seller.y - 20);
-      const rank = rankOf(sl.level);
-      if (rank > this.ranks.sale) {
-        this.ranks.sale = rank;
-        if (vehicle) swapArt(this.seller, rankedKey(this, this.look.seller, rank));
+      if (sl.rank > this.ranks.sale) {
+        this.ranks.sale = sl.rank;
+        if (vehicle) swapArt(this.seller, rankedKey(this, this.look.seller, sl.rank));
         this.saleBadge.destroy();
-        this.saleBadge = rankBadge(this, W - 78, g0 - 176, rank).setDepth(71);
-        rankBurst(this, sx, this.seller.y - 20, rank, `${rankInfo(rank)!.name}!`);
+        this.saleBadge = rankBadge(this, W - 78, g0 - 176, sl.rank).setDepth(71);
+        rankBurst(this, sx, this.seller.y - 20, sl.rank, `${rankInfo(sl.rank)!.name}!`);
       }
     }
 
-    if (this.unlock) {
-      const cost = floorUnlockCost(def, b.floors.length);
-      this.unlock.setText(`${t("Abrir")} · ${money(cost)}`).setAlert(s.cash >= cost).setAlpha(s.cash >= cost ? 1 : 0.7);
-    }
+    if (this.unlock && v.next) this.unlock.setText(`${t("Abrir")} · ${money(v.next.cost)}`).setAlert(v.next.affordable).setAlpha(v.next.affordable ? 1 : 0.7);
 
     for (const sale of this.bridge.drainSales(this.bizId)) {
       const x = home, y = g0 - 10;
@@ -665,5 +622,3 @@ export class RouteScene extends Phaser.Scene {
   }
 }
 
-/** Negocios que ya usan la vista en ruta (el resto, el recinto isométrico hasta que llegue su arte). */
-export const ROUTE_VIEW = new Set(["bike", "dropship"]);

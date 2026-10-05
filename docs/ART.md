@@ -1,3 +1,5 @@
+> **El encargo visual vigente está en [`VISUAL.md`](VISUAL.md)** (biblia visual completa, 5 de octubre de 2026). Este documento queda como histórico y catálogo de claves ya entregadas.
+
 # Guía de arte
 
 El catálogo `src/art/catalog.ts` define las claves y tamaños lógicos. El juego carga primero los PNG individuales del manifest, después los atlas generados con ChatGPT y, como respaldo, los dibujos por código. Así puedes cambiar el arte pieza a pieza sin tocar la simulación.
