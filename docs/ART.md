@@ -766,3 +766,26 @@ Validación de esta entrega: 225 tests, build de producción, 158 comprobaciones
 completas de navegador y 43 en la pasada final, sin errores. Se renuevan las
 capturas y gráfico de tienda. Galería e informes en `docs/visual-review/README.md`.
 La validación de rendimiento en Android físico sigue pendiente.
+
+### Manzanas alrededor de cada negocio (Claude, 5 de octubre de 2026)
+
+Carlos pedía que, dentro de un negocio, se viera la ciudad alrededor y no solo el recinto. En las 14 pantallas de negocio, `Neighborhood.ts` dibuja ahora un trozo de ciudad completo. Solo reutiliza arte que ya existía; no hay PNG nuevos.
+- **Calles:**
+  - una avenida que rodea la parcela, con aceras;
+  - una calle de circunvalación más lejos y cuatro calles perpendiculares con líneas pintadas;
+  - unos 12 coches, con `calmWorld()`.
+- **Manzanas vecinas del mismo oficio:**
+  - Naves junto al almacén (`district_industrial` y `bld_dropship_*`).
+  - Casas con terraza junto al restaurante.
+  - Estudios de neón junto a TikTok y la IA.
+  - En Miami y Dubái, el barrio de la ciudad y sus negocios.
+  - Los edificios van a escala 1,3.
+- **Anillo exterior:** más tenue, con el resto de la ciudad, y se funde con el color de fondo (`backdrop`).
+- **Paisaje propio:**
+  - En Miami, el lado derecho es playa y mar, con un yate.
+  - En Dubái, el anillo exterior es desierto, con palmeras datileras.
+- **Aceras:** árboles, farolas que se encienden de noche y peatones.
+- **Rendimiento:** unas 30 imágenes fijas, 12 coches, 6 peatones y 3 pájaros. El suelo es un único `Graphics` estático.
+- **Cámara:** los límites llegan hasta la circunvalación, así que al alejarse se ve el barrio entero.
+
+**Mejora posible para Codex:** algún solar con aparcamiento, contenedores o zona verde, para que las manzanas grandes tengan menos suelo liso.
