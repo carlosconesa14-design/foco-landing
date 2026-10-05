@@ -3,12 +3,13 @@ import { AUTO, autoAdLeft, autoFreeLeft, autoUpgrade, spendAutoUse } from "../sr
 import { businessRate } from "../src/game/economy";
 import { grantProduct } from "../src/game/shop";
 import { freshState, migrate } from "../src/game/state";
+import { withDropship } from "./fresh";
 
 const NOW = Date.UTC(2026, 9, 2, 12);
 
 describe("Mejorar todo", () => {
   it("contrata gerentes y reparte el dinero en lo que más rinde", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.cash = 1e6;
     const before = businessRate(s, "dropship", NOW);
     const r = autoUpgrade(s, "dropship", NOW);
@@ -20,12 +21,12 @@ describe("Mejorar todo", () => {
   });
 
   it("sin dinero no hace nada", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(autoUpgrade(s, "dropship", NOW).steps).toBe(0);
   });
 
   it("3 gratis al día y 2 con anuncio; mañana vuelven", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(autoFreeLeft(s, NOW)).toBe(AUTO.freePerDay);
     for (let i = 0; i < AUTO.freePerDay; i++) expect(spendAutoUse(s, NOW, false)).toBe(true);
     expect(spendAutoUse(s, NOW, false)).toBe(false);
@@ -38,11 +39,11 @@ describe("Mejorar todo", () => {
   });
 
   it("sin límite con el Gestor automático (0,99 €) o con el VIP", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     grantProduct(s, "auto_manager", "o1", NOW);
     expect(autoFreeLeft(s, NOW)).toBe(Infinity);
     for (let i = 0; i < 20; i++) expect(spendAutoUse(s, NOW, false)).toBe(true);
-    const v = freshState(NOW);
+    const v = withDropship(NOW);
     grantProduct(v, "vip", "o2", NOW);
     expect(autoFreeLeft(v, NOW)).toBe(Infinity);
   });
@@ -58,7 +59,7 @@ describe("Mejorar todo, de forma casi óptima", () => {
 
   it("no gasta lo que guardas para el siguiente negocio (salvo que lo pidas)", async () => {
     const { autoReserve } = await import("../src/game/autoUpgrade");
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     managed(s);
     const price = 2e8; // restaurante
     s.cash = price + 5000;
@@ -73,7 +74,7 @@ describe("Mejorar todo, de forma casi óptima", () => {
   it("cuenta los hitos: sube varios niveles de golpe si el x2 compensa", async () => {
     const { floorNextCost, bizDef } = await import("../src/game/economy");
     const { upgradeDiscount } = await import("../src/game/world");
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     const b = managed(s);
     b.transport.level = b.sale.level = 200; // que frene la producción
     b.floors[0].level = 7;
@@ -86,7 +87,7 @@ describe("Mejorar todo, de forma casi óptima", () => {
 
   it("se puede ver antes lo que hará, sin tocar la partida", async () => {
     const { planAuto } = await import("../src/game/autoUpgrade");
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.cash = 1e6;
     const plan = planAuto(s, "dropship", NOW, true);
     expect(plan.steps).toBeGreaterThan(0);

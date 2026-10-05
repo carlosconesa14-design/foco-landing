@@ -60,6 +60,7 @@ export const EN: Record<string, string> = {
   "puest.": "stations",
   Nv: "Lv",
   Nivel: "Level",
+  "¡Mantén pulsado para pedalear!": "Hold to pedal!",
 
   /* ---------- Mejoras, puestos, negocios ---------- */
   Máx: "Max",
@@ -95,7 +96,7 @@ export const EN: Record<string, string> = {
   "Ya eres dueño de: {name}. Contrata gerentes para que funcione solo.": "You now own: {name}. Hire managers so it runs on its own.",
   "{name}: ¡rendimiento x2!": "{name}: output x2!",
   "{name} ya funciona solo": "{name} now runs on its own",
-  "¡Nuevo puesto: {name} {n}!": "New station: {name} {n}!",
+  "¡Nuevo puesto: {name}!": "New station: {name}!",
   "¡Has comprado: {name}!": "You bought: {name}!",
   "Aún no hay nada que vender arriba": "Nothing to sell yet",
 
@@ -120,7 +121,7 @@ export const EN: Record<string, string> = {
   "Contrata gerente: {name}": "Hire manager: {name}",
   "Compra {name}": "Buy {name}",
   "{name} a Nv {lv} (x2)": "{name} to Lv {lv} (x2)",
-  "Abre {name} {n}": "Open {name} {n}",
+  "Abre {name}": "Open {name}",
 
   /* ---------- Misiones, premio diario, ejecutivos, logros ---------- */
   "Misiones del día": "Daily missions",

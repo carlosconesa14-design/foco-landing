@@ -24,10 +24,12 @@ import { lang } from "../i18n";
  * Los números y el equilibrio no se tocan.
  */
 
-type BizText = Pick<BusinessDef, "name" | "blurb" | "floorName" | "transportName" | "saleName">;
+type BizText = Pick<BusinessDef, "name" | "blurb" | "floorName" | "transportName" | "saleName"> & { floorNames?: string[] };
 
 const BUSINESSES_EN: Record<string, BizText> = {
-  dropship: { name: "Dropshipping warehouse", blurb: "Your first business. Online orders that ship themselves.", floorName: "Shelf", transportName: "Forklift", saleName: "Vans" },
+  bike: { name: "Bike delivery", blurb: "This is how it all starts: pick up orders from local restaurants and deliver them by bike.", floorName: "Restaurant", transportName: "Your bike", saleName: "Customers",
+    floorNames: ["Burger joint", "Pizzeria", "Sushi bar", "Kebab shop", "Taco stand", "Poke bar", "Bakery", "Ice cream shop"] },
+  dropship: { name: "Dropshipping warehouse", blurb: "Your first real business. Online orders that ship themselves.", floorName: "Shelf", transportName: "Forklift", saleName: "Vans" },
   restaurant: { name: "Restaurant", blurb: "Kitchens, waiters and riders. If one fails, everything jams.", floorName: "Kitchen", transportName: "Waiters", saleName: "Riders" },
   tiktok: { name: "TikTok studio", blurb: "Creators filming nonstop and brands paying to be featured.", floorName: "Film set", transportName: "Editors", saleName: "Brands" },
   ai: { name: "AI agency", blurb: "GPUs at full power and clients paying to automate everything.", floorName: "GPU rack", transportName: "Technicians", saleName: "Sales reps" },
@@ -120,12 +122,12 @@ const ACHIEVEMENTS_EN: Record<string, string> = {
 };
 
 const TUTORIAL_EN = [
-  "Tap the worker at Shelf 1 to pack an order",
-  "Tap the forklift to pick up the boxes",
-  "Tap the van to sell the orders",
-  "Press the shelf's «Lv» button and upgrade it",
+  "Tap the Burger joint so they prepare an order",
+  "Tap your bike to pick up the orders (hold to pedal faster)",
+  "Tap the customer to deliver the orders and get paid",
+  "Press the Burger joint's «Level» button and upgrade it",
   "Hire a manager so a part works on its own",
-  "Open Shelf 2 on the construction plot",
+  "Open the Pizzeria, the next stop on your route",
 ];
 
 const PRODUCTS_EN: Record<string, { name: string; desc: string; price: string; highlight?: string }> = {

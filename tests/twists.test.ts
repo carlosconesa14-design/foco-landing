@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { earn, saleMult } from "../src/game/economy";
 import { execMults } from "../src/game/execs";
-import { freshState, migrate } from "../src/game/state";
+import { migrate } from "../src/game/state";
 import * as tw from "../src/game/twists";
+import { withDropship } from "./fresh";
 
 const NOW = Date.UTC(2026, 9, 2, 12);
 const fixed = () => 0;
@@ -16,7 +17,7 @@ describe("mecánicas de cada negocio", () => {
   });
 
   it("pedido urgente: se ofrece, se acepta, se cumple y se cobra (x2 con anuncio)", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(tw.orderTick(s, "dropship", NOW, 10, true, fixed)).toBeNull(); // primer pedido al minuto
     const t1 = NOW + 61e3;
     expect(tw.orderTick(s, "dropship", t1, 10, true, fixed)).toBe("offered");
@@ -35,7 +36,7 @@ describe("mecánicas de cada negocio", () => {
   });
 
   it("un pedido que no se cumple o no se acepta no castiga", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     tw.twist(s, "dropship").nextOrder = NOW;
     tw.orderTick(s, "dropship", NOW, 10, true);
     expect(tw.orderTick(s, "dropship", NOW + 61e3, 10, true)).toBe("expired");
@@ -48,7 +49,7 @@ describe("mecánicas de cada negocio", () => {
   });
 
   it("crítico: hay que tocar la cocina N veces; atenderle da una estrella (+5 % ventas) hasta 10", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.biz.restaurant.owned = true;
     const t = tw.twist(s, "restaurant");
     t.nextCritic = NOW;
@@ -68,7 +69,7 @@ describe("mecánicas de cada negocio", () => {
   });
 
   it("no empiezan justo al acabar el tutorial: esperan a 3 puestos abiertos", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.meta.stats.life.floors = 1;
     expect(tw.twistsStarted(s)).toBe(false);
     s.meta.stats.life.floors = tw.TW.startFloors;
@@ -76,7 +77,7 @@ describe("mecánicas de cada negocio", () => {
   });
 
   it("hype: sube con ventas y toques, baja solo; lleno = directo viral x3 (solo jugando)", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(tw.hypeTick(s, "tiktok", NOW, 1, 5, 5)).toBe(false);
     expect(tw.twist(s, "tiktok").hype).toBe(20 + 10 - 0.5);
     tw.hypeTick(s, "tiktok", NOW, 9, 0, 0);
@@ -107,7 +108,7 @@ describe("mecánicas de cada negocio", () => {
   });
 
   it("investigación: los datos desbloquean mejoras en orden; el nodo 🌍 ayuda a toda la ciudad", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     tw.addData(s, "ai", 49);
     expect(tw.buyResearch(s, "ai")).toBe(false);
     tw.addData(s, "ai", 1e5);
@@ -123,7 +124,7 @@ describe("mecánicas de cada negocio", () => {
   });
 
   it("se guarda con la partida", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     tw.twist(s, "restaurant").stars = 3;
     tw.addData(s, "ai", 77);
     const l = migrate(JSON.parse(JSON.stringify(s)), NOW);

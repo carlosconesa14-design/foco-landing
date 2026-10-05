@@ -1,6 +1,6 @@
 # Diseño: «De rider a millonario» y la vista en ruta
 
-Estado: **propuesta para revisar con Carlos** (5 de octubre de 2026). No se programa nada hasta que la apruebe.
+Estado: **aprobado por Carlos el 5 de octubre de 2026**, con pedalear y el resto según las recomendaciones. Primera versión jugable con arte provisional en el reparto en bici y en el almacén (`src/scenes/RouteScene.ts`). El arte está encargado en `ART.md`.
 
 ## La idea en una frase
 Empiezas repartiendo en bici. Cada negocio es una **ruta** que baja por la pantalla: tus puestos son las paradas y tu transporte la recorre recogiendo hasta la sede, donde se vende. Es tan simple como Idle Miner, pero con mundo propio.

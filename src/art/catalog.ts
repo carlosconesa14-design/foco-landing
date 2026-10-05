@@ -80,6 +80,8 @@ export const LOOKS: Record<string, Look> = {
  * y `seller` sale a vender; si empiezan por "car_" son vehículos, si no, personajes.
  */
 export const BIZ_ART: Record<string, { worker: string; mover: string; seller: string; item: string; station: string }> = {
+  // Provisional hasta que llegue el arte propio (docs/ART.md, «Reparto en bici»).
+  bike: { worker: "cook", mover: "rider", seller: "ped1", item: "item_dish", station: "st_restaurant" },
   dropship: { worker: "packer", mover: "veh_forklift", seller: "veh_van", item: "item_box", station: "st_dropship" },
   restaurant: { worker: "cook", mover: "waiter", seller: "rider", item: "item_dish", station: "st_restaurant" },
   tiktok: { worker: "creator", mover: "editor", seller: "brand", item: "item_clip", station: "st_tiktok" },
@@ -556,7 +558,7 @@ export function rankedKey(scene: Phaser.Scene, key: string, rank: number): strin
 
 export const BLD_W = 172;
 const BLD: Record<string, number> = {
-  dropship: 150, restaurant: 164, tiktok: 236, ai: 270, soon: 170,
+  bike: 140, dropship: 150, restaurant: 164, tiktok: 236, ai: 270, soon: 170,
   foodtruck: 140, beachclub: 170, yachts: 180, realestate: 260, crypto: 300,
   supercars: 164, hotel: 260, safari: 140, souk: 170, tower: 300,
 };
@@ -569,7 +571,9 @@ for (const [id, h] of Object.entries(BLD)) {
 
 /** Visual growth only: 1–2, 3–5 and 6–8 open stations. */
 export const buildingTier = (floors: number): number => floors >= 6 ? 3 : floors >= 3 ? 2 : 1;
-export const buildingKey = (id: string, floors: number): string => `bld_${id}_${buildingTier(floors)}`;
+/** Sedes que aún no tienen arte propio: usan otra parecida (docs/ART.md, «Reparto en bici»). */
+const PROVISIONAL_HUB: Record<string, string> = { bike: "foodtruck" };
+export const buildingKey = (id: string, floors: number): string => `bld_${PROVISIONAL_HUB[id] ?? id}_${buildingTier(floors)}`;
 
 /** Small bespoke rooftop signs, independent of system emoji fonts. */
 function buildingEmblem(p: Pen, x: number, y: number, id: string): void {

@@ -2,7 +2,7 @@ import { now } from "../game/clock";
 import type { Placement } from "../ads";
 import type { Sfx } from "../audio/sound";
 import * as act from "../game/actions";
-import { CHAIN, CONFIG, LIFE } from "../game/data";
+import { CHAIN, CONFIG, LIFE, floorLabel } from "../game/data";
 import {
   bizDef,
   bizTier,
@@ -182,7 +182,7 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
   const cost = floorUnlockCost(def, i);
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">🔓</span><div><h3>${def.floorName} ${i + 1}</h3><p class="muted">${t("Nuevo puesto de producción")}</p></div></div>
+    `<div class="sheet-head"><span class="sicon">🔓</span><div><h3>${floorLabel(def, i)}</h3><p class="muted">${t("Nuevo puesto de producción")}</p></div></div>
      <div class="stat"><span>${t("Producción inicial")}</span><b class="good">+${money(floorRate(def, i, 1))}/s</b></div>
      <p class="small muted">${t("Cada puesto nuevo produce {n} veces más que el anterior. Recuerda mejorar el transporte y la venta para que no se atasque.", { n: CHAIN.floorGrowth })}</p>
      <button class="buy big wide" data-unlock><span>${t("Abrir puesto")}</span><b>${money(cost)}</b></button>`,
@@ -232,7 +232,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
     const msg = act.buyBusiness(ctx.state(), id);
     if (!msg) return ctx.fx("error");
     analytics.track("business_bought", { biz: id, minutes: minutesSinceInstall() });
-    if (Object.values(ctx.state().biz).filter((b) => b.owned).length === 2) maybeAskFeedback(ctx);
+    if (Object.values(ctx.state().biz).filter((b) => b.owned).length === 3) maybeAskFeedback(ctx); // el reparto en bici no cuenta: el restaurante
     closeSheet();
     ctx.goTo({ scene: "business", id });
     void ctx.celebrate({

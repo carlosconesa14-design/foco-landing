@@ -30,10 +30,10 @@ export const FEATURES: FeatureDef[] = [
   { id: "missions", icon: "📋", need: { kind: "tutorial" } },
   { id: "execs", icon: "💼", need: { kind: "stat", stat: "floors", n: 2 } }, // ~3 min
   { id: "auto", icon: "⚡", need: { kind: "stat", stat: "upgrades", n: 120 } }, // ~4 min
-  { id: "wheel", icon: "🎡", need: { kind: "earned", n: 1e6 } }, // ~5 min
+  { id: "wheel", icon: "🎡", need: { kind: "earned", n: 2e5 } }, // ~7 min (tras comprar el almacén)
   { id: "achievements", icon: "🏆", need: { kind: "stat", stat: "hires", n: 7 } }, // ~12 min
   { id: "life", icon: "🛍️", need: { kind: "earned", n: 1e7 } }, // ~12 min
-  { id: "league", icon: "🏅", need: { kind: "biz", n: 2 } }, // ~45 min
+  { id: "league", icon: "🏅", need: { kind: "biz", n: 3 } }, // ~45 min: el restaurante (el reparto no cuenta)
   { id: "rival", icon: "🥊", need: { kind: "biz", n: 2 } },
   { id: "event", icon: "🎉", need: { kind: "earned", n: 1e12 } }, // ~1 h
   { id: "invite", icon: "🤝", need: { kind: "earned", n: 1e13 } }, // ~1 h 30 min

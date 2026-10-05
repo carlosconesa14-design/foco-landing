@@ -54,10 +54,10 @@ export function migrateAccount(raw: unknown): AccountState {
 
 export const hasAccount = (s: GameState) => !!(s.meta.account.id && s.meta.account.secret);
 
-/** El amigo ya cuenta para quien le invitó: tiene dos negocios en cualquier ciudad (o ya se expandió). */
+/** El amigo ya cuenta para quien le invitó: tiene dos negocios de verdad (además del reparto) o ya se expandió. */
 export function refGoalReached(s: GameState): boolean {
   if (s.world.completed.length > 0) return true;
-  return Object.values(s.biz).filter((b) => b.owned).length >= 2;
+  return Object.values(s.biz).filter((b) => b.owned).length >= 3;
 }
 
 /** Hay que avisar al servidor de que el amigo ha llegado al objetivo. */

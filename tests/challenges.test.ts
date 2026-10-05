@@ -16,6 +16,7 @@ import {
   type WeeklyRetoId,
 } from "../src/game/challenges";
 import { bump, freshState, migrate, type GameState } from "../src/game/state";
+import { withDropship } from "./fresh";
 
 const at = (day: number, h = 12) => new Date(2026, 9, day, h).getTime(); // octubre 2026 (local)
 
@@ -74,7 +75,7 @@ describe("retos del día y de la semana", () => {
   });
 
   it("las misiones y los hitos x2 cuentan para los retos", () => {
-    const s = freshState(at(1));
+    const s = withDropship(at(1));
     s.cash = 1e12;
     s.buyMode = 10;
     act.upgrade(s, "dropship", { kind: "sale" }); // nivel 11: hito del nivel 10

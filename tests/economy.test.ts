@@ -17,9 +17,10 @@ import {
 } from "../src/game/economy";
 import { fmt, fmtTime } from "../src/game/format";
 import { freshState, migrate, type GameState } from "../src/game/state";
+import { withDropship } from "./fresh";
 
 const NOW = 1_700_000_000_000;
-const DROP = BUSINESSES[0];
+const DROP = BUSINESSES.find((b) => b.id === "dropship")!;
 const FLOOR0 = { kind: "floor", index: 0 } as const;
 const TRANSPORT = { kind: "transport" } as const;
 const SALE = { kind: "sale" } as const;
@@ -55,7 +56,7 @@ describe("costes", () => {
 
 describe("cadena de producción", () => {
   it("sin gerentes, cada toque hace un solo ciclo de cada parte", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     tapStation(s, DROP.id, FLOOR0);
     run(s, CHAIN.floorCycle + 0.1);
     const b = s.biz[DROP.id];
@@ -76,12 +77,12 @@ describe("cadena de producción", () => {
   });
 
   it("no deja vender si no hay nada arriba", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(tapStation(s, DROP.id, SALE)).not.toBeNull();
   });
 
   it("el transporte no carga más de su capacidad", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     const b = s.biz[DROP.id];
     b.floors[0].stock = 1e6;
     tapStation(s, DROP.id, TRANSPORT);
@@ -91,7 +92,7 @@ describe("cadena de producción", () => {
   });
 
   it("el transporte recorre todas las plantas en orden", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     const b = s.biz[DROP.id];
     s.cash = 1e6;
     act.unlockFloor(s, DROP.id);
@@ -104,7 +105,7 @@ describe("cadena de producción", () => {
   });
 
   it("con gerentes, lo que se gana se acerca al ritmo de la parte más lenta", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     automate(s);
     const rates = chainRates(DROP, s.biz[DROP.id], true);
     run(s, 120);
@@ -114,7 +115,7 @@ describe("cadena de producción", () => {
   });
 
   it("la venta no lleva más de su capacidad", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.biz[DROP.id].topStock = 1e6;
     tapStation(s, DROP.id, SALE);
     run(s, 10);
@@ -124,7 +125,7 @@ describe("cadena de producción", () => {
 
 describe("mejoras y compras", () => {
   it("mejorar descuenta el dinero y sube el nivel", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.cash = 100;
     const { cost } = upgradeQuote(s, DROP.id, FLOOR0);
     expect(act.upgrade(s, DROP.id, FLOOR0)).toBe("");
@@ -133,7 +134,7 @@ describe("mejoras y compras", () => {
   });
 
   it("el hito del nivel 10 avisa y duplica", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.cash = 1e9;
     s.buyMode = 10;
     expect(act.upgrade(s, DROP.id, TRANSPORT)).toContain("x2");
@@ -142,22 +143,22 @@ describe("mejoras y compras", () => {
   });
 
   it("contratar un gerente solo se puede una vez", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.cash = 1e6;
     expect(act.hireManager(s, DROP.id, SALE)).not.toBeNull();
     expect(act.hireManager(s, DROP.id, SALE)).toBeNull();
   });
 
   it("no se puede comprar un negocio sin dinero", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(act.buyBusiness(s, "restaurant")).toBeNull();
-    s.cash = BUSINESSES[1].price;
+    s.cash = BUSINESSES.find((b) => b.id === "restaurant")!.price;
     expect(act.buyBusiness(s, "restaurant")).not.toBeNull();
     expect(s.cash).toBe(0);
   });
 
   it("hay un máximo de plantas", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.cash = 1e30;
     while (act.unlockFloor(s, DROP.id)) {
       /* desbloquear todas */
@@ -168,7 +169,7 @@ describe("mejoras y compras", () => {
 
 describe("anuncios y bonus", () => {
   it("el modo hustle se acumula hasta el máximo", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(act.addBoost(s, NOW)).toBe(true);
     expect(act.addBoost(s, NOW)).toBe(true);
     expect(act.addBoost(s, NOW)).toBe(true);
@@ -177,8 +178,8 @@ describe("anuncios y bonus", () => {
   });
 
   it("la hora punta triplica lo que vende ese negocio", () => {
-    const a = freshState(NOW);
-    const b = freshState(NOW);
+    const a = withDropship(NOW);
+    const b = withDropship(NOW);
     act.startRush(b, DROP.id, NOW);
     for (const s of [a, b]) {
       s.biz[DROP.id].topStock = 10;
@@ -189,7 +190,7 @@ describe("anuncios y bonus", () => {
   });
 
   it("offline solo cuenta lo automatizado, sin x2 y con tope", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.lastSeen = NOW - 100 * 3600e3;
     expect(offlineEarnings(s, NOW).amount).toBe(0);
     automate(s);
@@ -201,7 +202,7 @@ describe("anuncios y bonus", () => {
   });
 
   it("salir a bolsa conserva lo permanente y reinicia lo demás", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.runEarned = s.totalEarned = 8 * CONFIG.shareDivisor;
     s.cash = 1e6;
     act.buyBusiness(s, "restaurant");
@@ -213,7 +214,8 @@ describe("anuncios y bonus", () => {
     expect(res.state.totalEarned).toBe(8 * CONFIG.shareDivisor);
     expect(res.state.cash).toBe(0);
     expect(res.state.biz.restaurant.owned).toBe(false);
-    expect(res.state.biz.dropship.owned).toBe(true);
+    expect(res.state.biz.bike.owned).toBe(true);
+    expect(res.state.biz.dropship.owned).toBe(false);
     expect(res.state.ads.total).toBe(1);
   });
 });
@@ -247,7 +249,7 @@ describe("formato", () => {
 describe("dopamina", () => {
   it("una venta viral paga x5 y se marca", async () => {
     const { setLuck } = await import("../src/game/economy");
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.biz[DROP.id].topStock = 10;
     setLuck(() => 0);
     tapStation(s, DROP.id, SALE);
@@ -259,7 +261,7 @@ describe("dopamina", () => {
 
   it("el próximo objetivo empieza por los gerentes y después sugiere puestos o hitos", async () => {
     const { nextGoal } = await import("../src/game/goal");
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     const g = nextGoal(s, NOW)!;
     expect(g.text).toContain("gerente");
     expect(g.action.kind).toBe("station");
@@ -267,6 +269,8 @@ describe("dopamina", () => {
     act.hireManager(s, DROP.id, FLOOR0);
     act.hireManager(s, DROP.id, TRANSPORT);
     act.hireManager(s, DROP.id, SALE);
+    const bike = s.biz.bike;
+    bike.floors[0].managed = bike.transport.managed = bike.sale.managed = true;
     const g2 = nextGoal(s, NOW)!;
     expect(g2.text).not.toContain("gerente");
     expect(g2.progress).toBe(1);
