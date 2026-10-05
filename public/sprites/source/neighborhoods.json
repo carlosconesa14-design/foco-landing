@@ -1,0 +1,38 @@
+{
+  "district_madrid": {
+    "left": 13,
+    "top": 98,
+    "width": 494,
+    "height": 383
+  },
+  "district_miami": {
+    "left": 522,
+    "top": 123,
+    "width": 489,
+    "height": 375
+  },
+  "district_dubai": {
+    "left": 1031,
+    "top": 32,
+    "width": 491,
+    "height": 465
+  },
+  "district_industrial": {
+    "left": 14,
+    "top": 558,
+    "width": 493,
+    "height": 393
+  },
+  "district_terrace": {
+    "left": 522,
+    "top": 550,
+    "width": 494,
+    "height": 400
+  },
+  "district_neon": {
+    "left": 1030,
+    "top": 523,
+    "width": 492,
+    "height": 438
+  }
+}

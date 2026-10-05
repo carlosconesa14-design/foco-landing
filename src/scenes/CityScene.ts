@@ -1,3 +1,4 @@
+import { Neighborhood } from "./Neighborhood";
 import { now as clockNow } from "../game/clock";
 import { money, t } from "../i18n";
 import { constructionPop, revealScene } from "./feedback";
@@ -11,7 +12,7 @@ import { ALL_BUSINESSES, type CityDef } from "../game/data";
 import { cityDef } from "../game/state";
 import { bizTier, businessRate } from "../game/economy";
 import { fmt } from "../game/format";
-import { DragScroll, reducedMotion, rewardCoins, bridgeOf, floatText, label, setupCamera, type Bridge } from "./common";
+import { DragScroll, reducedMotion, rewardCoins, bridgeOf, floatText, label, setupCamera, type Bridge, calmWorld } from "./common";
 import { activeSeason } from "../game/season";
 
 /* Rejilla isométrica */
@@ -92,6 +93,7 @@ export class CityScene extends Phaser.Scene {
   private city!: CityDef;
   private lots: { c: number; r: number; kind: LotKind }[] = [];
   private worldW = 0;
+  private neighborhood?: Neighborhood;
   private walkClock = 0;
   private growing = new Set<string>();
   private atmosphere!: Phaser.GameObjects.Graphics;
@@ -134,6 +136,7 @@ export class CityScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(this.city.ground.water);
     this.drawWater(worldH);
     if (this.city.id === "dubai") this.drawDesertBackdrop();
+    this.neighborhood = new Neighborhood(this, {city:s.city,cols:COLS,rows:ROWS,iso:(c,r)=>this.iso(c,r)});
     this.drawGround();
     this.drawPublicSpaces();
     this.placeDecor();
@@ -147,7 +150,7 @@ export class CityScene extends Phaser.Scene {
     // Show the first neighbourhood, with less empty water above the starter business.
     const first = this.iso(4.5, 5);
     if (!this.drag.restore()) this.drag.centerOn(first.x, first.y);
-    this.drag.addControls({ x: first.x, y: first.y }, { left: margin, top: this.oy - 90, right: this.worldW - margin, bottom: this.oy + (COLS + ROWS) * TH / 2 + 35 });
+    this.drag.addControls({ x: first.x, y: first.y }, this.neighborhood.bounds);
     revealScene(this);
   }
 
@@ -207,17 +210,6 @@ export class CityScene extends Phaser.Scene {
       ];
     };
     const rand = rng(7);
-    // Shoreline shadows and a light turquoise shelf beneath the island.
-    const coast = [this.iso(0, 0), this.iso(COLS, 0), this.iso(COLS, ROWS), this.iso(0, ROWS)].map(p => new Phaser.Math.Vector2(p.x, p.y + 20));
-    g.lineStyle(22, 0x103f62, 0.16).strokePoints(coast, true);
-    g.lineStyle(9, 0xa2efed, 0.38).strokePoints(coast, true);
-    // Borde de tierra bajo la isla
-    const L = this.iso(0, ROWS);
-    const B = this.iso(COLS, ROWS);
-    const R = this.iso(COLS, 0);
-    g.fillStyle(this.city.ground.edge, 1).fillPoints([new Phaser.Math.Vector2(L.x, L.y), new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(B.x, B.y + 26), new Phaser.Math.Vector2(L.x, L.y + 26)], true);
-    g.fillStyle(mix(this.city.ground.edge, 0xffffff, 0.15), 1).fillPoints([new Phaser.Math.Vector2(B.x, B.y), new Phaser.Math.Vector2(R.x, R.y), new Phaser.Math.Vector2(R.x, R.y + 26), new Phaser.Math.Vector2(B.x, B.y + 26)], true);
-
     for (let r = 0; r < ROWS; r++)
       for (let c = 0; c < COLS; c++) {
         const kind = this.tileKind(c, r);
@@ -336,7 +328,7 @@ export class CityScene extends Phaser.Scene {
         const p = this.iso(c + 0.5, r + 0.5);
         const roll = rand();
         if (roll < 0.34) {
-          const key = this.city.id === "dubai" ? "dubai_planter" : this.city.trees[Math.floor(rand() * this.city.trees.length)];
+          const key = this.city.id === "dubai" ? "desert_palm" : this.city.trees[Math.floor(rand() * this.city.trees.length)];
           const tree = art(this, p.x + (rand() - 0.5) * 14, p.y + 8, key).setOrigin(0.5, 0.92);
           tree.setDepth(tree.y);
         } else if (roll < 0.5) {
@@ -466,15 +458,16 @@ export class CityScene extends Phaser.Scene {
       return;
     }
     const dt = Math.min(dtMs, 100) / 1000;
+    this.neighborhood?.update(dt);
     this.walkClock += dt;
     this.atmosphereClock += dt;
-    if (!reducedMotion() && this.atmosphereClock > 0.1) {
+    if (!calmWorld() && this.atmosphereClock > 0.1) {
       this.drawAtmosphere(this.walkClock);
       this.atmosphereClock=0;
     }
-    this.waterLines.x = reducedMotion() ? 0 : Math.sin(this.walkClock * 0.6) * 6;
-    this.waterLines.alpha = reducedMotion() ? 1 : 0.75 + Math.sin(this.walkClock * 0.8) * 0.2;
-    const calm = reducedMotion();
+    this.waterLines.x = calmWorld() ? 0 : Math.sin(this.walkClock * 0.6) * 6;
+    this.waterLines.alpha = calmWorld() ? 1 : 0.75 + Math.sin(this.walkClock * 0.8) * 0.2;
+    const calm = calmWorld();
     const frame = calm ? 0 : Math.floor(this.walkClock * 6) % 2 ? 1 : 2;
     for (const m of this.movers) {
       // Ambient traffic respects reduced motion; production actors remain informative.
@@ -508,8 +501,8 @@ export class CityScene extends Phaser.Scene {
       m.tag?.setPosition(p.x,p.y-40).setDepth(9e4);
     }
     for (const cl of this.clouds) {
-      cl.cloud.x += reducedMotion() ? 0 : cl.speed * dt;
-      cl.shadow.x += reducedMotion() ? 0 : cl.speed * dt;
+      cl.cloud.x += calmWorld() ? 0 : cl.speed * dt;
+      cl.shadow.x += calmWorld() ? 0 : cl.speed * dt;
       if (cl.cloud.x > this.worldW + 100) {
         cl.cloud.x -= this.worldW + 260;
         cl.shadow.x -= this.worldW + 260;

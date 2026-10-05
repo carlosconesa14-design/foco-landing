@@ -15,6 +15,8 @@ export const ART: Record<string, { w: number; h: number }> = {};
 
 const def = (key: string, w: number, h: number) => (ART[key] = { w, h });
 
+for (const district of ["madrid","miami","dubai","industrial","terrace","neon"]) def(`district_${district}`, 270, 190);
+
 /* Restaurant furnishings and distinct cooking / walking animation poses. */
 def("rest_table_empty", 100, 84);
 def("rest_table_served", 100, 84);
@@ -491,6 +493,11 @@ function drawLampPost(p: Pen): void {
 }
 
 /* Shared visual completion sources: physical visitors, seasonal props and city decorations. */
+def("veh_order", 82, 60);
+def("ch_critic_0", 66, 66);
+def("prop_broadcast", 74, 68);
+def("prop_research", 78, 70);
+def("desert_palm", 60, 84);
 def("veh_supply", 96, 78);
 def("ic_hand", 26, 28);
 def("ic_manager", 18, 18);
@@ -505,7 +512,7 @@ def("veh_crane", 68, 60);
 for (const key of ["veh_luggage", "veh_flatbed", "veh_goldvan"]) def(key, 68, 54);
 for (const key of ["car_miami_0", "car_miami_1"]) def(key, 44, 34);
 def("dubai_lamp", 22, 60);
-for (const id of ["supercars", "hotel", "safari", "souk", "tower", "foodtruck", "beachclub", "yachts", "realestate", "crypto"])
+for (const id of ["dropship", "restaurant", "tiktok", "ai", "supercars", "hotel", "safari", "souk", "tower", "foodtruck", "beachclub", "yachts", "realestate", "crypto"])
   for (const tier of [2, 3]) def(`decor_${id}_${tier}`, 66, 80);
 
 /* ---------- Arte por rango (bronce … leyenda, ver src/game/ranks.ts y docs/ART.md, «Rangos») ---------- */
@@ -830,11 +837,12 @@ for (const key of TILE_KEYS) for (const v of ["", "_1", "_2", "_3"]) def(key + v
  * Devuelve false si no hay PNG, para que la escena dibuje el suelo por código.
  */
 export function placeTile(scene: Phaser.Scene, x: number, yTop: number, key: string, rand: () => number): boolean {
-  const options = [key, `${key}_1`, `${key}_2`, `${key}_3`].filter((k) => scene.textures.exists(k));
+  const options = [key, `${key}_1`, `${key}_2`, `${key}_3`].filter((k) => scene.textures.exists(k) || hasGeneratedArt(scene,k));
   if (!options.length) return false;
   const k = options[Math.floor(rand() * options.length)];
-  const src = scene.textures.get(k).getSourceImage() as { width: number; height: number };
-  const img = scene.add.image(x, yTop, k).setOrigin(0.5, 0).setDepth(-10);
+  const ref = artRef(scene,k);
+  const src = scene.textures.getFrame(ref.texture,ref.frame);
+  const img = scene.add.image(x, yTop, ref.texture,ref.frame).setOrigin(0.5, 0).setDepth(-10);
   img.setDisplaySize(88, (88 * src.height) / src.width);
   return true;
 }

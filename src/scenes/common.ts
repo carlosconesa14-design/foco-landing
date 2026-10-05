@@ -8,7 +8,35 @@ import type { GameState } from "../game/state";
  * Las escenas trabajan en píxeles CSS. El canvas se crea a resolución física (DPR)
  * y la cámara hace zoom, así el texto y los gráficos se ven nítidos en el móvil.
  */
-export const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+/**
+ * Movimiento. Dos niveles:
+ * - `reducedMotion()`: efectos fuertes (sacudidas, explosiones de partículas, rebotes, pulsos). Sigue
+ *   la preferencia del sistema, salvo que el jugador elija otra cosa en Ajustes.
+ * - `calmWorld()`: la vida del mundo (gente caminando, coches, nubes, agua, trabajadores). Es el juego
+ *   en sí, así que solo se para si el jugador lo pide en Ajustes. Muchos Android activan «reducir
+ *   movimiento» con el ahorro de batería, y antes eso dejaba la ciudad congelada.
+ */
+const motionPref = (): "full" | "reduced" | null => {
+  try {
+    const v = localStorage.getItem("motion");
+    return v === "full" || v === "reduced" ? v : null;
+  } catch {
+    return null;
+  }
+};
+export const reducedMotion = () => {
+  const pref = motionPref();
+  return pref ? pref === "reduced" : window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
+export const calmWorld = () => motionPref() === "reduced";
+/** Ajustes → «Reducir movimiento». */
+export function setReducedMotion(on: boolean): void {
+  try {
+    localStorage.setItem("motion", on ? "reduced" : "full");
+  } catch {
+    /* sin almacenamiento: se queda como estaba */
+  }
+}
 
 /**
  * Resolución del canvas: como mucho x2. En pantallas x3 se pintarían 2,25 veces más píxeles por
@@ -187,6 +215,8 @@ export class DragScroll {
   private z: number;
   private minZ: number;
   private maxZ: number;
+  /** Zona construida (la marca addControls): la cámara no se sale de ella. */
+  private limits: { left: number; top: number; right: number; bottom: number } | null = null;
 
   constructor(
     private scene: Phaser.Scene,
@@ -298,11 +328,24 @@ export class DragScroll {
   }
 
   addControls(home: { x: number; y: number }, bounds: { left: number; top: number; right: number; bottom: number }): void {
+    this.limits = bounds;
+    // No se puede alejar más de lo que hace falta para ver la zona entera.
+    const safe0 = this.safeArea();
+    this.minZ = Math.max(this.minZ, Math.min(this.maxZ, 0.92 * Math.min(safe0.w / (bounds.right - bounds.left), safe0.h / (bounds.bottom - bounds.top))));
+    if (this.z < this.minZ) {
+      this.z = this.minZ;
+      this.scene.cameras.main.setZoom(DPR * this.z);
+    }
+    const cam0 = this.scene.cameras.main;
+    this.scrollTo(cam0.scrollX, cam0.scrollY);
     const root = document.createElement("div");
     root.className = "map-tools";
     root.setAttribute("role", "group");
     root.setAttribute("aria-label", t("Cámara del mapa"));
-    root.innerHTML = `<button data-map="home" aria-label="${t("Centrar mapa")}" title="${t("Centrar mapa")}">⌖</button><button data-map="overview" aria-label="${t("Ver mapa completo")}" title="${t("Ver mapa completo")}">▦</button><span class="map-zoom"><button data-map="out" aria-label="${t("Alejar mapa")}">−</button><button data-map="in" aria-label="${t("Acercar mapa")}">+</button></span>`;
+    // En pantallas táctiles el zoom se hace con dos dedos: solo queda el botón de centrar (pantalla limpia).
+    const touch = window.matchMedia("(pointer: coarse)").matches;
+    root.innerHTML = `<button data-map="home" aria-label="${t("Centrar mapa")}" title="${t("Centrar mapa")}">⌖</button>` +
+      (touch ? "" : `<button data-map="overview" aria-label="${t("Ver mapa completo")}" title="${t("Ver mapa completo")}">▦</button><span class="map-zoom"><button data-map="out" aria-label="${t("Alejar mapa")}">−</button><button data-map="in" aria-label="${t("Acercar mapa")}">+</button></span>`);
     let lastBottom = -1;
     const position = () => {
       const bottom = bridgeOf(this.scene).insets().bottom + overlayHeight() + 12;
@@ -357,13 +400,30 @@ export class DragScroll {
     cam.scrollY = this.clampY(wy - py / cam.zoom);
   }
 
+  /**
+   * Con zona construida: la vista no se sale de ella (más un margen pequeño), contando lo que tapan la
+   * cabecera y la barra de abajo. Si la zona cabe entera, se centra.
+   */
+  private clampTo(scroll: number, lo: number, hi: number, padBefore: number, padAfter: number, visible: number): number {
+    const min = lo - padBefore, max = hi + padAfter - visible;
+    return max <= min ? (min + max) / 2 : Phaser.Math.Clamp(scroll, min, max);
+  }
+
   // Allow enough margin to frame the map inside the space left by the HTML interface.
   private clampX(x: number): number {
+    if (this.limits) {
+      const safe = this.safeArea(), z = this.z, w = this.scene.scale.width / DPR;
+      return this.clampTo(x, this.limits.left, this.limits.right, safe.left / z + 30, (w - safe.left - safe.w) / z + 30, this.view().w);
+    }
     const free = this.worldW - this.view().w;
     return Phaser.Math.Clamp(x, -this.view().w * 0.1, Math.max(0, free) + this.view().w * 0.15);
   }
 
   private clampY(y: number): number {
+    if (this.limits) {
+      const safe = this.safeArea(), z = this.z, h = this.scene.scale.height / DPR;
+      return this.clampTo(y, this.limits.top, this.limits.bottom, safe.top / z + 30, (h - safe.top - safe.h) / z + 30, this.view().h);
+    }
     const free = this.worldH - this.view().h;
     return Phaser.Math.Clamp(y, -this.view().h * 0.55, Math.max(0, free) + this.view().h * 0.28);
   }

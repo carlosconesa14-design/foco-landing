@@ -62,7 +62,7 @@ export class Sound {
   /** Los navegadores solo dejan sonar audio tras un toque: se llama en el primer gesto. */
   unlock(): void {
     if (this.ctx) {
-      if (this.ctx.state === "suspended" && !this.hidden) void this.ctx.resume();
+      if (this.ctx.state === "suspended" && !this.hidden) this.ctx.resume().catch(() => {}); // el móvil puede tener el audio ocupado: se reintenta al tocar
       return;
     }
     const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -125,8 +125,8 @@ export class Sound {
   setHidden(hidden: boolean): void {
     this.hidden = hidden;
     if (!this.ctx) return;
-    if (hidden) void this.ctx.suspend();
-    else void this.ctx.resume();
+    if (hidden) this.ctx.suspend().catch(() => {});
+    else this.ctx.resume().catch(() => {});
   }
 
   /* ---------- Efectos ---------- */

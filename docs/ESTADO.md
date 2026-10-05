@@ -3,7 +3,7 @@
 **Rider Millionaire: Idle Tycoon.** Para retomar el trabajo sin tener que leer conversaciones antiguas. Última actualización: 2 de octubre de 2026.
 
 ## En una frase
-Es un idle tycoon para móvil, publicado como **beta web** en https://carlosconesa14-design.github.io/foco-landing/ (el juego, en `/jugar/`). Está listo para Google Play: solo faltan las cuentas, los datos legales y el material gráfico. Gana dinero con **anuncios bonificados** (AdMob) y compras dentro de la app.
+Es un idle tycoon para móvil, publicado como **beta web** en https://carlosconesa14-design.github.io/foco-landing/ (el juego, en `/jugar/`). Tiene el material gráfico preparado para Google Play; faltan las cuentas, los datos legales y la validación nativa antes de publicar. Gana dinero con **anuncios bonificados** (AdMob) y compras dentro de la app.
 
 ## Quién hace qué
 - **Claude:** lógica, economía, servidor, monetización, documentación y comprobaciones.
@@ -62,11 +62,11 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 
 ## Bloque visual completado por ChatGPT/Codex
 
-Dubái tiene sus quince evoluciones de edificios, puestos, productos, roles, vehículos, desierto, skyline y fundador. Mi vida incluye todas las ropas, lujo, coches y exclusivos de Halloween. Rangos con cambios estructurales sobre el arte base, medallas propias, visitantes físicos, moneda neutral, kit de iconos coherente, decoración de Miami y revisión responsive en español/inglés a 320/390/560 px. Madrid conserva su arte y animaciones existentes.
+Dubái tiene sus quince evoluciones de edificios, puestos, productos, roles, vehículos, desierto, skyline y fundador. Mi vida incluye todas las ropas, lujo, coches y exclusivos de Halloween. Rangos con cambios estructurales sobre el arte base, medallas propias, visitantes físicos, moneda neutral, kit de iconos coherente, decoración de Miami y revisión responsive en español/inglés a 320/390/560 px. Madrid conserva su arte y animaciones existentes. La ampliación final añade los 18 frames reales de Dubái, 28 decoraciones por negocio, puestos Diamante/Leyenda personalizados, cuatro mecánicas físicas y vegetación, mobiliario y pavimentos propios.
 
 Marca: logos claro/oscuro, iconos web/Android, carga y splash, gráfico de Google Play y cinco capturas reales de tienda. Catálogo, herramientas y límites documentados en [`ART.md`](ART.md), «Cierre visual». La economía, guardado y frecuencia/recompensa de las ofertas permanecen intactos (`src/game/*` sin cambios).
 
-Validación local: 217 tests correctos, build de producción correcto y 110 comprobaciones automatizadas de Chromium, más compra/equipamiento y fantasma. **Pendiente antes de publicar:** probar rendimiento en Android físico de gama media, compilar/verificar recursos nativos y revisar el material en Play Console. La prueba visual simula Supabase; no valida cuentas, anuncios reales ni servidor.
+Validación local: 225 tests correctos, build de producción correcto y 122 comprobaciones automatizadas de Chromium, incluidos compra/equipamiento, fantasma, mecánicas físicas y apoyos de animación. **Pendiente antes de publicar:** probar rendimiento en Android físico de gama media, compilar/verificar recursos nativos y revisar el material en Play Console. La prueba visual simula Supabase; no valida cuentas, anuncios reales ni servidor.
 
 ## Próximos pasos (Claude)
 0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.
@@ -86,3 +86,7 @@ Validación local: 217 tests correctos, build de producción correcto y 110 comp
 - **Ajustes de la economía:** se comprueban con el bot (`src/game/balance.ts` y `tests/pacing.test.ts`), también con el bot «implicado» (`engaged`), que usa las mecánicas y «Mi vida».
 - **Rendimiento:** el canvas se pinta como mucho a x2 (`DPR` en `common.ts`) y las imágenes se cargan en WebP (`npm run art:webp`, `src/art/imgExt.ts`): 9,6 MB en vez de 37 MB al arrancar.
 - **Partidas antiguas:** `tests/migration.test.ts` carga partidas reales de la beta publicada (`tests/fixtures/beta-*.json`, generadas con el código de `main`). Si cambia el guardado, tienen que seguir cargando sin perder nada.
+
+Arte de Miami completado el 5 de octubre: 36 PNG/WebP para los 12 roles propios; originales, exportadores y contactos incluidos. Pasada adicional de 25 comprobaciones de navegador sin errores en `docs/visual-review/miami-report.json`.
+
+Mundo integrado y pantalla limpia (5 de octubre): seis dioramas de barrios originales para ciudades y recintos, calles/aceras exteriores, peatones, pájaros, paseo y yate en Miami, farolas nocturnas, cámara ampliada, cabecera en una fila y etiquetas de producción contextuales. No cambia la economía. Véase el cierre de `ART.md`.

@@ -38,8 +38,8 @@ import { openLife } from "./ui/lifePanel";
 import { openSeason } from "./ui/seasonPanel";
 import { openCloud, openInvite, syncAccount } from "./ui/invitePanel";
 import { applyRemoteConfig, remoteVersion } from "./game/remote";
-import { applyLocks, nextUnlockText, progressText, seen, showLocked, tickUnlocks } from "./ui/unlockUi";
-import { FEATURES, featureDef, isUnlocked, type FeatureId } from "./game/unlocks";
+import { applyLocks, nextUnlockText, seen, showLocked, tickUnlocks } from "./ui/unlockUi";
+import { FEATURES, isUnlocked, type FeatureId } from "./game/unlocks";
 import { maybeIntro, twistAction, twistCardHtml, twistTap, twistTick } from "./ui/twistUi";
 import { fusableRarities } from "./game/fusion";
 import { awaySummary } from "./game/away";
@@ -526,9 +526,12 @@ function updateWave(now: number): void {
   const el = document.getElementById("wave")!;
   const tw = tourism(S, now);
   const g = gold(S, now);
-  el.hidden = !tw && !g;
+  // Pantalla limpia: si ya hay una tarjeta del negocio, la de la ola o el oro solo sale cuando está activa.
+  const busy = !document.getElementById("twist")!.hidden;
+  const quiet = busy && ((tw && !tw.active) || (g && !g.locked && g.mult < GOLD.max * 0.9));
+  el.hidden = (!tw && !g) || !!quiet;
   el.classList.toggle("gold", !!g);
-  if (!tw && !g) return;
+  if (el.hidden) return;
   el.style.bottom = `${document.getElementById("bar")!.offsetHeight + 10}px`;
   const btn = document.getElementById("waveBtn") as HTMLButtonElement;
   const txt = document.getElementById("waveTxt")!;
@@ -598,11 +601,14 @@ const autoBtn = document.getElementById("autoBtn") as HTMLButtonElement;
 
 function updateAuto(now: number): void {
   const show = S.view.scene === "business" && meta.tutorialStep(S) === null && !!S.biz[S.view.id]?.owned;
+  // El 💸 viral va justo encima de la barra y de la tarjeta de la mecánica; «Mejorar todo», encima de él.
+  const base = document.getElementById("bar")!.offsetHeight + overlayHeight() + 12;
+  if (viralEl) viralEl.style.bottom = `${base}px`;
   autoBtn.hidden = !show;
   if (!show) return;
-  autoBtn.style.bottom = `${document.getElementById("bar")!.offsetHeight + overlayHeight() + 12}px`;
+  autoBtn.style.bottom = `${base + (viralEl ? 88 : 0)}px`;
   const free = autoFreeLeft(S, now);
-  const txt = !isUnlocked(S, "auto") ? progressText(S, featureDef("auto").need) : free === Infinity ? "∞" : free > 0 ? t("{n} hoy", { n: free }) : autoAdLeft(S, now) > 0 ? "▶" : "🔒";
+  const txt = !isUnlocked(S, "auto") ? "" : free === Infinity ? "∞" : free > 0 ? t("{n} hoy", { n: free }) : autoAdLeft(S, now) > 0 ? "▶" : "🔒";
   const el = document.getElementById("autoLeft")!;
   if (el.textContent !== txt) el.textContent = txt;
 }

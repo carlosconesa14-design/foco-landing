@@ -5,7 +5,7 @@ import { swapArt } from "../art/generated";
 import type { BusinessState } from "../game/state";
 import { DiningRoom } from "./dining";
 import { actorShadow, gait } from "./motion";
-import { label, reducedMotion } from "./common";
+import { label, calmWorld } from "./common";
 
 type Point = { x: number; y: number };
 type Grid = [number, number];
@@ -108,7 +108,7 @@ export class RestaurantRoom {
   update(dt: number, business: BusinessState): void {
     this.clock+=dt;
     this.dining.update(dt);
-    const calm=reducedMotion();
+    const calm=calmWorld();
     for(const [id,view] of this.guests) if(!this.dining.guests.some(g=>g.id===id)) {
       view.image.destroy();view.shadow.destroy();view.bubble.destroy();this.guests.delete(id);
     }

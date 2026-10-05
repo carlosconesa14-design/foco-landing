@@ -13,7 +13,8 @@ const out = resolve(root, process.env.VISUAL_OUTPUT || 'artifacts/visual');
 const port = Number(process.env.VISUAL_PORT || 5175);
 const url = process.env.VISUAL_BASE_URL || `http://127.0.0.1:${port}`;
 const baseline = process.argv.includes('--baseline');
-const store = process.argv.includes('--store');
+const storeOnly = process.argv.includes('--store-only');
+const store = storeOnly || process.argv.includes('--store');
 const full = !baseline && !store && !process.argv.includes('--quick');
 const service = process.env.VISUAL_BASE_URL ? null : spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { cwd: root, stdio: 'pipe' });
 let serverLog = '';
@@ -26,6 +27,8 @@ const serverDate = Date.UTC(2026, 9, 26, 12);
 async function ready() {
   for (let i = 0; i < 60; i++) {
     if (service?.exitCode !== null && service?.exitCode !== undefined) throw new Error(serverLog);
+    // Wait for our own server: a stale process on this port must never supply screenshots.
+    if(service && !serverLog.includes('Local:')) {await new Promise(r=>setTimeout(r,200));continue;}
     try { if ((await fetch(url)).ok) return; } catch {}
     await new Promise(r => setTimeout(r, 200));
   }
@@ -96,6 +99,16 @@ async function layout(page,label) {
   assert.deepEqual(bad,[],`${label}: horizontal overflow ${JSON.stringify(bad)}`);
   findings.push(label);
 }
+async function neighborhood(page,sceneName,label) {
+  const result=await page.evaluate(name=>{
+    const sc=__game.game.scene.getScene(name),n=sc.neighborhood;
+    const districts=sc.children.list.filter(o=>o.type==='Image'&&o.texture.key.startsWith('district_'));
+    return {count:districts.length,missing:districts.some(o=>o.texture.key==='__MISSING'),walkers:n?.walkers.length,birds:n?.birds.length,
+      fits:districts.every(o=>{const b=o.getBounds();return b.left>=n.bounds.left&&b.right<=n.bounds.right&&b.top>=n.bounds.top&&b.bottom<=n.bounds.bottom})};
+  },sceneName);
+  assert(result.count===6&&!result.missing&&result.walkers===6&&result.birds===3&&result.fits,`${label}: neighborhood assets/bounds ${JSON.stringify(result)}`);
+  findings.push(`${label}: six districts, nine ambient actors and camera coverage`);
+}
 async function snap(page,name) {await page.screenshot({path:resolve(out,`${name}.png`)});}
 try {
   await mkdir(out,{recursive:true});await ready();
@@ -109,12 +122,14 @@ try {
       await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)});
     });
     const page=await ctx.newPage();
+    page.setDefaultTimeout(60000);
     page.on('pageerror',e=>errors.push(`${locale}: ${e.message}`));
     page.on('console',m=>{if(m.type()==='error')errors.push(`${locale}: ${m.text()}`)});
     await page.goto(url,{waitUntil:'networkidle'});
     await page.waitForFunction(()=>window.__game?.state&&!document.body.classList.contains('loading'));
     await snap(page,`${locale}-starter`);
     assert.equal(await page.locator('canvas').count(),1);
+    if(!storeOnly) {
     for(const width of widths) {
       await page.setViewportSize({width,height:844});
       await seed(page);
@@ -129,10 +144,10 @@ try {
     }
     await page.setViewportSize({width:390,height:844});
     for(const city of ['madrid','miami','dubai']) {
-      await seed(page,city);await snap(page,`${locale}-${city}-city`);
+      await seed(page,city);await neighborhood(page,'city',`${locale}/${city}`);await snap(page,`${locale}-${city}-city`);
       const ids=await page.evaluate(()=>Object.keys(__game.state.biz));
       for(const id of ids) {
-        await business(page,id);await snap(page,`${locale}-${id}`);await layout(page,`${locale}/${id}/business`);
+        await business(page,id);await neighborhood(page,'business',`${locale}/${id}`);await snap(page,`${locale}-${id}`);await layout(page,`${locale}/${id}/business`);
         if(!baseline) {
           const loaded=await page.evaluate(async id=>{
             const {artRef}=await import('/src/art/generated.ts');const {BIZ_ART}=await import('/src/art/catalog.ts');
@@ -144,7 +159,30 @@ try {
       }
     }
     if(!baseline) {
-      await business(page,'supercars');
+      const baselines=await page.evaluate(async()=>{
+        const result=[];
+        for(const role of ['mechanic','valet','butler','guide','goldsmith','builder','taquero','skater','vendor','bartender','promoter','captain','sailor','agent','broker','clerk','coder','trader'])for(let pose=0;pose<3;pose++) {
+          const im=new Image();im.src=`/sprites/ch_${role}_${pose}.png`;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const rgba=x.getImageData(0,0,c.width,c.height).data;let top=180,bottom=-1;
+          for(let y=0;y<c.height;y++)for(let xx=0;xx<c.width;xx++)if(rgba[(y*c.width+xx)*4+3]>8){top=Math.min(top,y);bottom=Math.max(bottom,y);}
+          result.push({role,pose,w:im.width,h:im.height,top,bottom});
+        }
+        return result;
+      });
+      assert(baselines.every(f=>f.w===132&&f.h===180&&f.bottom===177&&f.top>=7&&f.top<=40),'Worker frames drift from their canonical baseline/body box');
+      findings.push(`${locale}: 54 walking frames share canonical bounds`);
+      await seed(page,'madrid');
+      await page.evaluate(async()=>{
+        const {freshBizTwist,TW}=await import('/src/game/twists.ts');const {now}=await import('/src/game/clock.ts');const s=__game.state,n=now();s.meta.stats.life.floors=TW.startFloors;
+        for(const id of ['dropship','restaurant','tiktok','ai'])s.meta.twists[id]={...freshBizTwist(),intro:true,nextOrder:n+1e12,nextCritic:n+1e12};
+        s.meta.twists.dropship.order={target:1e30,base:0,deadline:0,offerUntil:n+60000,reward:500,done:false};
+        s.meta.twists.restaurant.critic={need:12,got:3,until:n+60000};s.meta.twists.tiktok.viralEnd=n+60000;s.meta.twists.ai.data=25;
+      });
+      for(const [id,key] of [['dropship','veh_order'],['restaurant','ch_critic_0'],['tiktok','prop_broadcast'],['ai','prop_research']]) {
+        await business(page,id);await page.waitForTimeout(650);await snap(page,`${locale}-world-${id}`);
+        assert(await page.evaluate(async key=>{const {artRef}=await import('/src/art/generated.ts');const sc=__game.game.scene.getScene('business'),ref=artRef(sc,key);return sc.children.list.some(o=>o.type==='Image'&&o.visible&&o.texture.key===ref.texture&&o.frame.name===ref.frame)},key),`Missing physical mechanic ${id}`);
+        findings.push(`${locale}: world mechanic ${id}`);
+      }
+      await seed(page,'dubai');await business(page,'supercars');
       // Presentation responds to the existing timers, with no changes to economy/rewards.
       for(const kind of ['truck','vip']) {
         await page.evaluate(async kind=>{
@@ -171,14 +209,14 @@ try {
       await closeOverlays(page);
       // Rendering all ranks does not add any levels, income or saved presentation data.
       const ranks=await page.evaluate(async()=>{
-        const {ART,BIZ_ART,rankedKey}=await import('/src/art/catalog.ts');const sc=__game.game.scene.getScene('business');
+        const {ART,BIZ_ART,rankedKey}=await import('/src/art/catalog.ts');const {artRef}=await import('/src/art/generated.ts');const sc=__game.game.scene.getScene('business');
         const bases=[...new Set([...Object.values(BIZ_ART).flatMap(l=>[l.station,`ch_${l.worker}_0`,l.mover.startsWith('veh_')?l.mover:`ch_${l.mover}_1`,l.seller.startsWith('veh_')?l.seller:`ch_${l.seller}_2`]),'wh_shelf','wh_van_open','wh_van_rear','wh_forklift_loaded','wh_forklift_rear','rest_chef_a','rest_chef_b','rest_waiter_a','rest_waiter_b'])];
         const results=[];
-        for(const base of bases)for(let rank=1;rank<=5;rank++){const key=rankedKey(sc,base,rank);const tex=sc.textures.get(key);results.push({base,rank,key,w:tex.source[0].width,h:tex.source[0].height,size:ART[key]});}
+        for(const base of bases)for(let rank=1;rank<=5;rank++){const key=rankedKey(sc,base,rank);const ref=artRef(sc,key),frame=sc.textures.getFrame(ref.texture,ref.frame);results.push({base,rank,key,w:frame.cutWidth,h:frame.cutHeight,shared:ref.texture!==key,size:ART[key]});}
         return results;
       });
       assert(ranks.every(r=>r.key.includes(`_r${r.rank}`)), 'Rank art fell back to base');
-      assert(ranks.every(r=>r.w<=300&&r.h<=258),'Rank textures exceed mobile size budget');
+      assert(ranks.every(r=>r.shared?r.w<=384&&r.h<=384:r.w<=300&&r.h<=258),'Rank textures exceed mobile size budget');
       findings.push(`${locale}: ${ranks.length} rank textures validated`);
       // Collect the real seasonal opportunity through its existing modal.
       const candyBefore=await page.evaluate(async()=>{const {now}=await import('/src/game/clock.ts');const s=__game.state;s.meta.season.nextVisitor=now()-1;return s.meta.season.candy});
@@ -189,13 +227,23 @@ try {
       await page.emulateMedia({reducedMotion:'reduce'});
       await seed(page,'dubai');await snap(page,`${locale}-reduced-motion`);
       await page.waitForTimeout(250);await layout(page,`${locale}/reduced-motion`);
+      // OS motion preference reduces effects, while the explicit in-game setting pauses life.
+      const lifeClock=()=>page.evaluate(()=>__game.game.scene.getScene('city').neighborhood.elapsed);
+      const clockBefore=await lifeClock();await page.waitForTimeout(250);
+      assert(await lifeClock()>clockBefore,'System preference incorrectly stopped neighborhood life');
+      await page.evaluate(()=>localStorage.setItem('motion','reduced'));await page.waitForTimeout(100);
+      const paused=await lifeClock();await page.waitForTimeout(250);assert.equal(await lifeClock(),paused,'Explicit reduced motion failed to pause neighborhood life');
+      await page.evaluate(()=>localStorage.setItem('motion','full'));await page.waitForTimeout(250);
+      assert(await lifeClock()>paused,'Neighborhood failed to resume');await page.evaluate(()=>localStorage.removeItem('motion'));
+      findings.push(`${locale}: ambient life respects explicit pause and resumes under OS reduced motion`);
       const emojis=await page.evaluate(()=>document.getElementById('app').innerText.match(/\p{Extended_Pictographic}/gu) || []);
       assert.deepEqual(emojis,[],'System emoji remains in visible UI');
+    }
     }
     if(store) {
       await page.emulateMedia({reducedMotion:'reduce'});
       await page.setViewportSize({width:540,height:960});
-      for(const city of ['madrid','miami','dubai']) {await seed(page,city);await snap(page,`store-${locale}-${city}`);}
+      for(const city of ['madrid','miami','dubai']) {await seed(page,city);await page.locator('.banner').waitFor({state:'detached'});await snap(page,`store-${locale}-${city}`);}
       await business(page,'supercars');await snap(page,`store-${locale}-supercars`);
       await panel(page,'life');await snap(page,`store-${locale}-life`);
     }
@@ -204,6 +252,9 @@ try {
   assert.deepEqual(errors,[],'Browser errors');
   await writeFile(resolve(out,'report.json'),JSON.stringify({baseline,checks:findings,errors,remote:'Supabase stubbed; no remote integration or writes',date:new Date().toISOString()},null,2)+'\n');
   console.log(JSON.stringify({screenshots:out,checks:findings.length,errors:errors.length}));
+} catch(error) {
+  await writeFile(resolve(out,'failure.json'),JSON.stringify({checks:findings,errors,error:String(error)},null,2));
+  throw error;
 } finally {
   await browser?.close();service?.kill('SIGTERM');
 }

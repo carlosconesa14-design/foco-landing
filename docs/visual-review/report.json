@@ -54,7 +54,13 @@
     "es-ES/safari/business",
     "es-ES/souk/business",
     "es-ES/tower/business",
+    "es-ES: 18 walking frames share canonical bounds",
+    "es-ES: world mechanic dropship",
+    "es-ES: world mechanic restaurant",
+    "es-ES: world mechanic tiktok",
+    "es-ES: world mechanic ai",
     "es-ES: 305 rank textures validated",
+    "es-ES: ghost collected through UI",
     "es-ES/reduced-motion",
     "en-US/320/HUD",
     "en-US/320/menu",
@@ -109,10 +115,16 @@
     "en-US/safari/business",
     "en-US/souk/business",
     "en-US/tower/business",
+    "en-US: 18 walking frames share canonical bounds",
+    "en-US: world mechanic dropship",
+    "en-US: world mechanic restaurant",
+    "en-US: world mechanic tiktok",
+    "en-US: world mechanic ai",
     "en-US: 305 rank textures validated",
+    "en-US: ghost collected through UI",
     "en-US/reduced-motion"
   ],
   "errors": [],
   "remote": "Supabase stubbed; no remote integration or writes",
-  "date": "2026-10-02T14:13:14.658Z"
+  "date": "2026-10-02T16:36:54.603Z"
 }

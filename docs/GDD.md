@@ -95,7 +95,23 @@ Cada negocio de Madrid tiene una regla propia, para que no se sientan todos igua
 - **🧠 Agencia de IA: investigación.** Cada venta da 1 dato. 6 mejoras permanentes en orden (de 50 a 6000 datos): +25 % ventas, +25 % producción, +25 % transporte y venta, +50 % ventas, **+10 % ventas en toda la ciudad** y x2 ventas.
 - **Empiezan a los pocos minutos**, al llevar 3 puestos abiertos (`TW.startFloors`), no justo al acabar el tutorial: así no coinciden con la celebración y los primeros desbloqueos.
 - Las estrellas, los datos y la investigación se conservan al salir a bolsa. Todo es solo jugando y el bot de equilibrado no las usa: no cambian los tests de ritmo, son extra para quien juega. Números ajustables desde el servidor (grupo `twists`, [`AJUSTES.md`](AJUSTES.md)).
-- **Siguiente fase:** pedidos en el safari (excursiones) y la inmobiliaria (proyectos), hype en el club de playa y reseñas ⭐ en el hotel, investigación en el rascacielos, y «guardar o vender» en el exchange de cripto y el zoco del oro.
+- **Miami y Dubái** usan las mismas cuatro mecánicas, cada una con el estilo del negocio (`TWISTS` en `twists.ts`; textos en `FLAVORS` de `twistUi.ts`):
+
+| Negocio | Mecánica | Cómo se llama |
+| --- | --- | --- |
+| 🌮 Food trucks | Visita | Foodies famosos: «toca los food trucks» |
+| 🏖️ Club de playa | Hype | Ambiente → ¡fiesta en la playa! («Llamar a un DJ» con anuncio) |
+| 🛥️ Yates | Pedidos | Excursiones urgentes |
+| 🏘️ Inmobiliaria | Pedidos | Clientes con prisa: venta exprés |
+| 🪙 Exchange de cripto | Investigación | Minería ⛏️ |
+| 🏎️ Superdeportivos | Pedidos | Encargos VIP |
+| 🏨 Hotel | Visita | Inspectores de estrellas: «toca las suites» |
+| 🐪 Safari | Hype | Fotos → ¡atardecer viral! («Influencer de viajes» con anuncio) |
+| 💍 Zoco del oro | Pedidos | Joyas a medida |
+| 🏙️ Rascacielos | Investigación | Ingeniería 📐 |
+
+- **La investigación va siempre en el último negocio de cada ciudad.** En uno intermedio (se probó en la inmobiliaria) aceleraba demasiado: quien lo usaba todo acababa Miami 2,2 veces antes. Con el reparto actual, el jugador implicado va ~1,5 veces más rápido en Miami y ~1,85 en Dubái, como cota alta (siempre mirando). Lo protegen los tests de ritmo.
+- Mientras no haya arte de Miami y Dubái para la pieza del mundo (`TwistWorld`), allí solo se ve la tarjeta (`TWIST_WORLD_ART`).
 
 ### «Mi vida»: el personaje y su tienda de lujo ✅
 Un sitio en el que gastar el dinero aparte de las mejoras, para que apetezca ganar más. Botón «Mi vida» en el lateral (con punto rojo cuando hay algo que te puedes permitir) y en el menú.

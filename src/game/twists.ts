@@ -19,11 +19,28 @@ export type TwistKind = "orders" | "critic" | "hype" | "research";
 
 /** Qué mecánica tiene cada negocio. */
 export const TWISTS: Record<string, TwistKind> = {
+  // Madrid
   dropship: "orders",
   restaurant: "critic",
   tiktok: "hype",
   ai: "research",
+  // Miami: foodies, fiesta en la playa, excursiones, pisos con prisa y minería
+  // (la investigación, siempre en el último negocio de la ciudad: en uno intermedio acelera demasiado)
+  foodtruck: "critic",
+  beachclub: "hype",
+  yachts: "orders",
+  realestate: "orders",
+  crypto: "research",
+  // Dubái: encargos VIP, inspectores de estrellas, atardecer viral, joyas a medida e ingeniería
+  supercars: "orders",
+  hotel: "critic",
+  safari: "hype",
+  souk: "orders",
+  tower: "research",
 };
+
+/** Negocios con su pieza dibujada en el mundo (TwistWorld). El resto, solo la tarjeta hasta que haya arte. */
+export const TWIST_WORLD_ART = ["dropship", "restaurant", "tiktok", "ai"];
 
 export const twistOf = (bizId: string): TwistKind | null => TWISTS[bizId] ?? null;
 

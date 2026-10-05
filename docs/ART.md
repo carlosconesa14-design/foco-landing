@@ -123,26 +123,26 @@ Mismo estilo común, con luz de playa soleada. Para la arena y las palmeras, añ
 
 ### Mecánicas de cada negocio (Madrid)
 
-Hoy son una tarjeta HTML con emojis encima de la barra de la cadena (`.tw-card` en `styles.css`, `src/ui/twistUi.ts`). Ideas para que luzcan en la escena: una furgoneta de «pedido urgente» con un reloj, un **crítico** con monóculo y libreta que se sienta en una mesa del restaurante (`ch_critic_0`, 44×60), un **cartel de «EN DIRECTO»** rojo que parpadea sobre el estudio de TikTok durante el directo viral y una pantalla de datos 🧠 en la agencia de IA. Iconos para la tarjeta: `ic_order`, `ic_critic`, `ic_hype`, `ic_research` (48×48).
+Las tarjetas usan el kit de iconos local. `TwistWorld` refleja las mecánicas existentes dentro del recinto con `veh_order`, `ch_critic_0`, `prop_broadcast` y `prop_research`: llegada/salida, rótulo y progreso. Es una proyección de solo lectura; las acciones siguen en las tarjetas. Tamaños e integración en «Ampliación final».
 
 ### «Mi vida»: personaje y objetos de lujo
 
-Hoy el personaje es un SVG sencillo (`src/ui/avatar.ts`) y los objetos son emojis. Para el arte propio, basta con añadir los PNG (y apuntarlos en `public/sprites/manifest.json`):
+El personaje y todos los objetos tienen arte propio de atlas. `src/ui/avatar.ts` conserva el SVG únicamente como respaldo y superpone la joya seleccionada sobre el avatar. Los PNG individuales del manifest siguen teniendo prioridad:
 
 | Clave | Tamaño | Qué es |
 | --- | --- | --- |
-| `avatar_<ropa>` | 240×344 (se ve a 120×172) | El personaje de cuerpo entero con cada ropa: `tracksuit` (chándal verde de rider con gorra), `hoodie`, `suit`, `designer` (traje granate con gafas de sol), `goldtux` (esmoquin negro con solapas doradas), `neonsuit` (exclusivo, rosa y cian con brillo). Mismo personaje y pose en todos, de frente, fondo transparente. Las joyas hoy se dibujan encima del SVG; con PNG, mejor una versión por joya más adelante |
+| `avatar_<ropa>` | 340×504 (se ve a 120×172) | El personaje de cuerpo entero con cada ropa: `tracksuit` (chándal verde de rider con gorra), `hoodie`, `suit`, `designer` (traje granate con gafas de sol), `goldtux` (esmoquin negro con solapas doradas), `neonsuit` (exclusivo, rosa y cian con brillo). Mismo personaje y pose en todos, de frente, fondo transparente. Las joyas se superponen sobre el avatar integrado |
 | `lux_<id>` | 96×96 | Icono de cada objeto (ids en `src/game/luxury.ts`): ropa, joyas, coches, casas, mascotas, yate, jet y cohete. Los de casa también se ven grandes de fondo (hasta 150×150): mejor como edificio con algo de suelo |
-| `luxcar_<id>` | 50×42 | El coche del personaje visto en isométrico para circular por la ciudad (como `car_0`). Hoy es su emoji con un halo dorado |
-| `ic_life` | 48×48 | Icono del botón «Mi vida» (hoy 🛍️) |
+| `luxcar_<id>` | 50×42 | El coche del personaje visto en isométrico para circular por la ciudad (como `car_0`). Arte del vehículo seleccionado, con sombra y halo dorado |
+| `ic_life` | 48×48 | Icono vectorial local del botón «Mi vida» |
 
-**Halloween:** iconos `lux_vampire`, `lux_skullring`, `lux_hearse`, `lux_haunted`, `lux_pumpkin`, el personaje `avatar_vampire` (traje negro, capa roja, colmillos), `luxcar_hearse` y la calabaza `pumpkin` (40×40) para las plazas de la ciudad (hoy son emojis). Un fantasma `ghost` (64×64) para el botón flotante sería un buen extra.
+**Halloween integrado:** `lux_vampire`, `lux_skullring`, `lux_hearse`, `lux_haunted`, `lux_pumpkin`, `avatar_vampire`, `luxcar_hearse`, `pumpkin` y `ghost`. Véase el catálogo de familias entregadas.
 
 Ideas: que el fondo del escenario cambie con la casa (piso compartido, ático con vistas, villa con piscina, mansión, isla) y que los exclusivos tengan un brillo propio.
 
 ### Rangos de los puestos (bronce … leyenda)
 
-Cada parte de la cadena sube de rango en los niveles 10, 25, 50, 100 y 200 (`src/game/ranks.ts`). Hoy el rango se ve con efectos hechos por código (pedestal y brillo del color, medalla y destellos, en `src/scenes/rankFx.ts`). Para que además **el puesto, el trabajador y el vehículo cambien de aspecto**, basta con añadir PNG con estas claves (y apuntarlas en `public/sprites/manifest.json`). Si falta la de un rango, se usa la del rango anterior; si no hay ninguna, la normal. Mismo tamaño que la pieza base.
+Cada parte de la cadena sube de rango en los niveles 10, 25, 50, 100 y 200 (`src/game/ranks.ts`). Tiene medalla, pedestal y efectos existentes, más cambios estructurales compuestos sobre la pieza original. Los puestos Diamante/Leyenda de los 14 negocios tienen dibujos propios en `stations-premium.png`; los personajes y vehículos conservan sus poses y reciben detalles por composición. Un PNG individual puede sustituir cualquiera de estas variantes.
 
 | Clave | Qué es | Idea para el prompt |
 | --- | --- | --- |
@@ -153,11 +153,11 @@ Cada parte de la cadena sube de rango en los niveles 10, 25, 50, 100 y 200 (`src
 | `veh_forklift_r<n>`, `veh_van_r<n>` | Vehículos (fuera del almacén, que usa poses propias) | Same vehicle: new paint → chrome → gold livery → glowing diamond edition → legendary limousine-like |
 | `decor_<negocio>_2`, `decor_<negocio>_3` | Decoración extra del recinto con ★★ y ★★★ (se pone junto al edificio principal) | Small isometric props cluster on a transparent background: fountain, statue, neon sign… matching the business |
 
-Prioridad recomendada: medallas `rank_*` → puestos `st_*_r3` (oro) y `_r5` (leyenda) de los negocios iniciales (almacén, restaurante, food trucks) → personajes → vehículos.
+Medallas, puestos, personajes y vehículos están integrados; las claves de la tabla permiten sustituir cualquier variante sin cambiar la simulación.
 
 ### Dubái (tercera ciudad)
 
-Mismo estilo común, con luz cálida de desierto y toques dorados. Añade "Dubai luxury, desert sand, gold accents, glass towers" al prompt. **Ahora mismo Dubái usa arte provisional**: cada edificio toma la forma de uno existente (`BLD_SHAPE` en `src/art/catalog.ts`) y los puestos y personajes reutilizan los de Madrid y Miami (`BIZ_ART`). En cuanto exista el PNG de una clave, el juego lo usa sin tocar código. Cuando estén los edificios, borra `BLD_SHAPE`.
+Dubái está integrado con arte propio, luz cálida de desierto, arena, cristal y detalles dorados. `BLD_SHAPE` se eliminó; `BIZ_ART` y `LOOKS` registran los puestos y personajes propios. Los seis trabajadores tienen tres frames reales de 132×180 y apoyo común.
 
 | Clave | Tamaño lógico | Prompt |
 | --- | --- | --- |
@@ -184,63 +184,19 @@ Mismo estilo común, con luz cálida de desierto y toques dorados. Añade "Dubai
 | `ch_builder_0` | 44×60 | Chibi construction worker, orange vest, white helmet |
 | `exec_founder` | 64×64 | Portrait of a confident founder executive in a white suit with a gold pin, golden glowing frame, Dubai skyline behind (exclusive, must look special) |
 
-Para usar los puestos, objetos y personajes nuevos, cambia la línea del negocio en `BIZ_ART` (`src/art/catalog.ts`) y añade los personajes a `LOOKS`. El retrato `exec_founder` se usa solo con guardarlo (`execFace` en `src/ui/icons.ts`). Ideas de ambiente: la fuente de las plazas ya encaja con Dubái; faltan dunas al fondo, skyline y un brillo dorado en la barra del oro (`.wave.gold` en `styles.css`).
+Los puestos, productos, personajes y vehículos se resuelven mediante `BIZ_ART`; `execFace` utiliza `exec_founder`. El entorno incluye dunas, skyline, palmeras datileras, farolas doradas, pavimento propio y decoración específica de cada negocio. La barra del oro mantiene su estilo dorado.
 
-## Plan de mejora gráfica (para ChatGPT)
+## Estado del plan de mejora gráfica
 
-Revisión del juego actual, ordenada por impacto: lo que más se nota en pantalla va primero.
+El plan original está integrado: edificios y evoluciones de las tres ciudades, puestos y productos propios, personajes y movimiento, iconos de UI, moneda neutral, visitantes físicos, Halloween, Mi vida, rangos y marca. La ampliación final añade ciclos de Dubái, decoración específica de los 14 negocios, mecánicas físicas, puestos de alto rango personalizados y vegetación/mobiliario/pavimentos.
 
-### 1. Edificios de la ciudad (máximo impacto)
-Es lo primero que ve el jugador y lo que más "vende" en las capturas de la tienda. Hoy son cajas isométricas dibujadas por código, con un emoji encima en un recuadro blanco.
-- Genera los 9 `bld_*` y `bld_soon` con las tablas de arriba.
-- **Sin emoji encima:** el edificio tiene que reconocerse solo por su forma (un cartel de pasta, un aro de luz…). Ya hay PNG de Madrid; el recuadro del emoji solo sale con el arte por código.
-- ✅ **Enganche listo:** 3 versiones por edificio según sus puestos (`bld_x`, `bld_x_2`, `bld_x_3`; ver más abajo). Por ejemplo, un almacén pequeño que se vuelve nave logística y luego centro de distribución con camiones. Es la recompensa visual más fuerte de un tycoon: ver crecer lo que compras.
+Los efectos de dinero, hitos, noche, mar y celebraciones conservan la implementación existente. La carretera, geometría de parcelas, bordes y skyline siguen dibujándose por código: son geometría funcional, no assets provisionales que haya que duplicar en texturas.
 
-### 2. Suelo de la ciudad y del recinto
-El suelo son rombos de color plano: carreteras, césped, aceras y arena. Se ve vacío.
-- ✅ **Enganche listo** (ver más abajo): baldosas isométricas 88×44 (`tile_madrid_ground`, `tile_miami_ground`, carreteras, solares y suelo de cada recinto), con hasta 4 variantes por clave para que no se note la repetición.
-- El borde de tierra de la isla (`island_edge`) y el agua animada del mar.
-
-### 3. Personajes
-Son chibis sencillos y solo tienen 2 poses al caminar.
-- Haz primero `ch_*_0` de los 25 personajes, con el mismo prompt base para que tengan la misma cara y proporciones.
-- Después, las poses de caminar `_1` y `_2`.
-- Para Miami, los coches (`car_*`) también podrían ser descapotables o tener colores pastel.
-
-### 4. Puestos y objetos del recinto
-Son los 9 `st_*` y los 9 `item_*`. Se ven de cerca y mucho rato, así que merecen más detalle que los edificios.
-
-### 5. Iconos de la interfaz (hoy son emojis)
-Los emojis cambian según el móvil (Apple, Samsung, Google), se ven poco profesionales y no siguen el estilo del juego.
-- ✅ **Enganche listo** (ver más abajo): iconos PNG de 64×64. Por prioridad:
-  - dinero `ic_cash`, diamante `ic_gem`, estrella de franquicia `ic_star`;
-  - botones laterales: misiones, diario, ejecutivos, logros y ajustes (`ic_missions`, `ic_daily`, `ic_execs`, `ic_trophy`, `ic_settings`);
-  - barra inferior: ciudad, bolsa y mundo (`ic_city`, `ic_ipo`, `ic_world`);
-  - un icono por negocio (`ic_biz_<id>`), uno por estilo de vida (`ic_life_0` a `ic_life_9`) y uno por mejora de la Oficina central (`ic_office_<id>`);
-  - maletines: normal, oro y gratis (`chest_normal`, `chest_premium`, `chest_free`);
-  - banderas de ciudad (`flag_madrid`, `flag_miami`).
-- ✅ **Retratos de ejecutivos** (hoy son emojis): 8 caras de 96×96 (`exec_0` a `exec_7`). Sin marco: el juego ya pone el borde del color de la rareza.
-
-### 6. Interfaz (marcos y botones)
-Los paneles son rectángulos azul marino, limpios pero genéricos.
-- Pide a ChatGPT un **kit de interfaz** en el mismo estilo: marco de panel, botón dorado, botón verde de anuncio (con el icono ▶ de vídeo), barra de progreso y cabecera del dinero.
-- Se pueden aplicar como imágenes de fondo con CSS (`border-image`) sin tocar la lógica.
-
-### 7. Efectos y ambiente
-Todo esto es código más que sprites. ChatGPT solo tendría que dibujar la pieza:
-- monedas que vuelan hasta el contador al cobrar;
-- ciclo de día y noche con farolas y ventanas encendidas;
-- olas animadas, barcos y gaviotas en el mar;
-- banderines y destellos dorados cuando un negocio crece;
-- confeti y rayos de las celebraciones con sprites propios.
-
-### 8. Tienda y marca (antes de publicar)
-- Icono de la app (1024×1024), pantalla de carga (splash) y logotipo "Rider Millionaire".
-- 5 capturas para la tienda con textos grandes; se pueden montar sobre capturas reales del juego.
+La lista pendiente es de **validación de lanzamiento**, no de creación de estos assets: comprobar APK/recursos Android, rendimiento y lectura en un móvil físico de gama media y revisión de la ficha en Play Console.
 
 ### Enganches ya preparados en el código
 
-Estas piezas ya se pueden sustituir por PNG igual que el resto: se dejan en `public/sprites/` y se añaden a `manifest.json`. Mientras no exista el PNG, el juego sigue con el emoji o el dibujo por código.
+Estas piezas ya se pueden sustituir por PNG igual que el resto: se dejan en `public/sprites/` y se añaden a `manifest.json`. Si falta una pieza, el juego utiliza el atlas o respaldo vectorial/procedural correspondiente.
 
 **Edificios (`bld_*`):** al cargar se recorta solo el margen transparente y se escalan para que la base ocupe la parcela. No hace falta encuadrarlos con precisión, solo que la base (el rombo de suelo) sea lo más ancho del dibujo.
 
@@ -605,7 +561,7 @@ Esta sección describe el arte integrado y sustituye las descripciones históric
 | `bld_{supercars,hotel,safari,souk,tower}_{1,2,3}` | Ancho 172; alturas base 164/260/140/170/300, +24 por evolución; ajustadas a parcela 2:1 | `dubai-buildings.png`, 1536×1024. Quince edificios propios: concesionario, hotel, safari, zoco y torre. Piedra clara, arena, cristal cian, acentos dorados; luz superior izquierda |
 | `st_{supercars,hotel,safari,souk,tower}` | 100×86 | `dubai-details.png`, 1448×1086. Taller, suite, tienda beduina, banco de joyero y estructura de obra |
 | `item_{carkey,bell,camel,ring,beam}` | 26×26 | Mismo atlas: objetos de producción propios |
-| `ch_{mechanic,valet,butler,guide,goldsmith,builder}_0` | 44×60 | Mismo atlas: roles propios. Las poses de desplazamiento reutilizan el frame quieto, como admite el contrato existente; no son ciclos nuevos de tres dibujos |
+| `ch_{mechanic,valet,butler,guide,goldsmith,builder}_0` | 44×60 | Mismo atlas: roles propios. Las tres poses reales tienen PNG individuales que prevalecen sobre este frame de referencia; véase la ampliación final |
 | `avatar_{tracksuit,hoodie,suit,designer,goldtux,neonsuit,vampire,founder}` | Recorte uniforme 340×504; mostrado a 120×172 | `avatars.png`, 1536×1024. Misma cara, pose y proporciones; siete vestuarios y fundador. Las joyas seleccionadas se superponen en HTML |
 | `exec_founder` | 64×64 | Retrato recortado del fundador en `avatars.png`; marco por rareza existente |
 | `lux_{digital,luxwatch,goldchain,diamondring,crown,deliverybike,scooter,motorbike,sportscar,supercar,limo,goldcar,parents,flat,penthouse,villa,mansion,island,hearse,haunted}` | Iconos de tarjeta 76×76; viviendas también en el escenario de Mi vida | `luxury.png`, 1536×1024. Relojes, joyas, vehículos y casas originales, estilo juguete 3D |
@@ -616,9 +572,9 @@ Esta sección describe el arte integrado y sustituye las descripciones históric
 | `veh_supply`, `ch_vip_0` | 96×78 / 48×68 | Mismo atlas. Visitantes físicos con entrada, halo, sombra, interacción y salida; objetivo HTML accesible de 44 px sigue su posición. No cambia ninguna oferta ni recompensa |
 | `veh_safari`, `veh_crane`, `veh_luggage`, `veh_flatbed`, `veh_goldvan` | 62×48, 68×60 y 68×54 | `vehicles.png`, 1774×887. Vehículos exclusivos de Dubái |
 | `car_miami_0`, `car_miami_1`, `dubai_lamp` | 44×34 / 22×60 | Mismo atlas. Tráfico pastel de Miami y farolas de Dubái |
-| `dubai_planter`, `miami_plaza`, `decor_<negocio>_{2,3}` | 58×76, 66×80 | Atlas extras: jardineras doradas y decoración costera; alias por ciudad para recintos. Dunas y skyline de Dubái son geometría agrupada, no otra textura grande |
+| `dubai_planter`, `miami_plaza`, `decor_<negocio>_{2,3}` | 58×76, 66×80 | Atlas extras: jardineras doradas y decoración costera; los alias iniciales de recintos se sustituyeron por 28 decoraciones propias en `business-decor.png`. Dunas y skyline de Dubái son geometría agrupada, no otra textura grande |
 | `rank_1`…`rank_5` | 24×24; PNG 96×96 + SVG | `public/sprites/`. Bronce, plata, oro, diamante y leyenda, pictogramas propios sin letras |
-| `<pieza>_r1`…`_r5`, `ch_<rol>_r<n>_<pose>` | Igual a base; textura ≤300×258 | `src/art/rankArt.ts`. Composición diferida sobre el arte real: herramientas, soportes, marquesinas, terminales, herrajes, insignias y uniformes. No es un recoloreado global ni cientos de PNG independientes. Incluye las poses propias del almacén y restaurante. Un PNG específico puede sustituirla |
+| `<pieza>_r1`…`_r5`, `ch_<rol>_r<n>_<pose>` | Igual a base; textura ≤300×258 | `src/art/rankArt.ts`. Composición diferida sobre el arte real: herramientas, soportes, marquesinas, terminales, herrajes, insignias y uniformes. No es un recoloreado global ni cientos de PNG independientes. Incluye las poses propias del almacén y restaurante. Los puestos r4/r5 se sustituyen con el atlas premium; un PNG específico conserva prioridad |
 | `coin`, `ic_wheel`, `ic_hand`, `ic_manager`, `ic_construction` | 20×20, 48×48, 26×28, 18×18, 32×24 | SVG original y PNG 96×96 en `public/sprites/`; moneda con estrella neutral. Los importes siguen usando €/$ mediante `money()` |
 | UI: categorías, ciudades, banderas, oficina, misiones, eventos, rival, invitaciones, nube y controles | Canvas vectorial 48×48; inline 1 em | `src/ui/visualIcons.ts` y `icons.ts`; conserva gemas, cofres y ejecutivos PNG existentes. Iconos de negocio usan sus edificios. Sustituye glifos decorativos en etiquetas traducidas sin cambiar cifras ni nombres escritos por jugadores |
 
@@ -652,6 +608,161 @@ python scripts/register-visual-atlases.py       # Pillow, NumPy y SciPy
 python scripts/build-brand.py                  # fontTools con soporte Brotli
 ```
 
+Para renovar solo las capturas comerciales sin repetir la suite: `VISUAL_OUTPUT=artifacts/store npm run capture:visuals -- --store-only`, seguido de `npm run brand:store`.
+
 Los exportadores de navegador requieren Chromium instalado (`CHROMIUM_PATH`). Los scripts Python son herramientas opcionales de edición; el juego consume los archivos entregados y no los necesita. `artifacts/` está ignorado. Comparación reproducible en `docs/visual-review/`: antes de esta rama, commit `8b0f8a2`, y después, misma partida preparada, idioma y resolución.
 
 Verificaciones: 217 tests y build de producción correctos; cobertura de todas las claves de lujo y Dubái, límites reales de los atlas, 110 comprobaciones de navegador, compra/equipamiento, visitantes, rangos, ausencia de desbordamientos y errores JS, y movimiento reducido. Se conserva Madrid y sus tres frames de caminar originales 132×180 con el mismo apoyo. Se mantienen los efectos de monedas, rangos, colecciones y celebraciones existentes. La prueba en móvil físico de gama media y la revisión nativa siguen siendo necesarias antes de publicar: Chromium con renderizado software no permite certificar esos resultados.
+
+## Encargo: mundo integrado y pantalla limpia (lo pide Carlos tras probar la beta 2 en el móvil)
+
+Opinión de Carlos jugando en el móvil (2 de octubre):
+1. *«No se ven animaciones ni nada moviéndose.»* — **Arreglado por Claude.** Muchos Android activan «reducir movimiento» con el ahorro de batería, y el juego paraba la vida del mundo. Ahora hay dos niveles en `src/scenes/common.ts`:
+   - `calmWorld()`: la vida del mundo (gente, coches, nubes, agua, trabajadores). Solo se para si el jugador lo pide en Ajustes → «Reducir movimiento».
+   - `reducedMotion()`: efectos fuertes (sacudidas, ráfagas de partículas, rebotes). Sigue respetando el sistema.
+   - **Regla para el arte nuevo:** el movimiento ambiental va con `calmWorld()`; los efectos fuertes, con `reducedMotion()`.
+2. *«Demasiadas cosas en la pantalla todo el rato.»* — **Primera pasada hecha por Claude:**
+   - la tarjeta de la mecánica solo sale cuando hay algo que hacer;
+   - en pantallas táctiles solo queda el botón ⌖ (el zoom es con dos dedos);
+   - «Mejorar todo» es un botón redondo con un número;
+   - los nombres de los puestos solo se ven con 1 o 2 puestos.
+   - **Regla:** nada fijo nuevo en pantalla. Lo que se añada aparece solo cuando hay una acción y se va después.
+   - **Entregado por Codex el 5 de octubre (detalles al final):**
+     - cabecera en una sola fila (el estilo de vida podría ir dentro del menú);
+     - la barra de abajo, menos cargada;
+     - menos etiquetas flotantes en el recinto (por ejemplo, el dinero de cada puesto solo al tocar o al estar lleno).
+3. *«Los negocios individuales hay que mejorarlos mucho visualmente, y la ciudad también: que no sean unos cuadrados y ya está. Que estén integrados como parte de un mundo y que puedas ver qué hay alrededor.»* — **Entregado por Codex el 5 de octubre (detalles al final):**
+   - **Ciudad (`CityScene`):** que no sea una isla cuadrada flotando en el agua. Alrededor de las parcelas jugables, un barrio que continúa:
+     - manzanas de fondo no jugables, edificios y tejados;
+     - avenidas que salen del mapa;
+     - un puerto o paseo marítimo con barcos;
+     - montañas o el skyline a lo lejos;
+     - el borde se funde con niebla o con perspectiva, sin cortes rectos.
+     - Cada ciudad, con su paisaje: en Madrid, tejados rojos y la sierra; en Miami, la playa y el océano; en Dubái, el desierto y las torres.
+   - **Negocios (`BusinessScene`, `WarehouseRoom`, `RestaurantRoom`):** el recinto no es un rombo suelto.
+     - El suelo del negocio continúa en la acera, la calle y los edificios vecinos, con valla, aparcamiento, árboles y peatones fuera.
+     - Que se vea que el almacén está en un polígono, el restaurante en una calle con terrazas y TikTok en un barrio con neones.
+     - Las tres versiones del edificio (★, ★★, ★★★) siguen valiendo para crecer.
+   - **Vida:** más cosas moviéndose alrededor (peatones, tráfico, pájaros, barcos, luces de noche), siempre con `calmWorld()` y con pocas partículas: tiene que ir fluido en gama media.
+4. *«Que se limite el movimiento de cámara hasta donde se ha creado.»* — **Hecho por Claude:**
+   - La cámara no sale de la zona que cada escena pasa a `drag.addControls(home, bounds)`, contando lo que tapan la cabecera y la barra.
+   - Tampoco se puede alejar más de lo que hace falta para ver la zona entera.
+   - **Si Codex dibuja el mundo de alrededor, tiene que ampliar `bounds`** en `CityScene` y `BusinessScene` hasta donde llegue el arte. Así se puede mirar alrededor sin ver nunca el vacío.
+
+5. *«¿No hay que encargar que en la pantalla de un negocio no se vea solo el negocio, sino el negocio integrado en una ciudad parecida?»* — Sí, es la parte más importante del punto 3. **Cada pantalla de negocio tiene que parecer un trozo de su ciudad**, no una parcela flotando sobre verde:
+   - alrededor del recinto, la misma ciudad que se ve en el mapa: calles con tráfico, aceras con peatones, fachadas y tejados vecinos (sin entrar), farolas y árboles;
+   - el negocio, en su sitio lógico. Madrid: almacén en un polígono con naves vecinas, restaurante en una calle del centro con terrazas, TikTok en un barrio con neones, IA en un parque tecnológico. Miami: paseo marítimo, playa, puerto deportivo, frente costero, distrito financiero. Dubái: avenida de concesionarios, frente de hoteles, dunas, zoco con callejuelas, zona de rascacielos en obras;
+   - el fondo continúa hasta el borde de la cámara (que ya está limitada: ampliar `bounds` en `BusinessScene` hasta donde llegue el arte) y se funde con niebla o perspectiva;
+   - rendimiento: el entorno puede ser **una o dos imágenes grandes de fondo por negocio** (capas fijas, 1–2 texturas de ≤2048 px) más unos pocos sprites animados (coches, peatones). Mejor eso que cientos de piezas sueltas.
+6. **Piezas del mundo para las mecánicas de Miami y Dubái** (`TwistWorld`, igual que la furgoneta, el crítico, el directo y el monitor de Madrid). Hoy allí solo hay tarjeta; al tener el arte, añadir el negocio a `TWIST_WORLD_ART` en `src/game/twists.ts` y su clave en `twistPresentation`:
+   - pedidos: lancha de excursión (yates), cartel «Vendido» con comprador (inmobiliaria), jeque con llaves (superdeportivos), joyero con estuche (zoco);
+   - visitas: foodie con móvil y aro de luz (food trucks), inspector con libreta y lupa (hotel);
+   - hype: cabina de DJ con luces (club de playa), fotógrafo con trípode al atardecer (safari);
+   - investigación: rack de minería con luces (cripto), mesa de planos con casco (rascacielos).
+
+Recordatorios técnicos:
+- el canvas va a x2 como mucho (`DPR`);
+- las imágenes se cargan en WebP: después de añadir PNG, ejecutar `npm run art:webp`;
+- comprobar en 390×844 con «reducir movimiento» activado en el sistema: el mundo se tiene que mover igual.
+
+Verificaciones: 221 tests y build de producción correctos; cobertura de todas las claves de lujo y Dubái, límites reales de los atlas, 122 comprobaciones de navegador, compra/equipamiento, visitantes, rangos, ausencia de desbordamientos y errores JS, y movimiento reducido. Se conserva Madrid y sus tres frames de caminar originales 132×180 con el mismo apoyo. Se mantienen los efectos de monedas, rangos, colecciones y celebraciones existentes. La prueba en móvil físico de gama media y la revisión nativa siguen siendo necesarias antes de publicar: Chromium con renderizado software no permite certificar esos resultados.
+
+## Ampliación final — animación, entorno y mecánicas
+
+La revisión posterior completa las cinco mejoras acordadas. Se añaden **18 PNG de animación** y **74 frames registrados en tres atlas** (algunos sustituyen claves existentes), manteniendo el resto del arte. Sin modificaciones en `src/game/*`.
+
+| Familia y claves | Tamaño lógico / fuente | Uso e integración |
+| --- | --- | --- |
+| `ch_{mechanic,valet,butler,guide,goldsmith,builder}_{0,1,2}` | 44×60; cada PNG 132×180 | Tres poses reales: quieto, paso izquierdo y paso derecho. Lienzo y apoyo comunes; cuerpo dentro de y=8…177. `public/sprites/ch_*.png` y manifest; prevalecen sobre los alias del atlas anterior. Se conservan uniformes y herramientas en la misma mano |
+| `decor_<negocio>_{2,3}` para los 14 negocios | 66×80, ajustado a proporción; `business-decor.png`, 1659×948 | 28 clusters propios: logística, terraza, grabación, hologramas, picnic, surf, marina, piscina, terminales cripto, exposición de coches, fuente, safari, joyería y obra. La categoría 3 añade arquitectura y equipamiento, no solo color. Se integran en el enganche `drawTierDecor` existente |
+| `st_<negocio>_r{4,5}` y `wh_shelf_r{4,5}` | Misma caja lógica del puesto base; `stations-premium.png`, 1482×1061 | 28 puestos Diamante/Leyenda más dos referencias del almacén: maquinaria y estructura específicas, cian/cromo y oro/violeta. `rankedKey` encuentra primero el atlas; los demás rangos, trabajadores y vehículos siguen la composición que conserva sus poses |
+| `veh_order`, `ch_critic_0`, `prop_broadcast`, `prop_research` | 82×60, 66×66, 74×68, 78×70 | `world-details.png`, 1536×1024. Pedido en furgoneta, crítico sentado, equipo con lámpara roja de directo y monitor holográfico. `TwistWorld` muestra/retira la pieza, rótulo traducido y progreso sobre el sprite, evitando la fila de controles. Lectura del estado con `twistPresentation`, sin acciones económicas |
+| `tree_0`, `tree_1`, `palm`, `bush`, `bench`, `lamp_post`, `recycling_bin`, `desert_palm` | 56×72, 48×76, 60×84, 36×24, 44×36, 16×56, 26×40, 60×84 | Mismo atlas. Vegetación y mobiliario original que reemplazan los respaldos procedurales; palmera datilera propia de Dubái |
+| `tile_{madrid,miami,dubai}_ground`, `tile_path` | Ancho 88; altura según proporción del rombo 2:1 y grosor | Mismo atlas. Piedra urbana, mosaico tropical y piedra clara con incrustaciones doradas. `placeTile` ahora admite frames compartidos de atlas además de PNG individuales. Carreteras y geometría funcional siguen en código |
+
+Registro exacto: `src/art/completionFrames.ts` y los tres JSON del directorio generado. Las fuentes de animación y sus recortes están en `public/sprites/source/dubai-walk.{png,json}` y no se cargan en el juego. Los PNG normalizados tienen resolución fija y ancla común; no se modifica la imagen fuente. Los atlas permanecen por debajo de 2048 px; las celdas premium no superan 384 px. Las variantes compuestas siguen limitadas a 300×258 y se crean al usarse. No se añaden emisores de partículas permanentes.
+
+### Prompts y reproducción
+
+Dirección común: **production-ready original premium mobile idle tycoon, polished toy-like 3D, clean navy outlines, warm top-left light, transparent RGBA, isolated equal grid cells with generous gutters, no text, no real logos**.
+
+- **Animación, 6×3:** reference the six existing workers, keep recognizable faces/uniforms/equipment; column order mechanic, valet, butler, desert guide, goldsmith, builder; rows idle, left-leg step, right-leg step. Same facing, scale and ground anchor. Edición de continuidad: correct bottom-row mechanic wrench and builder blueprint to the same anatomical hand/arm as the first two rows; do not mirror the characters.
+- **Decoración, 7×4:** rows 1–2 tier2 of warehouse, restaurant, video studio, AI lab, food truck, beach club, marina, real estate, crypto, supercar showroom, hotel, safari, gold souk, construction tower; rows 3–4 matching tier3 richer architecture/equipment. Madrid brick/teal, Miami coral/turquoise, Dubai cream/gold.
+- **Puestos premium, 7×4:** preserve reference station equipment and isometric angle; first 14 cells diamond chrome/cyan, next 14 legendary gold/violet; warehouse robotic picker, kitchen extraction hood, video multi-camera editing, AI holo servers, extendable food-truck kitchen, glass-canopy tiki bar, yacht gangway, property model, trading terminal, diagnostics gantry, hotel canopy, safari shade rig, precision goldsmith, automated construction lifting. Structural upgrades, not global recolor.
+- **Entorno, 4×4:** express parcel van with clock, seated burgundy critic with monocle/notebook/table, red broadcast lamp and play symbol, holographic server monitor; two urban trees, tropical palm, flowering shrub; bench, street lamp, recycling bin, date palm; four understated diamond pavement tiles.
+
+```sh
+python scripts/register-completion-atlases.py
+python scripts/register-worker-poses.py
+node scripts/export-worker-poses.mjs
+npm test
+npm run build
+npm run capture:visuals
+node scripts/capture-ranks.mjs                  # Vite en 5173
+```
+
+Python necesita Pillow/NumPy/SciPy; las exportaciones usan Chromium (`CHROMIUM_PATH`). Solo son necesarias para editar/reproducir, no para ejecutar el juego. La captura automatizada valida los 18 apoyos, las cuatro piezas físicas, las variantes de rango y la UI en español/inglés a 320/390/560 px, con Supabase simulado. Las pruebas comprueban que la presentación no cambia plazos, aceptación o recompensas. Pendiente únicamente la validación nativa/física indicada arriba.
+
+Limpieza final del atlas de decoración: se sustituyeron los símbolos de criptomonedas reconocibles por una moneda con estrella y nodos de red originales, y se pidieron frontales de joyería sin letras. Las fuentes PNG y recortes entregados son los utilizados en la validación final.
+
+### Miami: ciclos de personajes (5 de octubre de 2026)
+
+Los 12 roles propios de Miami tienen ahora tres PNG individuales de 132×180:
+`taquero`, `skater`, `vendor`, `bartender`, `promoter`, `captain`, `sailor`,
+`agent`, `broker`, `clerk`, `coder` y `trader`. Incluyen reposo y dos pasos;
+conservan su vestuario, patines, herramientas y la mano que lleva cada objeto.
+La base común está en y=178. Los PNG individuales prevalecen sobre los alias
+quietos del atlas; también se exportan a WebP para el cargador actual.
+
+Los originales y recortes están en `public/sprites/source/miami-walk-{a,b}.{png,json}`.
+Receta reproducible: `python scripts/register-miami-poses.py`,
+`node scripts/export-miami-poses.mjs` y `npm run art:webp`.
+Los contactos de revisión están en `docs/visual-review/miami-walk-{a,b}.png`.
+
+### Mundo integrado y pantalla limpia — entregado el 5 de octubre de 2026
+
+El encargo de la beta 2 está integrado en `Neighborhood.ts`, compartido por las
+ciudades y los 14 negocios. La rejilla jugable continúa tres casillas hacia fuera
+con aceras y avenidas, sin la antigua pared vertical de la isla. Una transición
+atmosférica suaviza el perímetro. Se añaden seis conjuntos de edificios vecinos,
+árboles y farolas; Miami tiene playa, paseo, embarcadero y yate. Los límites de
+cámara incluyen los edificios de fondo y el suelo exterior.
+
+| Claves | Tamaño lógico / PNG | Uso |
+| --- | --- | --- |
+| `district_madrid` | 270×190 / 540×380 | Tejados rojos, casas cálidas y sierra |
+| `district_miami` | 270×190 / 540×380 | Fachadas pastel, palmeras, playa y muelle |
+| `district_dubai` | 270×190 / 540×380 | Arquitectura crema/dorada, dunas y torres |
+| `district_industrial` | 270×190 / 540×380 | Almacén: naves, carga, aparcamiento |
+| `district_terrace` | 270×190 / 540×380 | Restaurante: calle de casas y terrazas |
+| `district_neon` | 270×190 / 540×380 | TikTok/IA: estudios, antenas y luces cian/violeta |
+
+Original: `public/sprites/source/neighborhoods.png`; recortes:
+`neighborhoods.json`. Exportación: `node scripts/export-neighborhoods.mjs`,
+seguida de `npm run art:webp`. Los PNG/WebP tienen transparencia y se cargan
+mediante el manifest existente; no se añade una textura gigante al juego.
+
+Prompt: original 3×2 atlas, six isolated transparent isometric 2:1 neighborhood
+dioramas, polished chibi toy3D warm top-left light navy contours. Madrid ochre
+houses red tile roofs and distant mountains; Miami coral/turquoise art-deco
+beachfront palms pier sand; Dubai cream/gold low buildings towers dunes;
+industrial loading bays crates parking van chimney; Spanish restaurant street
+colorful houses cafe umbrellas trees; neon creator district purple/teal studios
+filming equipment rooftop antennas. Connected wide shallow footprints, generous
+transparent gutters, no labels, logos or text.
+
+Vida ambiental: seis peatones y tres pájaros por escena; un yate adicional en
+Miami. Farolas con halo nocturno. Movimiento con `calmWorld()`: la preferencia
+del sistema reduce efectos fuertes, y el ajuste explícito del juego pausa la
+vida ambiental. No hay emisiones continuas de partículas ni actores ilimitados.
+
+La cabecera tiene una sola fila; el estilo de vida pasa al menú existente.
+La cadena inferior conserva los tres controles con etiquetas más discretas y
+sin pulsación continua. Mi vida sigue accesible en el menú. Las cantidades de
+los puestos aparecen al tocarlos durante 3,5 segundos o al acumular diez ciclos
+de producción; productos y barras siguen visibles. No cambia `src/game/*`.
+
+Validación de esta entrega: 225 tests, build de producción, 158 comprobaciones
+completas de navegador y 43 en la pasada final, sin errores. Se renuevan las
+capturas y gráfico de tienda. Galería e informes en `docs/visual-review/README.md`.
+La validación de rendimiento en Android físico sigue pendiente.
