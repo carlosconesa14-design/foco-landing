@@ -211,3 +211,12 @@ Los cambios se aplican en el siguiente cierre. Para respetar las bases, cámbial
 - verificar el dispositivo con Play Integrity (necesita un proyecto de Google Cloud);
 - verificar el email del ganador con un código;
 - revisar a mano los historiales de los ganadores (`league_events`).
+
+## Premios en la landing page
+
+La landing enseña los premios de la semana en curso, la cuenta atrás, cuántos compiten (a partir de 20) y los últimos ganadores. Los pide a la función `league` con `{ action: "prizes" }`, que es pública, sin cuenta (función SQL `league_prizes`, migración 0018).
+
+- **Sin premios en dinero:** con `prize_cents` a 0, como ahora, la landing enseña los diamantes.
+- **Con premios en dinero:** en cuanto pongas importes en `prize_cents`, la landing enseña los euros y la banda de la portada pasa a decir «Premios en dinero cada semana».
+
+No hay que tocar la web. Antes de poner dinero, las bases tienen que estar completas: importes, organizador y fiscalidad.
