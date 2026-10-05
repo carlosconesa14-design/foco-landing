@@ -1,4 +1,5 @@
 import { TwistWorld } from "./TwistWorld";
+import { TWIST_WORLD_ART } from "../game/twists";
 import { WorldVisitor } from "./WorldVisitor";
 import type { OfferKind } from "../game/offers";
 import { money, t } from "../i18n";
@@ -263,7 +264,7 @@ export class BusinessScene extends Phaser.Scene {
     }
     const focus = this.iso(...this.layout.focus);
     this.drag.addControls(focus, { left: margin - TW / 2 - 40, top: this.oy - (this.restaurant || this.warehouse ? 75 : ART[hubKey].h), right: this.worldW - margin + 40, bottom: this.oy + (COLS + ROWS + 1) * TH / 2 + 20 });
-    this.twistWorld = new TwistWorld(this,this.bizId,this.iso(this.bizId === "restaurant" ? 7.6 : this.bizId === "dropship" ? 1.5 : 6.9, 8.7));
+    if (TWIST_WORLD_ART.includes(this.bizId)) this.twistWorld = new TwistWorld(this,this.bizId,this.iso(this.bizId === "restaurant" ? 7.6 : this.bizId === "dropship" ? 1.5 : 6.9, 8.7));
     revealScene(this);
   }
 

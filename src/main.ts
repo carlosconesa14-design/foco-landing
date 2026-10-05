@@ -526,9 +526,12 @@ function updateWave(now: number): void {
   const el = document.getElementById("wave")!;
   const tw = tourism(S, now);
   const g = gold(S, now);
-  el.hidden = !tw && !g;
+  // Pantalla limpia: si ya hay una tarjeta del negocio, la de la ola o el oro solo sale cuando está activa.
+  const busy = !document.getElementById("twist")!.hidden;
+  const quiet = busy && ((tw && !tw.active) || (g && !g.locked && g.mult < GOLD.max * 0.9));
+  el.hidden = (!tw && !g) || !!quiet;
   el.classList.toggle("gold", !!g);
-  if (!tw && !g) return;
+  if (el.hidden) return;
   el.style.bottom = `${document.getElementById("bar")!.offsetHeight + 10}px`;
   const btn = document.getElementById("waveBtn") as HTMLButtonElement;
   const txt = document.getElementById("waveTxt")!;

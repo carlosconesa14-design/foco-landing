@@ -103,6 +103,22 @@ const ownLuxury = (s: GameState, upTo: number) => {
 };
 
 describe("ritmo del jugador implicado (mecánicas y «Mi vida»): más rápido, pero no rompe el juego", () => {
+  it("Miami: el exchange de cripto sigue pidiendo más de 40 h", () => {
+    const res = simulate({
+      hours: 70,
+      dt: 2,
+      city: "miami",
+      engaged: { luxShare: 0.25 },
+      setup: (s) => {
+        s.world.completed = ["madrid"];
+        s.world.upgrades = { brand: 1, team: 1, floors: 1 };
+        applyStartPerks(s);
+        ownLuxury(s, 1e20);
+      },
+    });
+    expect(res.at["biz_crypto"]).toBeGreaterThan(40 * h); // ~51 h (bot normal ~77 h)
+  });
+
   it("Madrid: la IA llega antes que con el bot normal, pero no antes de 10 h", () => {
     const res = simulate({ hours: 24, dt: 2, engaged: { luxShare: 0.25 } });
     expect(res.at["biz_tiktok"]).toBeGreaterThan(2 * h);
@@ -110,7 +126,9 @@ describe("ritmo del jugador implicado (mecánicas y «Mi vida»): más rápido, 
     expect(res.at["biz_ai"]).toBeLessThan(20 * h);
   });
 
-  it("Dubái: el rascacielos sigue pidiendo más de 2 días y medio", () => {
+  // Con las mecánicas propias de Dubái (encargos, inspector, atardecer viral, joyas e ingeniería)
+  // el implicado llega en ~57 h, frente a ~106 h del bot normal: es la cota alta (siempre mirando).
+  it("Dubái: el rascacielos sigue pidiendo más de 2 días", () => {
     const res = simulate({
       hours: 100,
       dt: 2,
@@ -123,6 +141,6 @@ describe("ritmo del jugador implicado (mecánicas y «Mi vida»): más rápido, 
         ownLuxury(s, 1e28);
       },
     });
-    expect(res.at["biz_tower"]).toBeGreaterThan(60 * h);
+    expect(res.at["biz_tower"]).toBeGreaterThan(50 * h);
   });
 }, 600_000);

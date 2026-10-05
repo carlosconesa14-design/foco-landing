@@ -649,6 +649,17 @@ Opinión de Carlos jugando en el móvil (2 de octubre):
    - Tampoco se puede alejar más de lo que hace falta para ver la zona entera.
    - **Si Codex dibuja el mundo de alrededor, tiene que ampliar `bounds`** en `CityScene` y `BusinessScene` hasta donde llegue el arte. Así se puede mirar alrededor sin ver nunca el vacío.
 
+5. *«¿No hay que encargar que en la pantalla de un negocio no se vea solo el negocio, sino el negocio integrado en una ciudad parecida?»* — Sí, es la parte más importante del punto 3. **Cada pantalla de negocio tiene que parecer un trozo de su ciudad**, no una parcela flotando sobre verde:
+   - alrededor del recinto, la misma ciudad que se ve en el mapa: calles con tráfico, aceras con peatones, fachadas y tejados vecinos (sin entrar), farolas y árboles;
+   - el negocio, en su sitio lógico. Madrid: almacén en un polígono con naves vecinas, restaurante en una calle del centro con terrazas, TikTok en un barrio con neones, IA en un parque tecnológico. Miami: paseo marítimo, playa, puerto deportivo, frente costero, distrito financiero. Dubái: avenida de concesionarios, frente de hoteles, dunas, zoco con callejuelas, zona de rascacielos en obras;
+   - el fondo continúa hasta el borde de la cámara (que ya está limitada: ampliar `bounds` en `BusinessScene` hasta donde llegue el arte) y se funde con niebla o perspectiva;
+   - rendimiento: el entorno puede ser **una o dos imágenes grandes de fondo por negocio** (capas fijas, 1–2 texturas de ≤2048 px) más unos pocos sprites animados (coches, peatones). Mejor eso que cientos de piezas sueltas.
+6. **Piezas del mundo para las mecánicas de Miami y Dubái** (`TwistWorld`, igual que la furgoneta, el crítico, el directo y el monitor de Madrid). Hoy allí solo hay tarjeta; al tener el arte, añadir el negocio a `TWIST_WORLD_ART` en `src/game/twists.ts` y su clave en `twistPresentation`:
+   - pedidos: lancha de excursión (yates), cartel «Vendido» con comprador (inmobiliaria), jeque con llaves (superdeportivos), joyero con estuche (zoco);
+   - visitas: foodie con móvil y aro de luz (food trucks), inspector con libreta y lupa (hotel);
+   - hype: cabina de DJ con luces (club de playa), fotógrafo con trípode al atardecer (safari);
+   - investigación: rack de minería con luces (cripto), mesa de planos con casco (rascacielos).
+
 Recordatorios técnicos:
 - el canvas va a x2 como mucho (`DPR`);
 - las imágenes se cargan en WebP: después de añadir PNG, ejecutar `npm run art:webp`;

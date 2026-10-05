@@ -8,9 +8,11 @@ const NOW = Date.UTC(2026, 9, 2, 12);
 const fixed = () => 0;
 
 describe("mecánicas de cada negocio", () => {
-  it("cada negocio de Madrid tiene la suya", () => {
+  it("cada negocio de cada ciudad tiene la suya, con la investigación en el último", () => {
     expect(["dropship", "restaurant", "tiktok", "ai"].map(tw.twistOf)).toEqual(["orders", "critic", "hype", "research"]);
-    expect(tw.twistOf("foodtruck")).toBeNull();
+    expect(["foodtruck", "beachclub", "yachts", "realestate", "crypto"].map(tw.twistOf)).toEqual(["critic", "hype", "orders", "orders", "research"]);
+    expect(["supercars", "hotel", "safari", "souk", "tower"].map(tw.twistOf)).toEqual(["orders", "critic", "hype", "orders", "research"]);
+    expect(tw.twistOf("nada")).toBeNull();
   });
 
   it("pedido urgente: se ofrece, se acepta, se cumple y se cobra (x2 con anuncio)", () => {
