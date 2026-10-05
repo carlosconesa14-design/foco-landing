@@ -45,9 +45,8 @@ export class RestaurantRoom {
     for (let r=0;r<10;r++) for(let c=0;c<9;c++) {
       const kitchen = r < 4.4;
       this.quad(g,c,r,1,1,r===9 ? 0x4a5861 : kitchen ? ((c+r)%2 ? 0xe7e5d8 : 0xd6ded4) : ((c+r)%2 ? 0xe8be94 : 0xf1cba7));
-      const p=this.iso(c+0.5,r+0.5);
       if (r!==9) {
-        g.lineStyle(1,kitchen?0xffffff:0xb98a64,0.45).lineBetween(p.x-44,p.y,p.x,p.y+22).lineBetween(p.x,p.y+22,p.x+44,p.y);
+        { const e=this.iso(c+1,r+1),w=this.iso(c,r+1),n=this.iso(c+1,r); g.lineStyle(1,kitchen?0xffffff:0xb98a64,0.45).lineBetween(w.x,w.y,e.x,e.y).lineBetween(e.x,e.y,n.x,n.y); }
       } else {
         const a=this.iso(c+0.3,r+0.5),b=this.iso(c+0.7,r+0.5);
         g.lineStyle(2,0xffe6a4).lineBetween(a.x,a.y,b.x,b.y);
@@ -64,7 +63,8 @@ export class RestaurantRoom {
     wall.lineStyle(6,0xa64b43).lineBetween(a.x,a.y-48,b.x,b.y-48);
     for (let col=0;col<9;col++) {
       const p=this.iso(col+0.5,0);
-      wall.fillStyle(col%2?0xfff4d7:0xbc5347).fillPoints([{x:p.x-22,y:p.y-46},{x:p.x+22,y:p.y-24},{x:p.x+22,y:p.y-15},{x:p.x-22,y:p.y-37}].map(v=>new Phaser.Math.Vector2(v.x,v.y)),true);
+      const hx=(this.iso(1,0).x-this.iso(0,0).x)/2,hy=(this.iso(1,0).y-this.iso(0,0).y)/2;
+      wall.fillStyle(col%2?0xfff4d7:0xbc5347).fillPoints([{x:p.x-hx,y:p.y-35-hy},{x:p.x+hx,y:p.y-35+hy},{x:p.x+hx,y:p.y-26+hy},{x:p.x-hx,y:p.y-26-hy}].map(v=>new Phaser.Math.Vector2(v.x,v.y)),true);
     }
     const sign=this.iso(4.4,0);
     label(this.scene,sign.x,sign.y-57,t("LA TERRAZA"),17,"#fff4d3",{display:true,stroke:"#763e37"}).setDepth(0);

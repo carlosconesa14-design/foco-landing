@@ -89,6 +89,9 @@ export class Neighborhood {
    */
   private district(scene:Phaser.Scene,o:Options&{biz:string}){
     const {iso,cols,rows,city,biz}=o;
+    // Tile size in pixels (the business screens use a wider grid than the 88×44 base) and the
+    // matching scale for the neighbours, so blocks stay full.
+    const hx=iso(1,0).x-iso(0,0).x,hy=iso(1,0).y-iso(0,0).y,k=hx/44;
     const mid=Math.floor(cols/2),E=10,R=6; // E: extent of the drawn world; R: outer road distance
     const miami=city==='miami',dubai=city==='dubai';
     const own=BUSINESS_DISTRICTS[biz]??city;
@@ -120,7 +123,7 @@ export class Neighborhood {
     const dist=(c:number,r:number)=>Math.max(-c,c-cols+1,-r,r-rows+1);
     for(let r=-E;r<rows+E;r++)for(let c=-E;c<cols+E;c++){
       if(inPlay(c,r))continue;
-      const p=iso(c,r),pts=[{x:p.x,y:p.y},{x:p.x+44,y:p.y+22},{x:p.x,y:p.y+44},{x:p.x-44,y:p.y+22}];
+      const p=iso(c,r),pts=[{x:p.x,y:p.y},{x:p.x+hx,y:p.y+hy},{x:p.x,y:p.y+2*hy},{x:p.x-hx,y:p.y+hy}];
       const d=dist(c,r),fade=d>R+1?Math.max(.35,1-(d-R-1)*.2):1;
       if(sea(c)){
         ground.fillStyle(0x5cc0d4,1).fillPoints(pts,true);
@@ -131,15 +134,15 @@ export class Neighborhood {
         ground.fillStyle(mix(0x4d5b68,pal.far,1-fade),1).fillPoints(pts,true);
         const alongC=(r===-1||r===rows||r===-R-1||r===rows+R||r===mid)&&!(c===-1||c===cols||c===-R-1||c===cols+R||c===mid);
         const alongR=!alongC&&!(r===-1||r===rows||r===-R-1||r===rows+R||(r===mid&&(c<-1||c>cols)));
-        if(alongC&&(c&1))ground.lineStyle(2,0xf2e6b0,.55*fade).lineBetween(p.x-12,p.y+16,p.x+12,p.y+28);
-        if(alongR&&(r&1))ground.lineStyle(2,0xf2e6b0,.55*fade).lineBetween(p.x+12,p.y+16,p.x-12,p.y+28);
+        if(alongC&&(c&1))ground.lineStyle(2,0xf2e6b0,.55*fade).lineBetween(p.x-12*k,p.y+hy-6*k,p.x+12*k,p.y+hy+6*k);
+        if(alongR&&(r&1))ground.lineStyle(2,0xf2e6b0,.55*fade).lineBetween(p.x+12*k,p.y+hy-6*k,p.x-12*k,p.y+hy+6*k);
         continue;
       }
       const nearRoad=[[1,0],[-1,0],[0,1],[0,-1]].some(([dc,dr])=>road(c+dc,r+dr)||inPlay(c+dc,r+dr));
       const base=beach(c)?0xf1dfb4:dubai&&d>R+1?0xe6c992:nearRoad?pal.walk:pal.lot;
       ground.fillStyle(mix(base,pal.far,Math.max(.18,1-fade)),1).fillPoints(pts,true);
       ground.lineStyle(1,mix(base,0x000000,.12),.35*fade).strokePoints(pts,true);
-      if(!nearRoad&&!beach(c)&&(c*7+r*3)%5===0)ground.fillStyle(0xffffff,.1*fade).fillCircle(p.x+6,p.y+22,2.5);
+      if(!nearRoad&&!beach(c)&&(c*7+r*3)%5===0)ground.fillStyle(0xffffff,.1*fade).fillCircle(p.x+6,p.y+hy,2.5);
     }
     // Neighbouring buildings: the same trade around the plot (warehouses beside the warehouse…),
     // the rest of the city further out.
@@ -157,7 +160,7 @@ export class Neighborhood {
       if(beach(Math.floor(cc))||(dubai&&alpha<1))return;
       // In front of the plot (screen-below it) a tall building would hide the business: a car park instead.
       if(alpha===1&&(cc>cols||rr>rows)&&Math.abs(cc-rr)<cols+2){parking(cc,rr);return;}
-      const key=pick(list),wide=key.startsWith('district_'),scale=alpha<1?1:1.1,half=(wide?1.5:1)*scale;
+      const key=pick(list),wide=key.startsWith('district_'),scale=(alpha<1?1:1.1)*k,half=(wide?1.5:1)*(alpha<1?1:1.1);
       const p=iso(cc+half,rr+half);
       const img=art(scene,p.x,p.y,key).setOrigin(.5,1).setDepth(p.y).setFlipX(seed%3===0);
       this.feet.push({c0:cc-half,r0:rr-half,c1:cc+half,r1:rr+half,depth:p.y});

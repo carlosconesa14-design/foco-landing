@@ -22,8 +22,13 @@ import { cityDef, type BusinessState } from "../game/state";
 import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, floatText, label, setupCamera, type Bridge, calmWorld } from "./common";
 
 /* Rejilla isométrica del recinto */
-const TW = 88;
-const TH = 44;
+/**
+ * Separación del recinto: la rejilla es un 40 % más ancha que la baldosa base (88×44) y los dibujos
+ * conservan su tamaño. Así los puestos, los caminos y las zonas quedan más separados y manejables.
+ */
+const SPREAD = 1.4;
+const TW = 88 * SPREAD;
+const TH = 44 * SPREAD;
 const COLS = 9;
 const ROWS = 9;
 const ROAD_ROW = 9;
@@ -260,7 +265,7 @@ export class BusinessScene extends Phaser.Scene {
     this.makeActors();
     this.makeParticles();
 
-    this.drag = new DragScroll(this, this.worldW, worldH, { zoom: this.start.z ?? (this.warehouse ? 0.8 : 0.75), minZoom: 0.3, maxZoom: 1.4, memoryKey: `business:${this.bridge.state().city}:${this.bizId}` });
+    this.drag = new DragScroll(this, this.worldW, worldH, { zoom: this.start.z ?? (this.warehouse ? 0.66 : 0.62), minZoom: 0.3, maxZoom: 1.4, memoryKey: `business:${this.bridge.state().city}:${this.bizId}` });
     if (this.start.x >= 0) this.drag.scrollTo(this.start.x, this.start.y);
     else if (!this.drag.restore()) {
       // Arrancar viendo el edificio principal y la primera fila de puestos
@@ -317,7 +322,7 @@ export class BusinessScene extends Phaser.Scene {
         const cx = t.x;
         const cy = t.y + TH / 2;
         const tileKey = kind === "road" ? "tile_road_c" : kind === "path" ? "tile_path" : `tile_biz_${this.bizId}`;
-        if (placeTile(this, cx, t.y, tileKey, tileRand)) continue;
+        if (placeTile(this, cx, t.y, tileKey, tileRand, TW)) continue;
         if (kind === "road") {
           g.fillStyle(0x46586a, 1).fillPoints(this.diamond(c, r), true);
           const quad=(r0:number,r1:number) => [this.iso(c,r0),this.iso(c+1,r0),this.iso(c+1,r1),this.iso(c,r1)].map(p=>new Phaser.Math.Vector2(p.x,p.y));

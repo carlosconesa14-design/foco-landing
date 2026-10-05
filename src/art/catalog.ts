@@ -839,14 +839,14 @@ for (const key of TILE_KEYS) for (const v of ["", "_1", "_2", "_3"]) def(key + v
  * Pone la baldosa en PNG de esa clave (o una de sus variantes) con el vértice de arriba en (x, yTop).
  * Devuelve false si no hay PNG, para que la escena dibuje el suelo por código.
  */
-export function placeTile(scene: Phaser.Scene, x: number, yTop: number, key: string, rand: () => number): boolean {
+export function placeTile(scene: Phaser.Scene, x: number, yTop: number, key: string, rand: () => number, width = 88): boolean {
   const options = [key, `${key}_1`, `${key}_2`, `${key}_3`].filter((k) => scene.textures.exists(k) || hasGeneratedArt(scene,k));
   if (!options.length) return false;
   const k = options[Math.floor(rand() * options.length)];
   const ref = artRef(scene,k);
   const src = scene.textures.getFrame(ref.texture,ref.frame);
   const img = scene.add.image(x, yTop, ref.texture,ref.frame).setOrigin(0.5, 0).setDepth(-10);
-  img.setDisplaySize(88, (88 * src.height) / src.width);
+  img.setDisplaySize(width, (width * src.height) / src.width);
   return true;
 }
 
