@@ -33,8 +33,7 @@ export class WarehouseRoom {
     for(let row=0;row<10;row++) for(let col=0;col<9;col++) {
       const base = row===9 ? 0x48575b : ((col+row)%2 ? 0xd8d8d0 : 0xcecfc7);
       this.quad(ground,col,row,1,1,base);
-      const p=this.iso(col+.5,row+.5);
-      if(row<9) ground.lineStyle(1,0xf1f0e8,.3).lineBetween(p.x-44,p.y,p.x,p.y+22).lineBetween(p.x,p.y+22,p.x+44,p.y);
+      if(row<9) { const e=this.iso(col+1,row+1),w=this.iso(col,row+1),n=this.iso(col+1,row); ground.lineStyle(1,0xf1f0e8,.3).lineBetween(w.x,w.y,e.x,e.y).lineBetween(e.x,e.y,n.x,n.y); }
       else {
         const a=this.iso(col+.25,row+.5),z=this.iso(col+.75,row+.5);
         ground.lineStyle(2,0xf4d15b,.9).lineBetween(a.x,a.y,z.x,z.y);
