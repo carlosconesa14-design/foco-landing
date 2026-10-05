@@ -115,7 +115,8 @@ export class Neighborhood {
       if(r===mid&&(c<-1||c>cols))return true;
       return false;
     };
-    const ground=scene.add.graphics().setDepth(-16);
+    // Under everything: the far blocks sit at negative screen y, below any small negative depth.
+    const ground=scene.add.graphics().setDepth(-1e6);
     const dist=(c:number,r:number)=>Math.max(-c,c-cols+1,-r,r-rows+1);
     for(let r=-E;r<rows+E;r++)for(let c=-E;c<cols+E;c++){
       if(inPlay(c,r))continue;
@@ -165,7 +166,7 @@ export class Neighborhood {
     };
     const parkedCars=miami?['car_miami_0','car_miami_1']:['car_0','car_1','car_2','car_3','van'];
     const parking=(cc:number,rr:number)=>{
-      const lot=scene.add.graphics().setDepth(-15);
+      const lot=scene.add.graphics().setDepth(-1e6+1);
       const q=(c:number,r:number)=>iso(c,r);
       const corners=[q(cc-1.5,rr-1.5),q(cc+1.5,rr-1.5),q(cc+1.5,rr+1.5),q(cc-1.5,rr+1.5)];
       lot.fillStyle(mix(0x5b6773,pal.far,.3),1).fillPoints(corners,true);
