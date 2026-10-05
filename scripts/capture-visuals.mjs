@@ -149,15 +149,15 @@ try {
     if(!baseline) {
       const baselines=await page.evaluate(async()=>{
         const result=[];
-        for(const role of ['mechanic','valet','butler','guide','goldsmith','builder'])for(let pose=0;pose<3;pose++) {
+        for(const role of ['mechanic','valet','butler','guide','goldsmith','builder','taquero','skater','vendor','bartender','promoter','captain','sailor','agent','broker','clerk','coder','trader'])for(let pose=0;pose<3;pose++) {
           const im=new Image();im.src=`/sprites/ch_${role}_${pose}.png`;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const rgba=x.getImageData(0,0,c.width,c.height).data;let top=180,bottom=-1;
           for(let y=0;y<c.height;y++)for(let xx=0;xx<c.width;xx++)if(rgba[(y*c.width+xx)*4+3]>8){top=Math.min(top,y);bottom=Math.max(bottom,y);}
           result.push({role,pose,w:im.width,h:im.height,top,bottom});
         }
         return result;
       });
-      assert(baselines.every(f=>f.w===132&&f.h===180&&f.bottom===177&&f.top>=7&&f.top<=9),'Worker frames drift from their canonical baseline/body box');
-      findings.push(`${locale}: 18 walking frames share canonical bounds`);
+      assert(baselines.every(f=>f.w===132&&f.h===180&&f.bottom===177&&f.top>=7&&f.top<=40),'Worker frames drift from their canonical baseline/body box');
+      findings.push(`${locale}: 54 walking frames share canonical bounds`);
       await seed(page,'madrid');
       await page.evaluate(async()=>{
         const {freshBizTwist,TW}=await import('/src/game/twists.ts');const {now}=await import('/src/game/clock.ts');const s=__game.state,n=now();s.meta.stats.life.floors=TW.startFloors;

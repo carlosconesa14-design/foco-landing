@@ -27,3 +27,13 @@ La ampliación entrega ciclos reales y puestos premium específicos:
 Las tarjetas existentes conservan sus botones y recompensas; los sprites reflejan su estado. No se modifican los sistemas económicos.
 
 `final-report.json` recoge la pasada final de 25 comprobaciones después de la limpieza del atlas de decoración.
+
+La ampliación de Miami añade reposo y dos pasos a sus 12 roles propios:
+
+![Miami: restauración y costa](miami-walk-a.png)
+
+![Miami: navegación y oficinas](miami-walk-b.png)
+
+`miami-report.json`: 25 comprobaciones en Chromium después de integrar Miami,
+sin errores de carga ni JavaScript; verifica los 54 frames de Miami y Dubái.
+También pasan los 225 tests y la compilación de producción.

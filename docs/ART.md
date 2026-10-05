@@ -693,3 +693,17 @@ node scripts/capture-ranks.mjs                  # Vite en 5173
 Python necesita Pillow/NumPy/SciPy; las exportaciones usan Chromium (`CHROMIUM_PATH`). Solo son necesarias para editar/reproducir, no para ejecutar el juego. La captura automatizada valida los 18 apoyos, las cuatro piezas físicas, las variantes de rango y la UI en español/inglés a 320/390/560 px, con Supabase simulado. Las pruebas comprueban que la presentación no cambia plazos, aceptación o recompensas. Pendiente únicamente la validación nativa/física indicada arriba.
 
 Limpieza final del atlas de decoración: se sustituyeron los símbolos de criptomonedas reconocibles por una moneda con estrella y nodos de red originales, y se pidieron frontales de joyería sin letras. Las fuentes PNG y recortes entregados son los utilizados en la validación final.
+
+### Miami: ciclos de personajes (5 de octubre de 2026)
+
+Los 12 roles propios de Miami tienen ahora tres PNG individuales de 132×180:
+`taquero`, `skater`, `vendor`, `bartender`, `promoter`, `captain`, `sailor`,
+`agent`, `broker`, `clerk`, `coder` y `trader`. Incluyen reposo y dos pasos;
+conservan su vestuario, patines, herramientas y la mano que lleva cada objeto.
+La base común está en y=178. Los PNG individuales prevalecen sobre los alias
+quietos del atlas; también se exportan a WebP para el cargador actual.
+
+Los originales y recortes están en `public/sprites/source/miami-walk-{a,b}.{png,json}`.
+Receta reproducible: `python scripts/register-miami-poses.py`,
+`node scripts/export-miami-poses.mjs` y `npm run art:webp`.
+Los contactos de revisión están en `docs/visual-review/miami-walk-{a,b}.png`.
