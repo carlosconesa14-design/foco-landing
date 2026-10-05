@@ -14,7 +14,7 @@ import { migrateTwists, type TwistState } from "./twists";
 import { freshAuto, migrateAuto, type AutoState } from "./autoUpgrade";
 import { freshRival, migrateRival, type RivalState } from "./rival";
 import { migrateUnlocks, type FeatureId } from "./unlocks";
-import { ALL_BUSINESSES, CITIES, CONFIG, TUTORIAL, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
+import { ALL_BUSINESSES, CHAIN, CITIES, CONFIG, TUTORIAL, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
 
@@ -381,6 +381,15 @@ export function migrate(raw: unknown, now = clockNow()): GameState {
   if (r.buyMode === 1 || r.buyMode === 10 || r.buyMode === 50 || r.buyMode === "max") s.buyMode = r.buyMode;
   const biz = obj(r.biz);
   for (const def of cityDef(s.city).businesses) if (biz[def.id]) s.biz[def.id] = migrateBusiness(biz[def.id], def);
+  // Partidas de antes del reparto en bici (ya tenían el almacén): reciben el reparto completo y
+  // automatizado, para que no les pida empezar de cero ni contratar gerentes que no conocían.
+  if (s.city === "madrid" && !biz.bike && s.biz.dropship?.owned) {
+    const bike = freshBusiness(true);
+    bike.floors = Array.from({ length: CHAIN.maxFloors }, () => ({ ...freshFloor(), level: 10, managed: true, running: true }));
+    bike.transport.managed = bike.sale.managed = true;
+    bike.transport.level = bike.sale.level = 10;
+    s.biz.bike = migrateBusiness(JSON.parse(JSON.stringify(bike)), { price: 0 });
+  }
   const v = obj(r.view);
   if (v.scene === "business" && typeof v.id === "string" && s.biz[v.id]?.owned) s.view = { scene: "business", id: v.id };
   else if (v.scene === "city") s.view = { scene: "city" };

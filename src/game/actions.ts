@@ -1,5 +1,5 @@
 import { now as clockNow } from "./clock";
-import { CHAIN, CONFIG } from "./data";
+import { CHAIN, CONFIG, floorLabel } from "./data";
 import {
   bizDef,
   floorUnlockCost,
@@ -18,7 +18,7 @@ import { t } from "../i18n";
 
 export function stationName(id: string, st: Station): string {
   const def = bizDef(id);
-  if (st.kind === "floor") return `${def.floorName} ${st.index + 1}`;
+  if (st.kind === "floor") return floorLabel(def, st.index);
   return st.kind === "transport" ? def.transportName : def.saleName;
 }
 
@@ -59,7 +59,7 @@ export function unlockFloor(s: GameState, id: string): string | null {
   s.cash -= cost;
   b.floors.push(freshFloor());
   bump(s, "floors");
-  return t("¡Nuevo puesto: {name} {n}!", { name: bizDef(id).floorName, n: i + 1 });
+  return t("¡Nuevo puesto: {name}!", { name: floorLabel(bizDef(id), i) });
 }
 
 export function buyBusiness(s: GameState, id: string): string | null {

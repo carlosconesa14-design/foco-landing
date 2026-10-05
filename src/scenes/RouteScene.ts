@@ -4,8 +4,8 @@ import { ART, BIZ_ART, art, artScale, buildingKey, rankedKey } from "../art/cata
 import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
 import { mix, shade } from "../art/pen";
 import { BUSINESS_DISTRICTS } from "../art/businessWorld";
-import { CHAIN, TUTORIAL } from "../game/data";
-import { bizDef, bizList, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
+import { CHAIN, TUTORIAL, floorLabel } from "../game/data";
+import { bizDef, bizList, chainRates, floorUnlockCost, managerCost, setPedal, upgradeQuote, type Station } from "../game/economy";
 import { fmt } from "../game/format";
 import { rankInfo, rankOf } from "../game/ranks";
 import type { BusinessState } from "../game/state";
@@ -18,40 +18,45 @@ import { TwistWorld } from "./TwistWorld";
 import { WorldVisitor } from "./WorldVisitor";
 
 /**
- * Pantalla de un negocio «por plantas», al estilo de Idle Miner: arriba la sede y la calle (venta),
- * a la izquierda el montacargas (transporte) y debajo una planta por puesto. Solo se desplaza en
- * vertical y cada planta enseña lo mismo y en el mismo sitio: encargado, producto, puesto y nivel.
+ * Pantalla de un negocio «en ruta» (docs/DISENO_RUTA.md): arriba la sede y la venta; debajo, una
+ * ruta que baja en zigzag y en cada tramo horizontal hay una parada (un puesto). El transporte
+ * recorre la ruta recogiendo y sube a la sede. Solo se desplaza en vertical y cada parada enseña
+ * lo mismo en el mismo sitio: encargado, nombre, puesto, producto y el botón «Nivel» a la derecha.
  */
 
-const SHAFT_W = 66;
-const FLOOR_H = 150;
+const STOP_H = 172;
 const SURFACE_H = 250;
+const ROAD_W = 30;
+/** Negocio con «pedalear»: mantener pulsado al transporte lo acelera (economy.setPedal). */
+const PEDAL_BIZ = "bike";
 
-/** Colores de pared y suelo de las plantas de cada negocio. */
-const THEME: Record<string, { wall: number; floor: number; accent: number }> = {
-  dropship: { wall: 0xd9dde2, floor: 0x8e9aa6, accent: 0xf1c40f },
-  restaurant: { wall: 0xf3dcc0, floor: 0xb5654f, accent: 0xc0392b },
-  tiktok: { wall: 0xe2d9f5, floor: 0x6c5ce7, accent: 0xff6fb5 },
-  ai: { wall: 0xd6ebe8, floor: 0x2c3e50, accent: 0x1abc9c },
-  foodtruck: { wall: 0xf8e8bf, floor: 0xd17a3a, accent: 0xff9f43 },
-  beachclub: { wall: 0xfaeccb, floor: 0x0abde3, accent: 0x48dbfb },
-  yachts: { wall: 0xdcecf5, floor: 0x1e3799, accent: 0x48dbfb },
-  realestate: { wall: 0xeee9dc, floor: 0x8395a7, accent: 0xfeca57 },
-  crypto: { wall: 0xdcd6f0, floor: 0x341f97, accent: 0xff9f1a },
-  supercars: { wall: 0xe4e6ea, floor: 0x2f3640, accent: 0xe84118 },
-  hotel: { wall: 0xf5eddb, floor: 0x8c6d2e, accent: 0xc8a24a },
-  safari: { wall: 0xefd6a8, floor: 0xb7793d, accent: 0x8c5a2b },
-  souk: { wall: 0xf4e5c3, floor: 0x7d5a14, accent: 0xf6c344 },
-  tower: { wall: 0xdfe8ee, floor: 0x34495e, accent: 0x9fd3e6 },
+/** Colores del suelo y de la ruta de cada negocio (arte provisional, ver docs/ART.md). */
+const THEME: Record<string, { ground: number; road: number; line: number }> = {
+  bike: { ground: 0xd9e4c9, road: 0x56606e, line: 0xf5f1dc },
+  dropship: { ground: 0xd9dde2, road: 0x6b7480, line: 0xf1c40f },
+  restaurant: { ground: 0xf3dcc0, road: 0xb5654f, line: 0xfff4d7 },
+  tiktok: { ground: 0xe2d9f5, road: 0x3b2f73, line: 0xff6fb5 },
+  ai: { ground: 0xd6ebe8, road: 0x2c3e50, line: 0x1abc9c },
+  foodtruck: { ground: 0xf8e8bf, road: 0xc9a46a, line: 0xffffff },
+  beachclub: { ground: 0xfaeccb, road: 0xb98a5a, line: 0xf8e7c0 },
+  yachts: { ground: 0xbfe3ef, road: 0x9c6b3f, line: 0xf3d9b0 },
+  realestate: { ground: 0xdfead2, road: 0x5d6a77, line: 0xfeca57 },
+  crypto: { ground: 0xdcd6f0, road: 0x241a5e, line: 0xff9f1a },
+  supercars: { ground: 0xe4e6ea, road: 0x2f3640, line: 0xe84118 },
+  hotel: { ground: 0xf5eddb, road: 0x8c2f39, line: 0xc8a24a },
+  safari: { ground: 0xefd6a8, road: 0xb7793d, line: 0xf6e1b8 },
+  souk: { ground: 0xf4e5c3, road: 0x9a7b4f, line: 0xf6c344 },
+  tower: { ground: 0xdfe8ee, road: 0x7f8c8d, line: 0xf1c40f },
 };
 
 const isVehicle = (key: string) => key.startsWith("car_") || key.startsWith("veh_");
 const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_van: "car_2" };
 
-/** Botón grande de nivel (como el «Nivel 210» de Idle Miner): se ilumina si hay dinero para mejorar. */
+type Pt = { x: number; y: number };
+
+/** Botón grande de nivel: azul con flecha si se puede mejorar, naranja si es el atasco. */
 class LevelButton extends Phaser.GameObjects.Container {
   private bg: Phaser.GameObjects.Graphics;
-  private title: Phaser.GameObjects.Text;
   private value: Phaser.GameObjects.Text;
   private arrow: Phaser.GameObjects.Text;
   private look = "";
@@ -62,10 +67,10 @@ class LevelButton extends Phaser.GameObjects.Container {
     this.bw = w;
     this.bh = h;
     this.bg = scene.add.graphics();
-    this.title = label(scene, 0, -12, t("Nivel"), 13, "#ffffff", { bold: true }).setOrigin(0.5);
+    const title = label(scene, 0, -12, t("Nivel"), 13, "#ffffff", { bold: true }).setOrigin(0.5);
     this.value = label(scene, 0, 8, "1", 20, "#ffffff", { display: true, stroke: "#0b2440" }).setOrigin(0.5);
     this.arrow = label(scene, 0, -h / 2 - 10, "▲", 18, "#3ddc97", { bold: true, stroke: "#0b2440" }).setOrigin(0.5);
-    this.add([this.bg, this.title, this.value, this.arrow]);
+    this.add([this.bg, title, this.value, this.arrow]);
     this.setSize(w + 16, h + 20);
     scene.add.existing(this);
     this.paint(false, false);
@@ -93,8 +98,7 @@ class LevelButton extends Phaser.GameObjects.Container {
   }
 }
 
-interface FloorView {
-  y: number;
+interface StopView {
   station: Phaser.GameObjects.Image;
   worker: Phaser.GameObjects.Image;
   pile: Phaser.GameObjects.Image[];
@@ -111,22 +115,29 @@ interface FloorView {
   workerKey: string;
 }
 
-export class FloorsScene extends Phaser.Scene {
+export class RouteScene extends Phaser.Scene {
   private bridge!: Bridge;
   private bizId = "";
   private startY = -1;
   private previousFloors = 0;
   private W = 390;
   private ground = 0;
-  private floorsTop = 0;
+  private stopsTop = 0;
   private floorCount = 0;
-  private floors: FloorView[] = [];
-  private cabin!: Phaser.GameObjects.Container;
-  private cabinItem!: Phaser.GameObjects.Image;
-  private cabinCarry!: Phaser.GameObjects.Text;
-  private cabinHint!: Phaser.GameObjects.Image;
-  private shaftButton!: LevelButton;
-  private shaftBadge!: Phaser.GameObjects.Container;
+  private stops: StopView[] = [];
+  /** La ruta: puntos y distancia acumulada a cada parada (0 = la puerta de la sede). */
+  private path: Pt[] = [];
+  private lens: number[] = [];
+  private stopDist: number[] = [];
+  private mover!: Phaser.GameObjects.Image;
+  private moverItem!: Phaser.GameObjects.Image;
+  private moverCarry!: Phaser.GameObjects.Text;
+  private moverHint!: Phaser.GameObjects.Image;
+  private pedalTip!: Phaser.GameObjects.Text;
+  private pedalFx!: Phaser.GameObjects.Graphics;
+  private pedaling = false;
+  private transportButton!: LevelButton;
+  private transportBadge!: Phaser.GameObjects.Container;
   private seller!: Phaser.GameObjects.Image;
   private sellerItem!: Phaser.GameObjects.Image;
   private sellerCarry!: Phaser.GameObjects.Text;
@@ -144,24 +155,24 @@ export class FloorsScene extends Phaser.Scene {
   private ranks = { transport: 0, sale: 0 };
   private lastTopStock = 0;
   private sparkClock = 0;
-  /** Desplazamiento vertical con el dedo (con inercia) y si el gesto fue un arrastre. */
   private scroll = { down: false, dragging: false, onMap: false, y0: 0, s0: 0, last: 0, vel: 0, max: 0 };
 
   private static remembered = new Map<string, number>();
 
   constructor() {
-    super("floors");
+    super("route");
   }
 
   init(data: { id: string; scrollY?: number; previousFloors?: number }): void {
     this.bizId = data.id;
     this.startY = data.scrollY ?? -1;
     this.previousFloors = data.previousFloors ?? 0;
-    this.floors = [];
+    this.stops = [];
     this.topPile = [];
     this.unlock = null;
     this.visitor = null;
     this.twistWorld = null;
+    this.pedaling = false;
   }
 
   presentVisitor(kind: OfferKind, button: HTMLButtonElement): void {
@@ -189,15 +200,50 @@ export class FloorsScene extends Phaser.Scene {
     return THEME[this.bizId] ?? THEME.dropship;
   }
 
-  private floorY(i: number): number {
-    return this.floorsTop + i * FLOOR_H;
+  /* ---------- Geometría de la ruta ---------- */
+
+  private get left() { return 34; }
+  private get right() { return this.W - 112; }
+  private get mid() { return (this.left + this.right) / 2; }
+  private bandTop(i: number) { return this.stopsTop + i * STOP_H; }
+  private crossY(i: number) { return this.bandTop(i) + STOP_H - 36; }
+
+  /** Ruta en zigzag: baja por un lado, cruza la franja (parada en el centro) y baja por el otro. */
+  private buildPath(stops: number): void {
+    const pts: Pt[] = [{ x: this.left, y: this.ground + 8 }];
+    const stopIdx: number[] = [0];
+    for (let i = 0; i < stops; i++) {
+      const side = i % 2 ? this.right : this.left, other = i % 2 ? this.left : this.right;
+      const y = this.crossY(i);
+      pts.push({ x: side, y }, { x: this.mid, y });
+      stopIdx.push(pts.length - 1);
+      pts.push({ x: other, y });
+    }
+    this.path = pts;
+    this.lens = [0];
+    for (let i = 1; i < pts.length; i++) this.lens.push(this.lens[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+    this.stopDist = stopIdx.map((k) => this.lens[k]);
   }
 
-  /** Altura del montacargas para una posición del transporte (0 = arriba, k = planta k-1). */
-  private cabinY(pos: number): number {
-    const stop = (k: number) => (k <= 0 ? this.ground - 30 : this.floorY(k - 1) + FLOOR_H * 0.62);
+  /** Punto de la ruta a una distancia dada, con la dirección de marcha. */
+  private at(d: number): Pt & { dx: number; dy: number } {
+    const L = this.lens;
+    for (let i = 1; i < L.length; i++) {
+      if (d <= L[i] || i === L.length - 1) {
+        const a = this.path[i - 1], b = this.path[i], seg = L[i] - L[i - 1] || 1;
+        const f = Phaser.Math.Clamp((d - L[i - 1]) / seg, 0, 1);
+        return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, dx: Math.sign(b.x - a.x), dy: Math.sign(b.y - a.y) };
+      }
+    }
+    return { ...this.path[0], dx: 0, dy: 0 };
+  }
+
+  /** Posición del transporte de la economía (0 = sede, k = parada k-1) en distancia de ruta. */
+  private distOf(pos: number): number {
     const k = Math.floor(pos), f = pos - k;
-    return stop(k) + (stop(k + 1) - stop(k)) * f;
+    const a = this.stopDist[Math.min(k, this.stopDist.length - 1)];
+    const b = this.stopDist[Math.min(k + 1, this.stopDist.length - 1)];
+    return a + (b - a) * f;
   }
 
   create(): void {
@@ -211,24 +257,28 @@ export class FloorsScene extends Phaser.Scene {
     this.levels = { transport: b.transport.level, sale: b.sale.level };
     this.ranks = { transport: rankOf(b.transport.level), sale: rankOf(b.sale.level) };
     this.ground = insets.top + 70 + SURFACE_H;
-    this.floorsTop = this.ground + 34;
+    this.stopsTop = this.ground + 30;
 
+    const shown = Math.min(CHAIN.maxFloors, this.floorCount + 1);
+    this.buildPath(shown);
     this.drawSurface();
-    this.drawShaft();
-    for (let i = 0; i < CHAIN.maxFloors; i++) this.drawFloor(i);
+    this.drawGround(shown);
+    for (let i = 0; i < shown; i++) this.drawStop(i);
+    this.makeMover();
     this.makeParticles();
 
-    // Hasta dónde se puede bajar: la planta en obras (o la última) y un poco de aire para la barra.
-    const shown = Math.min(CHAIN.maxFloors, this.floorCount + 1);
-    const worldH = this.floorY(shown) + 150;
+    const worldH = this.bandTop(shown) + 150;
     const viewH = this.scale.height / DPR;
     this.scroll.max = Math.max(0, worldH - viewH + insets.bottom + 30);
     const cam = this.cameras.main;
-    cam.setBackgroundColor(0x2a2f3a);
-    const remembered = FloorsScene.remembered.get(this.bizId);
+    cam.setBackgroundColor(shade(this.theme().ground, -0.1));
+    const remembered = RouteScene.remembered.get(this.bizId);
     cam.scrollY = Phaser.Math.Clamp(this.startY >= 0 ? this.startY : remembered ?? 0, 0, this.scroll.max);
     this.setupScroll();
-    this.events.once("shutdown", () => FloorsScene.remembered.set(this.bizId, cam.scrollY));
+    this.events.once("shutdown", () => {
+      RouteScene.remembered.set(this.bizId, cam.scrollY);
+      setPedal(null);
+    });
 
     if (TWIST_WORLD_ART.includes(this.bizId)) this.twistWorld = new TwistWorld(this, this.bizId, { x: this.W * 0.56, y: this.ground + 16 });
     revealScene(this);
@@ -243,14 +293,17 @@ export class FloorsScene extends Phaser.Scene {
       sc.y0 = p.y; sc.s0 = cam.scrollY; sc.last = p.y;
     });
     input.on("pointermove", (p: Phaser.Input.Pointer) => {
-      if (!sc.down) return;
+      if (!sc.down || this.pedaling) return;
       if (Math.abs(p.y - sc.y0) > 8 * DPR) sc.dragging = true;
       if (!sc.dragging) return;
       cam.scrollY = Phaser.Math.Clamp(sc.s0 - (p.y - sc.y0) / cam.zoom, 0, sc.max);
       sc.vel = (sc.last - p.y) / cam.zoom;
       sc.last = p.y;
     });
-    input.on("pointerup", () => { sc.down = false; sc.onMap = false; });
+    input.on("pointerup", () => {
+      sc.down = false; sc.onMap = false;
+      this.stopPedal();
+    });
     input.on("wheel", (_p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
       cam.scrollY = Phaser.Math.Clamp(cam.scrollY + dy * 0.6, 0, sc.max);
     });
@@ -273,36 +326,35 @@ export class FloorsScene extends Phaser.Scene {
   /* ---------- Superficie: sede, calle y venta ---------- */
 
   private drawSurface(): void {
-    const W = this.W, g0 = this.ground, theme = this.theme();
+    const W = this.W, g0 = this.ground;
     const sky = this.add.graphics().setDepth(0);
     sky.fillGradientStyle(0x7cc6f0, 0x7cc6f0, 0xcfeefc, 0xcfeefc, 1).fillRect(0, 0, W, g0);
-    // El barrio detrás de la sede, apagado: decorado, no negocio.
-    const district = `district_${BUSINESS_DISTRICTS[this.bizId] ?? this.bridge.state().city}`;
+    const district = `district_${BUSINESS_DISTRICTS[this.bizId] ?? (this.bizId === PEDAL_BIZ ? "terrace" : this.bridge.state().city)}`;
     for (const [fx, flip] of [[0.18, false], [0.86, true]] as [number, boolean][]) {
       const d = art(this, W * fx, g0 + 6, district).setOrigin(0.5, 1).setDepth(1).setFlipX(flip).setAlpha(0.55);
       d.setTint(mix(0xffffff, 0x9fc4dc, 0.45));
     }
-    // Acera y calle
     const street = this.add.graphics().setDepth(2);
     street.fillStyle(0xc9cdd6, 1).fillRect(0, g0 - 6, W, 10);
-    street.fillStyle(0x4a5160, 1).fillRect(0, g0 + 4, W, 30);
-    for (let x = 10; x < W; x += 34) street.fillStyle(0xf5f5f5, 0.8).fillRect(x, g0 + 18, 16, 3);
-    // Sede: el elemento más grande de la pantalla
+    street.fillStyle(0x4a5160, 1).fillRect(0, g0 + 4, W, 26);
+    for (let x = 10; x < W; x += 34) street.fillStyle(0xf5f5f5, 0.8).fillRect(x, g0 + 16, 16, 3);
+    // Sede: lo más grande de la pantalla
     const key = buildingKey(this.bizId, this.biz().floors.length);
     const spec = ART[key];
-    const maxW = W - SHAFT_W - 120, maxH = SURFACE_H - 30;
+    const maxW = W - 220, maxH = SURFACE_H - 30;
     const s = Math.min(maxW / spec.w, maxH / spec.h, 1.6);
-    const hub = art(this, SHAFT_W + 18 + (W - SHAFT_W - 120) / 2 + 10, g0 + 2, key).setOrigin(0.5, hasGeneratedArt(this, key) ? 1 : (spec.h - 6) / spec.h).setDepth(5);
+    const hub = art(this, W / 2 - 6, g0 + 2, key).setOrigin(0.5, hasGeneratedArt(this, key) ? 1 : (spec.h - 6) / spec.h).setDepth(5);
     hub.setDisplaySize(spec.w * s, spec.h * s);
     if (this.previousFloors && buildingKey(this.bizId, this.previousFloors) !== key) constructionPop(this, hub, t("¡Nueva sede!"));
     this.zone(hub.x - hub.displayWidth / 2, hub.y - hub.displayHeight, hub.displayWidth, hub.displayHeight, () => this.bridge.tapStation(this.bizId, { kind: "sale" }));
-    // Producto listo para vender, en la puerta (al salir del montacargas)
-    const px = SHAFT_W + 34;
+    // Producto listo, en la puerta (donde llega la ruta)
+    const px = this.left + 34;
     this.topPile = this.pile(px, g0 - 2, 6, 0.9);
     this.topStock = label(this, px, g0 - 46, "", 13, "#ffffff", { bold: true, stroke: "#14202f" }).setDepth(60);
-    // Venta: vehículo o repartidor en la calle; nivel arriba a la derecha
-    this.seller = art(this, 0, 0, isVehicle(this.look.seller) ? this.look.seller : `ch_${this.look.seller}_0`).setOrigin(0.5, 0.9).setDepth(30).setInteractive({ useHandCursor: true });
-    if (!isVehicle(this.look.seller)) this.seller.setDisplaySize(ART[`ch_${this.look.seller}_0`].w * 1.1, ART[`ch_${this.look.seller}_0`].h * 1.1);
+    // Venta en la calle, con su nivel arriba a la derecha
+    const sk = isVehicle(this.look.seller) ? this.look.seller : `ch_${this.look.seller}_0`;
+    this.seller = art(this, 0, 0, sk).setOrigin(0.5, 0.9).setDepth(30).setInteractive({ useHandCursor: true });
+    if (!isVehicle(this.look.seller)) this.seller.setDisplaySize(ART[sk].w * 1.1, ART[sk].h * 1.1);
     if (this.ranks.sale && isVehicle(this.look.seller)) swapArt(this.seller, rankedKey(this, this.look.seller, this.ranks.sale));
     this.tap(this.seller, () => this.bridge.tapStation(this.bizId, { kind: "sale" }));
     this.sellerItem = art(this, 0, 0, this.look.item).setDepth(31).setVisible(false);
@@ -312,113 +364,129 @@ export class FloorsScene extends Phaser.Scene {
     this.tap(this.saleButton, () => this.bridge.openStation(this.bizId, { kind: "sale" }));
     label(this, W - 46, g0 - 112, bizDef(this.bizId).saleName, 11, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5, 0).setDepth(70);
     this.saleBadge = rankBadge(this, W - 78, g0 - 176, this.ranks.sale).setDepth(71);
-    this.zone(W * 0.55, g0 - 20, W * 0.45, 56, () => this.bridge.tapStation(this.bizId, { kind: "sale" }));
-    // Tejado del edificio de plantas: separa la calle del interior
-    const roof = this.add.graphics().setDepth(3);
-    roof.fillStyle(shade(theme.floor, -0.35), 1).fillRect(0, g0 + 34 - 8, W, 8);
+    this.zone(W * 0.6, g0 - 20, W * 0.4, 52, () => this.bridge.tapStation(this.bizId, { kind: "sale" }));
+    // Transporte: su nivel arriba a la izquierda, sobre la entrada de la ruta
+    this.transportButton = new LevelButton(this, 46, g0 - 150).setDepth(70).setInteractive({ useHandCursor: true });
+    this.tap(this.transportButton, () => this.bridge.openStation(this.bizId, { kind: "transport" }));
+    label(this, 46, g0 - 112, bizDef(this.bizId).transportName, 11, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5, 0).setDepth(70);
+    this.transportBadge = rankBadge(this, 14, g0 - 176, this.ranks.transport).setDepth(71);
   }
 
-  /* ---------- Montacargas (transporte) ---------- */
+  /* ---------- Suelo y ruta ---------- */
 
-  private drawShaft(): void {
-    const g0 = this.ground, theme = this.theme();
-    const shown = Math.min(CHAIN.maxFloors, this.floorCount + 1);
-    const bottom = this.floorY(shown);
-    const shaft = this.add.graphics().setDepth(10);
-    shaft.fillStyle(COLORS.shaft, 1).fillRect(6, g0 - 70, SHAFT_W, bottom - g0 + 70);
-    shaft.fillStyle(0x1f242e, 1).fillRect(6 + SHAFT_W / 2 - 14, g0 - 70, 28, bottom - g0 + 70);
-    shaft.lineStyle(2, COLORS.cable, 0.8).lineBetween(6 + SHAFT_W / 2, g0 - 70, 6 + SHAFT_W / 2, bottom);
-    // Cabecera del montacargas, con su nivel
-    shaft.fillStyle(shade(theme.accent, -0.2), 1).fillRoundedRect(2, g0 - 92, SHAFT_W + 8, 26, 6);
-    this.shaftButton = new LevelButton(this, 6 + SHAFT_W / 2, g0 - 140, 62, 52).setDepth(70).setInteractive({ useHandCursor: true });
-    this.tap(this.shaftButton, () => this.bridge.openStation(this.bizId, { kind: "transport" }));
-    this.shaftBadge = rankBadge(this, SHAFT_W - 2, g0 - 166, this.ranks.transport).setDepth(71);
-    label(this, 6 + SHAFT_W / 2, g0 - 79, bizDef(this.bizId).transportName, 10, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5).setDepth(12);
-    // Cabina
-    const cg = this.add.graphics();
-    cg.fillStyle(0x0b2440, 0.5).fillRoundedRect(-SHAFT_W / 2 + 2, -26, SHAFT_W - 4, 52, 8);
-    cg.fillStyle(theme.accent, 1).fillRoundedRect(-SHAFT_W / 2 + 2, -28, SHAFT_W - 4, 50, 8);
-    cg.fillStyle(0xfdf6e3, 1).fillRoundedRect(-SHAFT_W / 2 + 8, -22, SHAFT_W - 16, 34, 5);
-    cg.lineStyle(2, 0x0b2440, 0.9).strokeRoundedRect(-SHAFT_W / 2 + 2, -28, SHAFT_W - 4, 50, 8);
-    const mk = isVehicle(this.look.mover) ? this.look.mover : `ch_${this.look.mover}_0`;
-    const moverArt = art(this, 0, 10, mk).setOrigin(0.5, 1);
-    const ms = Math.min((SHAFT_W - 18) / ART[mk].w, 32 / ART[mk].h);
-    moverArt.setDisplaySize(ART[mk].w * ms, ART[mk].h * ms);
-    if (this.ranks.transport && isVehicle(mk)) swapArt(moverArt, rankedKey(this, mk, this.ranks.transport));
-    this.cabinItem = art(this, 14, -14, this.look.item).setVisible(false).setScale(artScale(this, this.look.item) * 0.7);
-    this.cabinCarry = label(this, 0, 30, "", 11, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5, 0);
-    this.cabin = this.add.container(6 + SHAFT_W / 2, this.cabinY(0), [cg, moverArt, this.cabinItem, this.cabinCarry]).setDepth(20);
-    this.cabin.setSize(SHAFT_W, 60).setInteractive({ useHandCursor: true });
-    this.tap(this.cabin, () => this.bridge.tapStation(this.bizId, { kind: "transport" }));
-    this.cabinHint = art(this, 0, 0, "ic_hand").setDepth(90).setVisible(false);
-    this.zone(6, g0 - 66, SHAFT_W, bottom - g0 + 66, () => this.bridge.tapStation(this.bizId, { kind: "transport" })).setDepth(9);
+  private drawGround(shown: number): void {
+    const W = this.W, theme = this.theme();
+    const g = this.add.graphics().setDepth(3);
+    g.fillStyle(theme.ground, 1).fillRect(0, this.ground + 30, W, this.bandTop(shown) - this.ground);
+    for (let i = 0; i < shown; i++) {
+      const y = this.bandTop(i);
+      g.fillStyle(i % 2 ? shade(theme.ground, -0.03) : theme.ground, 1).fillRect(0, y, W, STOP_H);
+      g.fillStyle(shade(theme.ground, -0.12), 1).fillRect(0, y + STOP_H - 3, W, 3);
+    }
+    // La ruta: banda ancha con esquinas redondeadas y línea discontinua en el centro
+    const r = this.add.graphics().setDepth(4);
+    const built = this.stopDist[Math.min(this.floorCount, this.stopDist.length - 1)];
+    const drawLeg = (a: Pt, b: Pt, done: boolean) => {
+      r.lineStyle(ROAD_W + 6, shade(theme.road, -0.3), done ? 1 : 0.35).lineBetween(a.x, a.y, b.x, b.y);
+      r.lineStyle(ROAD_W, theme.road, done ? 1 : 0.35).lineBetween(a.x, a.y, b.x, b.y);
+    };
+    for (let i = 1; i < this.path.length; i++) {
+      const a = this.path[i - 1], b = this.path[i];
+      drawLeg(a, b, this.lens[i] <= built + 1);
+    }
+    for (let i = 0; i < this.path.length; i++) {
+      const p = this.path[i], done = this.lens[i] <= built + 1;
+      r.fillStyle(shade(theme.road, -0.3), done ? 1 : 0.35).fillCircle(p.x, p.y, (ROAD_W + 6) / 2);
+      r.fillStyle(theme.road, done ? 1 : 0.35).fillCircle(p.x, p.y, ROAD_W / 2);
+    }
+    for (let i = 1; i < this.path.length; i++) {
+      if (this.lens[i] > built + 1) continue;
+      const a = this.path[i - 1], b = this.path[i], len = Math.hypot(b.x - a.x, b.y - a.y);
+      for (let d = 10; d < len - 10; d += 22) {
+        const f0 = d / len, f1 = Math.min(1, (d + 10) / len);
+        r.lineStyle(3, theme.line, 0.85).lineBetween(a.x + (b.x - a.x) * f0, a.y + (b.y - a.y) * f0, a.x + (b.x - a.x) * f1, a.y + (b.y - a.y) * f1);
+      }
+    }
   }
 
-  /* ---------- Plantas (puestos) ---------- */
+  /* ---------- Paradas (puestos) ---------- */
 
-  private drawFloor(i: number): void {
-    const W = this.W, y = this.floorY(i), theme = this.theme(), def = bizDef(this.bizId);
-    const left = SHAFT_W + 12, right = W - 6, h = FLOOR_H;
-    const g = this.add.graphics().setDepth(4);
-    if (i > this.floorCount) return;
+  private drawStop(i: number): void {
+    const W = this.W, def = bizDef(this.bizId), y0 = this.bandTop(i), yc = this.crossY(i), mx = this.mid;
     if (i === this.floorCount) {
-      // Siguiente planta: en obras, con su precio
-      g.fillStyle(0x3a3f4b, 1).fillRect(left, y, right - left, h - 10);
-      g.lineStyle(3, COLORS.gold, 0.9);
-      for (let x = left + 10; x < right - 10; x += 26) g.lineBetween(x, y + 8, x + 14, y + 8);
-      art(this, (left + right) / 2, y + h / 2 - 22, "ic_construction").setDepth(6).setScale(artScale(this, "ic_construction") * 1.6);
+      // Siguiente parada: en obras, con su precio
+      art(this, mx, yc - 46, "ic_construction").setDepth(6).setScale(artScale(this, "ic_construction") * 1.6);
       const cost = floorUnlockCost(def, i);
-      this.unlock = new Pill(this, (left + right) / 2, y + h / 2 + 22, `${t("Abrir")} · ${money(cost)}`).setDepth(70);
+      this.unlock = new Pill(this, mx, yc - 90, `${t("Abrir")} · ${money(cost)}`).setDepth(70);
       this.unlock.setInteractive({ useHandCursor: true });
       this.tap(this.unlock, () => this.bridge.openUnlockFloor(this.bizId));
-      this.zone(left, y, right - left, h - 10, () => this.bridge.openUnlockFloor(this.bizId));
+      label(this, 72, y0 + 22, floorLabel(def, i), 12, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12).setAlpha(0.6);
+      this.zone(0, y0, W - 90, STOP_H, () => this.bridge.openUnlockFloor(this.bizId));
       return;
     }
-    // Pared, suelo y forjado
-    g.fillStyle((i % 2 ? shade(theme.wall, -0.04) : theme.wall), 1).fillRect(left, y, right - left, h - 10);
-    g.fillStyle(mix(theme.wall, 0xffffff, 0.35), 1).fillRect(left, y, right - left, 6);
-    g.fillStyle(theme.floor, 1).fillRect(left, y + h - 34, right - left, 24);
-    g.fillStyle(shade(theme.floor, -0.25), 1).fillRect(left, y + h - 10, right - left, 10);
-    g.fillStyle(shade(theme.floor, -0.45), 1).fillRect(left, y + h - 10, right - left, 3);
-    // Ventana del montacargas hacia la planta
-    g.fillStyle(0x1f242e, 1).fillRect(SHAFT_W + 6, y + h * 0.62 - 26, 6, 52);
-
     const f = this.biz().floors[i];
     const rank = rankOf(f.level);
-    const sx = left + (right - left) * 0.5;
     const stationKey = this.look.station;
-    const station = art(this, sx, y + h - 22, stationKey).setOrigin(0.5, 1).setDepth(8);
-    const ss = Math.min(110 / ART[stationKey].h, 120 / ART[stationKey].w);
+    const station = art(this, mx, yc - ROAD_W / 2 - 2, stationKey).setOrigin(0.5, 1).setDepth(8);
+    const ss = Math.min(80 / ART[stationKey].h, 104 / ART[stationKey].w);
     station.setDisplaySize(ART[stationKey].w * ss, ART[stationKey].h * ss);
     if (rank) swapArt(station, rankedKey(this, stationKey, rank));
     if (this.previousFloors && i >= this.previousFloors) constructionPop(this, station, t("¡Puesto nuevo!"));
     const workerKey = `ch_${this.look.worker}_0`;
-    const worker = art(this, sx - 62, y + h - 18, workerKey).setOrigin(0.5, 1).setDepth(9);
-    worker.setDisplaySize(ART[workerKey].w * 1.25, ART[workerKey].h * 1.25);
+    const worker = art(this, mx - 58, yc - ROAD_W / 2 - 2, workerKey).setOrigin(0.5, 1).setDepth(9);
+    worker.setDisplaySize(ART[workerKey].w * 1.15, ART[workerKey].h * 1.15);
     if (rank) swapArt(worker, rankedKey(this, workerKey, rank));
-    // Producto hecho, junto al montacargas
-    const pile = this.pile(left + 26, y + h - 26, 8, 0.95);
-    const stock = label(this, left + 26, y + h - 84, "", 12, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5).setDepth(60);
-    // Barra de producción bajo el puesto
-    this.add.rectangle(sx, y + h - 14, 80, 6, 0x14202f, 0.55).setDepth(10);
-    const bar = this.add.rectangle(sx - 40, y + h - 14, 0, 6, COLORS.green).setOrigin(0, 0.5).setDepth(11);
-    // Encargado (gerente), arriba a la izquierda
+    // Producto hecho, en el borde de la ruta junto a la parada
+    const pile = this.pile(mx + 62, yc - ROAD_W / 2 - 2, 9, 0.85);
+    const stock = label(this, mx + 62, yc - 66, "", 12, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5).setDepth(60);
+    this.add.rectangle(mx, yc + ROAD_W / 2 + 10, 80, 6, 0x14202f, 0.5).setDepth(10);
+    const bar = this.add.rectangle(mx - 40, yc + ROAD_W / 2 + 10, 0, 6, COLORS.green).setOrigin(0, 0.5).setDepth(11);
+    // Encargado y nombre, arriba a la izquierda
     const mg = this.add.graphics();
     mg.fillStyle(0x0b2440, 0.6).fillCircle(0, 1, 15);
     mg.fillStyle(0xffd36b, 1).fillCircle(0, 0, 14);
     const mgIcon = art(this, 0, 0, "ic_manager").setScale(artScale(this, "ic_manager") * 1.3);
-    const manager = this.add.container(left + 22, y + 24, [mg, mgIcon]).setDepth(12);
-    // Nombre de la planta, discreto
-    label(this, left + 44, y + 16, `${def.floorName} ${i + 1}`, 11, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12).setAlpha(0.75);
-    // Botón de nivel a la derecha
-    const button = new LevelButton(this, right - 44, y + h / 2 - 12).setDepth(70).setInteractive({ useHandCursor: true });
+    const manager = this.add.container(72, y0 + 22, [mg, mgIcon]).setDepth(12);
+    label(this, 94, y0 + 22, floorLabel(def, i), 13, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12);
+    // Botón de nivel, siempre a la derecha
+    const button = new LevelButton(this, W - 46, y0 + STOP_H / 2 - 14).setDepth(70).setInteractive({ useHandCursor: true });
     this.tap(button, () => this.bridge.openStation(this.bizId, { kind: "floor", index: i }));
-    const badge = rankBadge(this, right - 76, y + h / 2 - 38, rank).setDepth(71);
-    const hint = art(this, sx, y + 26, "ic_hand").setDepth(90).setVisible(false);
-    if (!reducedMotion()) this.tweens.add({ targets: hint, y: y + 34, yoyo: true, repeat: -1, duration: 500 });
-    // Toda la planta es zona de toque (menos el botón): pone el puesto en marcha
-    this.zone(left, y, right - left - 90, h - 10, () => this.bridge.tapStation(this.bizId, { kind: "floor", index: i }));
-    this.floors[i] = { y, station, worker, pile, stock, bar, hint, manager, button, badge, level: f.level, rank, lastStock: f.stock, stationKey, workerKey };
+    const badge = rankBadge(this, W - 78, y0 + STOP_H / 2 - 40, rank).setDepth(71);
+    const hint = art(this, mx + 30, yc - 70, "ic_hand").setDepth(90).setVisible(false);
+    if (!reducedMotion()) this.tweens.add({ targets: hint, y: yc - 62, yoyo: true, repeat: -1, duration: 500 });
+    this.zone(mx - 100, y0 + 20, 200, STOP_H - 20, () => this.bridge.tapStation(this.bizId, { kind: "floor", index: i }));
+    this.stops[i] = { station, worker, pile, stock, bar, hint, manager, button, badge, level: f.level, rank, lastStock: f.stock, stationKey, workerKey };
+  }
+
+  /* ---------- Transporte ---------- */
+
+  private makeMover(): void {
+    const mk = isVehicle(this.look.mover) ? this.look.mover : `ch_${this.look.mover}_0`;
+    this.mover = art(this, 0, 0, mk).setOrigin(0.5, 0.88).setDepth(40).setInteractive({ useHandCursor: true });
+    if (!isVehicle(mk)) this.mover.setDisplaySize(ART[mk].w * 1.1, ART[mk].h * 1.1);
+    if (this.ranks.transport && isVehicle(mk)) swapArt(this.mover, rankedKey(this, mk, this.ranks.transport));
+    this.moverItem = art(this, 0, 0, this.look.item).setDepth(41).setVisible(false);
+    this.moverCarry = label(this, 0, 0, "", 12, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5).setDepth(61);
+    this.moverHint = art(this, 0, 0, "ic_hand").setDepth(90).setVisible(false);
+    this.pedalFx = this.add.graphics().setDepth(39);
+    this.pedalTip = label(this, 0, 0, t("¡Mantén pulsado para pedalear!"), 12, "#2e2200", { bold: true }).setOrigin(0.5).setBackgroundColor("#ffd36b").setPadding(6, 3, 6, 3).setDepth(91).setVisible(false);
+    this.mover.on("pointerdown", () => {
+      if (this.bizId === PEDAL_BIZ && !this.biz().transport.managed) {
+        this.pedaling = true;
+        setPedal(this.bizId);
+      }
+    });
+    this.tap(this.mover, () => this.bridge.tapStation(this.bizId, { kind: "transport" }));
+    this.mover.on("pointerdown", () => {
+      // Al pedalear, el toque también pone en marcha el reparto (sin esperar a soltar).
+      if (this.pedaling && this.biz().transport.phase === "idle") this.bridge.tapStation(this.bizId, { kind: "transport" });
+    });
+  }
+
+  private stopPedal(): void {
+    if (!this.pedaling) return;
+    this.pedaling = false;
+    setPedal(null);
   }
 
   /* ---------- Utilidades ---------- */
@@ -477,9 +545,9 @@ export class FloorsScene extends Phaser.Scene {
     const sparkNow = this.sparkClock > 0.45;
     if (sparkNow) this.sparkClock = 0;
 
-    // Plantas
+    // Paradas
     b.floors.forEach((f, i) => {
-      const v = this.floors[i];
+      const v = this.stops[i];
       if (!v) return;
       const active = f.running && !calmWorld();
       v.worker.setAngle(active ? Math.sin(clk * 7 + i) * 4 : 0);
@@ -508,28 +576,45 @@ export class FloorsScene extends Phaser.Scene {
       }
     });
 
-    // Montacargas
+    // Transporte por la ruta
     const tr = b.transport;
-    const cy = this.cabinY(tr.pos);
-    this.cabin.setY(cy);
-    this.cabinItem.setVisible(tr.carry > 0);
-    this.cabinCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "");
+    const p = this.at(this.distOf(tr.pos));
+    const moving = tr.phase === "down" || tr.phase === "up";
+    const back = tr.phase === "up";
+    const dx = back ? -p.dx : p.dx;
+    this.mover.setPosition(p.x, p.y + 4);
+    if (dx) this.mover.setFlipX(dx < 0);
+    if (!isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, `ch_${this.look.mover}_${moving && !calmWorld() ? (Math.floor(clk * (this.pedaling ? 16 : 8)) % 2 ? 1 : 2) : 0}`, this.ranks.transport));
+    this.moverItem.setVisible(tr.carry > 0).setPosition(p.x + (dx < 0 ? 14 : -14), this.mover.y - this.mover.displayHeight * 0.7);
+    this.moverCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "").setPosition(p.x, this.mover.y - this.mover.displayHeight - 10);
     const moverStep = tutStat === "tapTransport";
-    this.cabinHint.setVisible((tutStat ? moverStep : tutorial && b.floors.some((f) => f.stock > 0)) && tr.phase === "idle" && !tr.managed);
-    this.cabinHint.setPosition(6 + SHAFT_W / 2 + 26, cy - 34 + (reducedMotion() ? 0 : Math.sin(clk * 8) * 4));
-    this.shaftButton.set(tr.level, this.readyFor({ kind: "transport" }, tr.managed), auto && rates.bottleneck === "transport").bob(clk);
+    this.moverHint.setVisible((tutStat ? moverStep : tutorial && b.floors.some((f) => f.stock > 0)) && tr.phase === "idle" && !tr.managed);
+    this.moverHint.setPosition(p.x + 24, this.mover.y - this.mover.displayHeight - 4 + (reducedMotion() ? 0 : Math.sin(clk * 8) * 4));
+    // Pedalear: rastro de velocidad y aviso mientras se aprende
+    const pedalBiz = this.bizId === PEDAL_BIZ && !tr.managed;
+    this.pedalTip.setVisible(pedalBiz && moverStep).setPosition(p.x + 70, this.mover.y - this.mover.displayHeight - 30);
+    this.pedalFx.clear();
+    if (this.pedaling && moving && !reducedMotion()) {
+      const back2 = dx < 0 ? 1 : -1;
+      for (let k = 0; k < 3; k++) {
+        const ly = this.mover.y - 14 - k * 9, lx = p.x + back2 * (18 + ((clk * 120 + k * 13) % 18));
+        this.pedalFx.lineStyle(2.5, 0xffffff, 0.8).lineBetween(lx, ly, lx + back2 * 14, ly);
+      }
+    }
+    this.transportButton.set(tr.level, this.readyFor({ kind: "transport" }, tr.managed), auto && rates.bottleneck === "transport").bob(clk);
     if (tr.level > this.levels.transport) {
       this.levels.transport = tr.level;
-      if (!reducedMotion()) this.sparks.explode(14, this.cabin.x, cy);
+      if (!reducedMotion()) this.sparks.explode(14, p.x, p.y);
       const rank = rankOf(tr.level);
       if (rank > this.ranks.transport) {
         this.ranks.transport = rank;
-        this.shaftBadge.destroy();
-        this.shaftBadge = rankBadge(this, SHAFT_W - 2, this.ground - 166, rank).setDepth(71);
-        rankBurst(this, this.cabin.x, cy, rank, `${rankInfo(rank)!.name}!`);
+        if (isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, this.look.mover, rank));
+        this.transportBadge.destroy();
+        this.transportBadge = rankBadge(this, 14, this.ground - 176, rank).setDepth(71);
+        rankBurst(this, p.x, p.y, rank, `${rankInfo(rank)!.name}!`);
       }
     }
-    if (b.topStock > this.lastTopStock) transferProduct(this, this.look.item, { x: this.cabin.x, y: cy }, { x: this.topPile[0].x, y: this.topPile[0].y });
+    if (b.topStock > this.lastTopStock) transferProduct(this, this.look.item, { x: p.x, y: p.y - 20 }, { x: this.topPile[0].x, y: this.topPile[0].y });
     this.lastTopStock = b.topStock;
     this.showPile(this.topPile, b.topStock, unit);
     this.topStock.setText(b.topStock > 0 ? fmt(b.topStock) : "");
@@ -580,5 +665,5 @@ export class FloorsScene extends Phaser.Scene {
   }
 }
 
-/** Negocios que ya usan la vista por plantas (prototipo: el almacén). */
-export const FLOOR_VIEW = new Set(["dropship"]);
+/** Negocios que ya usan la vista en ruta (el resto, el recinto isométrico hasta que llegue su arte). */
+export const ROUTE_VIEW = new Set(["bike", "dropship"]);

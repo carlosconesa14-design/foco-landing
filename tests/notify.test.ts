@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { NOTE_IDS, outsideQuietHours, planNotifications } from "../src/game/notify";
-import { freshState } from "../src/game/state";
 import { offlineCapHours } from "../src/game/world";
 import * as meta from "../src/game/meta";
+import { withDropship } from "./fresh";
 
 const at = (y: number, mo: number, d: number, h: number, mi = 0) => new Date(y, mo - 1, d, h, mi).getTime();
 const NOW = at(2026, 10, 1, 12);
 
 /** Partida con ingresos pasivos: el almacén con gerentes en todo. */
 function earning() {
-  const s = freshState(NOW);
+  const s = withDropship(NOW);
   const b = s.biz.dropship;
   b.floors[0].managed = true;
   b.transport.managed = true;
@@ -32,7 +32,7 @@ describe("avisos en el móvil", () => {
   });
 
   it("sin ingresos pasivos no hay aviso de caja llena", () => {
-    expect(planNotifications(freshState(NOW), NOW).some((n) => n.id === NOTE_IDS.cashFull)).toBe(false);
+    expect(planNotifications(withDropship(NOW), NOW).some((n) => n.id === NOTE_IDS.cashFull)).toBe(false);
   });
 
   it("avisa del maletín gratis solo si aún no está listo", () => {

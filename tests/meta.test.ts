@@ -5,10 +5,11 @@ import { chainRates, saleCap, tapStation, tick } from "../src/game/economy";
 import { execMults } from "../src/game/execs";
 import * as meta from "../src/game/meta";
 import { freshState, migrate, type GameState } from "../src/game/state";
+import { withDropship } from "./fresh";
 
 const NOW = Date.UTC(2026, 8, 30, 12);
 const DAY = 86400e3;
-const DROP = BUSINESSES[0];
+const DROP = BUSINESSES.find((b) => b.id === "dropship")!;
 
 /** Generador pseudoaleatorio fijo para que los tests sean reproducibles. */
 function seq(...values: number[]) {
@@ -22,7 +23,7 @@ function run(s: GameState, seconds: number, step = 1 / 30) {
 
 describe("misiones diarias", () => {
   it("genera 3 misiones distintas, iguales para todo el día", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     meta.ensureDay(s, NOW);
     const ids = s.meta.missions.list.map((m) => m.id);
     expect(new Set(ids).size).toBe(3);
@@ -31,7 +32,7 @@ describe("misiones diarias", () => {
   });
 
   it("se completan con los contadores del día y se cobran una vez", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     meta.ensureDay(s, NOW);
     const mi = s.meta.missions.list[0];
     expect(meta.claimMission(s, 0)).toBeNull();
@@ -41,7 +42,7 @@ describe("misiones diarias", () => {
   });
 
   it("al completar las tres se puede cobrar el bonus", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     meta.ensureDay(s, NOW);
     s.meta.missions.list.forEach((mi, i) => {
       s.meta.stats.day[mi.id] = mi.target;
@@ -52,7 +53,7 @@ describe("misiones diarias", () => {
   });
 
   it("al cambiar de día se reinician los contadores diarios", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     meta.ensureDay(s, NOW);
     s.meta.stats.day.sales = 99;
     meta.ensureDay(s, NOW + DAY);
@@ -61,7 +62,7 @@ describe("misiones diarias", () => {
   });
 
   it("las ventas y mejoras cuentan para las estadísticas", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.cash = 100;
     act.upgrade(s, DROP.id, { kind: "floor", index: 0 });
     s.biz[DROP.id].topStock = 10;
@@ -74,7 +75,7 @@ describe("misiones diarias", () => {
 
 describe("racha diaria", () => {
   it("avanza día a día y se reinicia si te saltas uno", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(meta.claimDaily(s, NOW)).toEqual({ gems: 10 });
     expect(meta.claimDaily(s, NOW)).toBeNull();
     meta.claimDaily(s, NOW + DAY);
@@ -83,7 +84,7 @@ describe("racha diaria", () => {
   });
 
   it("vuelve al primer premio tras 7 días seguidos y el anuncio lo duplica", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     for (let d = 0; d < DAILY_REWARDS.length; d++) meta.claimDaily(s, NOW + d * DAY, false, seq(0.5));
     expect(meta.dailyStatus(s, NOW + 7 * DAY).index).toBe(0);
     expect(meta.claimDaily(s, NOW + 7 * DAY, true)).toEqual({ gems: 20 });
@@ -92,7 +93,7 @@ describe("racha diaria", () => {
 
 describe("maletines y ejecutivos", () => {
   it("el maletín normal cuesta diamantes y da un ejecutivo", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(meta.openChest(s, "normal", NOW)).toBeNull();
     s.meta.gems = CHESTS.normal.cost;
     const g = meta.openChest(s, "normal", NOW, seq(0.99, 0.1, 0.2, 0.3, 0.4, 0.5))!;
@@ -102,14 +103,14 @@ describe("maletines y ejecutivos", () => {
   });
 
   it("el maletín gratis solo se abre cada 4 horas", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(meta.openChest(s, "free", NOW)).not.toBeNull();
     expect(meta.openChest(s, "free", NOW + 3600e3)).toBeNull();
     expect(meta.openChest(s, "free", NOW + META.freeChestHours * 3600e3)).not.toBeNull();
   });
 
   it("un ejecutivo de ventas asignado sube lo que se cobra", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     const e = meta.newExec(1, seq(0.1, 0.1, 0.1, 0.99));
     expect(e.kind).toBe("sale");
     s.meta.execs.push(e);
@@ -122,7 +123,7 @@ describe("maletines y ejecutivos", () => {
   });
 
   it("uno de logística sube la capacidad de venta", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     const e = { ...meta.newExec(3, seq(0.5)), kind: "log" as const };
     s.meta.execs.push(e);
     meta.assignExec(s, e.id, DROP.id);
@@ -135,7 +136,7 @@ describe("maletines y ejecutivos", () => {
   });
 
   it("solo hay un ejecutivo por negocio", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     const a = meta.newExec(0, seq(0.1));
     const b = meta.newExec(0, seq(0.2));
     s.meta.execs.push(a, b);
@@ -146,7 +147,7 @@ describe("maletines y ejecutivos", () => {
   });
 
   it("la habilidad multiplica las ventas un rato y luego se recarga", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     const e = meta.newExec(2, seq(0.5));
     s.meta.execs.push(e);
     expect(meta.activateAbility(s, e.id, NOW)).toBe(false); // sin asignar
@@ -172,7 +173,7 @@ describe("logros, tienda y tutorial", () => {
   });
 
   it("el paquete de dinero cuesta diamantes", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(meta.buyCashPack(s, NOW)).toBeNull();
     s.meta.gems = META.cashPackGems;
     expect(meta.buyCashPack(s, NOW)).toBe(1000);
@@ -180,7 +181,7 @@ describe("logros, tienda y tutorial", () => {
   });
 
   it("el tutorial avanza con las acciones y premia al final", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(meta.tutorialStep(s)?.stat).toBe("tapFloor");
     expect(meta.advanceTutorial(s)).toBeNull();
     for (const step of TUTORIAL) s.meta.stats.life[step.stat] = step.n;
@@ -191,7 +192,7 @@ describe("logros, tienda y tutorial", () => {
   });
 
   it("los ajustes de sonido se guardan y sobreviven a la bolsa", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     expect(s.settings).toEqual({ music: true, sfx: true, haptics: true, notify: true });
     s.settings.music = false;
     s.runEarned = CONFIG.shareDivisor;
@@ -202,7 +203,7 @@ describe("logros, tienda y tutorial", () => {
   });
 
   it("diamantes y ejecutivos se conservan al salir a bolsa y al guardar", () => {
-    const s = freshState(NOW);
+    const s = withDropship(NOW);
     s.runEarned = CONFIG.shareDivisor;
     s.meta.gems = 42;
     s.meta.execs.push(meta.newExec(1, seq(0.3)));

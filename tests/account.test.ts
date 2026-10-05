@@ -15,7 +15,7 @@ describe("cuenta anónima: invitaciones y nube", () => {
   it("el amigo cuenta al tener dos negocios o al expandirse", () => {
     const s = freshState(NOW);
     expect(refGoalReached(s)).toBe(false);
-    s.biz.restaurant.owned = true;
+    s.biz.dropship.owned = s.biz.restaurant.owned = true;
     expect(refGoalReached(s)).toBe(true);
     const t = freshState(NOW, "miami");
     t.world.completed = ["madrid"];
@@ -25,7 +25,7 @@ describe("cuenta anónima: invitaciones y nube", () => {
   it("avisa una vez de que el amigo llegó y sube la partida cada 5 minutos", () => {
     const s = freshState(NOW);
     Object.assign(s.meta.account, { id: "a", secret: "b", code: "ABC234", recovery: "AAAA-BBBB-CCCC", refUsed: true });
-    s.biz.restaurant.owned = true;
+    s.biz.dropship.owned = s.biz.restaurant.owned = true;
     expect(refQualifyPending(s)).toBe(true);
     s.meta.account.refQualified = true;
     expect(refQualifyPending(s)).toBe(false);

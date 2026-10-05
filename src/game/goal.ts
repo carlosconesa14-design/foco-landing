@@ -1,4 +1,4 @@
-import { CHAIN } from "./data";
+import { CHAIN, floorLabel } from "./data";
 import {
   bizDef,
   bizList,
@@ -90,7 +90,7 @@ export function nextGoal(s: GameState, now: number): Goal | null {
   // 4) Abrir el siguiente puesto
   const floor =
     b.floors.length < CHAIN.maxFloors
-      ? make("🔓", t("Abre {name} {n}", { name: def.floorName, n: b.floors.length + 1 }), floorUnlockCost(def, b.floors.length), { kind: "floor", bizId: here })
+      ? make("🔓", t("Abre {name}", { name: floorLabel(def, b.floors.length) }), floorUnlockCost(def, b.floors.length), { kind: "floor", bizId: here })
       : null;
 
   // El más cercano de los dos

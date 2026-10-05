@@ -15,8 +15,13 @@ const h = 3600;
 describe("ritmo de progresión", () => {
   const res = simulate({ hours: 40, dt: 2 });
 
-  it("gerentes del almacén en los primeros minutos", () => {
-    expect(res.at["mgr_dropship_sale"]).toBeLessThan(3 * min);
+  it("el reparto en bici se automatiza en el primer minuto o dos", () => {
+    expect(res.at["mgr_bike_sale"]).toBeLessThan(3 * min);
+  });
+
+  it("el almacén (primer negocio de verdad) llega a los 4–9 minutos", () => {
+    expect(res.at["biz_dropship"]).toBeGreaterThan(4 * min);
+    expect(res.at["biz_dropship"]).toBeLessThan(9 * min);
   });
 
   it("restaurante hacia los 45 minutos", () => {

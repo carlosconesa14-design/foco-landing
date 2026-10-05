@@ -965,7 +965,9 @@ Por impacto, primero los que se ven más vacíos:
 3. el resto de Miami y Dubái;
 4. después, el arte de fondo del barrio, las baldosas y los coches de espaldas.
 
-## Cambio de rumbo: vista por plantas, al estilo Idle Miner (5 de octubre de 2026)
+## (Descartado) Vista por plantas, al estilo Idle Miner (5 de octubre de 2026)
+
+> Descartado: se parecía demasiado a Idle Miner. Ver «Encargo: «De rider a millonario», vista en ruta y reparto en bici».
 
 Carlos ha elegido rehacer la pantalla de cada negocio como en Idle Miner. **El encargo «Pantallas de negocio de primera» (recintos isométricos) queda en pausa.** La ciudad sigue siendo isométrica.
 
@@ -984,3 +986,83 @@ Carlos ha elegido rehacer la pantalla de cada negocio como en Idle Miner. **El e
 - una cabina de montacargas por negocio, de unos 64×56 (hoy está dibujada por código);
 - un fondo de calle con fachada por ciudad, para la parte de arriba;
 - el botón «Nivel» como imagen, si se quiere más acabado.
+
+## Encargo: «De rider a millonario», vista en ruta y reparto en bici (5 de octubre de 2026)
+
+Sustituye a «Cambio de rumbo: vista por plantas», que queda descartado por parecerse demasiado a Idle Miner. El diseño completo está en [`DISENO_RUTA.md`](DISENO_RUTA.md).
+
+**Qué ya está programado** (`src/scenes/RouteScene.ts`), hoy con arte provisional y activo en el reparto en bici y en el almacén (`ROUTE_VIEW`):
+- **Arriba:** la sede y la calle.
+- **Debajo:** una ruta en zigzag. En cada tramo horizontal hay una parada (un puesto) y el transporte la recorre.
+- **Botón «Nivel»:** siempre a la derecha.
+- **Reparto en bici** (`bike`): es el nuevo primer negocio. Si mantienes pulsado al rider, pedalea más rápido.
+
+**Reglas:**
+- El estilo de siempre: juguete 3D, contorno azul marino y luz arriba a la izquierda.
+- PNG transparentes y después `npm run art:webp`.
+- Documentar las claves y los prompts al final de esta sección.
+- No tocar `src/game/*`.
+- Escala: una franja de parada mide **390×172 px lógicos** y la ruta tiene **30 px** de ancho.
+
+### 1. El rider (protagonista) — prioridad máxima
+| Clave | Tamaño | Qué es |
+| --- | --- | --- |
+| `ch_rider_bike_0`, `_1`, `_2` | 64×60 | El rider de la gorra verde (el mismo de la web y del icono) **montado en bici con la caja de reparto**: quieto y dos fotogramas pedaleando. Mirando a la derecha; el código lo voltea |
+| `ch_rider_bike_fast` | 64×60 | Pedaleando a tope: inclinado, con líneas de velocidad y gotas de sudor |
+| `ch_customer_0`…`_2` | 44×60 | Cliente que recibe el pedido (venta del reparto): andando y recogiendo la bolsa |
+| `item_order` | 26×26 | Bolsa de reparto con el ticket grapado (el «producto» del reparto) |
+
+### 2. Reparto en bici: paradas y sede
+| Clave | Tamaño | Qué es |
+| --- | --- | --- |
+| `st_bike_0`…`st_bike_7` | 104×80 | Las 8 paradas, cada una un local distinto, en mostrador de calle con su cocinero: hamburguesería, pizzería, sushi, kebab, tacos, poke, panadería y heladería. Rangos: versiones `_r1`…`_r5` (bronce a leyenda) del mismo local, con más detalle |
+| `ch_cook_bike_*` | 44×60 | (Opcional) cocinero propio de cada local; si no, se usa `ch_cook` |
+| `bld_bike_1`, `_2`, `_3` | 172×140/164/188 | La sede del reparto, el «punto de recogida»: **1** bici aparcada en un portal; **2** pequeño local con bicis y mochilas; **3** central de riders con motos y logo propio, sin marcas reales. Hoy se usa provisionalmente la del food truck (`PROVISIONAL_HUB` en `catalog.ts`) |
+
+### 3. Tramos de ruta (la pieza clave de la vista)
+Para **cada negocio**, un juego de piezas de 30 px de ancho que se repiten en vertical y en horizontal: tramo recto horizontal, tramo recto vertical, curva (los 4 giros), punto de parada (ensanchamiento delante del puesto) y fin de ruta en obras.
+
+| Negocio | La ruta es… |
+| --- | --- |
+| `bike` | asfalto con pasos de cebra y alcantarillas |
+| `dropship` | cinta transportadora con rodillos |
+| `restaurant` | pasillo de baldosa entre mesas |
+| `tiktok` | cables y focos sobre suelo de plató |
+| `ai` | canaleta de cableado con luces |
+| `foodtruck` | paseo marítimo de madera |
+| `beachclub` | pasarela de tablas sobre arena |
+| `yachts` | muelle de madera sobre agua |
+| `realestate` | calle residencial |
+| `crypto` | fibra óptica luminosa |
+| `supercars` | circuito con bordillos rojos y blancos |
+| `hotel` | moqueta roja con remates dorados |
+| `safari` | pista de arena con huellas |
+| `souk` | callejuela empedrada |
+| `tower` | andamio y tablones |
+
+Claves: `route_<negocio>_h`, `_v`, `_turn_ne`, `_turn_nw`, `_turn_se`, `_turn_sw`, `_stop` y `_end`. **Empezar por `bike` y `dropship`**, que ya usan la vista.
+
+### 4. Fondo de cada franja y sede
+| Clave | Tamaño | Qué es |
+| --- | --- | --- |
+| `band_<negocio>` | 390×172 | Suelo de fondo que se repite detrás de la ruta: acera con árboles en el reparto, suelo de nave en el almacén, etc. Discreto, que no compita con la ruta ni los puestos |
+| `street_<ciudad>` | 390×280 | La parte de arriba: cielo, fachadas de fondo y calle, para Madrid, Miami y Dubái. Sustituye a los `district_*` difuminados de hoy |
+
+### 5. Botón «Nivel» e iconos
+| Clave | Tamaño | Qué es |
+| --- | --- | --- |
+| `btn_level`, `btn_level_ready`, `btn_level_warn` | 70×56 | Botón de nivel: normal (azul apagado), «puedes mejorar» (azul vivo) y «atasco» (naranja). El texto lo pone el código |
+| `ic_manager_slot` | 30×30 | Marco redondo del encargado: vacío y ocupado |
+| `ic_pedal` | 48×48 | Icono «mantén pulsado» para el aviso de pedalear |
+
+### 6. Coches vistos de espaldas
+Sigue pendiente; ver «Encargo: coches vistos de espaldas».
+
+### Orden de entrega
+1. Rider en bici y cliente (1).
+2. Los 8 locales del reparto y su sede (2).
+3. Tramos y fondo de `bike` y `dropship` (3 y 4).
+4. Botones (5).
+5. Tramos y fondos del resto de negocios, primero los de Madrid.
+
+Cuando se entregue cada bloque, avisar a Claude para engancharlo y extender la vista en ruta a más negocios.

@@ -61,6 +61,8 @@ export interface BusinessDef {
   mult: number;
   /** Multiplicador de todos sus costes: más alto = el negocio tarda más en completarse. */
   pace: number;
+  /** Nombre propio de cada puesto (si no, `floorName` y su número). */
+  floorNames?: string[];
   /** Colores del edificio y del interior. */
   wall: number;
   roof: number;
@@ -74,10 +76,20 @@ export interface BusinessDef {
   customer: string;
 }
 
+/** Nombre de un puesto: el suyo propio si lo tiene (reparto en bici) o «Estantería 3». */
+export const floorLabel = (def: BusinessDef, i: number): string => def.floorNames?.[i] ?? `${def.floorName} ${i + 1}`;
+
 export const BUSINESSES: BusinessDef[] = [
   {
-    id: "dropship", name: "Almacén de dropshipping", icon: "📦", blurb: "Tu primer negocio. Pedidos online que salen solos.",
-    price: 0, mult: 1, pace: 1, wall: 0xe8b04b, roof: 0x9c5b2e,
+    id: "bike", name: "Reparto en bici", icon: "🚲", blurb: "Así empieza todo: recoges pedidos en los restaurantes del barrio y los llevas en bici.",
+    price: 0, mult: 0.08, pace: 2, wall: 0x2ecc71, roof: 0x1e8449,
+    floorName: "Restaurante", worker: "🧑‍🍳", item: "🛍️", transportName: "Tu bici", transportIcon: "🚲",
+    floorNames: ["Hamburguesería", "Pizzería", "Sushi", "Kebab", "Tacos", "Poke", "Panadería", "Heladería"],
+    saleName: "Clientes", saleWorker: "🙋", customer: "🏠",
+  },
+  {
+    id: "dropship", name: "Almacén de dropshipping", icon: "📦", blurb: "Tu primer negocio de verdad. Pedidos online que salen solos.",
+    price: 4000, mult: 1, pace: 1, wall: 0xe8b04b, roof: 0x9c5b2e,
     floorName: "Estantería", worker: "🧑‍🔧", item: "📦", transportName: "Carretilla", transportIcon: "🛻",
     saleName: "Furgonetas", saleWorker: "🚚", customer: "🏠",
   },
@@ -382,12 +394,12 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: "ipo_1", text: "Sal a bolsa por primera vez", metric: "ipos", target: 1, gems: 30 },
 ];
 
-/** Tutorial de los primeros minutos (siempre empieza en el almacén). */
+/** Tutorial de los primeros minutos (siempre empieza en el reparto en bici). */
 export const TUTORIAL: { text: string; stat: StatKey; n: number }[] = [
-  { text: "Toca al mozo de la Estantería 1 para preparar un pedido", stat: "tapFloor", n: 1 },
-  { text: "Toca la carretilla para recoger las cajas", stat: "tapTransport", n: 1 },
-  { text: "Toca la furgoneta para vender los pedidos", stat: "sales", n: 1 },
-  { text: "Pulsa el botón «Nivel» de la estantería y mejórala", stat: "upgrades", n: 1 },
+  { text: "Toca la Hamburguesería para que preparen un pedido", stat: "tapFloor", n: 1 },
+  { text: "Toca tu bici para recoger los pedidos (mantén pulsado para pedalear)", stat: "tapTransport", n: 1 },
+  { text: "Toca al cliente para entregar los pedidos y cobrar", stat: "sales", n: 1 },
+  { text: "Pulsa el botón «Nivel» de la Hamburguesería y mejórala", stat: "upgrades", n: 1 },
   { text: "Contrata un gerente para que una parte trabaje sola", stat: "hires", n: 1 },
-  { text: "Abre la Estantería 2 en la planta en obras", stat: "floors", n: 1 },
+  { text: "Abre la Pizzería, la siguiente parada de tu ruta", stat: "floors", n: 1 },
 ];

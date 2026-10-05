@@ -8,7 +8,7 @@ import Phaser from "phaser";
 import { createAds, type Placement } from "./ads";
 import { sound, type Sfx } from "./audio/sound";
 import * as act from "./game/actions";
-import { CITIES, CONFIG, FOUNDERS, GOLD, LIFE, TOURISM, VIRAL_TITLES } from "./game/data";
+import { CITIES, CONFIG, FOUNDERS, GOLD, LIFE, TOURISM, VIRAL_TITLES, floorLabel } from "./game/data";
 import { boostHours, callWave, gold, lockGold, tourism } from "./game/world";
 import { BIG_RANK, rankInfo, rankSnapshot, rankUps } from "./game/ranks";
 import { applyFounderError, applyFounderRank, founderPending, reachedFounderCity } from "./game/founders";
@@ -25,7 +25,7 @@ import { installErrorReporting } from "./platform/errors";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
-import { FloorsScene, FLOOR_VIEW } from "./scenes/FloorsScene";
+import { RouteScene, ROUTE_VIEW } from "./scenes/RouteScene";
 import { CityScene } from "./scenes/CityScene";
 import { COLORS, DPR, overlayHeight, type Bridge } from "./scenes/common";
 import { banner, celebrate, floatAt } from "./ui/celebrate";
@@ -219,12 +219,12 @@ const game = new Phaser.Game({
 game.scene.add("boot", BootScene, true);
 game.scene.add("city", CityScene);
 game.scene.add("business", BusinessScene);
-game.scene.add("floors", FloorsScene);
-/** Escena de un negocio: la vista por plantas (estilo Idle Miner) donde ya está, si no el recinto. */
-const bizScene = (id: string) => (FLOOR_VIEW.has(id) ? "floors" : "business");
+game.scene.add("route", RouteScene);
+/** Escena de un negocio: la vista en ruta donde ya está (docs/DISENO_RUTA.md), si no el recinto. */
+const bizScene = (id: string) => (ROUTE_VIEW.has(id) ? "route" : "business");
 /** La escena de negocio activa, si hay una (para los visitantes con oferta). */
-function activeBizScene(): BusinessScene | FloorsScene | null {
-  for (const key of ["business", "floors"]) if (game.scene.isActive(key)) return game.scene.getScene(key) as BusinessScene | FloorsScene;
+function activeBizScene(): BusinessScene | RouteScene | null {
+  for (const key of ["business", "route"]) if (game.scene.isActive(key)) return game.scene.getScene(key) as BusinessScene | RouteScene;
   return null;
 }
 
@@ -701,7 +701,7 @@ function watchRanks(): void {
   const r = rankInfo(top.rank)!;
   const def = bizList(S).find((d) => d.id === top.bizId);
   if (!def) return;
-  const part = top.station.kind === "floor" ? `${def.floorName} ${top.station.index + 1}` : top.station.kind === "transport" ? def.transportName : def.saleName;
+  const part = top.station.kind === "floor" ? floorLabel(def, top.station.index) : top.station.kind === "transport" ? def.transportName : def.saleName;
   const more = ups.length > 1 ? " " + t("(y {n} más)", { n: ups.length - 1 }) : "";
   if (top.rank >= BIG_RANK && !modalOpen()) {
     void celebrate(root, {

@@ -36,6 +36,8 @@ En orden de urgencia (detalles en `LANZAMIENTO.md` y `TIENDA.md`):
 7. [ ] Alta de autónomo o empresa cuando entren ingresos; datos fiscales en AdMob y Google Play. Asesor para bases de la Liga, privacidad e impuestos.
 8. [ ] Más adelante, iPhone: cuenta de Apple (99 $/año), cuando Android funcione.
 
+**Diseño en revisión:** «De rider a millonario» con vista en ruta y un nuevo primer negocio, «Reparto en bici». Está en [`DISENO_RUTA.md`](DISENO_RUTA.md) y va por delante de lo demás.
+
 ## Lo que hace Claude (cuando llegue el arte)
 
 Por orden:

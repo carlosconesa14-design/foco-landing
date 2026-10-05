@@ -199,6 +199,16 @@ export interface SaleEvent {
   lucky?: boolean;
 }
 
+/**
+ * Pedalear (reparto en bici): mientras el jugador mantiene pulsado al rider, el transporte de ese
+ * negocio va más rápido. Solo jugando, nunca offline, y no aplica si ya tiene encargado.
+ */
+export const PEDAL_SPEED = 2.5;
+let pedaling: string | null = null;
+export function setPedal(bizId: string | null): void {
+  pedaling = bizId;
+}
+
 /** Tirada de suerte de las ventas virales. Se puede fijar en tests y simulaciones. */
 let luck: () => number = Math.random;
 export function setLuck(fn: () => number): void {
@@ -228,7 +238,7 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
   // Transporte: baja planta a planta, carga hasta llenarse y sube.
   const t = b.transport;
   const cap = transportCap(def, t.level) * m.log;
-  const speed = transportSpeed(t.level);
+  const speed = transportSpeed(t.level) * (pedaling === id && !t.managed ? PEDAL_SPEED : 1);
   let left = dt;
   let guard = 0;
   while (left > 0 && guard++ < 64) {
