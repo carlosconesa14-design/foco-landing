@@ -7,7 +7,7 @@ import { calmWorld } from './common';
 import { cityDef } from '../game/state';
 
 type Point={x:number;y:number};
-type Options={city:string;biz?:string;cols:number;rows:number;iso:(c:number,r:number)=>Point};
+type Options={city:string;biz?:string;name?:string;cols:number;rows:number;iso:(c:number,r:number)=>Point};
 /** Noninteractive scenery outside the playable grid; fixed small actor budget. */
 export class Neighborhood {
   readonly bounds:{left:number;top:number;right:number;bottom:number};
@@ -17,7 +17,9 @@ export class Neighborhood {
   private walkers:{image:Phaser.GameObjects.Image;a:Point;b:Point;phase:number;role:string}[]=[];
   private birds:{image:Phaser.GameObjects.Graphics;x:number;y:number;phase:number}[]=[];
   private lamps:{glow:Phaser.GameObjects.Ellipse}[]=[];
-  private cars:{image:Phaser.GameObjects.Image;a:Point;b:Point;t:number;speed:number}[]=[];
+  private cars:{image:Phaser.GameObjects.Image;a:Point;b:Point;g:[number,number,number,number];t:number;speed:number}[]=[];
+  /** Neighbour footprints in grid units, so cars sort correctly against tall buildings. */
+  private feet:{c0:number;r0:number;c1:number;r1:number;depth:number}[]=[];
   /** Camera colour behind the outermost, faded blocks. */
   backdrop?:number;
   constructor(scene:Phaser.Scene,o:Options){
@@ -134,7 +136,7 @@ export class Neighborhood {
       }
       const nearRoad=[[1,0],[-1,0],[0,1],[0,-1]].some(([dc,dr])=>road(c+dc,r+dr)||inPlay(c+dc,r+dr));
       const base=beach(c)?0xf1dfb4:dubai&&d>R+1?0xe6c992:nearRoad?pal.walk:pal.lot;
-      ground.fillStyle(mix(base,pal.far,1-fade),1).fillPoints(pts,true);
+      ground.fillStyle(mix(base,pal.far,Math.max(.18,1-fade)),1).fillPoints(pts,true);
       ground.lineStyle(1,mix(base,0x000000,.12),.35*fade).strokePoints(pts,true);
       if(!nearRoad&&!beach(c)&&(c*7+r*3)%5===0)ground.fillStyle(0xffffff,.1*fade).fillCircle(p.x+6,p.y+22,2.5);
     }
@@ -148,13 +150,32 @@ export class Neighborhood {
     if(kind==='neon')trade.push('district_neon','district_technology');
     let seed=biz.length*31+cols;
     const pick=(list:string[])=>{seed=(seed*9301+49297)%233280;return list[seed%list.length];};
+    // Filler is quieter than the business: a touch of the backdrop colour on every neighbour.
+    const filler=mix(0xffffff,pal.far,.28),fillerFar=mix(0xffffff,pal.far,.45);
     const put=(cc:number,rr:number,list:string[],alpha:number)=>{
       if(beach(Math.floor(cc))||(dubai&&alpha<1))return;
-      const key=pick(list),wide=key.startsWith('district_'),scale=alpha<1?1.15:1.3,half=(wide?1.5:1)*scale;
+      // In front of the plot (screen-below it) a tall building would hide the business: a car park instead.
+      if(alpha===1&&(cc>cols||rr>rows)&&Math.abs(cc-rr)<cols+2){parking(cc,rr);return;}
+      const key=pick(list),wide=key.startsWith('district_'),scale=alpha<1?1:1.1,half=(wide?1.5:1)*scale;
       const p=iso(cc+half,rr+half);
       const img=art(scene,p.x,p.y,key).setOrigin(.5,1).setDepth(p.y).setFlipX(seed%3===0);
-      img.setDisplaySize(img.displayWidth*scale,img.displayHeight*scale);
-      if(alpha<1)img.setAlpha(alpha).setTint(mix(0xffffff,pal.far,.35));
+      this.feet.push({c0:cc-half,r0:rr-half,c1:cc+half,r1:rr+half,depth:p.y});
+      img.setDisplaySize(img.displayWidth*scale,img.displayHeight*scale).setTint(alpha<1?fillerFar:filler);
+      if(alpha<1)img.setAlpha(alpha);
+    };
+    const parkedCars=miami?['car_miami_0','car_miami_1']:['car_0','car_1','car_2','car_3','van'];
+    const parking=(cc:number,rr:number)=>{
+      const lot=scene.add.graphics().setDepth(-15);
+      const q=(c:number,r:number)=>iso(c,r);
+      const corners=[q(cc-1.5,rr-1.5),q(cc+1.5,rr-1.5),q(cc+1.5,rr+1.5),q(cc-1.5,rr+1.5)];
+      lot.fillStyle(mix(0x5b6773,pal.far,.3),1).fillPoints(corners,true);
+      for(let k=-1;k<=1.01;k+=1){const a=q(cc+k,rr-1.4),b=q(cc+k,rr+1.4);lot.lineStyle(2,0xf4f1e6,.55).lineBetween(a.x,a.y,b.x,b.y);}
+      for(const [dc,dr] of [[-.5,-.7],[.5,.6],[-.5,.6]]){
+        const p=q(cc+dc,rr+dr);
+        art(scene,p.x,p.y+6,pick(parkedCars)).setOrigin(.5,.72).setDepth(p.y).setTint(filler).setFlipX(true);
+      }
+      const t1=q(cc+1.5,rr-1.5),t2=q(cc-1.5,rr+1.5);
+      for(const t of [t1,t2])art(scene,t.x,t.y,miami?'palm':dubai?'desert_palm':'tree_0').setOrigin(.5,1).setDepth(t.y).setTint(filler);
     };
     const ring=(back:number,front:number,along:number[],list:string[],alpha:number)=>{
       const done=new Set<string>();
@@ -190,15 +211,32 @@ export class Neighborhood {
       [-E,-R-.5,cols+E,-R-.5],[cols+R+.5,rows+E,cols+R+.5,-E],[cols+E,rows+R+.5,-E,rows+R+.5],[-R-.5,-E,-R-.5,rows+E],
       [mid+.3,-1,mid+.3,-E],[mid+.7,-E,mid+.7,-1],[mid+.5,rows+1,mid+.5,rows+E],
       [-1,mid+.5,-E,mid+.5],[cols+1,mid+.5,cols+E,mid+.5],
-      [-.5,rows+1,-.5,-2],[-2,-.5,cols+1,-.5],[cols+.5,-1,cols+.5,rows+1],
     ];
+    // (The avenue hugging the plot stays free of through traffic: cars there brushed the walls.)
+    // The vehicle art only has a front view: every lane runs down the screen (+c or +r),
+    // otherwise cars would look like they slide sideways.
     lanes.forEach(([c0,r0,c1,r1],i)=>{
+      if(c1<c0||r1<r0)[c0,r0,c1,r1]=[c1,r1,c0,r0];
       if(miami&&(c0>cols+1||c1>cols+1))return;
       const a=iso(c0,r0);
       const image=art(scene,a.x,a.y,cars[i%cars.length]).setOrigin(.5,.72);
       image.setFlipX((c1-c0)-(r1-r0)<0);
-      this.cars.push({image,a:iso(c0,r0),b:iso(c1,r1),t:(i*.37)%1,speed:.035+(i%3)*.01});
+      this.cars.push({image,a:iso(c0,r0),b:iso(c1,r1),g:[c0,r0,c1,r1],t:(i*.37)%1,speed:.035+(i%3)*.01});
     });
+    // The business plot stands out: a gold kerb with a soft glow and a name sign at the entrance corner.
+    const plot=[iso(0,0),iso(cols,0),iso(cols,rows),iso(0,rows)];
+    const kerb=scene.add.graphics().setDepth(-9);
+    kerb.lineStyle(26,0xffd36b,.18).strokePoints(plot,true);
+    kerb.lineStyle(7,0xffd36b,.95).strokePoints(plot,true);
+    kerb.lineStyle(2,0xfff5d5,.9).strokePoints(plot,true);
+    if(o.name){
+      const sp=iso(cols-1.2,rows+1.7);
+      const pole=scene.add.graphics().setDepth(sp.y+2);
+      pole.fillStyle(0x24445c,1).fillRect(sp.x-2,sp.y-58,4,58);
+      const sign=scene.add.text(sp.x,sp.y-58,o.name,{fontFamily:'Lilita One, Rubik, sans-serif',fontSize:'15px',color:'#2e2200',backgroundColor:'#ffd36b',padding:{x:8,y:4}})
+        .setOrigin(.5,1).setDepth(sp.y+3).setResolution(2);
+      sign.setStroke('#fff5d5',0);
+    }
     // Pedestrians on the pavements.
     const roles=miami?['vendor','promoter']:dubai?['butler','guide']:['sales','rider'];
     const walks:[number,number,number,number][]=[[-1.6,0,-1.6,rows],[0,-1.6,cols,-1.6],[cols+1.6,0,cols+1.6,rows],[-1.6,rows,-1.6,-1],[cols,-1.6,0,-1.6],[0,rows+1.6,cols,rows+1.6]];
@@ -216,6 +254,18 @@ export class Neighborhood {
     const span=R+2.5,corners=[iso(-span,-span),iso(cols+span,-span),iso(cols+span,rows+span),iso(-span,rows+span)];
     return {left:Math.min(...corners.map(p=>p.x)),top:Math.min(...corners.map(p=>p.y))-160,right:Math.max(...corners.map(p=>p.x)),bottom:Math.max(...corners.map(p=>p.y))};
   }
+  /** Painter's order against neighbour buildings (see CityScene.actorDepth). */
+  private depthAt(c:number,r:number,y:number){
+    let lo=-Infinity,hi=Infinity;const x=c-r;
+    for(const f of this.feet){
+      if(x+.6<f.c0-f.r1||x-.6>f.c1-f.r0)continue;
+      if(c>=f.c1||r>=f.r1)lo=Math.max(lo,f.depth);
+      else if(c<=f.c0||r<=f.r0)hi=Math.min(hi,f.depth);
+    }
+    if(y<=lo)y=lo+.5;
+    if(y>=hi&&hi>lo)y=hi-.5;
+    return y;
+  }
   update(dt:number){
     if(!calmWorld())this.elapsed+=Math.min(dt,.1);
     for(const car of this.traffic){
@@ -229,7 +279,9 @@ export class Neighborhood {
     }
     for(const car of this.cars){
       if(!calmWorld())car.t=(car.t+car.speed*Math.min(dt,.1))%1;
-      car.image.setPosition(car.a.x+(car.b.x-car.a.x)*car.t,car.a.y+(car.b.y-car.a.y)*car.t).setDepth(car.image.y+1);
+      car.image.setPosition(car.a.x+(car.b.x-car.a.x)*car.t,car.a.y+(car.b.y-car.a.y)*car.t);
+      const [c0,r0,c1,r1]=car.g;
+      car.image.setDepth(this.depthAt(c0+(c1-c0)*car.t,r0+(r1-r0)*car.t,car.image.y+1));
       car.image.setAlpha(Phaser.Math.Clamp(Math.min(car.t,1-car.t)*12,0,1));
     }
     if(this.boat)this.boat.image.setPosition(this.boat.x+Math.sin(this.elapsed/9)*18,this.boat.y+Math.sin(this.elapsed*1.5)*3);

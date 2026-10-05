@@ -910,3 +910,11 @@ Prompts usados:
 **Para Claude:** entrega de arte preparada para montar la landing y los vídeos descritos en `docs/PLAN.md`; instrucciones de uso en `site/img/README.md` y `marketing/tiktok/arte/README.md`. Publicar esta rama entrega los archivos; el montaje de vídeos y el despliegue de la landing corresponden a la siguiente fase.
 
 Validación: 227 tests y build correctos; 53 comprobaciones del juego a 390×844 sin errores; 28 pares PNG/WebP comprobados. Contacto visual: `docs/visual-review/marketing-contact-sheet.png`. El retrato del gerente limpio se conserva además en `site/img/source/manager-clean.png`.
+
+## Encargo: coches vistos de espaldas (tráfico en los dos sentidos)
+
+Los coches (`car_0`…`car_3`, `van`, `car_miami_*`, `luxcar_*`) solo tienen la vista de frente, hacia abajo y a la derecha. Si un coche subía por la pantalla, parecía que iba de lado. Por eso, desde el 5 de octubre, el tráfico de la ciudad y de los barrios solo baja por la pantalla (en `streetLane` de `streets.ts` y en las calles de `Neighborhood.ts`).
+
+Para tener tráfico en los dos sentidos:
+- **Qué hace falta:** una vista trasera de cada vehículo, `<clave>_rear`. Es el mismo coche visto desde atrás, alejándose hacia arriba y a la izquierda. Mismo tamaño lógico, mismo punto de apoyo y fondo transparente. Con `flipX` vale también para subir hacia arriba y a la derecha.
+- **Prompt:** «same vehicle, rear three-quarter view driving away toward the upper-left, identical scale, colours and ground anchor, transparent background, no text».
