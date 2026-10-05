@@ -1,0 +1,198 @@
+[
+  {
+    "file": "site/img/city-dubai.png",
+    "width": 800,
+    "height": 560,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/city-madrid.png",
+    "width": 800,
+    "height": 560,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/city-miami.png",
+    "width": 800,
+    "height": 560,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/favicon-180.png",
+    "width": 180,
+    "height": 180,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/favicon-32.png",
+    "width": 32,
+    "height": 32,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/hero-mobile.png",
+    "width": 900,
+    "height": 1200,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/hero.png",
+    "width": 1600,
+    "height": 1000,
+    "alpha": false,
+    "webp": true
+  },
+  {
+    "file": "site/img/league.png",
+    "width": 800,
+    "height": 560,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/og-image-en.png",
+    "width": 1200,
+    "height": 630,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/og-image.png",
+    "width": 1200,
+    "height": 630,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/phone-frame.png",
+    "width": 520,
+    "height": 1040,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/rider.png",
+    "width": 600,
+    "height": 800,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/step-expand.png",
+    "width": 256,
+    "height": 256,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/step-manager.png",
+    "width": 256,
+    "height": 256,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "site/img/step-open.png",
+    "width": 256,
+    "height": 256,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/avatar.png",
+    "width": 400,
+    "height": 400,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/coin-burst.png",
+    "width": 2048,
+    "height": 256,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/cover-template-dubai.png",
+    "width": 1080,
+    "height": 1920,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/cover-template-madrid.png",
+    "width": 1080,
+    "height": 1920,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/cover-template-miami.png",
+    "width": 1080,
+    "height": 1920,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/endcard-en.png",
+    "width": 1080,
+    "height": 1920,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/endcard.png",
+    "width": 1080,
+    "height": 1920,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/sticker-atasco.png",
+    "width": 600,
+    "height": 180,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/sticker-gerente.png",
+    "width": 600,
+    "height": 180,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/sticker-nivel-maximo.png",
+    "width": 600,
+    "height": 180,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/sticker-record.png",
+    "width": 600,
+    "height": 180,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/sticker-salida-bolsa.png",
+    "width": 600,
+    "height": 180,
+    "alpha": true,
+    "webp": true
+  },
+  {
+    "file": "marketing/tiktok/arte/sticker-x3.png",
+    "width": 600,
+    "height": 180,
+    "alpha": true,
+    "webp": true
+  }
+]

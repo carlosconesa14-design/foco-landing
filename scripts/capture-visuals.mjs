@@ -100,14 +100,15 @@ async function layout(page,label) {
   findings.push(label);
 }
 async function neighborhood(page,sceneName,label) {
-  const result=await page.evaluate(name=>{
+  const result=await page.evaluate(async name=>{
     const sc=__game.game.scene.getScene(name),n=sc.neighborhood;
     const districts=sc.children.list.filter(o=>o.type==='Image'&&o.texture.key.startsWith('district_'));
-    return {count:districts.length,missing:districts.some(o=>o.texture.key==='__MISSING'),walkers:n?.walkers.length,birds:n?.birds.length,
+    const expected=name==='city'?__game.state.city:(await import('/src/art/businessWorld.ts')).BUSINESS_DISTRICTS[__game.state.view.id];
+    return {count:districts.length,keys:[...new Set(districts.map(o=>o.texture.key))],expected,traffic:n?.traffic.length,missing:districts.some(o=>o.texture.key==='__MISSING'),walkers:n?.walkers.length,birds:n?.birds.length,
       fits:districts.every(o=>{const b=o.getBounds();return b.left>=n.bounds.left&&b.right<=n.bounds.right&&b.top>=n.bounds.top&&b.bottom<=n.bounds.bottom})};
   },sceneName);
-  assert(result.count===6&&!result.missing&&result.walkers===6&&result.birds===3&&result.fits,`${label}: neighborhood assets/bounds ${JSON.stringify(result)}`);
-  findings.push(`${label}: six districts, nine ambient actors and camera coverage`);
+  assert(result.count===6&&!result.missing&&result.walkers===6&&result.birds===3&&result.traffic===2&&result.keys.length===1&&result.keys[0]===`district_${result.expected}`&&result.fits,`${label}: neighborhood assets/bounds ${JSON.stringify(result)}`);
+  findings.push(`${label}: six districts, eleven ambient actors and camera coverage`);
 }
 async function snap(page,name) {await page.screenshot({path:resolve(out,`${name}.png`)});}
 try {
@@ -170,17 +171,21 @@ try {
       });
       assert(baselines.every(f=>f.w===132&&f.h===180&&f.bottom===177&&f.top>=7&&f.top<=40),'Worker frames drift from their canonical baseline/body box');
       findings.push(`${locale}: 54 walking frames share canonical bounds`);
-      await seed(page,'madrid');
-      await page.evaluate(async()=>{
-        const {freshBizTwist,TW}=await import('/src/game/twists.ts');const {now}=await import('/src/game/clock.ts');const s=__game.state,n=now();s.meta.stats.life.floors=TW.startFloors;
-        for(const id of ['dropship','restaurant','tiktok','ai'])s.meta.twists[id]={...freshBizTwist(),intro:true,nextOrder:n+1e12,nextCritic:n+1e12};
-        s.meta.twists.dropship.order={target:1e30,base:0,deadline:0,offerUntil:n+60000,reward:500,done:false};
-        s.meta.twists.restaurant.critic={need:12,got:3,until:n+60000};s.meta.twists.tiktok.viralEnd=n+60000;s.meta.twists.ai.data=25;
-      });
-      for(const [id,key] of [['dropship','veh_order'],['restaurant','ch_critic_0'],['tiktok','prop_broadcast'],['ai','prop_research']]) {
-        await business(page,id);await page.waitForTimeout(650);await snap(page,`${locale}-world-${id}`);
-        assert(await page.evaluate(async key=>{const {artRef}=await import('/src/art/generated.ts');const sc=__game.game.scene.getScene('business'),ref=artRef(sc,key);return sc.children.list.some(o=>o.type==='Image'&&o.visible&&o.texture.key===ref.texture&&o.frame.name===ref.frame)},key),`Missing physical mechanic ${id}`);
-        findings.push(`${locale}: world mechanic ${id}`);
+      for(const city of ['madrid','miami','dubai']) {
+        await seed(page,city);
+        const keys=await page.evaluate(async()=>{
+          const {freshBizTwist,TW}=await import('/src/game/twists.ts');const {MECHANIC_ART}=await import('/src/art/businessWorld.ts');const {now}=await import('/src/game/clock.ts');const s=__game.state,n=now();s.meta.stats.life.floors=TW.startFloors;
+          const ids=Object.keys(s.biz);
+          for(const id of ids){const st={...freshBizTwist(),intro:true,nextOrder:n+1e12,nextCritic:n+1e12};
+            st.order={target:1e30,base:0,deadline:0,offerUntil:n+60000,reward:500,done:false};
+            st.critic={need:12,got:3,until:n+60000};st.viralEnd=n+60000;st.data=25;s.meta.twists[id]=st;}
+          return ids.map(id=>[id,MECHANIC_ART[id]]);
+        });
+        for(const [id,key] of keys){
+          await business(page,id);await page.waitForTimeout(650);await snap(page,`${locale}-world-${id}`);
+          assert(await page.evaluate(async key=>{const {artRef}=await import('/src/art/generated.ts');const sc=__game.game.scene.getScene('business'),ref=artRef(sc,key);return sc.children.list.some(o=>o.type==='Image'&&o.visible&&o.texture.key===ref.texture&&o.frame.name===(ref.frame??'__BASE'))},key),`Missing physical mechanic ${id}`);
+          findings.push(`${locale}: world mechanic ${id}`);
+        }
       }
       await seed(page,'dubai');await business(page,'supercars');
       // Presentation responds to the existing timers, with no changes to economy/rewards.
@@ -193,7 +198,7 @@ try {
         await page.locator(`.world-visitor.${kind}`).waitFor();await page.waitForTimeout(1600);
         await snap(page,`${locale}-visitor-${kind}`);
         const name=kind==='truck'?'veh_supply':'ch_vip_0';
-        assert(await page.evaluate(async name=>{const {artRef}=await import('/src/art/generated.ts');const sc=__game.game.scene.getScene('business');const ref=artRef(sc,name);return sc.children.list.some(o=>o.type==='Image'&&o.texture.key===ref.texture&&o.frame.name===ref.frame)},name));
+        assert(await page.evaluate(async name=>{const {artRef}=await import('/src/art/generated.ts');const sc=__game.game.scene.getScene('business');const ref=artRef(sc,name);return sc.children.list.some(o=>o.type==='Image'&&o.texture.key===ref.texture&&o.frame.name===(ref.frame??'__BASE'))},name));
         await page.locator(`.world-visitor.${kind}`).click();await page.locator('.modal').waitFor();
         await page.locator('.modal .actions button').last().click();await page.waitForTimeout(750);
       }
