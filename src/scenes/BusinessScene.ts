@@ -1,3 +1,4 @@
+import { Neighborhood } from "./Neighborhood";
 import { TwistWorld } from "./TwistWorld";
 import { TWIST_WORLD_ART } from "../game/twists";
 import { WorldVisitor } from "./WorldVisitor";
@@ -15,7 +16,7 @@ import { rankInfo, rankOf } from "../game/ranks";
 import { rankBadge, rankBurst, rankGlow, rankPedestal } from "./rankFx";
 import { mix, shade } from "../art/pen";
 import { CHAIN, TUTORIAL } from "../game/data";
-import { bizDef, bizList, bizTier, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
+import { bizDef, bizList, bizTier, chainRates, floorLoad, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
 import { fmt } from "../game/format";
 import { cityDef, type BusinessState } from "../game/state";
 import { COLORS, DPR, reducedMotion, rewardCoins, DragScroll, Pill, bridgeOf, floatText, label, setupCamera, type Bridge, calmWorld } from "./common";
@@ -145,7 +146,10 @@ export class BusinessScene extends Phaser.Scene {
   private start: { x: number; y: number; z?: number } = { x: -1, y: -1 };
   private ox = 0;
   private oy = 0;
+  private stockFocus = -1;
+  private stockFocusUntil = 0;
   private worldW = 0;
+  private neighborhood?: Neighborhood;
   private slots: SlotView[] = [];
   private floorCount = 0;
   private mover!: Phaser.GameObjects.Image;
@@ -237,6 +241,7 @@ export class BusinessScene extends Phaser.Scene {
     this.worldW = ((COLS + ROWS) * TW) / 2 + margin * 2;
     const worldH = this.oy + ((COLS + ROWS + 2) * TH) / 2 + 40 + insets.bottom;
 
+    this.neighborhood = new Neighborhood(this,{city:this.bridge.state().city,biz:this.bizId,cols:COLS,rows:ROWS,iso:(c,r)=>this.iso(c,r)});
     this.cameras.main.setBackgroundColor(mix(cityDef(this.bridge.state().city).ground.grass, 0x000000, 0.06));
     if (this.bizId === "restaurant") {
       this.restaurant = new RestaurantRoom(this,(c,r)=>this.iso(c,r),this.floorCount);
@@ -263,7 +268,7 @@ export class BusinessScene extends Phaser.Scene {
       this.drag.centerOn(focus.x, focus.y);
     }
     const focus = this.iso(...this.layout.focus);
-    this.drag.addControls(focus, { left: margin - TW / 2 - 40, top: this.oy - (this.restaurant || this.warehouse ? 75 : ART[hubKey].h), right: this.worldW - margin + 40, bottom: this.oy + (COLS + ROWS + 1) * TH / 2 + 20 });
+    this.drag.addControls(focus, this.neighborhood.bounds);
     if (TWIST_WORLD_ART.includes(this.bizId)) this.twistWorld = new TwistWorld(this,this.bizId,this.iso(this.bizId === "restaurant" ? 7.6 : this.bizId === "dropship" ? 1.5 : 6.9, 8.7));
     revealScene(this);
   }
@@ -635,7 +640,10 @@ export class BusinessScene extends Phaser.Scene {
   private tapZone(x: number, y: number, w: number, h: number, st: Station): void {
     const z = this.add.zone(x, y, w, h).setOrigin(0).setInteractive({ useHandCursor: true });
     z.on("pointerup", () => {
-      if (!this.drag.wasDrag()) this.bridge.tapStation(this.bizId, st);
+      if (!this.drag.wasDrag()) {
+        if(st.kind === "floor") {this.stockFocus=st.index;this.stockFocusUntil=this.time.now+3500;}
+        this.bridge.tapStation(this.bizId, st);
+      }
     });
   }
 
@@ -713,6 +721,7 @@ export class BusinessScene extends Phaser.Scene {
   /* ---------- Actualización ---------- */
 
   update(_t: number, dtMs: number): void {
+    this.neighborhood?.update(Math.min(dtMs,100)/1000);
     this.visitor?.update();
     const s = this.bridge.state();
     this.twistWorld?.update(s);
@@ -755,7 +764,7 @@ export class BusinessScene extends Phaser.Scene {
       } else if(f.stock<v.lastStock) transferProduct(this,this.look.item,{x:v.x-2,y:v.y+13},{x:this.mover.x,y:this.mover.y-34});
       v.lastStock=f.stock;
       this.showPile(v.pile, f.stock, unit);
-      v.stock.setText(f.stock > 0 ? fmt(f.stock) : "");
+      v.stock.setText(f.stock > 0 ? fmt(f.stock) : "").setVisible(f.stock >= floorLoad(def,i,f.level) * 10 || this.stockFocus === i && this.time.now < this.stockFocusUntil);
       v.bar.width = 44 * p;
       v.hint.setVisible(tutStat ? tutStat === "tapFloor" && !f.running : tutorial && !f.managed && !f.running);
       v.manager.setVisible(f.managed);

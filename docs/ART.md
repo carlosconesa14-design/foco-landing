@@ -627,11 +627,11 @@ Opinión de Carlos jugando en el móvil (2 de octubre):
    - «Mejorar todo» es un botón redondo con un número;
    - los nombres de los puestos solo se ven con 1 o 2 puestos.
    - **Regla:** nada fijo nuevo en pantalla. Lo que se añada aparece solo cuando hay una acción y se va después.
-   - **Pendiente para Codex:**
+   - **Entregado por Codex el 5 de octubre (detalles al final):**
      - cabecera en una sola fila (el estilo de vida podría ir dentro del menú);
      - la barra de abajo, menos cargada;
      - menos etiquetas flotantes en el recinto (por ejemplo, el dinero de cada puesto solo al tocar o al estar lleno).
-3. *«Los negocios individuales hay que mejorarlos mucho visualmente, y la ciudad también: que no sean unos cuadrados y ya está. Que estén integrados como parte de un mundo y que puedas ver qué hay alrededor.»* — **Para Codex, el encargo grande:**
+3. *«Los negocios individuales hay que mejorarlos mucho visualmente, y la ciudad también: que no sean unos cuadrados y ya está. Que estén integrados como parte de un mundo y que puedas ver qué hay alrededor.»* — **Entregado por Codex el 5 de octubre (detalles al final):**
    - **Ciudad (`CityScene`):** que no sea una isla cuadrada flotando en el agua. Alrededor de las parcelas jugables, un barrio que continúa:
      - manzanas de fondo no jugables, edificios y tejados;
      - avenidas que salen del mapa;
@@ -704,3 +704,65 @@ node scripts/capture-ranks.mjs                  # Vite en 5173
 Python necesita Pillow/NumPy/SciPy; las exportaciones usan Chromium (`CHROMIUM_PATH`). Solo son necesarias para editar/reproducir, no para ejecutar el juego. La captura automatizada valida los 18 apoyos, las cuatro piezas físicas, las variantes de rango y la UI en español/inglés a 320/390/560 px, con Supabase simulado. Las pruebas comprueban que la presentación no cambia plazos, aceptación o recompensas. Pendiente únicamente la validación nativa/física indicada arriba.
 
 Limpieza final del atlas de decoración: se sustituyeron los símbolos de criptomonedas reconocibles por una moneda con estrella y nodos de red originales, y se pidieron frontales de joyería sin letras. Las fuentes PNG y recortes entregados son los utilizados en la validación final.
+
+### Miami: ciclos de personajes (5 de octubre de 2026)
+
+Los 12 roles propios de Miami tienen ahora tres PNG individuales de 132×180:
+`taquero`, `skater`, `vendor`, `bartender`, `promoter`, `captain`, `sailor`,
+`agent`, `broker`, `clerk`, `coder` y `trader`. Incluyen reposo y dos pasos;
+conservan su vestuario, patines, herramientas y la mano que lleva cada objeto.
+La base común está en y=178. Los PNG individuales prevalecen sobre los alias
+quietos del atlas; también se exportan a WebP para el cargador actual.
+
+Los originales y recortes están en `public/sprites/source/miami-walk-{a,b}.{png,json}`.
+Receta reproducible: `python scripts/register-miami-poses.py`,
+`node scripts/export-miami-poses.mjs` y `npm run art:webp`.
+Los contactos de revisión están en `docs/visual-review/miami-walk-{a,b}.png`.
+
+### Mundo integrado y pantalla limpia — entregado el 5 de octubre de 2026
+
+El encargo de la beta 2 está integrado en `Neighborhood.ts`, compartido por las
+ciudades y los 14 negocios. La rejilla jugable continúa tres casillas hacia fuera
+con aceras y avenidas, sin la antigua pared vertical de la isla. Una transición
+atmosférica suaviza el perímetro. Se añaden seis conjuntos de edificios vecinos,
+árboles y farolas; Miami tiene playa, paseo, embarcadero y yate. Los límites de
+cámara incluyen los edificios de fondo y el suelo exterior.
+
+| Claves | Tamaño lógico / PNG | Uso |
+| --- | --- | --- |
+| `district_madrid` | 270×190 / 540×380 | Tejados rojos, casas cálidas y sierra |
+| `district_miami` | 270×190 / 540×380 | Fachadas pastel, palmeras, playa y muelle |
+| `district_dubai` | 270×190 / 540×380 | Arquitectura crema/dorada, dunas y torres |
+| `district_industrial` | 270×190 / 540×380 | Almacén: naves, carga, aparcamiento |
+| `district_terrace` | 270×190 / 540×380 | Restaurante: calle de casas y terrazas |
+| `district_neon` | 270×190 / 540×380 | TikTok/IA: estudios, antenas y luces cian/violeta |
+
+Original: `public/sprites/source/neighborhoods.png`; recortes:
+`neighborhoods.json`. Exportación: `node scripts/export-neighborhoods.mjs`,
+seguida de `npm run art:webp`. Los PNG/WebP tienen transparencia y se cargan
+mediante el manifest existente; no se añade una textura gigante al juego.
+
+Prompt: original 3×2 atlas, six isolated transparent isometric 2:1 neighborhood
+dioramas, polished chibi toy3D warm top-left light navy contours. Madrid ochre
+houses red tile roofs and distant mountains; Miami coral/turquoise art-deco
+beachfront palms pier sand; Dubai cream/gold low buildings towers dunes;
+industrial loading bays crates parking van chimney; Spanish restaurant street
+colorful houses cafe umbrellas trees; neon creator district purple/teal studios
+filming equipment rooftop antennas. Connected wide shallow footprints, generous
+transparent gutters, no labels, logos or text.
+
+Vida ambiental: seis peatones y tres pájaros por escena; un yate adicional en
+Miami. Farolas con halo nocturno. Movimiento con `calmWorld()`: la preferencia
+del sistema reduce efectos fuertes, y el ajuste explícito del juego pausa la
+vida ambiental. No hay emisiones continuas de partículas ni actores ilimitados.
+
+La cabecera tiene una sola fila; el estilo de vida pasa al menú existente.
+La cadena inferior conserva los tres controles con etiquetas más discretas y
+sin pulsación continua. Mi vida sigue accesible en el menú. Las cantidades de
+los puestos aparecen al tocarlos durante 3,5 segundos o al acumular diez ciclos
+de producción; productos y barras siguen visibles. No cambia `src/game/*`.
+
+Validación de esta entrega: 225 tests, build de producción, 158 comprobaciones
+completas de navegador y 43 en la pasada final, sin errores. Se renuevan las
+capturas y gráfico de tienda. Galería e informes en `docs/visual-review/README.md`.
+La validación de rendimiento en Android físico sigue pendiente.

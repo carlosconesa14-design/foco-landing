@@ -66,7 +66,7 @@ Dubái tiene sus quince evoluciones de edificios, puestos, productos, roles, veh
 
 Marca: logos claro/oscuro, iconos web/Android, carga y splash, gráfico de Google Play y cinco capturas reales de tienda. Catálogo, herramientas y límites documentados en [`ART.md`](ART.md), «Cierre visual». La economía, guardado y frecuencia/recompensa de las ofertas permanecen intactos (`src/game/*` sin cambios).
 
-Validación local: 221 tests correctos, build de producción correcto y 122 comprobaciones automatizadas de Chromium, incluidos compra/equipamiento, fantasma, mecánicas físicas y apoyos de animación. **Pendiente antes de publicar:** probar rendimiento en Android físico de gama media, compilar/verificar recursos nativos y revisar el material en Play Console. La prueba visual simula Supabase; no valida cuentas, anuncios reales ni servidor.
+Validación local: 225 tests correctos, build de producción correcto y 122 comprobaciones automatizadas de Chromium, incluidos compra/equipamiento, fantasma, mecánicas físicas y apoyos de animación. **Pendiente antes de publicar:** probar rendimiento en Android físico de gama media, compilar/verificar recursos nativos y revisar el material en Play Console. La prueba visual simula Supabase; no valida cuentas, anuncios reales ni servidor.
 
 ## Próximos pasos (Claude)
 0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.
@@ -86,3 +86,7 @@ Validación local: 221 tests correctos, build de producción correcto y 122 comp
 - **Ajustes de la economía:** se comprueban con el bot (`src/game/balance.ts` y `tests/pacing.test.ts`), también con el bot «implicado» (`engaged`), que usa las mecánicas y «Mi vida».
 - **Rendimiento:** el canvas se pinta como mucho a x2 (`DPR` en `common.ts`) y las imágenes se cargan en WebP (`npm run art:webp`, `src/art/imgExt.ts`): 9,6 MB en vez de 37 MB al arrancar.
 - **Partidas antiguas:** `tests/migration.test.ts` carga partidas reales de la beta publicada (`tests/fixtures/beta-*.json`, generadas con el código de `main`). Si cambia el guardado, tienen que seguir cargando sin perder nada.
+
+Arte de Miami completado el 5 de octubre: 36 PNG/WebP para los 12 roles propios; originales, exportadores y contactos incluidos. Pasada adicional de 25 comprobaciones de navegador sin errores en `docs/visual-review/miami-report.json`.
+
+Mundo integrado y pantalla limpia (5 de octubre): seis dioramas de barrios originales para ciudades y recintos, calles/aceras exteriores, peatones, pájaros, paseo y yate en Miami, farolas nocturnas, cámara ampliada, cabecera en una fila y etiquetas de producción contextuales. No cambia la economía. Véase el cierre de `ART.md`.

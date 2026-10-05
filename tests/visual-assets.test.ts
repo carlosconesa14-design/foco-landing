@@ -33,7 +33,7 @@ describe('shipped visual atlas coverage', () => {
       expect(COMPLETION_FRAMES[`decor_${id}_3` as keyof typeof COMPLETION_FRAMES]).toBeDefined();
       for(const rank of [4,5])expect(COMPLETION_FRAMES[`st_${id}_r${rank}` as keyof typeof COMPLETION_FRAMES]).toBeDefined();
     }
-    for(const role of ['mechanic','valet','butler','guide','goldsmith','builder']) {
+    for(const role of ['mechanic','valet','butler','guide','goldsmith','builder','taquero','skater','vendor','bartender','promoter','captain','sailor','agent','broker','clerk','coder','trader']) {
       const poses=[0,1,2].map(n=>readFileSync(`public/sprites/ch_${role}_${n}.png`));
       poses.forEach(p=>{expect(p.readUInt32BE(16)).toBe(132);expect(p.readUInt32BE(20)).toBe(180)});
       expect(new Set(poses.map(p=>p.toString('base64'))).size).toBe(3);
