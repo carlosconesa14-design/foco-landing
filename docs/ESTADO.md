@@ -88,3 +88,5 @@ Validación local: 225 tests correctos, build de producción correcto y 122 comp
 - **Partidas antiguas:** `tests/migration.test.ts` carga partidas reales de la beta publicada (`tests/fixtures/beta-*.json`, generadas con el código de `main`). Si cambia el guardado, tienen que seguir cargando sin perder nada.
 
 Arte de Miami completado el 5 de octubre: 36 PNG/WebP para los 12 roles propios; originales, exportadores y contactos incluidos. Pasada adicional de 25 comprobaciones de navegador sin errores en `docs/visual-review/miami-report.json`.
+
+Mundo integrado y pantalla limpia (5 de octubre): seis dioramas de barrios originales para ciudades y recintos, calles/aceras exteriores, peatones, pájaros, paseo y yate en Miami, farolas nocturnas, cámara ampliada, cabecera en una fila y etiquetas de producción contextuales. No cambia la economía. Véase el cierre de `ART.md`.

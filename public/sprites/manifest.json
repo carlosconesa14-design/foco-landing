@@ -101,5 +101,11 @@
   "ch_broker_2",
   "ch_clerk_2",
   "ch_coder_2",
-  "ch_trader_2"
+  "ch_trader_2",
+  "district_madrid",
+  "district_miami",
+  "district_dubai",
+  "district_industrial",
+  "district_terrace",
+  "district_neon"
 ]

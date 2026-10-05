@@ -27,6 +27,8 @@ const serverDate = Date.UTC(2026, 9, 26, 12);
 async function ready() {
   for (let i = 0; i < 60; i++) {
     if (service?.exitCode !== null && service?.exitCode !== undefined) throw new Error(serverLog);
+    // Wait for our own server: a stale process on this port must never supply screenshots.
+    if(service && !serverLog.includes('Local:')) {await new Promise(r=>setTimeout(r,200));continue;}
     try { if ((await fetch(url)).ok) return; } catch {}
     await new Promise(r => setTimeout(r, 200));
   }
@@ -97,6 +99,16 @@ async function layout(page,label) {
   assert.deepEqual(bad,[],`${label}: horizontal overflow ${JSON.stringify(bad)}`);
   findings.push(label);
 }
+async function neighborhood(page,sceneName,label) {
+  const result=await page.evaluate(name=>{
+    const sc=__game.game.scene.getScene(name),n=sc.neighborhood;
+    const districts=sc.children.list.filter(o=>o.type==='Image'&&o.texture.key.startsWith('district_'));
+    return {count:districts.length,missing:districts.some(o=>o.texture.key==='__MISSING'),walkers:n?.walkers.length,birds:n?.birds.length,
+      fits:districts.every(o=>{const b=o.getBounds();return b.left>=n.bounds.left&&b.right<=n.bounds.right&&b.top>=n.bounds.top&&b.bottom<=n.bounds.bottom})};
+  },sceneName);
+  assert(result.count===6&&!result.missing&&result.walkers===6&&result.birds===3&&result.fits,`${label}: neighborhood assets/bounds ${JSON.stringify(result)}`);
+  findings.push(`${label}: six districts, nine ambient actors and camera coverage`);
+}
 async function snap(page,name) {await page.screenshot({path:resolve(out,`${name}.png`)});}
 try {
   await mkdir(out,{recursive:true});await ready();
@@ -132,10 +144,10 @@ try {
     }
     await page.setViewportSize({width:390,height:844});
     for(const city of ['madrid','miami','dubai']) {
-      await seed(page,city);await snap(page,`${locale}-${city}-city`);
+      await seed(page,city);await neighborhood(page,'city',`${locale}/${city}`);await snap(page,`${locale}-${city}-city`);
       const ids=await page.evaluate(()=>Object.keys(__game.state.biz));
       for(const id of ids) {
-        await business(page,id);await snap(page,`${locale}-${id}`);await layout(page,`${locale}/${id}/business`);
+        await business(page,id);await neighborhood(page,'business',`${locale}/${id}`);await snap(page,`${locale}-${id}`);await layout(page,`${locale}/${id}/business`);
         if(!baseline) {
           const loaded=await page.evaluate(async id=>{
             const {artRef}=await import('/src/art/generated.ts');const {BIZ_ART}=await import('/src/art/catalog.ts');
@@ -215,6 +227,15 @@ try {
       await page.emulateMedia({reducedMotion:'reduce'});
       await seed(page,'dubai');await snap(page,`${locale}-reduced-motion`);
       await page.waitForTimeout(250);await layout(page,`${locale}/reduced-motion`);
+      // OS motion preference reduces effects, while the explicit in-game setting pauses life.
+      const lifeClock=()=>page.evaluate(()=>__game.game.scene.getScene('city').neighborhood.elapsed);
+      const clockBefore=await lifeClock();await page.waitForTimeout(250);
+      assert(await lifeClock()>clockBefore,'System preference incorrectly stopped neighborhood life');
+      await page.evaluate(()=>localStorage.setItem('motion','reduced'));await page.waitForTimeout(100);
+      const paused=await lifeClock();await page.waitForTimeout(250);assert.equal(await lifeClock(),paused,'Explicit reduced motion failed to pause neighborhood life');
+      await page.evaluate(()=>localStorage.setItem('motion','full'));await page.waitForTimeout(250);
+      assert(await lifeClock()>paused,'Neighborhood failed to resume');await page.evaluate(()=>localStorage.removeItem('motion'));
+      findings.push(`${locale}: ambient life respects explicit pause and resumes under OS reduced motion`);
       const emojis=await page.evaluate(()=>document.getElementById('app').innerText.match(/\p{Extended_Pictographic}/gu) || []);
       assert.deepEqual(emojis,[],'System emoji remains in visible UI');
     }
@@ -222,7 +243,7 @@ try {
     if(store) {
       await page.emulateMedia({reducedMotion:'reduce'});
       await page.setViewportSize({width:540,height:960});
-      for(const city of ['madrid','miami','dubai']) {await seed(page,city);await snap(page,`store-${locale}-${city}`);}
+      for(const city of ['madrid','miami','dubai']) {await seed(page,city);await page.locator('.banner').waitFor({state:'detached'});await snap(page,`store-${locale}-${city}`);}
       await business(page,'supercars');await snap(page,`store-${locale}-supercars`);
       await panel(page,'life');await snap(page,`store-${locale}-life`);
     }

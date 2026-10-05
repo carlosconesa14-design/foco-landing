@@ -15,6 +15,8 @@ export const ART: Record<string, { w: number; h: number }> = {};
 
 const def = (key: string, w: number, h: number) => (ART[key] = { w, h });
 
+for (const district of ["madrid","miami","dubai","industrial","terrace","neon"]) def(`district_${district}`, 270, 190);
+
 /* Restaurant furnishings and distinct cooking / walking animation poses. */
 def("rest_table_empty", 100, 84);
 def("rest_table_served", 100, 84);
