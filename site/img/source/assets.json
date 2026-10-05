@@ -1,0 +1,50 @@
+{
+  "rider": {
+    "left": 87,
+    "top": 25,
+    "width": 346,
+    "height": 491
+  },
+  "city-madrid": {
+    "left": 460,
+    "top": 80,
+    "width": 567,
+    "height": 435
+  },
+  "city-miami": {
+    "left": 1028,
+    "top": 77,
+    "width": 508,
+    "height": 460
+  },
+  "city-dubai": {
+    "left": 8,
+    "top": 516,
+    "width": 557,
+    "height": 452
+  },
+  "league": {
+    "left": 585,
+    "top": 560,
+    "width": 380,
+    "height": 430
+  },
+  "step-open": {
+    "left": 985,
+    "top": 688,
+    "width": 199,
+    "height": 224
+  },
+  "step-manager": {
+    "left": 1183,
+    "top": 662,
+    "width": 153,
+    "height": 250
+  },
+  "step-expand": {
+    "left": 1342,
+    "top": 710,
+    "width": 194,
+    "height": 183
+  }
+}

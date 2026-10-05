@@ -96,3 +96,7 @@ específico y pieza de `TwistWorld`. Se añaden once dioramas, diez piezas de
 mecánicas y dos coches en las calles exteriores. En `src/game/twists.ts` solo
 cambia la lista que habilita el arte; la economía conserva sus cifras y reglas.
 Fuentes, exportadores y detalle de los puntos 5/6 entregados al final de `ART.md`.
+
+### 5 de octubre de 2026 — arte para landing y TikTok
+
+Codex entrega las 28 piezas del último encargo de ART en `site/img/` y `marketing/tiktok/arte/`, todas con WebP, fuentes originales, recortes y exportador reproducible. Guías y zonas seguras en sus README. 227 tests, build y 53 comprobaciones móviles sin errores. Arte listo para el montaje de Claude; no implica despliegue de landing ni vídeos publicados.

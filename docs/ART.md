@@ -836,3 +836,53 @@ Verificación: 227 tests y build correctos; 178 comprobaciones completas de
 Chromium en dos idiomas y tres anchos, más cuatro comprobaciones específicas
 para el cartel de venta en ambos idiomas. Informes y galería en
 `docs/visual-review/README.md`. Sigue pendiente la validación física/nativa.
+
+## Encargo: landing page y vídeos de TikTok (5 de octubre de 2026)
+
+Carlos quiere una landing page y vídeos de TikTok orgánico. Claude los monta (ver `PLAN.md`); el arte lo hace ChatGPT/Codex.
+
+**Reglas:**
+- Mismo estilo que el juego: juguete 3D pulido, contorno azul marino, luz cálida desde arriba a la izquierda.
+- Arte original, sin marcas ni logotipos reales.
+- PNG con transparencia donde se indique, y su `.webp` (`npm run art:webp` solo cubre `public/sprites`; para `site/` hay que exportar el WebP a mano o ampliar el script).
+
+### Landing (carpeta `site/img/`)
+
+| Clave / archivo | Tamaño | Qué es |
+| --- | --- | --- |
+| `hero.png` | 1600×1000 | Escena principal: el rider en bici delante de la ciudad isométrica de Madrid que se transforma hacia Miami y Dubái al fondo, con monedas y ambiente de éxito. Que deje aire a la izquierda para el titular |
+| `hero-mobile.png` | 900×1200 | La misma escena reencuadrada en vertical, con aire arriba para el titular |
+| `rider.png` | 600×800, transparente | El personaje protagonista recortado, pose dinámica (saludando o sobre la bici) |
+| `city-madrid.png`, `city-miami.png`, `city-dubai.png` | 800×560, transparentes | Un diorama isométrico de cada ciudad con 2–3 negocios reconocibles (se puede partir de `district_*` y los edificios ★★★) |
+| `step-open.png`, `step-manager.png`, `step-expand.png` | 256×256, transparentes | Iconos de los 3 pasos: abrir un negocio, contratar un gerente y viajar/expandirse |
+| `league.png` | 800×560, transparente | Trofeo o podio de la Liga semanal con confeti, sin cifras de dinero |
+| `phone-frame.png` | 520×1040, transparente | Marco de móvil genérico (sin marca) para poner encima el vídeo del juego |
+| `og-image.png` | 1200×630 | Imagen para compartir el enlace: logo + rider + ciudad + frase «De rider a millonario». Texto grande y legible en miniatura. También la versión inglesa `og-image-en.png` («From rider to millionaire») |
+| `favicon-32.png`, `favicon-180.png` | 32×32 y 180×180 | A partir del icono de la app |
+
+### TikTok (carpeta `marketing/tiktok/arte/`)
+
+| Archivo | Tamaño | Qué es |
+| --- | --- | --- |
+| `endcard.png` | 1080×1920 | Pantalla final: logo, el rider y una franja vacía abajo para «Búscalo en Google Play» (el texto lo pone Claude en el montaje). Versión `endcard-en.png` |
+| `cover-template-*.png` (3) | 1080×1920 | Fondos de portada con espacio grande arriba para el título: ciudad de día, Miami al atardecer y Dubái de noche |
+| `avatar.png` | 400×400 | Avatar de la cuenta: cara del rider sobre fondo de color plano, que se lea en pequeño |
+| `sticker-*.png` (6), transparentes | ~600 px de ancho | Rótulos con el estilo del juego para el montaje: «¡Atasco!», «Gerente contratado», «x3», «Nivel máximo», «Salida a bolsa», «Nuevo récord». Sin texto si se prefiere: solo el marco o la cinta, y Claude escribe encima con la fuente del juego |
+| `coin-burst.png` | Tira de 8 frames de 256×256, transparente | Explosión de monedas para transiciones |
+
+Al entregar, documentar en esta sección los prompts usados y avisar a Claude para montar la landing y los vídeos.
+
+### Entrega del encargo de landing y TikTok — Codex, 5 de octubre de 2026
+
+Se entregan las **28 piezas** de las tablas anteriores, con sus 28 WebP: 15 en `site/img/`, 13 en `marketing/tiktok/arte/`. Tamaños exactos, iconos/dioramas/rider/marco/cintas/secuencia con transparencia. Las seis cintas son marcos sin rótulo, como permite el encargo; las dos endcards comparten el arte sin llamada a la acción para que el montaje lo localice. Guías de uso y zonas de texto en los README de ambas carpetas. Fuentes originales preservadas en `site/img/source/hero.png` y `assets.png`, con recortes `assets.json`. No se añaden texturas al runtime ni cambios económicos.
+
+Prompts usados:
+- **Hero:** premium original Rider Millionaire landing key art; referenced green-cap green-shirt brown-haired rider on a green pedal bicycle waving; polished toy 3D, navy contours, warm top-left light; isometric Madrid restaurant/warehouse transitioning to coral Miami marina and cream-gold Dubai skyline; star coins; left 40% atmospheric navy empty for headline; no text/logos. Reencuadre vertical compuesto con el mismo rider y dioramas, con espacio arriba.
+- **Atlas:** transparent original marketing atlas, isolated rider on bicycle; Madrid warehouse/red-roof restaurant/purple studio; Miami foodtruck/beachclub/yacht marina; Dubai hotel/souk/tower; weekly gold-star trophy podium without numbers; open-shop, suited manager and globe/plane icons. Polished toy 3D, navy contours, warm upper-left light, no text/logos. Extracciones documentadas; fuentes intactas.
+- **Limpieza gerente:** preservar retrato con traje azul, corbata verde y brazos cruzados, quitar fragmento cian vecino, completar contorno, transparencia y márgenes.
+
+`node scripts/export-marketing-art.mjs` reproduce recortes, composiciones, logo y lemas legibles en ES/EN, favicons y WebP. Las composiciones reutilizan exclusivamente arte original y el logo existente. `coin-burst` tiene ocho frames horizontales de 256×256; último vacío. Las portadas dejan espacio para título; Miami usa paleta de atardecer y Dubái fondo nocturno con arquitectura iluminada.
+
+**Para Claude:** entrega de arte preparada para montar la landing y los vídeos descritos en `docs/PLAN.md`; instrucciones de uso en `site/img/README.md` y `marketing/tiktok/arte/README.md`. Publicar esta rama entrega los archivos; el montaje de vídeos y el despliegue de la landing corresponden a la siguiente fase.
+
+Validación: 227 tests y build correctos; 53 comprobaciones del juego a 390×844 sin errores; 28 pares PNG/WebP comprobados. Contacto visual: `docs/visual-review/marketing-contact-sheet.png`. El retrato del gerente limpio se conserva además en `site/img/source/manager-clean.png`.
