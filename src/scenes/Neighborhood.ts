@@ -1,3 +1,4 @@
+import { BUSINESS_DISTRICTS } from '../art/businessWorld';
 import Phaser from 'phaser';
 import { art } from '../art/catalog';
 import { swapArt } from '../art/generated';
@@ -9,6 +10,7 @@ type Options={city:string;biz?:string;cols:number;rows:number;iso:(c:number,r:nu
 export class Neighborhood {
   readonly bounds:{left:number;top:number;right:number;bottom:number};
   private elapsed=0;
+  private traffic:{image:Phaser.GameObjects.Image;a:Point;b:Point;phase:number}[]=[];
   private boat?: {image:Phaser.GameObjects.Image;x:number;y:number};
   private walkers:{image:Phaser.GameObjects.Image;a:Point;b:Point;phase:number;role:string}[]=[];
   private birds:{image:Phaser.GameObjects.Graphics;x:number;y:number;phase:number}[]=[];
@@ -33,7 +35,7 @@ export class Neighborhood {
     // Soft atmospheric edge across the outermost paving; no vertical cliff.
     const rim=scene.add.graphics().setDepth(-14);
     for(let width=24;width>=8;width-=8)rim.lineStyle(width,city==='miami'?0xe8d6ad:city==='dubai'?0xe8cd9b:0x90b5a2,.08).strokePoints(corners,true);
-    const district=biz==='dropship'?'industrial':biz==='restaurant'?'terrace':biz==='tiktok'||biz==='ai'?'neon':city;
+    const district=biz?BUSINESS_DISTRICTS[biz]:city;
     for(const [c,r] of [[1,-2],[cols-2,-2],[-2,3],[-2,rows-2],[cols+2,3],[2,rows+2]]){
       const p=iso(c,r);art(scene,p.x,p.y+22,`district_${district}`).setOrigin(.5,1).setDepth(p.y-5).setAlpha(.92);
     }
@@ -64,10 +66,19 @@ export class Neighborhood {
       image.lineStyle(1.5,0x385f73,.7).beginPath().moveTo(-7,2).lineTo(-3,0).lineTo(0,3).lineTo(3,0).lineTo(7,2).strokePath();
       this.birds.push({image,x:p.x,y:p.y-75,phase:n*2});
     }
+    for(let n=0;n<2;n++){
+      const a=iso(1+n*.35,rows+.35),b=iso(cols-1+n*.35,rows+.35);
+      const image=art(scene,a.x,a.y,`car_${n}`).setOrigin(.5,1).setDisplaySize(38,28);
+      this.traffic.push({image,a,b,phase:n/2});
+    }
     this.update(0);
   }
   update(dt:number){
     if(!calmWorld())this.elapsed+=Math.min(dt,.1);
+    for(const car of this.traffic){
+      const p=(this.elapsed/18+car.phase)%1;
+      car.image.setPosition(car.a.x+(car.b.x-car.a.x)*p,car.a.y+(car.b.y-car.a.y)*p).setDepth(car.image.y).setAlpha(Math.min(1,p*12,(1-p)*12));
+    }
     for(const w of this.walkers){
       const t=(this.elapsed/28+w.phase)%2,p=t<1?t:2-t;
       w.image.setPosition(w.a.x+(w.b.x-w.a.x)*p,w.a.y+(w.b.y-w.a.y)*p).setDepth(w.image.y).setFlipX(t>=1);

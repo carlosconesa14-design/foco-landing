@@ -1,9 +1,7 @@
-Las ciudades y los negocios terminaban en una parcela aislada y la interfaz acumulaba información fija. Esta ampliación conecta la zona jugable con calles, aceras y barrios vecinos propios de Madrid, Miami y Dubái; almacenes, restaurantes y estudios tienen entornos particulares.
+Las mecánicas de Miami y Dubái solo tenían una tarjeta y varios negocios compartían un entorno genérico. Esta entrega añade diez piezas físicas que reflejan el estado existente —lancha, compradora, cliente VIP, joyero, foodie, inspector, DJ, fotógrafo, minería y planos— y once dioramas de entorno específicos. Los 14 negocios tienen ahora un fondo propio y su mecánica visible en el recinto.
 
-Incluye seis dioramas originales en PNG/WebP, fuentes y exportador reproducible; seis peatones y tres pájaros por escena, paseo/yate en Miami y farolas nocturnas. Los límites de cámara cubren el entorno nuevo. La cabecera ocupa una fila, el estilo de vida vive en el menú y las cantidades de los puestos aparecen al tocar o al acumular producto. La cadena inferior conserva sus controles con menos ruido visual.
+Incluye originales, corrección del recorte financiero, metadatos, exportadores y PNG/WebP. Dos coches circulan por las calles exteriores con un presupuesto fijo; la pausa explícita del juego detiene el ambiente. La ampliación de `TWIST_WORLD_ART` solo habilita la presentación: no cambia precios, tiempos, premios ni guardados. Una prueba verifica que las proyecciones regionales no mutan estado y que ofertas/visitas caducadas desaparecen.
 
-La vida ambiental respeta el ajuste explícito de movimiento del juego y sigue funcionando cuando el sistema reduce los efectos. No cambia la economía ni `src/game/*`.
+El cartel de inmobiliaria muestra «Vendido»/«Sold» solo tras completarse el encargo, con texto traducido superpuesto sobre el arte.
 
-La rama incluye además 36 sprites de reposo y pasos para los 12 roles propios de Miami, entregados en el commit anterior.
-
-Validación: 225 tests y build; 158 comprobaciones de Chromium en dos idiomas y tres anchos, más una pasada final de 43, sin errores. Capturas e informes en `docs/visual-review/README.md`. Se renuevan las capturas 1080×1920 y el gráfico de tienda con gameplay real. La prueba física de rendimiento queda pendiente.
+Validación: 227 tests y build; 178 comprobaciones completas de Chromium en dos idiomas y tres anchos, más cuatro del cartel de venta. Informes y capturas en `docs/visual-review/README.md`. Supabase está simulado; la validación física/nativa sigue pendiente.

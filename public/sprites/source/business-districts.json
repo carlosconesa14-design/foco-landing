@@ -1,0 +1,75 @@
+{
+  "district_technology": {
+    "left": 10,
+    "top": 9,
+    "width": 369,
+    "height": 320
+  },
+  "district_foodcourt": {
+    "left": 384,
+    "top": 39,
+    "width": 373,
+    "height": 288
+  },
+  "district_beachfront": {
+    "left": 770,
+    "top": 42,
+    "width": 376,
+    "height": 297
+  },
+  "district_marina": {
+    "left": 1153,
+    "top": 56,
+    "width": 375,
+    "height": 279
+  },
+  "district_residential": {
+    "left": 8,
+    "top": 349,
+    "width": 375,
+    "height": 294
+  },
+  "district_financial": {
+    "source": "district-financial-clean.png",
+    "left": 141,
+    "top": 0,
+    "width": 1210,
+    "height": 1052
+  },
+  "district_dealership": {
+    "left": 771,
+    "top": 390,
+    "width": 379,
+    "height": 247
+  },
+  "district_hotelfront": {
+    "left": 1156,
+    "top": 342,
+    "width": 370,
+    "height": 306
+  },
+  "district_desertcamp": {
+    "left": 11,
+    "top": 663,
+    "width": 371,
+    "height": 331
+  },
+  "district_market": {
+    "left": 391,
+    "top": 661,
+    "width": 378,
+    "height": 337
+  },
+  "district_construction": {
+    "left": 772,
+    "top": 639,
+    "width": 377,
+    "height": 353
+  },
+  "district_coastalplaza": {
+    "left": 1152,
+    "top": 671,
+    "width": 381,
+    "height": 325
+  }
+}

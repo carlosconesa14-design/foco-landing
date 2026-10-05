@@ -649,12 +649,12 @@ Opinión de Carlos jugando en el móvil (2 de octubre):
    - Tampoco se puede alejar más de lo que hace falta para ver la zona entera.
    - **Si Codex dibuja el mundo de alrededor, tiene que ampliar `bounds`** en `CityScene` y `BusinessScene` hasta donde llegue el arte. Así se puede mirar alrededor sin ver nunca el vacío.
 
-5. *«¿No hay que encargar que en la pantalla de un negocio no se vea solo el negocio, sino el negocio integrado en una ciudad parecida?»* — Sí, es la parte más importante del punto 3. **Cada pantalla de negocio tiene que parecer un trozo de su ciudad**, no una parcela flotando sobre verde:
+5. **Entregado el 5 de octubre (entornos por negocio; véase el cierre).** *«¿No hay que encargar que en la pantalla de un negocio no se vea solo el negocio, sino el negocio integrado en una ciudad parecida?»* — Sí, es la parte más importante del punto 3. **Cada pantalla de negocio tiene que parecer un trozo de su ciudad**, no una parcela flotando sobre verde:
    - alrededor del recinto, la misma ciudad que se ve en el mapa: calles con tráfico, aceras con peatones, fachadas y tejados vecinos (sin entrar), farolas y árboles;
    - el negocio, en su sitio lógico. Madrid: almacén en un polígono con naves vecinas, restaurante en una calle del centro con terrazas, TikTok en un barrio con neones, IA en un parque tecnológico. Miami: paseo marítimo, playa, puerto deportivo, frente costero, distrito financiero. Dubái: avenida de concesionarios, frente de hoteles, dunas, zoco con callejuelas, zona de rascacielos en obras;
    - el fondo continúa hasta el borde de la cámara (que ya está limitada: ampliar `bounds` en `BusinessScene` hasta donde llegue el arte) y se funde con niebla o perspectiva;
    - rendimiento: el entorno puede ser **una o dos imágenes grandes de fondo por negocio** (capas fijas, 1–2 texturas de ≤2048 px) más unos pocos sprites animados (coches, peatones). Mejor eso que cientos de piezas sueltas.
-6. **Piezas del mundo para las mecánicas de Miami y Dubái** (`TwistWorld`, igual que la furgoneta, el crítico, el directo y el monitor de Madrid). Hoy allí solo hay tarjeta; al tener el arte, añadir el negocio a `TWIST_WORLD_ART` en `src/game/twists.ts` y su clave en `twistPresentation`:
+6. **Entregado el 5 de octubre (diez piezas regionales; véase el cierre).** **Piezas del mundo para las mecánicas de Miami y Dubái** (`TwistWorld`, igual que la furgoneta, el crítico, el directo y el monitor de Madrid). Ya están integradas en `TWIST_WORLD_ART` de `src/game/twists.ts` y en `twistPresentation`; antes allí solo había tarjeta:
    - pedidos: lancha de excursión (yates), cartel «Vendido» con comprador (inmobiliaria), jeque con llaves (superdeportivos), joyero con estuche (zoco);
    - visitas: foodie con móvil y aro de luz (food trucks), inspector con libreta y lupa (hotel);
    - hype: cabina de DJ con luces (club de playa), fotógrafo con trípode al atardecer (safari);
@@ -766,3 +766,73 @@ Validación de esta entrega: 225 tests, build de producción, 158 comprobaciones
 completas de navegador y 43 en la pasada final, sin errores. Se renuevan las
 capturas y gráfico de tienda. Galería e informes en `docs/visual-review/README.md`.
 La validación de rendimiento en Android físico sigue pendiente.
+
+### Entornos por negocio y mecánicas regionales — 5 de octubre de 2026
+
+Se completan los puntos 5 y 6 añadidos en `main`: cada negocio tiene su entorno
+propio y las diez mecánicas de Miami/Dubái tienen una pieza física. La tabla de
+selección está en `src/art/businessWorld.ts`; los dibujos no cambian los números
+de la simulación.
+
+| Negocio | Entorno específico `district_*` | Mecánica física |
+| --- | --- | --- |
+| IA | `technology`: parque tecnológico solar y oficinas teal | `prop_research` existente |
+| Food trucks | `foodcourt`: paseo con puestos, picnic y palmeras | `ch_foodie`: móvil, taco y aro de luz |
+| Club de playa | `beachfront`: piscinas, terrazas y club costero | `prop_dj`: cabina iluminada |
+| Yates | `marina`: puerto deportivo con muelles y barcos | `veh_excursion`: lancha, capitán y tickets |
+| Inmobiliaria | `residential`: apartamentos y piscinas frente al agua | `prop_sold`: compradora con llaves y cartel sin letras |
+| Cripto | `financial`: torres y oficinas financieras | `prop_mining`: rack de minería con moneda de estrella original |
+| Superdeportivos | `dealership`: avenida de concesionarios | `ch_vip_client`: cliente con llaves y coche |
+| Hotel | `hotelfront`: frente de hoteles, fuentes y playa | `ch_inspector`: libreta y lupa |
+| Safari | `desertcamp`: dunas, campamento, camellos y 4×4 | `ch_photographer`: cámara, trípode y atardecer |
+| Zoco | `market`: callejuelas, arcos y joyerías | `ch_jeweler`: joyero con estuche abierto |
+| Rascacielos | `construction`: grúas y torres en obras | `prop_blueprints`: planos, casco y maqueta |
+
+Almacén, restaurante y TikTok mantienen los entornos particulares entregados
+antes (`industrial`, `terrace`, `neon`). Cada recinto reutiliza una sola textura
+de entorno de 540×380 (270×190 lógicos), sin cientos de decoraciones nuevas.
+Se añaden dos coches a las calles exteriores; junto a los seis peatones y tres
+pájaros existentes forman un presupuesto fijo de once actores ambientales,
+más el yate de Miami cuando corresponde.
+La pausa explícita del juego los detiene; los límites de cámara cubren el fondo.
+
+Las diez piezas de mecánicas tienen PNG de 288×246, caja lógica 96×82, base
+común y WebP. `twistPresentation` sigue siendo de solo lectura. Ofertas y visitas
+caducadas desaparecen; la pieza, título traducido y barra reflejan el estado
+real. Las acciones siguen en los controles existentes. En `src/game/twists.ts`
+solo se amplía `TWIST_WORLD_ART`; no cambian tiempos, precios, premios ni guardado.
+
+Originales y recortes: `public/sprites/source/business-districts.{png,json}` y
+`regional-mechanics.{png,json}`. El distrito financiero tiene una corrección
+original separada (`district-financial-clean.png`) para eliminar un fragmento
+vecino. La plaza de la última celda es referencia y no se carga en el juego.
+
+Receta: `python scripts/register-regional-world.py`,
+`node scripts/export-regional-world.mjs`, `npm run art:webp`.
+
+Prompt de entornos: original 4×3 atlas, twelve isolated transparent 2:1 miniature
+streetscape dioramas, toy3D navy outlines warm top-left light; technology park,
+beach food court, beach club, marina; waterfront housing, financial district,
+luxury car avenue, hotel beachfront; desert safari, gold souk alleys, construction
+district, coastal plaza. Connected buildings, sidewalks and short roads, no text,
+people or brands. Corrección financiera: remove only the stray disconnected road
+above the tower, preserve all architecture and antennas, transparent background.
+
+Prompt de mecánicas: original 5×2 transparent atlas; excursion boat/captain,
+house buyer with keys and blank sign, Emirati VIP with sportscar keys, jeweler
+presenting ring case, foodie with phone/taco/ringlight; hotel inspector with
+notebook/magnifier, DJ booth with lights, safari photographer with tripod and
+sunset, mining rack with fictional star coin, drafting table with hardhat/model.
+Friendly chibi toy3D warm light, navy contours, complete isolated objects, no
+logos or text. Edición de encuadre: separate every sprite with broad transparent
+gutters while retaining its characters and equipment.
+
+El cartel de inmobiliaria muestra «Vendido»/«Sold» solo cuando `order.done` es
+verdadero. Antes permanece en blanco, evitando anunciar una venta pendiente.
+El texto se dibuja sobre la pieza mediante `t()`, no está incrustado en el PNG.
+Receta de la comprobación específica: `node scripts/capture-sold-sign.mjs`.
+
+Verificación: 227 tests y build correctos; 178 comprobaciones completas de
+Chromium en dos idiomas y tres anchos, más cuatro comprobaciones específicas
+para el cartel de venta en ambos idiomas. Informes y galería en
+`docs/visual-review/README.md`. Sigue pendiente la validación física/nativa.
