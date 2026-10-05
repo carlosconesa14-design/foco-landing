@@ -964,3 +964,23 @@ Por impacto, primero los que se ven más vacíos:
 2. TikTok e IA;
 3. el resto de Miami y Dubái;
 4. después, el arte de fondo del barrio, las baldosas y los coches de espaldas.
+
+## Cambio de rumbo: vista por plantas, al estilo Idle Miner (5 de octubre de 2026)
+
+Carlos ha elegido rehacer la pantalla de cada negocio como en Idle Miner. **El encargo «Pantallas de negocio de primera» (recintos isométricos) queda en pausa.** La ciudad sigue siendo isométrica.
+
+**Prototipo en el almacén:** `src/scenes/FloorsScene.ts`, activo para los negocios de `FLOOR_VIEW`.
+- **Arriba:** la sede, grande, con el barrio apagado detrás. Debajo, la calle con la venta (furgoneta, repartidor…).
+- **A la izquierda:** el montacargas, que hace de transporte. Sube por su hueco el producto de cada planta hasta la puerta.
+- **Debajo:** una planta por puesto, de 150 px de alto. Cada planta enseña lo mismo y en el mismo sitio:
+  - el encargado arriba a la izquierda;
+  - el producto junto al montacargas;
+  - el puesto y el trabajador en el centro, grandes;
+  - el botón «Nivel» a la derecha.
+- **Movimiento:** solo vertical, sin zoom.
+
+**Arte que hará falta cuando se apruebe** (se encargará entonces):
+- un fondo de planta por negocio, de 390×150, que se repite hacia abajo: pared, suelo y detalles (almacén con estanterías al fondo, cocina, plató…);
+- una cabina de montacargas por negocio, de unos 64×56 (hoy está dibujada por código);
+- un fondo de calle con fachada por ciudad, para la parte de arriba;
+- el botón «Nivel» como imagen, si se quiere más acabado.
