@@ -67,3 +67,22 @@ select * from analytics_offers;           -- por día: camiones y clientes VIP m
 ## Privacidad
 
 En la política de privacidad tiene que constar que se recogen estadísticas de uso anónimas para mejorar el juego. Los informes no se pueden leer desde fuera: solo se ven desde el panel de Supabase.
+
+## Landing page (raíz de la web)
+
+La landing (`site/index.html`) manda sus eventos a la misma función `track`, pero se guardan en tablas aparte. Así los visitantes que no juegan no cuentan como instalaciones (migración `0017_landing.sql`).
+
+- **`landing_events`:** `view`, `click` y `signup`.
+  - En `props` van el idioma, el botón (`target`) y de dónde viene el visitante (`src`, que sale de `utm_source` o del dominio que lo envía).
+  - El id de dispositivo es el mismo que usa el juego en esa web. Así se sabe quién pasa de la landing a jugar.
+- **`beta_signups`:** emails para la prueba cerrada de Google Play.
+  - Cuando añadas a alguien a la lista de testers, rellena `invited_at`.
+  - Se piden con `select email, lang, created_at from beta_signups where invited_at is null order by created_at;`.
+- **Resumen:** `select landing_report(14);` devuelve, para los últimos 14 días:
+  - visitantes;
+  - clics por botón;
+  - visitas por origen;
+  - cuántos visitantes acabaron jugando;
+  - cuántos se han apuntado a la beta.
+- **Enlaces de TikTok y redes:** añade `?utm_source=tiktok` (o `instagram`, `whatsapp`…) para saber de dónde viene cada visita.
+- **Cuando el juego esté publicado en Google Play:** pon su enlace en `PLAY_URL`, al principio del script de `site/index.html`. El formulario de la beta se cambia solo por el botón «Descargar en Google Play».

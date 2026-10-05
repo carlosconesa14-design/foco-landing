@@ -40,7 +40,9 @@ En orden de urgencia (detalles en `LANZAMIENTO.md` y `TIENDA.md`):
 
 Por orden:
 
-### 1. Landing page
+### 1. Landing page ✅ (5 de octubre)
+Publicada en la raíz de la web. Explicación de la analítica y del formulario de la beta en `ANALITICA.md`, sección «Landing page».
+
 Sustituye la portada actual (`site/index.html`, que se publica en la raíz de GitHub Pages; la beta sigue en `/jugar/`).
 
 - **Objetivo:** que quien llega desde TikTok o un enlace entienda el juego en 5 segundos y lo instale o lo pruebe.

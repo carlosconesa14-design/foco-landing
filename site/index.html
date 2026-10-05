@@ -2,41 +2,495 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rider Millionaire: Idle Tycoon</title>
-<meta name="description" content="Idle tycoon para móvil: empieza de rider y construye un imperio de negocios. Liga semanal con premios.">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rider Millionaire: Idle Tycoon · De rider a millonario</title>
+<meta name="description" content="Juego idle tycoon gratis: empieza de rider y construye un imperio de negocios en Madrid, Miami y Dubái. Juega ya en el navegador.">
+<meta name="theme-color" content="#0d1b2c">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="apple-touch-icon" href="img/favicon-180.png">
+<link rel="canonical" href="https://carlosconesa14-design.github.io/foco-landing/">
+<link rel="alternate" hreflang="es" href="https://carlosconesa14-design.github.io/foco-landing/?lang=es">
+<link rel="alternate" hreflang="en" href="https://carlosconesa14-design.github.io/foco-landing/?lang=en">
+<!-- Vista previa al compartir (WhatsApp, Instagram, X…). Las redes no ejecutan JS: va en español. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Rider Millionaire">
+<meta property="og:title" content="Rider Millionaire: de rider a millonario">
+<meta property="og:description" content="Monta negocios, contrata gerentes y salta de Madrid a Miami y Dubái. Gratis, en el móvil o el navegador.">
+<meta property="og:url" content="https://carlosconesa14-design.github.io/foco-landing/">
+<meta property="og:image" content="https://carlosconesa14-design.github.io/foco-landing/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://carlosconesa14-design.github.io/foco-landing/img/og-image.png">
+<link rel="preload" as="image" href="img/hero-mobile.webp" media="(max-width: 760px)">
+<link rel="preload" as="image" href="img/hero.webp" media="(min-width: 761px)">
+<link rel="preload" as="font" type="font/woff2" href="fonts/lilita-one-latin-400-normal.woff2" crossorigin>
 <style>
-  :root{--bg:#0e1a2b;--panel:#16263c;--ink:#eef4fb;--muted:#9fb3cf;--gold:#f5c542;--green:#3ddc97}
-  body{margin:0;background:radial-gradient(circle at 50% 0,#1d3a5c,var(--bg) 60%);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
-  main{max-width:640px;margin:0 auto;padding:48px 16px;text-align:center}
-  h1{font-size:clamp(32px,8vw,48px);line-height:1.1;margin:8px 0;color:var(--gold)}
-  .tagline{margin:-4px 0 8px;color:var(--ink);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:14px}
-  .lead{color:var(--muted);font-size:18px}
-  .cards{display:grid;gap:12px;margin:32px 0;text-align:left}
-  .card{background:var(--panel);border:1px solid #2b4566;border-radius:16px;padding:14px 16px}
-  .card b{color:var(--green)}
-  .play{display:inline-block;padding:16px 28px;border-radius:16px;background:var(--green);color:#06301f;font-weight:800;font-size:20px;text-decoration:none;box-shadow:0 6px 0 #1f9a66}
-  .note{color:var(--muted);font-size:14px;margin:14px 0 18px}
-  .soon{display:inline-block;margin-top:8px;padding:10px 18px;border-radius:14px;border:1px solid var(--gold);color:var(--gold);font-weight:700}
-  footer{margin-top:40px;font-size:14px;color:var(--muted)}
-  a{color:var(--gold)}
+@font-face{font-family:'Lilita One';font-weight:400;font-display:swap;src:url('fonts/lilita-one-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Rubik';font-weight:400;font-display:swap;src:url('fonts/rubik-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Rubik';font-weight:500;font-display:swap;src:url('fonts/rubik-latin-500-normal.woff2') format('woff2')}
+@font-face{font-family:'Rubik';font-weight:700;font-display:swap;src:url('fonts/rubik-latin-700-normal.woff2') format('woff2')}
+
+/* Un solo look, el del juego: noche azul marino, oro y verde rider. */
+:root{
+  color-scheme:dark;
+  --bg:#0d1b2c; --bg2:#122740; --panel:#163150; --line:#28507a;
+  --ink:#f3f8fd; --muted:#a9c0da; --gold:#ffd36b; --gold2:#f5b82e; --green:#3ddc97; --green-d:#1f9a66;
+  --coral:#ff7a5c; --navy:#071322;
+  --display:'Lilita One','Arial Rounded MT Bold',system-ui,sans-serif;
+  --body:'Rubik',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --r:20px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--gold)}
+h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1.05;margin:0;text-wrap:balance;letter-spacing:.01em}
+h2{font-size:clamp(30px,6vw,46px)}
+h3{font-size:24px}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px}
+.eyebrow{font:700 13px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+.muted{color:var(--muted)}
+section{padding-block:72px}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* Botones con el «escalón» de los botones del juego */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 26px;border-radius:18px;font:700 18px/1 var(--body);text-decoration:none;border:0;cursor:pointer;transition:transform .12s, box-shadow .12s}
+.btn:active{transform:translateY(3px)}
+.btn-play{background:var(--green);color:#05301e;box-shadow:0 6px 0 var(--green-d),0 14px 30px rgba(61,220,151,.25)}
+.btn-play:active{box-shadow:0 3px 0 var(--green-d)}
+.btn-ghost{background:rgba(7,19,34,.55);color:var(--ink);border:2px solid rgba(255,211,107,.6);backdrop-filter:blur(6px)}
+.btn svg{width:22px;height:22px;flex:none}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+/* Cabecera */
+.top{position:absolute;inset:0 0 auto;z-index:5;padding-top:env(safe-area-inset-top,0px)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:68px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font:400 22px/1 var(--display)}
+.brand img{width:38px;height:38px;border-radius:10px;box-shadow:0 3px 0 var(--navy)}
+.brand em{font-style:normal;color:var(--gold)}
+.lang{background:rgba(7,19,34,.6);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font:700 14px/1 var(--body);cursor:pointer}
+
+/* Portada */
+.hero{position:relative;min-height:min(100svh,880px);display:flex;align-items:center;background:var(--navy);overflow:hidden;padding-block:96px 64px}
+.hero picture,.hero picture img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:right center}
+.hero::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(7,19,34,.92) 0%,rgba(7,19,34,.7) 34%,rgba(7,19,34,0) 52%)}
+.hero::after{content:"";position:absolute;inset:auto 0 0;height:140px;z-index:1;background:linear-gradient(transparent,var(--bg))}
+.hero .wrap{position:relative;z-index:2;width:100%}
+.hero-copy{max-width:490px}
+.hero h1{font-size:clamp(46px,8.4vw,86px);color:#fff7dd;text-shadow:0 5px 0 var(--navy)}
+.hero h1 em{font-style:normal;color:var(--gold);display:block}
+.hero .lead{font-size:clamp(18px,2.4vw,21px);margin:18px 0 28px;color:#dfeaf7;max-width:30em}
+.ctas{display:flex;flex-wrap:wrap;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:22px;font-size:15px;color:var(--muted)}
+.chips span::before{content:"✓ ";color:var(--green);font-weight:700}
+
+/* Móvil y capturas */
+.show{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center}
+.phone{position:relative;width:min(300px,78vw);aspect-ratio:520/1040;margin-inline:auto;filter:drop-shadow(0 30px 50px rgba(0,0,0,.5))}
+.phone .screen{position:absolute;left:3.46%;top:1.73%;width:93.08%;height:96.54%;border-radius:30px;overflow:hidden;background:#10273e}
+.phone .screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s}
+.phone .screen img.on{opacity:1}
+.phone>img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.dots{display:flex;justify-content:center;gap:10px;margin-top:18px}
+.dots button{width:12px;height:12px;border-radius:50%;border:0;padding:0;background:var(--line);cursor:pointer}
+.dots button[aria-current="true"]{background:var(--gold);width:28px;border-radius:8px}
+.feats{display:grid;gap:22px;margin-top:28px}
+.feat{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;align-items:start}
+.feat b{display:block;font:400 21px/1.2 var(--display);margin-bottom:4px}
+.feat i{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-style:normal;font-size:22px;background:var(--panel);border:1px solid var(--line)}
+
+/* Ciudades */
+.cities{background:linear-gradient(var(--bg),var(--bg2))}
+.head{max-width:640px;margin:0 auto 40px;text-align:center;display:grid;gap:12px}
+.city-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.city{position:relative;border-radius:var(--r);padding:18px 20px 22px;background:var(--panel);border:1px solid var(--line);overflow:hidden}
+.city img{margin:-6px auto 8px;width:100%;aspect-ratio:800/560;object-fit:contain}
+.city h3{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.city h3 small{font:700 12px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.city p{margin-top:8px;color:var(--muted);font-size:16px}
+.city.madrid{box-shadow:inset 0 4px 0 #e2583e}
+.city.miami{box-shadow:inset 0 4px 0 #3fd0d4}
+.city.dubai{box-shadow:inset 0 4px 0 var(--gold2)}
+
+/* Cómo se juega */
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;counter-reset:s}
+.step{text-align:center;display:grid;justify-items:center;gap:10px}
+.step img{width:132px;height:132px}
+.step h3::before{counter-increment:s;content:counter(s) ". ";color:var(--gold)}
+.step p{color:var(--muted);max-width:28ch}
+
+/* Liga */
+.league{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:40px;align-items:center;background:radial-gradient(ellipse at 30% 50%,#24456b,transparent 65%),var(--bg2);border:1px solid var(--line);border-radius:28px;padding:36px}
+.league ul{margin:18px 0 22px;padding:0;list-style:none;display:grid;gap:10px}
+.league li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:6px}
+.league li::before{content:"★";color:var(--gold)}
+.small{font-size:14px}
+
+/* Beta Android */
+.beta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center}
+.beta-art{position:relative}
+.beta-art img{width:min(360px,80%);margin-inline:auto}
+form{display:grid;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:24px}
+label.f{font-weight:500}
+input[type=email]{width:100%;min-height:54px;border-radius:14px;border:2px solid var(--line);background:var(--navy);color:var(--ink);font:500 17px var(--body);padding:0 16px}
+input[type=email]:focus{border-color:var(--gold);outline:none}
+.check{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;font-size:14px;color:var(--muted);align-items:start}
+.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--green)}
+.msg{min-height:1.4em;font-weight:500}
+.msg.ok{color:var(--green)}.msg.err{color:var(--coral)}
+.soon{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:14px;border:1px dashed var(--line);color:var(--muted);font-size:15px}
+
+/* Preguntas */
+.faq{max-width:760px;margin:0 auto;display:grid;gap:12px}
+details{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:0 20px}
+summary{cursor:pointer;list-style:none;padding:18px 0;font-weight:700;display:flex;justify-content:space-between;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--gold);font:400 26px/1 var(--display)}
+details[open] summary::after{content:"–"}
+details p{padding-bottom:18px;color:var(--muted)}
+
+/* Llamada final y pie */
+.final{text-align:center;padding-block:80px;background:radial-gradient(ellipse at 50% 100%,#1d4d3c,transparent 60%)}
+.final h2{margin-bottom:12px}
+.final .ctas{justify-content:center;margin-top:26px}
+.rider-peek{width:170px;margin:0 auto 10px}
+footer{border-top:1px solid var(--line);padding-block:28px calc(28px + env(safe-area-inset-bottom,0px));font-size:14px;color:var(--muted)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 20px}
+
+/* Aparición suave al hacer scroll (sin JS no se oculta nada) */
+.js .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
+.js .reveal.in{opacity:1;transform:none}
+
+@media (max-width:760px){
+  section{padding-block:56px}
+  /* Móvil: texto y botones arriba; la ilustración debajo, asomando por detrás */
+  .hero{flex-direction:column;align-items:stretch;padding:84px 0 0;min-height:auto;background:#10273e}
+  .hero::before{display:none}
+  .hero picture{position:relative;order:2;margin-top:-26vw;z-index:0}
+  .hero picture img{position:static;width:100%;height:auto}
+  .hero-copy{max-width:none}
+  .hero .btn{flex:1 1 100%}
+  .show,.league,.beta{grid-template-columns:minmax(0,1fr)}
+  .show .phone-col{order:2}
+  .city-row{grid-template-columns:minmax(0,1fr);gap:16px}
+  .steps{grid-template-columns:minmax(0,1fr);gap:32px}
+  .league{padding:24px}
+  .final .btn{width:100%}
+}
+@media (min-width:761px) and (max-width:980px){.city-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .js .reveal{opacity:1;transform:none;transition:none}
+  .phone .screen img{transition:none}
+}
 </style>
 </head>
 <body>
-<main>
-  <div style="font-size:64px">🛵→🏝️</div>
-  <h1>Rider Millionaire</h1>
-  <p class="tagline">Idle Tycoon · De rider a millonario</p>
-  <p class="lead">Empieza repartiendo y construye un imperio: dropshipping, restaurantes, TikTok, inteligencia artificial… y salta a Miami.</p>
-  <a class="play" href="jugar/">▶ Jugar gratis (beta)</a>
-  <p class="note">Desde el navegador del móvil o del ordenador, sin instalar nada. Tu partida se guarda en ese navegador.</p>
-  <div class="cards">
-    <div class="card"><b>Tu ciudad crece a la vista.</b> Compra negocios, contrata gerentes y mira cómo trabajan solos, también con el móvil apagado.</div>
-    <div class="card"><b>Liga Millonario semanal.</b> Cada lunes todos empiezan de cero: gana quien más juega esa semana, lleve el tiempo que lleve. Premios para los 10 primeros.</div>
-    <div class="card"><b>Gratis.</b> Los anuncios son siempre opcionales.</div>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Rider Millionaire"><img src="img/favicon-180.webp" alt="" width="38" height="38"><span>Rider <em>Millionaire</em></span></a>
+    <button class="lang" type="button" id="lang" aria-label="Change language">EN</button>
   </div>
-  <span class="soon">Próximamente en Google Play</span>
-  <footer><a href="legal/privacidad.html">Política de privacidad</a> · <a href="legal/bases-liga.html">Bases de la Liga</a></footer>
+</header>
+
+<main>
+<section class="hero" aria-labelledby="t-hero">
+  <picture>
+    <source media="(max-width: 760px)" srcset="img/hero-mobile.webp" type="image/webp">
+    <source srcset="img/hero.webp" type="image/webp">
+    <img src="img/hero.png" alt="" width="1600" height="1000" fetchpriority="high">
+  </picture>
+  <div class="wrap">
+    <div class="hero-copy">
+      <p class="eyebrow" data-i18n="eyebrow">Idle tycoon gratis</p>
+      <h1 id="t-hero"><span data-i18n="h1a">De rider</span> <em data-i18n="h1b">a millonario</em></h1>
+      <p class="lead" data-i18n="lead">Empieza repartiendo en bici y construye un imperio: almacenes, restaurantes, estudios de TikTok… y salta de Madrid a Miami y Dubái.</p>
+      <div class="ctas">
+        <a class="btn btn-play" href="jugar/" data-track="play_hero"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg><span data-i18n="play">Jugar gratis ahora</span></a>
+        <a class="btn btn-ghost" href="#beta" data-track="beta_hero" data-store><span data-i18n="android">Android: entra en la beta</span></a>
+      </div>
+      <div class="chips"><span data-i18n="c1">Sin instalar</span><span data-i18n="c2">Móvil y ordenador</span><span data-i18n="c3">Anuncios siempre opcionales</span></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="t-show">
+  <div class="wrap show">
+    <div class="phone-col reveal">
+      <div class="phone" id="phone">
+        <div class="screen">
+          <img class="on" src="img/shots/madrid.webp" alt="Ciudad de Madrid con tus negocios" data-alt-en="Madrid with your businesses" width="540" height="960">
+          <img src="img/shots/miami.webp" alt="Miami: playa, yates y food trucks" data-alt-en="Miami: beach, yachts and food trucks" width="540" height="960" loading="lazy">
+          <img src="img/shots/supercars.webp" alt="Concesionario de superdeportivos en Dubái" data-alt-en="Supercar dealership in Dubai" width="540" height="960" loading="lazy">
+          <img src="img/shots/dubai.webp" alt="Dubái con sus torres" data-alt-en="Dubai skyline" width="540" height="960" loading="lazy">
+          <img src="img/shots/life.webp" alt="Mi vida: tu personaje y sus lujos" data-alt-en="My life: your character and luxuries" width="540" height="960" loading="lazy">
+        </div>
+        <img src="img/phone-frame.webp" alt="" width="520" height="1040">
+      </div>
+      <div class="dots" id="dots" aria-label="Capturas"></div>
+    </div>
+    <div class="reveal">
+      <p class="eyebrow" data-i18n="showEye">Así se juega</p>
+      <h2 id="t-show" data-i18n="showH">Tu ciudad crece a la vista</h2>
+      <div class="feats">
+        <div class="feat"><i aria-hidden="true">🏗️</i><p><b data-i18n="f1h">Cada mejora se ve</b><span class="muted" data-i18n="f1">Los edificios crecen, llegan trabajadores, carretillas y furgonetas. Nada de números sueltos.</span></p></div>
+        <div class="feat"><i aria-hidden="true">👔</i><p><b data-i18n="f2h">Trabaja aunque no estés</b><span class="muted" data-i18n="f2">Contrata gerentes y tus negocios siguen ganando con el móvil apagado.</span></p></div>
+        <div class="feat"><i aria-hidden="true">⚡</i><p><b data-i18n="f3h">Cada negocio, su truco</b><span class="muted" data-i18n="f3">Pedidos urgentes, críticos gastronómicos, directos virales, olas de turistas, oro…</span></p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cities" aria-labelledby="t-cities">
+  <div class="wrap">
+    <div class="head reveal">
+      <p class="eyebrow" data-i18n="citiesEye">Tres ciudades</p>
+      <h2 id="t-cities" data-i18n="citiesH">De tu barrio al mundo</h2>
+    </div>
+    <div class="city-row">
+      <article class="city madrid reveal"><img src="img/city-madrid.webp" alt="" width="800" height="560" loading="lazy"><h3>Madrid <small data-i18n="m0">El comienzo</small></h3><p data-i18n="m1">Almacén de dropshipping, restaurante, estudio de TikTok y agencia de IA.</p></article>
+      <article class="city miami reveal"><img src="img/city-miami.webp" alt="" width="800" height="560" loading="lazy"><h3>Miami <small data-i18n="mi0">Sol y yates</small></h3><p data-i18n="mi1">Food trucks, club de playa, alquiler de yates, inmobiliaria y cripto.</p></article>
+      <article class="city dubai reveal"><img src="img/city-dubai.webp" alt="" width="800" height="560" loading="lazy"><h3>Dubái <small data-i18n="d0">El lujo</small></h3><p data-i18n="d1">Superdeportivos, hotel de lujo, safari, zoco del oro y tu propio rascacielos.</p></article>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="t-steps">
+  <div class="wrap">
+    <div class="head reveal"><p class="eyebrow" data-i18n="stepsEye">En tres pasos</p><h2 id="t-steps" data-i18n="stepsH">Fácil de empezar, difícil de soltar</h2></div>
+    <div class="steps">
+      <div class="step reveal"><img src="img/step-open.webp" alt="" width="256" height="256" loading="lazy"><h3 data-i18n="s1h">Abre negocios</h3><p data-i18n="s1">Toca para producir y vender. Cada euro se reinvierte en más puestos.</p></div>
+      <div class="step reveal"><img src="img/step-manager.webp" alt="" width="256" height="256" loading="lazy"><h3 data-i18n="s2h">Contrata gerentes</h3><p data-i18n="s2">Automatiza la cadena y deja que el dinero entre solo.</p></div>
+      <div class="step reveal"><img src="img/step-expand.webp" alt="" width="256" height="256" loading="lazy"><h3 data-i18n="s3h">Expándete</h3><p data-i18n="s3">Sal a bolsa, viaja a la siguiente ciudad y empieza más fuerte.</p></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="t-league">
+  <div class="wrap">
+    <div class="league reveal">
+      <img src="img/league.webp" alt="" width="800" height="560" loading="lazy">
+      <div>
+        <p class="eyebrow" data-i18n="lEye">Liga Millonario</p>
+        <h2 id="t-league" data-i18n="lH">Una liga nueva cada lunes</h2>
+        <ul>
+          <li data-i18n="l1">Todos empiezan de cero cada semana: cuenta lo que juegas esa semana, no desde cuándo juegas.</li>
+          <li data-i18n="l2">Premios para los 10 primeros de cada semana.</li>
+          <li data-i18n="l3">Gratis. Apuntarse es opcional y solo pide un nombre de jugador.</li>
+        </ul>
+        <a href="legal/bases-liga.html" class="small" data-i18n="lBases">Consulta las bases de la Liga</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="beta" aria-labelledby="t-beta">
+  <div class="wrap beta">
+    <div class="beta-art reveal"><img src="img/rider.webp" alt="" width="600" height="800" loading="lazy"></div>
+    <div class="reveal">
+      <p class="eyebrow" data-i18n="bEye">Android</p>
+      <h2 id="t-beta" data-i18n="bH">Pruébalo antes que nadie en Google Play</h2>
+      <p class="muted" style="margin:14px 0 22px" data-i18n="bP">Estamos en beta cerrada. Déjanos el email de tu cuenta de Google y te invitamos a instalar la app desde Google Play. Mientras tanto, puedes jugar ya en el navegador.</p>
+      <a class="btn btn-play" id="store" href="#" data-track="store" hidden><span data-i18n="storeBtn">Descargar en Google Play</span></a>
+      <form id="signup" novalidate>
+        <label class="f" for="email" data-i18n="bLabel">Email de tu cuenta de Google</label>
+        <input id="email" type="email" inputmode="email" autocomplete="email" required placeholder="tu@gmail.com" maxlength="254">
+        <label class="check"><input type="checkbox" id="ok" required><span data-i18n-html="bConsent">Acepto que se use este email solo para invitarme a la beta y avisarme cuando salga el juego. Más en la <a href="legal/privacidad.html">política de privacidad</a>.</span></label>
+        <button class="btn btn-play" type="submit" data-i18n="bSend">Quiero entrar en la beta</button>
+        <p class="msg" id="msg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="t-faq">
+  <div class="wrap">
+    <div class="head reveal"><h2 id="t-faq" data-i18n="qH">Preguntas frecuentes</h2></div>
+    <div class="faq">
+      <details><summary data-i18n="q1">¿Es gratis?</summary><p data-i18n="a1">Sí, completamente. Los anuncios son siempre opcionales: tú decides cuándo ver uno a cambio de un premio. Habrá compras opcionales dentro de la app.</p></details>
+      <details><summary data-i18n="q2">¿Dónde puedo jugar?</summary><p data-i18n="a2">Ya en el navegador del móvil o del ordenador, sin instalar nada. La app para Android está en beta cerrada en Google Play; iPhone, más adelante.</p></details>
+      <details><summary data-i18n="q3">¿Se guarda mi partida?</summary><p data-i18n="a3">Sí, en tu dispositivo. Si te apuntas a la Liga, también tienes copia en la nube para recuperarla.</p></details>
+      <details><summary data-i18n="q4">¿Gano algo de verdad?</summary><p data-i18n-html="a4">El dinero del juego es ficticio. La Liga semanal reparte premios entre los 10 primeros según sus <a href="legal/bases-liga.html">bases</a>; los premios en dinero solo pueden cobrarlos mayores de 18 años.</p></details>
+      <details><summary data-i18n="q5">¿En qué idiomas está?</summary><p data-i18n="a5">En español y en inglés. El juego elige el de tu móvil y puedes cambiarlo en los ajustes.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="final" aria-labelledby="t-final">
+  <div class="wrap">
+    <img class="rider-peek reveal" src="img/step-open.webp" alt="" width="256" height="256" loading="lazy">
+    <h2 id="t-final" data-i18n="fH">Tu primer negocio te está esperando</h2>
+    <p class="muted" data-i18n="fP">Una partida de 2 minutos y ya tienes tu primer almacén funcionando.</p>
+    <div class="ctas"><a class="btn btn-play" href="jugar/" data-track="play_footer"><span data-i18n="play">Jugar gratis ahora</span></a></div>
+  </div>
+</section>
 </main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Rider Millionaire</span>
+    <nav><a href="legal/privacidad.html" data-i18n="privacy">Privacidad</a><a href="legal/bases-liga.html" data-i18n="rules">Bases de la Liga</a><a href="jugar/" data-track="play_nav" data-i18n="playShort">Jugar</a></nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  document.documentElement.classList.add("js");
+
+  // Cuando la app esté publicada en Google Play, poner aquí su enlace: el botón sustituye al formulario.
+  var PLAY_URL = "";
+  var TRACK = "https://jpdvpbqiasyjzbdaiedh.supabase.co/functions/v1/track";
+  var KEY = "sb_publishable_y8GI8XKM5uuq1jrbPWULBA_v39TLLkE";
+
+  var EN = {
+    eyebrow: "Free idle tycoon", h1a: "From rider", h1b: "to millionaire",
+    lead: "Start out delivering on a bike and build an empire: warehouses, restaurants, TikTok studios… then jump from Madrid to Miami and Dubai.",
+    play: "Play free now", android: "Android: join the beta", c1: "No install", c2: "Phone and computer", c3: "Ads always optional",
+    showEye: "How it plays", showH: "Watch your city grow",
+    f1h: "Every upgrade shows", f1: "Buildings grow, workers, forklifts and vans arrive. Not just numbers.",
+    f2h: "It works while you're away", f2: "Hire managers and your businesses keep earning with your phone off.",
+    f3h: "Each business has a twist", f3: "Rush orders, food critics, viral livestreams, tourist waves, gold…",
+    citiesEye: "Three cities", citiesH: "From your block to the world",
+    m0: "Where it starts", m1: "Dropshipping warehouse, restaurant, TikTok studio and AI agency.",
+    mi0: "Sun and yachts", mi1: "Food trucks, beach club, yacht rental, real estate and crypto.",
+    d0: "Luxury", d1: "Supercars, luxury hotel, safari, gold souk and your own skyscraper.",
+    stepsEye: "Three steps", stepsH: "Easy to start, hard to put down",
+    s1h: "Open businesses", s1: "Tap to produce and sell. Every euro goes back into more stations.",
+    s2h: "Hire managers", s2: "Automate the chain and let the money roll in.",
+    s3h: "Expand", s3: "Go public, travel to the next city and start stronger.",
+    lEye: "Millionaire League", lH: "A new league every Monday",
+    l1: "Everyone starts from zero each week: what counts is how you play that week, not how long you've played.",
+    l2: "Prizes for the top 10 every week.", l3: "Free. Joining is optional and only asks for a player name.",
+    lBases: "Read the League rules",
+    bEye: "Android", bH: "Try it first on Google Play",
+    bP: "We're in closed beta. Leave the email of your Google account and we'll invite you to install the app from Google Play. Meanwhile, you can play right now in your browser.",
+    storeBtn: "Get it on Google Play", bLabel: "Your Google account email",
+    bConsent: 'I agree that this email is used only to invite me to the beta and to let me know when the game launches. More in the <a href="legal/privacidad.html">privacy policy</a>.',
+    bSend: "I want to join the beta",
+    qH: "FAQ", q1: "Is it free?", a1: "Yes, completely. Ads are always optional: you choose when to watch one for a reward. There will be optional in-app purchases.",
+    q2: "Where can I play?", a2: "Right now in your phone or computer browser, no install. The Android app is in closed beta on Google Play; iPhone later on.",
+    q3: "Is my progress saved?", a3: "Yes, on your device. If you join the League, you also get a cloud copy to recover it.",
+    q4: "Can I win anything real?", a4: 'In-game money is fictional. The weekly League gives prizes to the top 10 under its <a href="legal/bases-liga.html">rules</a>; cash prizes can only be claimed by adults (18+).',
+    q5: "Which languages?", a5: "Spanish and English. The game picks your phone's language and you can change it in settings.",
+    fH: "Your first business is waiting", fP: "A two-minute session and your first warehouse is up and running.",
+    privacy: "Privacy", rules: "League rules", playShort: "Play",
+    okMsg: "Done! We'll write to you with the invitation.", badMail: "Check the email address.", needOk: "Tick the box to continue.", failMsg: "Couldn't send it. Try again in a moment."
+  };
+  var ES_MSG = { okMsg: "¡Listo! Te escribiremos con la invitación.", badMail: "Revisa el email.", needOk: "Marca la casilla para continuar.", failMsg: "No se ha podido enviar. Inténtalo en un momento." };
+
+  /* ---------- Idioma ---------- */
+  var nodes = [].slice.call(document.querySelectorAll("[data-i18n],[data-i18n-html]"));
+  nodes.forEach(function (n) { n.dataset.es = n.hasAttribute("data-i18n-html") ? n.innerHTML : n.textContent; });
+  var params = new URLSearchParams(location.search);
+  var lang = params.get("lang") || "";
+  try { lang = lang || localStorage.getItem("landingLang") || ""; } catch (e) {}
+  if (lang !== "es" && lang !== "en") lang = /^es\b/i.test(navigator.language || "") ? "es" : "en";
+  function msg(k) { return lang === "en" ? EN[k] : ES_MSG[k]; }
+  function apply() {
+    document.documentElement.lang = lang;
+    nodes.forEach(function (n) {
+      var k = n.getAttribute("data-i18n") || n.getAttribute("data-i18n-html");
+      var v = lang === "en" ? EN[k] : n.dataset.es;
+      if (v == null) return;
+      if (n.hasAttribute("data-i18n-html")) n.innerHTML = v; else n.textContent = v;
+    });
+    document.querySelectorAll("[data-alt-en]").forEach(function (img) {
+      if (!img.dataset.altEs) img.dataset.altEs = img.alt;
+      img.alt = lang === "en" ? img.dataset.altEn : img.dataset.altEs;
+    });
+    var b = document.getElementById("lang");
+    b.textContent = lang === "en" ? "ES" : "EN";
+    b.setAttribute("aria-label", lang === "en" ? "Cambiar a español" : "Switch to English");
+    document.title = lang === "en" ? "Rider Millionaire: Idle Tycoon · From rider to millionaire" : "Rider Millionaire: Idle Tycoon · De rider a millonario";
+  }
+  apply();
+  document.getElementById("lang").addEventListener("click", function () {
+    lang = lang === "en" ? "es" : "en";
+    try { localStorage.setItem("landingLang", lang); } catch (e) {}
+    apply();
+  });
+
+  /* ---------- Analítica anónima (mismo id que el juego en esta web) ---------- */
+  function device() {
+    var id = null;
+    try { id = JSON.parse(localStorage.getItem("analyticsDevice") || "null"); } catch (e) {}
+    if (!id && window.crypto && crypto.randomUUID) {
+      id = crypto.randomUUID();
+      try { localStorage.setItem("analyticsDevice", JSON.stringify(id)); } catch (e) {}
+    }
+    return id;
+  }
+  function post(body, beacon) {
+    var id = device();
+    if (!id || /^(localhost|127\.)/.test(location.hostname)) return Promise.resolve(null);
+    body.device = id;
+    return fetch(TRACK, { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY }, body: JSON.stringify(body), keepalive: !!beacon })
+      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+  }
+  var src = params.get("utm_source") || "";
+  if (!src && document.referrer) { try { var h = new URL(document.referrer).hostname; if (h !== location.hostname) src = h.replace(/^www\./, ""); } catch (e) {} }
+  post({ landing: [{ name: "view", props: { lang: lang, src: src.slice(0, 40), w: Math.round(innerWidth) } }] });
+  document.addEventListener("click", function (ev) {
+    var a = ev.target.closest && ev.target.closest("[data-track]");
+    if (a) post({ landing: [{ name: "click", props: { target: a.getAttribute("data-track"), lang: lang, src: src.slice(0, 40) } }] }, true);
+  });
+
+  /* ---------- Google Play o formulario de la beta ---------- */
+  if (PLAY_URL) {
+    var store = document.getElementById("store");
+    store.href = PLAY_URL; store.hidden = false;
+    document.getElementById("signup").hidden = true;
+    document.querySelectorAll("[data-store]").forEach(function (a) { a.href = PLAY_URL; a.setAttribute("data-track", "store_hero"); });
+  }
+  var form = document.getElementById("signup"), out = document.getElementById("msg");
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var email = document.getElementById("email").value.trim();
+    out.className = "msg err";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) { out.textContent = msg("badMail"); return; }
+    if (!document.getElementById("ok").checked) { out.textContent = msg("needOk"); return; }
+    var btn = form.querySelector("button"); btn.disabled = true;
+    post({ signup: { email: email, lang: lang } }).then(function (r) {
+      btn.disabled = false;
+      if (r && r.stored) {
+        out.className = "msg ok"; out.textContent = msg("okMsg"); form.reset();
+        post({ landing: [{ name: "signup", props: { lang: lang, src: src.slice(0, 40) } }] });
+      } else out.textContent = msg("failMsg");
+    });
+  });
+
+  /* ---------- Capturas en el móvil ---------- */
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var shots = [].slice.call(document.querySelectorAll("#phone .screen img")), dots = document.getElementById("dots"), cur = 0, timer;
+  function show(i) {
+    shots[cur].classList.remove("on"); dots.children[cur].removeAttribute("aria-current");
+    cur = (i + shots.length) % shots.length;
+    shots[cur].classList.add("on"); dots.children[cur].setAttribute("aria-current", "true");
+  }
+  shots.forEach(function (img, i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.setAttribute("aria-label", (i + 1) + " / " + shots.length);
+    b.addEventListener("click", function () { show(i); clearInterval(timer); });
+    dots.appendChild(b);
+  });
+  dots.children[0].setAttribute("aria-current", "true");
+  if (!reduce) timer = setInterval(function () { if (!document.hidden) show(cur + 1); }, 3200);
+
+  /* ---------- Aparición al hacer scroll ---------- */
+  var els = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window && !reduce) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }); }, { rootMargin: "0px 0px -8% 0px" });
+    els.forEach(function (e) { io.observe(e); });
+  } else els.forEach(function (e) { e.classList.add("in"); });
+})();
+</script>
 </body>
 </html>

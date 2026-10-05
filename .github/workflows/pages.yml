@@ -42,7 +42,11 @@ jobs:
             npm run legal
             mkdir -p _site
           fi
+          # Landing: página, imágenes (sin los originales de source/) y las fuentes del juego
           cp site/index.html _site/index.html
+          mkdir -p _site/img _site/fonts
+          cp -r site/img/. _site/img/ && rm -rf _site/img/source _site/img/README.md
+          cp public/fonts/*.woff2 _site/fonts/
           mkdir -p _site/legal && cp public/legal/*.html _site/legal/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
