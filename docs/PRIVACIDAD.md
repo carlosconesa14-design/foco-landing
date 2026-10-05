@@ -11,6 +11,8 @@
 | Partida guardada (progreso del juego) | Que puedas seguir jugando | Solo en tu móvil |
 | Estadísticas de uso anónimas (un identificador aleatorio de instalación, eventos del juego como sesiones o pasos del tutorial, y los fallos técnicos del juego) | Mejorar el juego | Servidores de Supabase en la UE (París) |
 | Opiniones que envías desde el juego (puntuación y texto, con el idioma y tu progreso) | Mejorar el juego | Supabase (UE). Son anónimas: el juego pide no escribir datos personales |
+| Web (landing): visitas y clics anónimos, con el mismo identificador aleatorio que el juego en ese navegador, el idioma y de qué web vienes | Saber qué funciona en la web | Supabase (UE) |
+| Beta de Android: el email de tu cuenta de Google, si lo dejas en la web | Invitarte a la prueba de Google Play y avisarte cuando salga el juego. Nada más | Supabase (UE). Puedes pedir que lo borremos cuando quieras |
 | Liga: nombre de jugador, puntos y un identificador aleatorio | Gestionar la clasificación y los premios | Supabase (UE) |
 | Liga, solo ganadores de premios en dinero: email y declaración de mayoría de edad | Contactar y entregar el premio | Supabase (UE) |
 | Publicidad: identificador de publicidad del móvil y datos técnicos | Mostrar anuncios bonificados | Google AdMob. Ver https://policies.google.com/privacy |
@@ -27,6 +29,7 @@ El juego es apto para todos los públicos, pero los **premios en dinero de la Li
 ## Conservación
 - Estadísticas: [24 meses].
 - Datos de la Liga: mientras juegues y [12 meses] después.
+- Email de la beta: hasta que salga el juego en Google Play y [6 meses] después, o hasta que pidas borrarlo.
 - Email de ganadores: el tiempo necesario para pagar el premio y cumplir las obligaciones legales.
 
 ## Tus derechos

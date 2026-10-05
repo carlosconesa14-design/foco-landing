@@ -36,6 +36,22 @@ Deno.serve(async (req) => {
       if (error) throw error;
       return reply({ stored: data === true });
     }
+    // Landing page: apuntarse a la beta cerrada de Android (email de la cuenta de Google).
+    if (b.signup && typeof b.signup === "object") {
+      const { data, error } = await db.rpc("beta_signup", {
+        p_device: b.device,
+        p_email: String(b.signup.email ?? "").slice(0, 254),
+        p_lang: String(b.signup.lang ?? "").slice(0, 8),
+      });
+      if (error) throw error;
+      return reply({ stored: data === true });
+    }
+    // Landing page: visitas y clics (tabla aparte, para no mezclarlos con los jugadores).
+    if (Array.isArray(b.landing)) {
+      const { data, error } = await db.rpc("landing_insert", { p_device: b.device, p_events: b.landing.slice(0, 10) });
+      if (error) throw error;
+      return reply({ stored: data });
+    }
     if (!Array.isArray(b.events)) return reply({ error: "bad" }, 400);
     const { data, error } = await db.rpc("analytics_insert", {
       p_device: b.device,
