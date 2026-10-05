@@ -789,3 +789,38 @@ Carlos pedía que, dentro de un negocio, se viera la ciudad alrededor y no solo 
 - **Cámara:** los límites llegan hasta la circunvalación, así que al alejarse se ve el barrio entero.
 
 **Mejora posible para Codex:** algún solar con aparcamiento, contenedores o zona verde, para que las manzanas grandes tengan menos suelo liso.
+
+## Encargo: landing page y vídeos de TikTok (5 de octubre de 2026)
+
+Carlos quiere una landing page y vídeos de TikTok orgánico. Claude los monta (ver `PLAN.md`); el arte lo hace ChatGPT/Codex.
+
+**Reglas:**
+- Mismo estilo que el juego: juguete 3D pulido, contorno azul marino, luz cálida desde arriba a la izquierda.
+- Arte original, sin marcas ni logotipos reales.
+- PNG con transparencia donde se indique, y su `.webp` (`npm run art:webp` solo cubre `public/sprites`; para `site/` hay que exportar el WebP a mano o ampliar el script).
+
+### Landing (carpeta `site/img/`)
+
+| Clave / archivo | Tamaño | Qué es |
+| --- | --- | --- |
+| `hero.png` | 1600×1000 | Escena principal: el rider en bici delante de la ciudad isométrica de Madrid que se transforma hacia Miami y Dubái al fondo, con monedas y ambiente de éxito. Que deje aire a la izquierda para el titular |
+| `hero-mobile.png` | 900×1200 | La misma escena reencuadrada en vertical, con aire arriba para el titular |
+| `rider.png` | 600×800, transparente | El personaje protagonista recortado, pose dinámica (saludando o sobre la bici) |
+| `city-madrid.png`, `city-miami.png`, `city-dubai.png` | 800×560, transparentes | Un diorama isométrico de cada ciudad con 2–3 negocios reconocibles (se puede partir de `district_*` y los edificios ★★★) |
+| `step-open.png`, `step-manager.png`, `step-expand.png` | 256×256, transparentes | Iconos de los 3 pasos: abrir un negocio, contratar un gerente y viajar/expandirse |
+| `league.png` | 800×560, transparente | Trofeo o podio de la Liga semanal con confeti, sin cifras de dinero |
+| `phone-frame.png` | 520×1040, transparente | Marco de móvil genérico (sin marca) para poner encima el vídeo del juego |
+| `og-image.png` | 1200×630 | Imagen para compartir el enlace: logo + rider + ciudad + frase «De rider a millonario». Texto grande y legible en miniatura. También la versión inglesa `og-image-en.png` («From rider to millionaire») |
+| `favicon-32.png`, `favicon-180.png` | 32×32 y 180×180 | A partir del icono de la app |
+
+### TikTok (carpeta `marketing/tiktok/arte/`)
+
+| Archivo | Tamaño | Qué es |
+| --- | --- | --- |
+| `endcard.png` | 1080×1920 | Pantalla final: logo, el rider y una franja vacía abajo para «Búscalo en Google Play» (el texto lo pone Claude en el montaje). Versión `endcard-en.png` |
+| `cover-template-*.png` (3) | 1080×1920 | Fondos de portada con espacio grande arriba para el título: ciudad de día, Miami al atardecer y Dubái de noche |
+| `avatar.png` | 400×400 | Avatar de la cuenta: cara del rider sobre fondo de color plano, que se lea en pequeño |
+| `sticker-*.png` (6), transparentes | ~600 px de ancho | Rótulos con el estilo del juego para el montaje: «¡Atasco!», «Gerente contratado», «x3», «Nivel máximo», «Salida a bolsa», «Nuevo récord». Sin texto si se prefiere: solo el marco o la cinta, y Claude escribe encima con la fuente del juego |
+| `coin-burst.png` | Tira de 8 frames de 256×256, transparente | Explosión de monedas para transiciones |
+
+Al entregar, documentar en esta sección los prompts usados y avisar a Claude para montar la landing y los vídeos.

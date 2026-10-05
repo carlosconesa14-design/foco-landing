@@ -69,6 +69,8 @@ Marca: logos claro/oscuro, iconos web/Android, carga y splash, gráfico de Googl
 Validación local: 225 tests correctos, build de producción correcto y 122 comprobaciones automatizadas de Chromium, incluidos compra/equipamiento, fantasma, mecánicas físicas y apoyos de animación. **Pendiente antes de publicar:** probar rendimiento en Android físico de gama media, compilar/verificar recursos nativos y revisar el material en Play Console. La prueba visual simula Supabase; no valida cuentas, anuncios reales ni servidor.
 
 ## Próximos pasos (Claude)
+**Plan actual hacia el lanzamiento:** [`PLAN.md`](PLAN.md) (landing page, vídeos de TikTok, primeros 10 minutos, PWA, ficha de la tienda). Se espera el arte encargado en `ART.md` («Encargo: landing page y vídeos de TikTok»).
+
 0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
 2. ~~Panel de números de la beta~~ ✅ ([`ANALITICA.md`](ANALITICA.md), «Informes»).
