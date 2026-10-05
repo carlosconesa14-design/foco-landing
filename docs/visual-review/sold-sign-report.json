@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "es-ES: pending sale has no sold marker",
+    "es-ES: completed sale has translated marker",
+    "en-US: pending sale has no sold marker",
+    "en-US: completed sale has translated marker"
+  ],
+  "errors": [],
+  "remote": "Supabase stubbed; no remote writes"
+}

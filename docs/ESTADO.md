@@ -69,6 +69,8 @@ Marca: logos claro/oscuro, iconos web/Android, carga y splash, gráfico de Googl
 Validación local: 225 tests correctos, build de producción correcto y 122 comprobaciones automatizadas de Chromium, incluidos compra/equipamiento, fantasma, mecánicas físicas y apoyos de animación. **Pendiente antes de publicar:** probar rendimiento en Android físico de gama media, compilar/verificar recursos nativos y revisar el material en Play Console. La prueba visual simula Supabase; no valida cuentas, anuncios reales ni servidor.
 
 ## Próximos pasos (Claude)
+**Plan actual hacia el lanzamiento:** [`PLAN.md`](PLAN.md) (landing page, vídeos de TikTok, primeros 10 minutos, PWA, ficha de la tienda). Se espera el arte encargado en `ART.md` («Encargo: landing page y vídeos de TikTok»).
+
 0. ~~Auditoría de seguridad y anti-trampas~~ ✅ ([`SEGURIDAD.md`](SEGURIDAD.md)). Pendiente: Play Integrity y verificar compras en el servidor, cuando existan las cuentas de Google.
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
 2. ~~Panel de números de la beta~~ ✅ ([`ANALITICA.md`](ANALITICA.md), «Informes»).
@@ -90,3 +92,13 @@ Validación local: 225 tests correctos, build de producción correcto y 122 comp
 Arte de Miami completado el 5 de octubre: 36 PNG/WebP para los 12 roles propios; originales, exportadores y contactos incluidos. Pasada adicional de 25 comprobaciones de navegador sin errores en `docs/visual-review/miami-report.json`.
 
 Mundo integrado y pantalla limpia (5 de octubre): seis dioramas de barrios originales para ciudades y recintos, calles/aceras exteriores, peatones, pájaros, paseo y yate en Miami, farolas nocturnas, cámara ampliada, cabecera en una fila y etiquetas de producción contextuales. No cambia la economía. Véase el cierre de `ART.md`.
+
+Arte regional de las mecánicas (5 de octubre): los 14 negocios tienen entorno
+específico y pieza de `TwistWorld`. Se añaden once dioramas, diez piezas de
+mecánicas y dos coches en las calles exteriores. En `src/game/twists.ts` solo
+cambia la lista que habilita el arte; la economía conserva sus cifras y reglas.
+Fuentes, exportadores y detalle de los puntos 5/6 entregados al final de `ART.md`.
+
+### 5 de octubre de 2026 — arte para landing y TikTok
+
+Codex entrega las 28 piezas del último encargo de ART en `site/img/` y `marketing/tiktok/arte/`, todas con WebP, fuentes originales, recortes y exportador reproducible. Guías y zonas seguras en sus README. 227 tests, build y 53 comprobaciones móviles sin errores. Arte listo para el montaje de Claude; no implica despliegue de landing ni vídeos publicados.

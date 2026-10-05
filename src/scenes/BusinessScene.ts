@@ -242,7 +242,7 @@ export class BusinessScene extends Phaser.Scene {
     const worldH = this.oy + ((COLS + ROWS + 2) * TH) / 2 + 40 + insets.bottom;
 
     this.neighborhood = new Neighborhood(this,{city:this.bridge.state().city,biz:this.bizId,cols:COLS,rows:ROWS,iso:(c,r)=>this.iso(c,r)});
-    this.cameras.main.setBackgroundColor(mix(cityDef(this.bridge.state().city).ground.grass, 0x000000, 0.06));
+    this.cameras.main.setBackgroundColor(this.neighborhood.backdrop ?? mix(cityDef(this.bridge.state().city).ground.grass, 0x000000, 0.06));
     if (this.bizId === "restaurant") {
       this.restaurant = new RestaurantRoom(this,(c,r)=>this.iso(c,r),this.floorCount);
       this.restaurant.create();

@@ -1,0 +1,62 @@
+{
+  "veh_excursion": {
+    "left": 13,
+    "top": 153,
+    "width": 321,
+    "height": 342
+  },
+  "prop_sold": {
+    "left": 353,
+    "top": 160,
+    "width": 303,
+    "height": 333
+  },
+  "ch_vip_client": {
+    "left": 669,
+    "top": 150,
+    "width": 291,
+    "height": 346
+  },
+  "ch_jeweler": {
+    "left": 970,
+    "top": 143,
+    "width": 255,
+    "height": 362
+  },
+  "ch_foodie": {
+    "left": 1256,
+    "top": 151,
+    "width": 273,
+    "height": 346
+  },
+  "ch_inspector": {
+    "left": 23,
+    "top": 562,
+    "width": 301,
+    "height": 368
+  },
+  "prop_dj": {
+    "left": 332,
+    "top": 571,
+    "width": 305,
+    "height": 359
+  },
+  "ch_photographer": {
+    "left": 666,
+    "top": 578,
+    "width": 273,
+    "height": 357
+  },
+  "prop_mining": {
+    "left": 940,
+    "top": 598,
+    "width": 284,
+    "height": 326
+  },
+  "prop_blueprints": {
+    "left": 1227,
+    "top": 576,
+    "width": 291,
+    "height": 353
+  }
+}

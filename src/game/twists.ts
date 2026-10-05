@@ -39,8 +39,8 @@ export const TWISTS: Record<string, TwistKind> = {
   tower: "research",
 };
 
-/** Negocios con su pieza dibujada en el mundo (TwistWorld). El resto, solo la tarjeta hasta que haya arte. */
-export const TWIST_WORLD_ART = ["dropship", "restaurant", "tiktok", "ai"];
+/** Negocios con su pieza dibujada en el mundo (TwistWorld). Todas las piezas están entregadas; esto solo habilita la proyección visual. */
+export const TWIST_WORLD_ART = ["dropship", "restaurant", "tiktok", "ai", "foodtruck", "beachclub", "yachts", "realestate", "crypto", "supercars", "hotel", "safari", "souk", "tower"];
 
 export const twistOf = (bizId: string): TwistKind | null => TWISTS[bizId] ?? null;
 

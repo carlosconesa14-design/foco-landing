@@ -17,6 +17,9 @@ const def = (key: string, w: number, h: number) => (ART[key] = { w, h });
 
 for (const district of ["madrid","miami","dubai","industrial","terrace","neon"]) def(`district_${district}`, 270, 190);
 
+for (const district of ['technology','foodcourt','beachfront','marina','residential','financial','dealership','hotelfront','desertcamp','market','construction']) def(`district_${district}`,270,190);
+for (const key of ['veh_excursion','prop_sold','ch_vip_client','ch_jeweler','ch_foodie','ch_inspector','prop_dj','ch_photographer','prop_mining','prop_blueprints']) def(key,96,82);
+
 /* Restaurant furnishings and distinct cooking / walking animation poses. */
 def("rest_table_empty", 100, 84);
 def("rest_table_served", 100, 84);

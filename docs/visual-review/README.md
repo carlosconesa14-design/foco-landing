@@ -56,3 +56,32 @@ cámara, compras, visitantes, rangos y pausa/reanudación de la vida ambiental.
 tras compactar los avisos temporales. Ambos terminan sin errores. Pasan los
 225 tests y la compilación de producción. Las pruebas simulan Supabase y no
 certifican rendimiento en un dispositivo físico.
+
+## Entornos y mecánicas de Miami y Dubái
+
+Cada negocio tiene un entorno propio. Las piezas reflejan las ofertas, visitas,
+hype e investigación existentes, sin iniciar acciones ni modificar recompensas.
+
+| Negocio | Mecánica dentro de su entorno |
+| --- | --- |
+| Food trucks | ![Foodie y paseo](regional-foodtruck.png) |
+| Club de playa | ![DJ y club costero](regional-beachclub.png) |
+| Yates | ![Excursión y puerto](regional-yachts.png) |
+| Inmobiliaria | ![Compradora y apartamentos](regional-realestate.png) |
+| Cripto | ![Minería y distrito financiero](regional-crypto.png) |
+| Superdeportivos | ![Cliente VIP y concesionarios](regional-supercars.png) |
+| Hotel | ![Inspector y hoteles](regional-hotel.png) |
+| Safari | ![Fotógrafo y dunas](regional-safari.png) |
+| Zoco | ![Joyero y mercado](regional-souk.png) |
+| Rascacielos | ![Planos y obras](regional-tower.png) |
+
+`regional-world-report.json` recoge 178 comprobaciones en español/inglés,
+con interfaz a 320/390/560 px, los 14 entornos, las 14 piezas de mecánicas,
+pausa/reanudación, compras, visitantes y rangos, sin errores. La comprobación
+acepta tanto el frame base de PNG individuales como recortes de atlas.
+
+![Venta completada: cartel Vendido](regional-sold.png)
+
+`sold-sign-report.json`: cuatro comprobaciones adicionales en español e inglés.
+El cartel está oculto durante la oferta y muestra «Vendido»/«Sold» al completarla.
+Pasan los 227 tests y la compilación de producción.

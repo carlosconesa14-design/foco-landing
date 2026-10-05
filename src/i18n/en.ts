@@ -5,6 +5,7 @@
  * `tests/i18n.test.ts` avisa si falta alguna frase.
  */
 export const EN: Record<string, string> = {
+  "Vendido": "Sold",
   "Prestigio": "Prestige",
   "Tu personaje ya lo luce. +{n} de prestigio: +{bonus} % de ingresos para siempre.": "Your character is already showing it off. +{n} prestige: +{bonus}% income forever.",
   /* ---------- index.html ---------- */
