@@ -25,6 +25,7 @@ import { installErrorReporting } from "./platform/errors";
 import { clearSave, loadSave, writeSave } from "./platform/storage";
 import { BootScene } from "./scenes/BootScene";
 import { BusinessScene } from "./scenes/BusinessScene";
+import { FloorsScene, FLOOR_VIEW } from "./scenes/FloorsScene";
 import { CityScene } from "./scenes/CityScene";
 import { COLORS, DPR, overlayHeight, type Bridge } from "./scenes/common";
 import { banner, celebrate, floatAt } from "./ui/celebrate";
@@ -218,6 +219,14 @@ const game = new Phaser.Game({
 game.scene.add("boot", BootScene, true);
 game.scene.add("city", CityScene);
 game.scene.add("business", BusinessScene);
+game.scene.add("floors", FloorsScene);
+/** Escena de un negocio: la vista por plantas (estilo Idle Miner) donde ya está, si no el recinto. */
+const bizScene = (id: string) => (FLOOR_VIEW.has(id) ? "floors" : "business");
+/** La escena de negocio activa, si hay una (para los visitantes con oferta). */
+function activeBizScene(): BusinessScene | FloorsScene | null {
+  for (const key of ["business", "floors"]) if (game.scene.isActive(key)) return game.scene.getScene(key) as BusinessScene | FloorsScene;
+  return null;
+}
 
 let artReady = false;
 let saveLoaded = false;
@@ -232,7 +241,7 @@ function startView(): void {
   // La barra va antes: la escena lee su altura al crearse.
   renderBar(S);
   updateBar(S, clockNow());
-  if (S.view.scene === "business") game.scene.start("business", { id: S.view.id });
+  if (S.view.scene === "business") game.scene.start(bizScene(S.view.id), { id: S.view.id });
   else game.scene.start("city");
   document.body.classList.remove("loading");
   document.getElementById("loading-screen")?.remove();
@@ -862,7 +871,7 @@ let visitorUntil = 0;
 
 function hideVisitor(): void {
   if (visitorKind) rescheduleOffer(S, visitorKind, clockNow());
-  if (game.scene.isActive("business")) (game.scene.getScene("business") as BusinessScene).dismissVisitor();
+  activeBizScene()?.dismissVisitor();
   visitorEl?.remove();
   visitorEl = null;
   visitorKind = null;
@@ -872,8 +881,8 @@ function visitorTick(now: number): void {
   // Se van si cambias de negocio o de escena; nunca a la vez que el 💸 viral.
   const here = S.view.scene === "business" ? S.view.id : null;
   if (visitorEl && (now > visitorUntil || visitorEl.dataset.biz !== here)) hideVisitor();
-  if (visitorEl && visitorKind && game.scene.isActive("business")) {
-    (game.scene.getScene("business") as BusinessScene).presentVisitor(visitorKind, visitorEl);
+  if (visitorEl && visitorKind && activeBizScene()) {
+    activeBizScene()!.presentVisitor(visitorKind, visitorEl);
     return;
   }
   if (visitorEl || viralEl || !here || modalOpen() || activeSheet()) return;
@@ -890,7 +899,7 @@ function visitorTick(now: number): void {
   visitorUntil = now + OFFERS.visibleSec * 1000;
   root.appendChild(el);
   // Si la escena aún no ha arrancado, la presenta el siguiente tick (arriba).
-  if (game.scene.isActive("business")) (game.scene.getScene("business") as BusinessScene).presentVisitor(kind, el);
+  activeBizScene()?.presentVisitor(kind, el);
   fx("click");
   analytics.track("offer_shown", { kind });
 }

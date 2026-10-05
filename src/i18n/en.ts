@@ -59,6 +59,7 @@ export const EN: Record<string, string> = {
   puesto: "station",
   "puest.": "stations",
   Nv: "Lv",
+  Nivel: "Level",
 
   /* ---------- Mejoras, puestos, negocios ---------- */
   Máx: "Max",

@@ -387,7 +387,7 @@ export const TUTORIAL: { text: string; stat: StatKey; n: number }[] = [
   { text: "Toca al mozo de la Estantería 1 para preparar un pedido", stat: "tapFloor", n: 1 },
   { text: "Toca la carretilla para recoger las cajas", stat: "tapTransport", n: 1 },
   { text: "Toca la furgoneta para vender los pedidos", stat: "sales", n: 1 },
-  { text: "Pulsa el botón «Nv» de la estantería y mejórala", stat: "upgrades", n: 1 },
+  { text: "Pulsa el botón «Nivel» de la estantería y mejórala", stat: "upgrades", n: 1 },
   { text: "Contrata un gerente para que una parte trabaje sola", stat: "hires", n: 1 },
-  { text: "Abre la Estantería 2 en la parcela en obras", stat: "floors", n: 1 },
+  { text: "Abre la Estantería 2 en la planta en obras", stat: "floors", n: 1 },
 ];
