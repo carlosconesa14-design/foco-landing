@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { art } from "../art/catalog";
 import type { OfferKind } from "../game/offers";
+import { swapArt } from "../art/generated";
 import { actorShadow } from "./motion";
 import { DPR, overlayHeight, reducedMotion, calmWorld } from "./common";
 
@@ -54,6 +55,7 @@ export class WorldVisitor {
     this.halo.destroy();
     if (calmWorld()) { this.actor.destroy(); this.shadow.destroy(); return; }
     const actor = this.actor, shadow = this.shadow;
+    if (this.kind === "truck" && this.scene.textures.exists("veh_supply_rear")) swapArt(actor,"veh_supply_rear");
     this.scene.tweens.add({ targets: actor, x: this.entry.x, y: this.entry.y, alpha: 0, duration: 650, ease: "Cubic.easeIn",
       onUpdate: () => { actor.setDepth(actor.y + 3); shadow.setPosition(actor.x, actor.y + 1).setDepth(actor.y - 1).setAlpha(actor.alpha * .2); },
       onComplete: () => { actor.destroy(); shadow.destroy(); } });

@@ -1,3 +1,4 @@
+import { icon } from "./icons";
 import { now as clockNow } from "../game/clock";
 import type { StatKey } from "../game/data";
 import {
@@ -128,7 +129,7 @@ export function openEvent(ctx: PanelCtx): void {
           ? `<div class="row"><span class="face">${FEST_DEF.icon}</span><div><b>${t("La feria del fin de semana")}</b><span class="sub">${t(
               "Una ruta solo para el evento, con fichas 🎟️. Cada trofeo 🏆 da +{n} % de ingresos para siempre (tienes {have}).",
               { n: Math.round(TROPHY.bonus * 100), have: fest.trophies },
-            )}</span></div>${open ? `<button class="claim" data-festgo>${t("Ir")}</button>` : ""}</div>${festRows.join("")}`
+            )}</span></div>${open ? `<button class="claim" data-festgo>${t("Ir")}</button>` : ""}</div>${fest.trophies>0?`<div class="trophy-cabinet" aria-label="${t("Trofeos")}">${Array.from({length:Math.min(8,fest.trophies)},()=>icon("fest_trophy")).join("")}<b>×${fest.trophies}</b></div>`:""}${festRows.join("")}`
           : "";
       const festEl = $(el, "[data-fest]");
       festEl.hidden = !festHtml;
@@ -189,6 +190,6 @@ export function openEvent(ctx: PanelCtx): void {
           })
           .join(""),
       );
-    },
+    }, { screen: "event" },
   );
 }

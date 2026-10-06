@@ -8,6 +8,7 @@ import { IMG_EXT } from "../art/imgExt";
 /** Original vector UI kit. All paths use a 48px logical canvas, no remote assets. */
 const shapes: Record<string, string> = {
   ...VISUAL_ICON_SHAPES,
+  feedback: '<path d="M8 10h32v24H22l-9 8v-8H8Z" fill="#7fd3ff"/><path d="M14 20h20m-20 6h13"/>',
   production: '<path fill="#ffd36b" d="M6 21 20 12v9l14-9v9h8v21H6Z"/><path d="M13 29h5m7 0h5m-17 7h5m7 0h5M35 7h6v14"/>',
   transport: '<rect x="5" y="12" width="24" height="24" rx="4" fill="#91d7fb"/><path fill="#ffd36b" d="M29 19h8l6 9v8H29Z"/><circle cx="13" cy="37" r="5" fill="#263e55"/><circle cx="35" cy="37" r="5" fill="#263e55"/>',
   sale: '<path fill="#3ddc97" d="M8 18h32l-3 24H11Z"/><path d="M17 18v-6a7 7 0 0 1 14 0v6"/><path fill="#ffd36b" d="m24 24 3 5 6 1-4 4 1 6-6-3-6 3 1-6-4-4 6-1Z"/>',

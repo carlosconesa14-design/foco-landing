@@ -100,7 +100,7 @@ export function openLife(ctx: PanelCtx): void {
         .join("");
       const grid = $(el, "[data-items]");
       if (paint(grid, html)) wire(grid);
-    },
+    }, { screen: "life" },
   );
 
   function wire(box: HTMLElement): void {

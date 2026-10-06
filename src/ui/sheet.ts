@@ -1,3 +1,4 @@
+import { presentSheet, type SheetPresentation } from "./panelPresentation";
 import { t } from "../i18n";
 import { decorateIcons } from "./icons";
 /** Panel inferior (bottom sheet) para mejoras, compras y la bolsa. Solo hay uno abierto a la vez. */
@@ -13,7 +14,7 @@ let current: Sheet | null = null;
 
 export const activeSheet = () => current;
 
-export function openSheet(root: HTMLElement, html: string, update?: (el: HTMLElement) => void): Sheet {
+export function openSheet(root: HTMLElement, html: string, update?: (el: HTMLElement) => void, presentation: SheetPresentation = {}): Sheet {
   current?.close();
   const opener = document.activeElement as HTMLElement | null;
   const scrim = document.createElement("div");
@@ -24,6 +25,7 @@ export function openSheet(root: HTMLElement, html: string, update?: (el: HTMLEle
   el.setAttribute("aria-modal", "true");
   el.innerHTML = `<div class="grab" aria-hidden="true"></div><button class="sheet-close" aria-label="${t("Cerrar")}">✕</button>${html}`;
   el.setAttribute("aria-label", el.querySelector("h3")?.textContent ?? t("Panel del juego"));
+  presentSheet(el, presentation);
   scrim.appendChild(el);
   root.appendChild(scrim);
   const sheet: Sheet = {

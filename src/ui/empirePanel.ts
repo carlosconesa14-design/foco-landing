@@ -102,6 +102,6 @@ export function openEmpire(ctx: PanelCtx): void {
       box.querySelectorAll<HTMLButtonElement>("[data-buy]").forEach((btn) => {
         btn.onclick = () => openPlotSheet(ctx, btn.dataset.buy!);
       });
-    },
+    }, { screen: "empire" },
   );
 }

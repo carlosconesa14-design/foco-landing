@@ -45,6 +45,7 @@ export function configureGeneratedArt(scene: Phaser.Scene, specs: Record<string,
       specs[key] = { w: ref.w * scale, h: ref.h * scale };
     }
   }
+  for (const key of Object.keys(specs)) if (key.endsWith('_rear') && specs[key.slice(0,-5)]) specs[key]={...specs[key.slice(0,-5)]};
   for (const [key, target] of Object.entries(aliases)) {
     if (!scene.textures.exists(key) && hasGeneratedArt(scene, key)) specs[key] = { ...specs[target] };
   }

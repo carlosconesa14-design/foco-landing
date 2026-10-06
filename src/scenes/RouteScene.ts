@@ -1,3 +1,7 @@
+import { activeSeason } from "../game/season";
+import { SkillButton as SkillChip } from './SkillButton';
+import { prepareWorld, fitWorldHubs } from "../art/worldLoading";
+import { RouteWorld } from './RouteWorld';
 import { LevelButton } from './LevelButton';
 import Phaser from "phaser";
 import { money, t } from "../i18n";
@@ -17,7 +21,6 @@ import { rankBadge, rankBurst } from "./rankFx";
 import { TwistWorld } from "./TwistWorld";
 import { WorldVisitor } from "./WorldVisitor";
 import { businessView, type BusinessView } from "../view/businessView";
-import type { SkillStatus } from "../game/skills";
 import { screenOf } from "../view/screens";
 
 /**
@@ -31,49 +34,10 @@ const STOP_H = 172;
 const SURFACE_H = 280;
 const ROAD_W = 30;
 
-const isVehicle = (key: string) => key.startsWith("car_") || key.startsWith("veh_");
-const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_van: "car_2" };
+const isVehicle = (key: string) => key.startsWith("car_") || key.startsWith("veh_") || key.startsWith("luxcar_");
+const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_van: "car_2", veh_fest_cart: "car_3" };
 
 type Pt = { x: number; y: number };
-
-/**
- * Botón de la habilidad del gerente (x2 de velocidad unos minutos). Arte provisional: Codex lo
- * sustituye (docs/VISUAL.md §14.1). Oculto sin gerente; amarillo y latiendo si se puede usar; verde con
- * el tiempo que le queda mientras dura; gris con la recarga.
- */
-class SkillChip extends Phaser.GameObjects.Container {
-  private bg: Phaser.GameObjects.Graphics;
-  private text: Phaser.GameObjects.Text;
-  private look = "";
-  constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y);
-    this.bg = scene.add.graphics();
-    this.text = label(scene, 0, 0, "", 11, "#ffffff", { bold: true, stroke: "#0b2440" }).setOrigin(0.5);
-    this.add([this.bg, this.text]);
-    this.setSize(58, 26);
-    scene.add.existing(this);
-    this.setVisible(false);
-  }
-  set(sk: SkillStatus, clk: number): void {
-    this.setVisible(sk.state !== "locked");
-    if (sk.state === "locked") return;
-    const mmss = (ms: number) => {
-      const sec = Math.ceil(ms / 1000);
-      return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
-    };
-    const txt = sk.state === "ready" ? "⚡ x2" : sk.state === "active" ? `⚡ ${mmss(sk.left)}` : `⏳ ${mmss(sk.left)}`;
-    if (this.text.text !== txt) this.text.setText(txt);
-    if (this.look !== sk.state) {
-      this.look = sk.state;
-      const fill = sk.state === "ready" ? 0xf5b81c : sk.state === "active" ? 0x2fbf71 : 0x6b7a8f;
-      this.bg.clear();
-      this.bg.fillStyle(0x0b2440, 0.5).fillRoundedRect(-29, -11, 58, 24, 11);
-      this.bg.fillStyle(fill, 1).fillRoundedRect(-29, -13, 58, 24, 11);
-      this.bg.lineStyle(2, 0x0b2440, 0.9).strokeRoundedRect(-29, -13, 58, 24, 11);
-    }
-    this.setScale(sk.state === "ready" && !reducedMotion() ? 1 + Math.abs(Math.sin(clk * 3)) * 0.08 : 1);
-  }
-}
 
 interface StopView {
   station: Phaser.GameObjects.Image;
@@ -152,6 +116,7 @@ export class RouteScene extends Phaser.Scene {
     this.previousFloors = data.previousFloors ?? 0;
     this.stops = [];
     this.ambient = [];
+    this.routeWorld = null;
     this.topPile = [];
     this.unlock = null;
     this.visitor = null;
@@ -170,6 +135,17 @@ export class RouteScene extends Phaser.Scene {
     this.visitor = null;
   }
 
+  focusReadySkill():void {
+    const buttons=[this.transportSkill,this.saleSkill,...this.stops.map(s=>s.skill)];
+    const button=buttons.find(b=>b.visible);if(!button)return;
+    const dim=this.add.graphics().setDepth(95).setScrollFactor(0);
+    const y=button.y-this.cameras.main.scrollY;
+    dim.fillStyle(0x0b2440,.3).fillRect(0,0,this.W,y-26).fillRect(0,y+26,this.W,this.scale.height).fillRect(0,y-26,button.x-30,52).fillRect(button.x+30,y-26,this.W-button.x-30,52);
+    const hand=art(this,button.x+40,y,"ic_hand").setDepth(96).setScrollFactor(0).setDisplaySize(28,28);
+    if(!reducedMotion())this.tweens.add({targets:hand,x:button.x+31,duration:500,yoyo:true,repeat:5});
+    this.time.delayedCall(3200,()=>{dim.destroy();hand.destroy();});
+  }
+
   private get look() {
     const look = BIZ_ART[this.bizId] ?? BIZ_ART.dropship;
     const pick = (k: string) => (VEHICLE_FALLBACK[k] && !this.textures.exists(k) && !hasGeneratedArt(this, k) ? VEHICLE_FALLBACK[k] : k);
@@ -186,6 +162,7 @@ export class RouteScene extends Phaser.Scene {
 
   private get bike() { return this.bizId === "bike"; }
   private ambient: Phaser.GameObjects.Image[] = [];
+  private routeWorld: RouteWorld | null = null;
 
   private theme() {
     return screenOf(this.bizId).palette;
@@ -237,7 +214,10 @@ export class RouteScene extends Phaser.Scene {
     return a + (b - a) * f;
   }
 
+  preload(): void { prepareWorld(this,this.bizId); }
+
   create(): void {
+    fitWorldHubs(this,this.bizId);
     this.bridge = bridgeOf(this);
     setupCamera(this);
     const insets = this.bridge.insets();
@@ -257,6 +237,7 @@ export class RouteScene extends Phaser.Scene {
     for (let i = 0; i < shown; i++) this.drawStop(i);
     this.makeMover();
     this.makeParticles();
+    this.routeWorld = new RouteWorld(this,this.bizId,this.W,this.ground,Array.from({length:this.floorCount},(_,i)=>this.crossY(i)),this.bridge.state().city);
 
     const worldH = this.bandTop(shown) + 150;
     const viewH = this.scale.height / DPR;
@@ -329,8 +310,11 @@ export class RouteScene extends Phaser.Scene {
       const d = art(this, W * fx, g0 + 6, district).setOrigin(0.5, 1).setDepth(1).setFlipX(flip).setAlpha(0.55);
       d.setTint(mix(0xffffff, 0x9fc4dc, 0.45));
     }
+    const season=activeSeason(clockNow());
+    if(season)for(const x of [18,W-22])art(this,x,g0-8,"lux_pumpkin").setDisplaySize(27,27).setDepth(29);
+    const streetKey = screenOf(this.bizId).street;
+    if (this.textures.exists(streetKey)) art(this,W/2,g0,streetKey).setOrigin(.5,1).setDisplaySize(W,SURFACE_H).setDepth(2);
     if (this.bike && this.textures.exists("street_bike")) {
-      art(this, W / 2, g0, "street_bike").setOrigin(0.5, 1).setDisplaySize(W, SURFACE_H).setDepth(2);
       for (let i = 0; i < 2; i++) {
         const portal = art(this, W - 49, g0 + 12, `bike_portal_${i}`).setOrigin(0.5, 1).setDepth(6).setVisible(i === 0);
         this.ambient.push(portal);
@@ -342,14 +326,15 @@ export class RouteScene extends Phaser.Scene {
     }
     const street = this.add.graphics().setDepth(2);
     street.fillStyle(0xc9cdd6, 1).fillRect(0, g0 - 6, W, 10);
-    street.fillStyle(0x4a5160, 1).fillRect(0, g0 + 4, W, 26);
+    street.fillStyle(screenOf(this.bizId).palette.road, 1).fillRect(0, g0 + 4, W, 26);
     for (let x = 10; x < W; x += 34) street.fillStyle(0xf5f5f5, 0.8).fillRect(x, g0 + 16, 16, 3);
     // Sede: lo más grande de la pantalla
     const v = this.view();
-    const key = this.bike ? `bld_bike_${v.tier}` : buildingKey(this.bizId, v.stops.length);
+    const hubKey = `hub_${this.bizId}_${v.tier}`;
+    const key = this.textures.exists(hubKey) ? hubKey : this.bike ? `bld_bike_${v.tier}` : buildingKey(this.bizId, v.stops.length);
     const spec = ART[key];
-    const maxW = this.bike ? W - 90 : W - 220, maxH = this.bike ? 210 : SURFACE_H - 30;
-    const s = Math.min(maxW / spec.w, maxH / spec.h, this.bike ? 4 : 1.6);
+    const maxW = W - 90, maxH = 210;
+    const s = Math.min(maxW / spec.w, maxH / spec.h, 4);
     const hub = art(this, W / 2 - 6, g0 + 2, key).setOrigin(0.5, hasGeneratedArt(this, key) ? 1 : (spec.h - 6) / spec.h).setDepth(5);
     hub.setDisplaySize(spec.w * s, spec.h * s);
     if (this.previousFloors && buildingKey(this.bizId, this.previousFloors) !== key) constructionPop(this, hub, t("¡Nueva sede!"));
@@ -361,7 +346,8 @@ export class RouteScene extends Phaser.Scene {
     // Venta en la calle, con su nivel arriba a la derecha
     const sk = isVehicle(this.look.seller) ? this.look.seller : `ch_${this.look.seller}_0`;
     this.seller = art(this, 0, 0, sk).setOrigin(0.5, 0.9).setDepth(30).setInteractive({ useHandCursor: true });
-    if (!isVehicle(this.look.seller)) this.seller.setDisplaySize(ART[sk].w * 1.1, ART[sk].h * 1.1);
+    if (!isVehicle(this.look.seller)) this.seller.setDisplaySize(66,90);
+    else if(this.look.seller.startsWith("luxcar_"))this.seller.setDisplaySize(74,64);
     if (this.ranks.sale && isVehicle(this.look.seller)) swapArt(this.seller, rankedKey(this, this.look.seller, this.ranks.sale));
     this.tap(this.seller, () => this.bridge.tapStation(this.bizId, { kind: "sale" }));
     this.sellerItem = art(this, 0, 0, this.look.item).setDepth(31).setVisible(false);
@@ -394,13 +380,13 @@ export class RouteScene extends Phaser.Scene {
   private drawGround(shown: number): void {
     const W = this.W, theme = this.theme();
     const g = this.add.graphics().setDepth(3.1);
-    if (!this.bike || !this.textures.exists("band_bike")) g.fillStyle(theme.ground, 1).fillRect(0, this.ground + 30, W, this.bandTop(shown) - this.ground);
+    if (!this.textures.exists(screenOf(this.bizId).band)) g.fillStyle(theme.ground, 1).fillRect(0, this.ground + 30, W, this.bandTop(shown) - this.ground);
     for (let i = 0; i < shown; i++) {
       const y = this.bandTop(i);
-      if (!this.bike || !this.textures.exists("band_bike")) g.fillStyle(i % 2 ? shade(theme.ground, -0.03) : theme.ground, 1).fillRect(0, y, W, STOP_H);
+      if (!this.textures.exists(screenOf(this.bizId).band)) g.fillStyle(i % 2 ? shade(theme.ground, -0.03) : theme.ground, 1).fillRect(0, y, W, STOP_H);
       g.fillStyle(shade(theme.ground, -0.12), 1).fillRect(0, y + STOP_H - 3, W, 3);
+      if (this.textures.exists(screenOf(this.bizId).band)) art(this,W/2,y,screenOf(this.bizId).band).setOrigin(.5,0).setDisplaySize(W,STOP_H).setDepth(3);
       if (this.bike) {
-        if (this.textures.exists("band_bike")) art(this, W / 2, y, "band_bike").setOrigin(0.5, 0).setDisplaySize(W, STOP_H).setDepth(3);
         for (let xx = 0; xx < W; xx += 26) { g.lineStyle(1, 0xaebcaa, 0.35).lineBetween(xx, y, xx, y + STOP_H); }
         for (let yy = y + 32; yy < y + STOP_H; yy += 32) g.lineStyle(1, 0xaebcaa, 0.35).lineBetween(0, yy, W, yy);
         art(this, 16, y + 78, "tree_0").setDepth(7).setDisplaySize(30, 49);
@@ -417,12 +403,22 @@ export class RouteScene extends Phaser.Scene {
     };
     for (let i = 1; i < this.path.length; i++) {
       const a = this.path[i - 1], b = this.path[i];
-      drawLeg(a, b, this.lens[i] <= built + 1);
+      const done=this.lens[i]<=built+1;
+      drawLeg(a,b,done);
+      const horizontal=a.y===b.y,routeKey=`route_${screenOf(this.bizId).route}_${done?(horizontal?"h":"v"):"ghost"}`;
+      if(this.textures.exists(routeKey)){
+        const road=this.add.tileSprite((a.x+b.x)/2,(a.y+b.y)/2,horizontal?Math.abs(a.x-b.x):ROAD_W,horizontal?ROAD_W:Math.abs(a.y-b.y),routeKey).setDepth(4.05).setTileScale(.5).setAlpha(done?1:.35);
+        if(!done&&!horizontal)road.setTileScale(.5,.5);
+      }
     }
     for (let i = 0; i < this.path.length; i++) {
       const p = this.path[i], done = this.lens[i] <= built + 1;
       r.fillStyle(shade(theme.road, -0.3), done ? 1 : 0.35).fillCircle(p.x, p.y, (ROAD_W + 6) / 2);
       r.fillStyle(theme.road, done ? 1 : 0.35).fillCircle(p.x, p.y, ROAD_W / 2);
+    }
+    for(let i=0;i<this.floorCount;i++){
+      const key=`route_${screenOf(this.bizId).route}_stop`;
+      if(this.textures.exists(key))art(this,this.mid,this.crossY(i),key).setDepth(4.1);
     }
     if (this.bike) for (let i = 0; i < this.floorCount; i++) {
       const y = this.crossY(i);
@@ -449,7 +445,8 @@ export class RouteScene extends Phaser.Scene {
     if (i === this.floorCount) {
       // Siguiente parada: en obras, con su precio
       art(this, mx, yc - 46, "ic_construction").setDepth(6).setScale(artScale(this, "ic_construction") * 1.6);
-      if (this.bike && this.textures.exists("route_bike_works")) art(this, mx, yc, "route_bike_works").setDepth(6);
+      const worksKey = `route_${screenOf(this.bizId).route}_works`;
+      if (this.textures.exists(worksKey)) art(this,mx,yc,worksKey).setDepth(6);
       const cost = v.next!.cost;
       this.unlock = new Pill(this, mx, yc - 90, `${t("Abrir")} · ${this.price(cost)}`).setDepth(70);
       this.unlock.setInteractive({ useHandCursor: true });
@@ -468,7 +465,7 @@ export class RouteScene extends Phaser.Scene {
     if (this.previousFloors && i >= this.previousFloors) constructionPop(this, station, t("¡Puesto nuevo!"));
     const workerKey = this.bike && this.textures.exists(`ch_bike_${i}_0`) ? `ch_bike_${i}_0` : `ch_${this.look.worker}_0`;
     const worker = art(this, mx - 58, yc - ROAD_W / 2 - 2, workerKey).setOrigin(0.5, 1).setDepth(9);
-    worker.setDisplaySize(ART[workerKey].w * (this.bike ? 1.04 : 1.15), ART[workerKey].h * (this.bike ? 1.04 : 1.15));
+    worker.setDisplaySize(ART[workerKey].w * 1.04, ART[workerKey].h * 1.04);
     if (rank) swapArt(worker, rankedKey(this, workerKey, rank));
     // Producto hecho, en el borde de la ruta junto a la parada
     const pile = this.pile(mx + 62, yc - ROAD_W / 2 - 2, 9, 0.85);
@@ -481,7 +478,7 @@ export class RouteScene extends Phaser.Scene {
     mg.fillStyle(0xffd36b, 1).fillCircle(0, 0, 14);
     const mgIcon = art(this, 0, 0, "ic_manager").setScale(artScale(this, "ic_manager") * 1.3);
     const manager = this.add.container(72, y0 + 22, [mg, mgIcon]).setDepth(12);
-    const skill = new SkillChip(this, 72, y0 + 54).setDepth(72);
+    const skill = new SkillChip(this, 32, y0 + 66).setDepth(72);
     this.skillTap(skill, { kind: "floor", index: i });
     label(this, 94, y0 + 22, i === this.floorCount ? v.next!.name : v.stops[i].name, 13, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12);
     // Botón de nivel, siempre a la derecha
@@ -499,7 +496,7 @@ export class RouteScene extends Phaser.Scene {
   private makeMover(): void {
     const mk = this.bike && this.textures.exists("veh_bike_0") ? "veh_bike_0" : isVehicle(this.look.mover) ? this.look.mover : `ch_${this.look.mover}_0`;
     this.mover = art(this, 0, 0, mk).setOrigin(0.5, 0.88).setDepth(40).setInteractive({ useHandCursor: true });
-    if (!isVehicle(mk)) this.mover.setDisplaySize(ART[mk].w * 1.1, ART[mk].h * 1.1);
+    if (!isVehicle(mk)) this.mover.setDisplaySize(66,90);
     if (this.ranks.transport && isVehicle(mk)) swapArt(this.mover, rankedKey(this, mk, this.ranks.transport));
     this.moverItem = art(this, 0, 0, this.look.item).setDepth(41).setVisible(false);
     this.moverCarry = label(this, 0, 0, "", 12, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5).setDepth(61);
@@ -539,6 +536,7 @@ export class RouteScene extends Phaser.Scene {
     this.coins = this.add.particles(0, 0, coinRef.texture, { frame: coinRef.frame, speed: { min: 80, max: 160 }, angle: { min: 225, max: 315 }, gravityY: 400, lifespan: 900, scale: { start: cs, end: cs * 0.7 }, emitting: false }).setDepth(95);
     const ss = artScale(this, "spark");
     this.sparks = this.add.particles(0, 0, "spark", { speed: { min: 40, max: 120 }, lifespan: 600, scale: { start: ss * 0.9, end: 0 }, tint: [0xf5c542, 0xffffff, 0x3ddc97], emitting: false }).setDepth(95);
+    if(this.bizId===FEST_ID&&this.previousFloors>0&&this.previousFloors<8&&this.floorCount===8&&!reducedMotion()){for(let k=0;k<3;k++)this.time.delayedCall(k*280,()=>this.sparks.explode(18,this.W*(.25+k*.25),this.ground-185-k%2*35));}
   }
 
   /* ---------- Actualización ---------- */
@@ -554,6 +552,7 @@ export class RouteScene extends Phaser.Scene {
     }
     const cam = this.cameras.main, sc = this.scroll;
     const dt = Math.min(dtMs, 100) / 1000;
+    this.routeWorld?.update(dt);
     if (!sc.down && Math.abs(sc.vel) > 0.2) {
       cam.scrollY = Phaser.Math.Clamp(cam.scrollY + sc.vel * dt * 60, 0, sc.max);
       sc.vel *= Math.pow(reducedMotion() ? 0.65 : 0.92, dt * 60);
@@ -576,8 +575,8 @@ export class RouteScene extends Phaser.Scene {
       const o = this.stops[i];
       if (!o) return;
       const active = f.working && !calmWorld();
-      o.worker.setAngle(active ? Math.sin(clk * 7 + i) * 4 : 0);
-      if (!calmWorld()) swapArt(o.worker, rankedKey(this, `${o.workerKey.slice(0, -1)}${active ? (Math.floor(clk * 6 + i) % 2 ? 1 : 2) : 0}`, o.rank));
+      o.worker.setAngle(active ? Math.sin(clk * (f.skill.state === "active" ? 14 : 7) + i) * 4 : 0);
+      if (!calmWorld()) swapArt(o.worker, rankedKey(this, `${o.workerKey.slice(0, -1)}${active ? (Math.floor(clk * (f.skill.state === "active" ? 12 : 6) + i) % 2 ? 1 : 2) : 0}`, o.rank));
       if (f.working && sparkNow && !reducedMotion()) this.sparks.emitParticleAt(o.station.x + (Math.random() - 0.5) * 40, o.station.y - 60, 1);
       if (f.stock > o.lastStock) transferProduct(this, this.look.item, { x: o.station.x, y: o.station.y - 50 }, { x: o.pile[0].x, y: o.pile[0].y });
       o.lastStock = f.stock;
@@ -616,6 +615,13 @@ export class RouteScene extends Phaser.Scene {
       swapArt(this.mover, `veh_bike_${rear ? "rear_" : ""}${pose}`);
       this.mover.setDisplaySize(74, 82);
       if (!dx) this.mover.setFlipX(rear);
+    } else if (isVehicle(this.look.mover)) {
+      const rear = (back ? -p.dy : p.dy) < 0;
+      const rearKey = this.look.mover === "veh_forklift" ? "wh_forklift_rear" : this.look.mover === "veh_van" ? "wh_van_rear" : `${this.look.mover}_rear`;
+      const frontKey = this.look.mover === "veh_forklift" && tr.carry > 0 && this.textures.exists("wh_forklift_loaded") ? "wh_forklift_loaded" : this.look.mover;
+      const key = rear && (this.textures.exists(rearKey) || hasGeneratedArt(this,rearKey)) ? rearKey : frontKey;
+      swapArt(this.mover,rankedKey(this,key,this.ranks.transport));
+      this.mover.setFlipX(rear ? dx > 0 : dx < 0);
     } else if (!isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, `ch_${this.look.mover}_${moving && !calmWorld() ? (Math.floor(clk * (this.pedaling ? 16 : 8)) % 2 ? 1 : 2) : 0}`, this.ranks.transport));
     this.moverItem.setVisible(tr.carry > 0).setPosition(p.x + (dx < 0 ? 14 : -14), this.mover.y - this.mover.displayHeight * 0.7);
     this.moverCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "").setPosition(p.x, this.mover.y - this.mover.displayHeight - 10);
@@ -657,6 +663,12 @@ export class RouteScene extends Phaser.Scene {
     const sx = home + (away - home) * prog;
     const vehicle = isVehicle(this.look.seller);
     this.seller.setPosition(sx, g0 + (vehicle ? 26 : 14)).setFlipX(sl.phase === "back");
+    if (vehicle) {
+      const rearKey = this.look.seller === "veh_van" ? "wh_van_rear" : `${this.look.seller}_rear`;
+      const rear = sl.phase === "back" && (this.textures.exists(rearKey)||hasGeneratedArt(this,rearKey));
+      swapArt(this.seller,rankedKey(this,rear ? rearKey : this.look.seller,this.ranks.sale));
+      this.seller.setFlipX(false);
+    }
     if (!vehicle) swapArt(this.seller, `ch_${this.look.seller}_${sl.phase !== "idle" && !calmWorld() ? (Math.floor(clk * 8) % 2 ? 1 : 2) : 0}`);
     this.sellerItem.setVisible(sl.carry > 0).setPosition(sx, this.seller.y - this.seller.displayHeight * 0.9);
     this.sellerCarry.setText(sl.carry > 0 ? fmt(sl.carry) : "").setPosition(sx, this.seller.y - this.seller.displayHeight - 16).setOrigin(0.5);

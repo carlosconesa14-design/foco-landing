@@ -176,7 +176,7 @@ export function openInvite(ctx: PanelCtx): void {
           error = (await useRefCode(ctx, input!.value)) ?? "";
           await load();
         };
-    },
+    }, { screen: "invite" },
   );
   const load = async () => {
     const s = ctx.state();
@@ -251,7 +251,7 @@ export function openCloud(ctx: PanelCtx): void {
           };
       }
       $(el, "[data-msg]").textContent = msg;
-    },
+    }, { screen: "cloud" },
   );
   $<HTMLButtonElement>(sheet.el, "[data-recover]").onclick = () => {
     const key = $<HTMLInputElement>(sheet.el, "[data-rec]").value.trim();

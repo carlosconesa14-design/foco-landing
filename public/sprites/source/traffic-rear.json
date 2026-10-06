@@ -1,0 +1,92 @@
+{
+  "car_0": {
+    "left": 25,
+    "top": 89,
+    "width": 267,
+    "height": 193
+  },
+  "car_1": {
+    "left": 331,
+    "top": 90,
+    "width": 269,
+    "height": 193
+  },
+  "car_2": {
+    "left": 637,
+    "top": 89,
+    "width": 267,
+    "height": 194
+  },
+  "car_3": {
+    "left": 941,
+    "top": 90,
+    "width": 267,
+    "height": 194
+  },
+  "van": {
+    "left": 1232,
+    "top": 80,
+    "width": 280,
+    "height": 208
+  },
+  "car_miami_0": {
+    "left": 29,
+    "top": 416,
+    "width": 298,
+    "height": 192
+  },
+  "car_miami_1": {
+    "left": 338,
+    "top": 417,
+    "width": 299,
+    "height": 192
+  },
+  "luxcar_deliverybike": {
+    "left": 703,
+    "top": 411,
+    "width": 191,
+    "height": 212
+  },
+  "luxcar_scooter": {
+    "left": 977,
+    "top": 392,
+    "width": 206,
+    "height": 243
+  },
+  "luxcar_motorbike": {
+    "left": 1244,
+    "top": 404,
+    "width": 259,
+    "height": 226
+  },
+  "luxcar_sportscar": {
+    "left": 20,
+    "top": 752,
+    "width": 296,
+    "height": 168
+  },
+  "luxcar_supercar": {
+    "left": 333,
+    "top": 753,
+    "width": 277,
+    "height": 163
+  },
+  "luxcar_limo": {
+    "left": 631,
+    "top": 739,
+    "width": 285,
+    "height": 187
+  },
+  "luxcar_goldcar": {
+    "left": 919,
+    "top": 755,
+    "width": 294,
+    "height": 164
+  },
+  "luxcar_hearse": {
+    "left": 1221,
+    "top": 743,
+    "width": 301,
+    "height": 183
+  }
+}

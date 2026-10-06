@@ -5,6 +5,10 @@
  * `tests/i18n.test.ts` avisa si falta alguna frase.
  */
 export const EN: Record<string, string> = {
+  "Trofeos": "Trophies",
+  "¡Pedido grande!": "Big order!",
+  "Siguiente": "Next",
+  "Anterior": "Previous",
   "Fichas": "Tickets",
   "Vendido": "Sold",
   "Prestigio": "Prestige",

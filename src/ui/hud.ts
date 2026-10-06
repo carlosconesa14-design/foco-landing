@@ -35,7 +35,7 @@ export function updateHeader(s: GameState, now: number): void {
     shownFest = fest;
     shownCash = target;
   }
-  cash.innerHTML = `<span class="wallet-coin">${icon(fest ? "item_ticket" : "cash")}</span><small class="cash-symbol">${CUR}</small>${fmt(shownCash)}`;
+  cash.innerHTML = `<span class="wallet-coin">${icon(fest ? "ic_ticket" : "cash")}</span><small class="cash-symbol">${CUR}</small>${fmt(shownCash)}`;
   // Pequeño salto visual cuando entra un buen pellizco (más de un 5 %)
   if (target > prev * 1.05 && prev > 0 && !cash.classList.contains("bump")) {
     cash.classList.add("bump");

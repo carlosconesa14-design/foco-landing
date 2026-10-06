@@ -111,3 +111,9 @@ Kit de interfaz y botón Nivel implementados en una rama propia, con HUD, barra 
 ## Visual — fases 1 y 2 (6 de octubre de 2026)
 
 Fase 1 en `codex/visual-phase-1-interface`: kit de interfaz, HUD/barra y botón Nivel compartido. Fase 2 en `codex/visual-phase-2-bike`, basada en la fase 1: pantalla completa de reparto, 61 piezas propias PNG/WebP y lectura del modelo de vista para la construcción. Pedaleo conectado por Bridge, sin cambios en `src/game`, `businessView`, plataforma o servidor. Catálogo en ART y galerías en `docs/visual-review/`. Las PR se preparan por separado; su creación mediante la API de GitHub está devolviendo Forbidden. No se ha fusionado ni desplegado ninguna de estas ramas.
+
+## Entrega visual completa agrupada — 6 de octubre de 2026
+
+Fases 3–9 agrupadas por petición del usuario, con los 14 negocios restantes y la feria, paneles, Escuela, ciudad/mundo/oficina, vehículos traseros y efectos. Trabajo en `codex/visual-phases-3-9`, incorporado también a `codex/visual-phase-2-bike` para actualizar la PR #17 que abrió el usuario. Esta PR ya incluye el kit y la bici de las fases 1/2; permite revisar y fusionar el conjunto. La API de GitHub sigue devolviendo Forbidden para crear/editar PR, pero la actualización de su rama se publica mediante git.
+
+243 tests, build y 556 comprobaciones móviles correctos; 328 capturas, ES/EN, movimiento completo/reducido, sin errores de consola. Catálogo/recetas en ART y galería en `docs/visual-review/phases-3-9/`. Las fórmulas económicas se conservan; la lógica nueva procede del main integrado. Pendiente medir 60 fps en dispositivo físico. No se ha fusionado ni desplegado esta entrega.

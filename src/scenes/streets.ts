@@ -1,11 +1,7 @@
 export type GridPoint = { c: number; r: number };
 export type StreetLoop = { points: GridPoint[]; lengths: number[]; total: number; lane?: boolean };
 
-/**
- * One-way lane from a to b; the vehicle reappears at a (fading in and out at the ends).
- * The vehicle art only has a front three-quarter view, so traffic always drives down the screen
- * (+c or +r): driving "up" would look like a car sliding sideways.
- */
+/** One-way lane with fade at its ends; opposing lanes use the rear vehicle sprite. */
 export function streetLane(a: GridPoint, b: GridPoint): StreetLoop {
   const len = Math.hypot(b.c - a.c, b.r - a.r);
   return { points: [a, b], lengths: [len, 0], total: len, lane: true };
@@ -54,3 +50,10 @@ export function loopPosition(loop: StreetLoop, distance: number): GridPoint & { 
   return { ...loop.points[0], dc: 0, dr: 0 };
 }
 
+
+/** Front art faces lower-right; rear art faces upper-left. Mirroring covers the other road axis. */
+export function vehicleFacing(key: string, dc: number, dr: number): { key: string; flipX: boolean } {
+  const rear = dc + dr < 0;
+  const dx = dc - dr;
+  return { key: rear ? `${key}_rear` : key, flipX: rear ? dx > 0 : dx < 0 };
+}

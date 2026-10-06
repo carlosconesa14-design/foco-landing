@@ -1,3 +1,4 @@
+import { savingsGoal } from "./ui/visualEffects";
 import { clockSnapshot, now as clockNow, restoreClock, syncClock } from "./game/clock";
 import { addFlag } from "./game/league";
 import { leagueApi } from "./platform/league";
@@ -72,6 +73,7 @@ import { OFFERS, claimVip, dueOffer, rescheduleOffer, truckReward, wheelStatus, 
 import { openWheel } from "./ui/wheelPanel";
 import "./styles.css";
 import "./ui/interface-kit.css";
+import "./ui/screens.css";
 import { decorateIcons } from "./ui/icons";
 
 localizeData();
@@ -316,9 +318,9 @@ const ctx: PanelCtx = {
 document.getElementById("bar")!.addEventListener("click", async (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>("button");
   if (!b) return;
-  if (b.dataset.st && S.view.scene === "business") {
+  if (b.dataset.st && (S.view.scene === "business" || S.view.scene === "fest")) {
     const st = b.dataset.st;
-    openStationSheet(ctx, S.view.id, st.startsWith("floor:") ? { kind: "floor", index: Number(st.slice(6)) } : { kind: st as "transport" | "sale" });
+    openStationSheet(ctx, S.view.scene === "fest" ? FEST_ID : S.view.id, st.startsWith("floor:") ? { kind: "floor", index: Number(st.slice(6)) } : { kind: st as "transport" | "sale" });
     return;
   }
   if (b.dataset.nav === "city") goTo({ scene: "city" });
@@ -450,6 +452,8 @@ function updateMeta(now: number): void {
     checkFirsts(S, now).forEach((f, i) => {
       analytics.track("first_moment", { id: f.id, minutes: minutesSinceInstall() });
       const txt = firstText(f, S);
+      if(f.id==="skill"&&game.scene.isActive("route"))(game.scene.getScene("route") as RouteScene).focusReadySkill();
+      if(f.id==="half"){const target=bizList(S)[1];if(target)savingsGoal(root,S.cash/target.price);}
       const grant = f.reward ? meta.grantReward(S, f.reward, now, Math.random) : null;
       // Texto plano para la banda (rewardLabel lleva iconos en HTML).
       const plain = !f.reward ? "" : "gems" in f.reward ? `+${f.reward.gems} 💎` : "chest" in f.reward ? `+💼 ${CHESTS[f.reward.chest].name}` : "";
@@ -827,7 +831,7 @@ function viralTick(now: number): void {
   if (!viralEl && now >= S.nextViral && viralAllowed(S) && !modalOpen() && !activeSheet() && S.totalEarned > 50) {
     viralEl = document.createElement("button");
     viralEl.className = "viral";
-    viralEl.innerHTML = icon("coin");
+    viralEl.innerHTML = `${icon("coin")}<span class="viral-callout">${t("¡Pedido grande!")}</span>`;
     viralEl.setAttribute("aria-label", t("Oportunidad"));
     viralUntil = now + CONFIG.viralVisibleSec * 1000;
     viralEl.onclick = () => {
