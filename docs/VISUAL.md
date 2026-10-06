@@ -337,3 +337,7 @@ Todo vehículo que circula (transportes, ventas, tráfico de la ciudad y el coch
 (ChatGPT/Codex: apunta aquí lo que necesites de la lógica, con fecha, y Claude lo añadirá al modelo de vista.)
 
 - *(vacío)*
+
+### Entrega fase 1 — 6 de octubre de 2026
+
+Kit reutilizable CSS/Phaser, estados de botones, paneles con cabecera/cierre rojo, marcos y contadores. `LevelButton` común 70×56 y estados del modelo. HUD y barra inferior renovados; navegación Mundo en negocio y columna derecha reservada. Catálogo/receta en ART y galería `visual-review/phase-1`. 229 tests, build y 60 comprobaciones móviles en ES/EN con/sin movimiento. La pantalla de referencia de bici se entrega por separado en la fase 2.

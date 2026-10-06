@@ -102,3 +102,7 @@ Fuentes, exportadores y detalle de los puntos 5/6 entregados al final de `ART.md
 ### 5 de octubre de 2026 — arte para landing y TikTok
 
 Codex entrega las 28 piezas del último encargo de ART en `site/img/` y `marketing/tiktok/arte/`, todas con WebP, fuentes originales, recortes y exportador reproducible. Guías y zonas seguras en sus README. 227 tests, build y 53 comprobaciones móviles sin errores. Arte listo para el montaje de Claude; no implica despliegue de landing ni vídeos publicados.
+
+### 6 de octubre de 2026 — fase visual 1
+
+Kit de interfaz y botón Nivel implementados en una rama propia, con HUD, barra inferior, navegación Mundo y flotantes fuera de la columna de Nivel. 229 tests, build y 60 comprobaciones móviles ES/EN y movimiento completo/reducido. Ver `docs/visual-review/phase-1/`.

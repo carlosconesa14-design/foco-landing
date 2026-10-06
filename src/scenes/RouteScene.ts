@@ -1,3 +1,4 @@
+import { LevelButton } from './LevelButton';
 import Phaser from "phaser";
 import { money, t } from "../i18n";
 import { ART, BIZ_ART, art, artScale, buildingKey, rankedKey } from "../art/catalog";
@@ -35,50 +36,6 @@ const isVehicle = (key: string) => key.startsWith("car_") || key.startsWith("veh
 const VEHICLE_FALLBACK: Record<string, string> = { veh_forklift: "car_3", veh_van: "car_2" };
 
 type Pt = { x: number; y: number };
-
-/** Botón grande de nivel: azul con flecha si se puede mejorar, naranja si es el atasco. */
-class LevelButton extends Phaser.GameObjects.Container {
-  private bg: Phaser.GameObjects.Graphics;
-  private value: Phaser.GameObjects.Text;
-  private arrow: Phaser.GameObjects.Text;
-  private look = "";
-  private bw: number;
-  private bh: number;
-  constructor(scene: Phaser.Scene, x: number, y: number, w = 70, h = 56) {
-    super(scene, x, y);
-    this.bw = w;
-    this.bh = h;
-    this.bg = scene.add.graphics();
-    const title = label(scene, 0, -12, t("Nivel"), 13, "#ffffff", { bold: true }).setOrigin(0.5);
-    this.value = label(scene, 0, 8, "1", 20, "#ffffff", { display: true, stroke: "#0b2440" }).setOrigin(0.5);
-    this.arrow = label(scene, 0, -h / 2 - 10, "▲", 18, "#3ddc97", { bold: true, stroke: "#0b2440" }).setOrigin(0.5);
-    this.add([this.bg, title, this.value, this.arrow]);
-    this.setSize(w + 16, h + 20);
-    scene.add.existing(this);
-    this.paint(false, false);
-  }
-  set(level: number, ready: boolean, warn: boolean): this {
-    if (this.value.text !== String(level)) this.value.setText(String(level));
-    this.paint(ready, warn);
-    return this;
-  }
-  bob(clk: number): void {
-    this.arrow.setY(-this.bh / 2 - 10 - (this.arrow.visible && !reducedMotion() ? Math.abs(Math.sin(clk * 4)) * 4 : 0));
-  }
-  private paint(ready: boolean, warn: boolean): void {
-    const key = `${ready}${warn}`;
-    if (key === this.look) return;
-    this.look = key;
-    const w = this.bw, h = this.bh;
-    const fill = warn ? 0xe08a2e : ready ? 0x2f80d1 : 0x55708c;
-    this.bg.clear();
-    this.bg.fillStyle(0x0b2440, 0.55).fillRoundedRect(-w / 2, -h / 2 + 4, w, h, 12);
-    this.bg.fillStyle(fill, 1).fillRoundedRect(-w / 2, -h / 2, w, h, 12);
-    this.bg.fillStyle(0xffffff, 0.18).fillRoundedRect(-w / 2 + 4, -h / 2 + 3, w - 8, h * 0.38, 9);
-    this.bg.lineStyle(2, 0x0b2440, 0.9).strokeRoundedRect(-w / 2, -h / 2, w, h, 12);
-    this.arrow.setVisible(ready);
-  }
-}
 
 interface StopView {
   station: Phaser.GameObjects.Image;

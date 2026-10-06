@@ -65,6 +65,7 @@ import { WEB_BETA } from "./platform/web";
 import { OFFERS, claimVip, dueOffer, rescheduleOffer, truckReward, wheelStatus, type OfferKind } from "./game/offers";
 import { openWheel } from "./ui/wheelPanel";
 import "./styles.css";
+import "./ui/interface-kit.css";
 import { decorateIcons } from "./ui/icons";
 
 localizeData();

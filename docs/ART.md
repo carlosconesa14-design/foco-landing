@@ -1068,3 +1068,13 @@ Sigue pendiente; ver «Encargo: coches vistos de espaldas».
 5. Tramos y fondos del resto de negocios, primero los de Madrid.
 
 Cuando se entregue cada bloque, avisar a Claude para engancharlo y extender la vista en ruta a más negocios.
+
+## Catálogo: fase 1 del kit de interfaz — 6 de octubre de 2026
+
+Piezas reutilizables en `src/ui/interface-kit.css`: `.ui-button` verde, `.blue`, `.gold`, `.danger` (normal/pulsado/desactivado), `.ui-panel` con cabecera, `.ui-progress`, `.ui-chip`, `.ui-portrait` con marcos por rareza. Los selectores de los paneles existentes consumen el mismo kit. CSS original: esmalte con contorno marino grueso, brillo superior, sombra inferior y tipografía Lilita One/Rubik. No requiere atlas ni red.
+
+`btn_level`: componente `src/scenes/LevelButton.ts`, caja lógica 70×56, reposo azul gris, listo azul vivo con flecha verde, atasco naranja. Pulsación con relieve y animación del número solo al aumentar; respeta reducir movimiento. El valor y el estado proceden del modelo `businessView`; el toque abre el panel mediante Bridge.
+
+Iconos vectoriales propios añadidos: menú, calendario, reloj, cierre, producción, transporte, venta y bici. HUD en una fila, impulso con temporizador, objetivo y accesos compactos; navegación incluye Mundo dentro del negocio. Flotantes de mejora/viral a la izquierda para reservar los 80px derechos de Nivel. Sin cambios de economía.
+
+Galería y validación: `docs/visual-review/phase-1/`, 229 tests y build correctos; 60 comprobaciones a 390×844 en ES/EN, movimiento completo/reducido, una y ocho paradas, mejora, menú y siete paneles. Partidas de demostración locales; Supabase simulado sin escrituras. Rendimiento físico Android pendiente de validación, sin afirmar 60fps medidos.
