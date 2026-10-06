@@ -345,6 +345,6 @@ Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2
 | Fase | Contenido |
 | --- | --- |
 | **1. Núcleo jugable** ✅ | Motor Phaser, ciudad isométrica con 4 negocios, recintos con puestos animados, gerentes básicos, mejoras, offline, anuncios, bolsa, guardado, arte sustituible |
-| **2. Retención** | ✅ 💎, ejecutivos con rareza y habilidades, maletines, misiones diarias, premio diario, logros, tutorial guiado · ✅ sonido, música, vibración y ajustes · Pendiente: Liga Millonario (servidor) |
-| **3. Contenido** | ✅ Expansión mundial: Miami, Dubái (precio del oro y carrera de fundadores), estrellas y Oficina central · Pendiente: más ciudades, eventos de temporada, avatar |
-| **4. Lanzamiento** | Arte profesional (sprites), analítica, tiendas, compras dentro de la app, SSV de AdMob |
+| **2. Retención** | ✅ 💎, ejecutivos con rareza y habilidades, maletines, misiones diarias, premio diario, logros, tutorial guiado · ✅ sonido, música, vibración y ajustes · ✅ Liga Millonario (servidor), nube y amigos |
+| **3. Contenido** | ✅ Expansión mundial: Miami, Dubái (precio del oro y carrera de fundadores), estrellas y Oficina central · ✅ «Mi vida» (avatar y tienda de lujo), evento del fin de semana y temporada de Halloween, habilidades de gerente, Escuela de negocios y feria · Pendiente: más ciudades (Tokio), más temporadas |
+| **4. Lanzamiento** | ✅ Arte profesional (sprites), analítica propia, compras en el código, beta web instalable · Pendiente: cuentas de las tiendas, verificación de compras (SSV de AdMob / Play Integrity), prueba cerrada, rendimiento en un Android real |

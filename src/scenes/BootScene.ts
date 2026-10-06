@@ -14,6 +14,20 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload(): void {
+    // Barra de carga real (en la web son ~12 MB): sustituye a la animación sin fin de index.html.
+    const bar = document.querySelector<HTMLElement>(".loading-track i");
+    const label = document.querySelector<HTMLElement>("#loading-screen small");
+    const base = label?.textContent ?? "";
+    if (bar) {
+      bar.style.animation = "none";
+      bar.style.width = "4%";
+    }
+    let shown = 0; // nunca retrocede: al llegar el manifiesto se añaden archivos y el progreso real baja un momento
+    this.load.on("progress", (v: number) => {
+      shown = Math.max(shown, Math.round(v * 100));
+      if (bar) bar.style.width = `${Math.max(4, shown)}%`;
+      if (label && base) label.textContent = `${base} ${shown} %`;
+    });
     for (const sheet of GENERATED_SHEETS) {
       this.load.atlas(sheet.key, `sprites/generated/${sheet.file}.${IMG_EXT}`, `sprites/generated/${sheet.file}.json`);
     }
