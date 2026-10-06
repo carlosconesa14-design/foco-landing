@@ -41,6 +41,7 @@ export const SCREENS: Record<string, ScreenSpec> = {
   hotel: S({ ground: 0xf5eddb, road: 0x8c2f39, line: 0xc8a24a, sky: [0xe8b56a, 0xfbe6c2] }, "hotel", "vehicle", ["fountains", "guests"]),
   safari: S({ ground: 0xefd6a8, road: 0xb7793d, line: 0xf6e1b8, sky: [0xf29e4c, 0xfde2b5] }, "safari", "vehicle", ["camels", "dust"]),
   souk: S({ ground: 0xf4e5c3, road: 0x9a7b4f, line: 0xf6c344, sky: [0xe3a25c, 0xfbe2b8] }, "souk", "walker", ["lanterns", "crowd"]),
+  fest: S({ ground: 0xfde6f1, road: 0x8e2a6b, line: 0xffd36b, sky: [0x3a1d6e, 0xff8fc7] }, "fest", "walker", ["garlands", "fireworks", "balloons"], true),
   tower: S({ ground: 0xdfe8ee, road: 0x7f8c8d, line: 0xf1c40f, sky: [0x8fc9ef, 0xe3f2fb] }, "tower", "vehicle", ["cranes", "welding"]),
 };
 

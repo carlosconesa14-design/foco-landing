@@ -14,11 +14,13 @@ import {
   sharesToGain,
   tapStation,
   tick,
+  tickOne,
   upgradeQuote,
   type SaleEvent,
   type Station,
 } from "./economy";
 import { execMults } from "./execs";
+import { FEST_ID, withFest } from "./fest";
 import { buyLuxury, LUXURY, owns } from "./luxury";
 import { freshState, type GameState } from "./state";
 import * as tw from "./twists";
@@ -241,4 +243,44 @@ export function simulate(opts: {
     state: s,
     final: { cash: s.cash, rate: passiveRate(s, now), totalEarned: s.totalEarned, life: lifeIndex(s.totalEarned), shares: sharesToGain(s) },
   };
+}
+
+/**
+ * Bot en la feria del evento (fest.ts): juega solo la feria, con sus fichas, como un jugador activo.
+ * Devuelve el segundo en que abre cada caseta (`stops_<n>`). Sirve para calibrar la feria.
+ */
+export function simulateFest(opts: { minutes: number; dt?: number }): { at: Record<string, number>; state: GameState } {
+  const dt = opts.dt ?? 1;
+  const s = freshState(T0);
+  s.buyMode = 1;
+  const at: Record<string, number> = {};
+  const id = FEST_ID;
+  withFest(s, () => {
+    for (let t = 0; t < opts.minutes * 60; t += dt) {
+      const now = T0 + t * 1000;
+      tickOne(s, id, dt, now, []);
+      const b = s.biz[id];
+      for (const st of stations(s, id)) {
+        const target = st.kind === "floor" ? b.floors[st.index] : st.kind === "transport" ? b.transport : b.sale;
+        if (!target.managed) tapStation(s, id, st);
+      }
+      for (let guard = 0; guard < 20; guard++) {
+        const def = bizDef(id);
+        const hire = stations(s, id).find((st) => {
+          const target = st.kind === "floor" ? b.floors[st.index] : st.kind === "transport" ? b.transport : b.sale;
+          return !target.managed && s.cash >= managerCost(def, st);
+        });
+        if (hire) {
+          act.hireManager(s, id, hire);
+          continue;
+        }
+        const best = bestOption(s, id, now);
+        if (!best || s.cash < best.cost) break;
+        best.run();
+        const n = b.floors.length;
+        if (!(`stops_${n}` in at)) at[`stops_${n}`] = t;
+      }
+    }
+  });
+  return { at, state: s };
 }

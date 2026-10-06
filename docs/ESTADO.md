@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-**Rider Millionaire: Idle Tycoon.** Para retomar el trabajo sin tener que leer conversaciones antiguas. Última actualización: 2 de octubre de 2026.
+**Rider Millionaire: Idle Tycoon.** Para retomar el trabajo sin tener que leer conversaciones antiguas. Última actualización: 6 de octubre de 2026.
 
 ## En una frase
 Es un idle tycoon para móvil, publicado como **beta web** en https://carlosconesa14-design.github.io/foco-landing/ (el juego, en `/jugar/`). Tiene el material gráfico preparado para Google Play; faltan las cuentas, los datos legales y la validación nativa antes de publicar. Gana dinero con **anuncios bonificados** (AdMob) y compras dentro de la app.
@@ -23,6 +23,7 @@ Es un idle tycoon para móvil, publicado como **beta web** en https://carloscone
 | Mi vida | Tienda de lujo con personaje: 32 objetos en 6 colecciones, prestigio (+0,5 % de ingresos por punto, +5 % por colección), exclusivos con 💎, probar 1 h y oferta del día con anuncio. Tu coche circula por la ciudad | `luxury.ts`, `lifePanel.ts`, `avatar.ts` |
 | Mejoras visibles | **Rangos de los puestos** (bronce, plata, oro, diamante y leyenda en los niveles 10–200): pedestal, brillo, medalla y celebración, en todos los negocios. Decoración del recinto con ★★ y ★★★ | `ranks.ts`, `rankFx.ts`, [`GDD.md`](GDD.md) |
 | Desbloqueo gradual | Las funciones se ven con candado y dicen cómo conseguirlas; se abren una a una en la primera hora y media (premio diario, misiones, ejecutivos, Mejorar todo, ruleta, logros, Mi vida, Liga, rival, evento e invitar) | `unlocks.ts`, `unlockUi.ts` |
+| Profundidad (oct. 2026) | **Habilidad de cada gerente** (x2 de velocidad 5 min, se recarga en 20 min), **Escuela de negocios** (investigación permanente con ideas 💡 que no se pierde al salir a bolsa), **la feria** del evento (negocio propio con fichas 🎟️, premios exclusivos y trofeos permanentes) y **primeros 10 minutos guiados** | `skills.ts`, `school.ts`, `fest.ts`, `onboarding.ts`, [`GDD.md`](GDD.md), encargo visual en [`VISUAL.md`](VISUAL.md) §14 |
 | Retención | Tutorial, misiones diarias, premio diario, logros, avisos en el móvil, **evento del fin de semana** (10 premios, tema semanal) y **retos del día y de la semana** | `meta.ts`, `event.ts`, `challenges.ts`, `notify.ts` |
 | Anuncios | 14 ubicaciones (x2 4 h, hora punta, offline x3, viral, maletín, habilidad, diario, bolsa, expandir, ola, evento, **camión de suministros, cliente VIP y ruleta diaria**) y una **escalera diaria**: a los 3, 6 y 10 anuncios, maletín, 40 💎 y maletín de oro | `src/ads`, `adLadder.ts`, `offers.ts`, [`GDD.md`](GDD.md) («Monetización») |
 | Compras | VIP (sin anuncios y x2), pack de inicio y diamantes. En la web, desactivadas | `shop.ts`, `platform/store.ts`, [`COMPRAS.md`](COMPRAS.md) |

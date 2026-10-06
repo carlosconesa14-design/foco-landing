@@ -21,6 +21,7 @@ export const EVENT_POINTS: Partial<Record<StatKey, number>> = {
   floors: 25,
   chests: 10,
   abilities: 10,
+  skills: 5,
 };
 
 export type EventThemeId = "sales" | "upgrades" | "talent";
@@ -36,7 +37,7 @@ export interface EventTheme {
 export const EVENT_THEMES: EventTheme[] = [
   { id: "sales", icon: "🛍️", doubles: ["sales"] },
   { id: "upgrades", icon: "🔧", doubles: ["upgrades"] },
-  { id: "talent", icon: "👔", doubles: ["hires", "floors", "chests", "abilities"] },
+  { id: "talent", icon: "👔", doubles: ["hires", "floors", "chests", "abilities", "skills"] },
 ];
 
 export function eventThemeText(theme: EventTheme): { name: string; desc: string } {

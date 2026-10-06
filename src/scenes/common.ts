@@ -80,6 +80,8 @@ export interface Bridge {
   /** Existing holding action, without economy decisions in the scene. */
   pedal(bizId: string | null): void;
   openUnlockFloor(bizId: string): void;
+  /** Botón de habilidad del gerente de una parte (x2 de velocidad unos minutos). */
+  useSkill(bizId: string, st: Station): void;
   /** Toque sobre una parcela de la ciudad. */
   tapPlot(bizId: string): void;
   /** Ventas pendientes de mostrar, se vacía al leerla. */

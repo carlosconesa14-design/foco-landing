@@ -4,6 +4,7 @@ import { RANKS } from "../game/ranks";
 import {
   ACHIEVEMENTS,
   ALL_BUSINESSES,
+  FEST_DEF,
   CHESTS,
   CITIES,
   EXEC_KINDS,
@@ -29,6 +30,8 @@ type BizText = Pick<BusinessDef, "name" | "blurb" | "floorName" | "transportName
 const BUSINESSES_EN: Record<string, BizText> = {
   bike: { name: "Bike delivery", blurb: "This is how it all starts: pick up orders from local restaurants and deliver them by bike.", floorName: "Restaurant", transportName: "Your bike", saleName: "Customers",
     floorNames: ["Burger joint", "Pizzeria", "Sushi bar", "Kebab shop", "Taco stand", "Poke bar", "Bakery", "Ice cream shop"] },
+  fest: { name: "The fair", blurb: "Weekends only: build your fair, earn tokens and win exclusive prizes.", floorName: "Stall", transportName: "Cart", saleName: "Ticket booth",
+    floorNames: ["Churros", "Cotton candy", "Raffle", "Shooting gallery", "Bumper cars", "Ferris wheel", "Roller coaster", "Fireworks"] },
   dropship: { name: "Dropshipping warehouse", blurb: "Your first real business. Online orders that ship themselves.", floorName: "Shelf", transportName: "Forklift", saleName: "Vans" , floorNames: ["Toys", "Phones", "Clothes", "Home", "Beauty", "Sports", "Gaming", "Luxury"] },
   restaurant: { name: "Restaurant", blurb: "Kitchens, waiters and riders. If one fails, everything jams.", floorName: "Kitchen", transportName: "Waiters", saleName: "Riders" , floorNames: ["Pasta", "Pizza", "Grill", "Rice dishes", "Tapas", "Desserts", "Seafood", "Tasting menu"] },
   tiktok: { name: "TikTok studio", blurb: "Creators filming nonstop and brands paying to be featured.", floorName: "Film set", transportName: "Editors", saleName: "Brands" , floorNames: ["Dances", "Recipes", "Pranks", "Gaming", "Beauty", "Travel", "Sports", "24 h live"] },
@@ -158,7 +161,7 @@ let done = false;
 export function localizeData(): void {
   if (lang === "es" || done) return;
   done = true;
-  for (const b of ALL_BUSINESSES) Object.assign(b, BUSINESSES_EN[b.id] ?? {});
+  for (const b of [...ALL_BUSINESSES, FEST_DEF]) Object.assign(b, BUSINESSES_EN[b.id] ?? {});
   for (const c of CITIES) Object.assign(c, CITIES_EN[c.id] ?? {});
   for (const o of OFFICE) Object.assign(o, OFFICE_EN[o.id] ?? {});
   LIFE.forEach((l, i) => (l.name = LIFE_EN[i] ?? l.name));

@@ -11,7 +11,7 @@ import {
   type Station,
 } from "./economy";
 import { afterIpo, bump, freshFloor, type GameState } from "./state";
-import { applyStartPerks, boostHours } from "./world";
+import { applyStartPerks, boostHours, seedCash } from "./world";
 import { t } from "../i18n";
 
 /** Acciones del jugador. Devuelven un mensaje para mostrar ("" si no hace falta), o null si no se pudo. */
@@ -91,6 +91,7 @@ export function ipo(s: GameState, mult: 1 | 2, now: number): { state: GameState;
   if (gained < 1) return null;
   const state = afterIpo(s, gained, now);
   applyStartPerks(state);
+  state.cash += seedCash(state);
   return { state, gained };
 }
 

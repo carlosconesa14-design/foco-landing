@@ -8,7 +8,7 @@ import Phaser from "phaser";
 import { createAds, type Placement } from "./ads";
 import { sound, type Sfx } from "./audio/sound";
 import * as act from "./game/actions";
-import { CITIES, CONFIG, FOUNDERS, GOLD, LIFE, TOURISM, VIRAL_TITLES, floorLabel } from "./game/data";
+import { CHESTS, CITIES, CONFIG, FOUNDERS, GOLD, LIFE, TOURISM, VIRAL_TITLES, floorLabel } from "./game/data";
 import { boostHours, callWave, gold, lockGold, tourism } from "./game/world";
 import { BIG_RANK, rankInfo, rankSnapshot, rankUps } from "./game/ranks";
 import { applyFounderError, applyFounderRank, founderPending, reachedFounderCity } from "./game/founders";
@@ -58,8 +58,14 @@ import { ensureRetos, retosToClaim } from "./game/challenges";
 import { adLadderStep, nextAdStep } from "./game/adLadder";
 import { rewardLabel, showGrant } from "./ui/metaPanels";
 import { ensureEvent, eventTiersReached, eventToClaim, eventWindow } from "./game/event";
+import { FEST_ID, ensureFest, festOpen, inWallet, tickFest } from "./game/fest";
+import { skillDurationMs, useSkill } from "./game/skills";
+import { checkFirsts, firstText, viralAllowed } from "./game/onboarding";
 import { openFeedback } from "./ui/feedbackPanel";
 import { fmtWait, openEvent } from "./ui/eventPanel";
+import { openSchool } from "./ui/schoolPanel";
+import { schoolReady } from "./game/school";
+import { festToClaim } from "./game/fest";
 import { icon, loadIcons } from "./ui/icons";
 import { WEB_BETA } from "./platform/web";
 import { OFFERS, claimVip, dueOffer, rescheduleOffer, truckReward, wheelStatus, type OfferKind } from "./game/offers";
@@ -193,13 +199,21 @@ const bridge: Bridge = {
   state: () => S,
   pedal: setPedal,
   tapStation: (id, st) => {
-    const err = tapStation(S, id, st);
+    const err = inWallet(S, id, () => tapStation(S, id, st));
     twistTap(id); // cuenta aunque esa parte ya trabaje sola (hype, crítico)
     fx(err ? "error" : "tap");
     say(err);
   },
   openStation: (id, st) => openStationSheet(ctx, id, st),
   openUnlockFloor: (id) => openUnlockSheet(ctx, id),
+  useSkill: (id, st) => {
+    const ok = inWallet(S, id, () => useSkill(S, S.biz[id], st, clockNow()));
+    fx(ok ? "milestone" : "error", ok);
+    if (ok) {
+      analytics.track("skill_used", { biz: id, part: st.kind });
+      say(t("{name}: ¡x2 de velocidad durante {min} min!", { name: inWallet(S, id, () => act.stationName(id, st)), min: Math.round(skillDurationMs(S) / 60e3) }));
+    } else say(t("La habilidad se está recargando"));
+  },
   tapPlot: (id) => (S.biz[id].owned ? goTo({ scene: "business", id }) : openPlotSheet(ctx, id)),
   drainSales: (id) => (id ? frameSales.filter((e) => e.biz === id) : frameSales),
   insets: () => ({
@@ -240,7 +254,9 @@ function startView(): void {
   // La barra va antes: la escena lee su altura al crearse.
   renderBar(S);
   updateBar(S, clockNow());
+  if (S.view.scene === "fest" && !festOpen(S, clockNow())) S.view = { scene: "city" };
   if (S.view.scene === "business") game.scene.start(bizScene(S.view.id), { id: S.view.id });
+  else if (S.view.scene === "fest") game.scene.start("route", { id: FEST_ID });
   else game.scene.start("city");
   document.body.classList.remove("loading");
   document.getElementById("loading-screen")?.remove();
@@ -310,6 +326,7 @@ document.getElementById("bar")!.addEventListener("click", async (e) => {
   else if (b.dataset.nav === "world") openWorld(ctx);
   else if (b.dataset.nav === "empire") openEmpire(ctx);
   else if (b.dataset.nav === "ipo") openIpoSheet(ctx);
+  else if (b.dataset.nav === "event") openEvent(ctx);
   else if (b.dataset.rush && (await watchAd("rush"))) {
     act.startRush(S, b.dataset.rush, clockNow());
     say(t("Hora punta: x{n} en este negocio durante {min} min", { n: CONFIG.rushMult, min: CONFIG.rushMinutes }));
@@ -357,6 +374,7 @@ root.addEventListener("click", (e) => {
   else if (which === "rival") openEmpire(ctx);
   else if (which === "cloud") openCloud(ctx);
   else if (which === "feedback") openFeedback(ctx);
+  else if (which === "school") openSchool(ctx);
 });
 document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
@@ -403,7 +421,8 @@ function updateMeta(now: number): void {
     execs: meta.freeChestReady(S, now) || fusableRarities(S).length > 0,
     achievements: meta.achievementsToClaim(S) > 0,
     league: leagueHasPrize() || (!leagueJoined(S) && meta.tutorialStep(S) === null),
-    event: eventToClaim(S) > 0,
+    event: eventToClaim(S) + festToClaim(S) > 0,
+    school: started && schoolReady(S),
     wheel: started && wheelStatus(S, now).free,
     life: started && !!affordable(S, now),
     season: seasonOpen(S, now) && LUXURY.some((i) => i.season && !owns(S, i.id) && S.meta.season.candy >= (i.candy ?? Infinity)),
@@ -426,6 +445,27 @@ function updateMeta(now: number): void {
       highlight: `+${adv.gems} 💎`,
     });
   else if (adv) fx("click");
+  // Primeros minutos guiados (onboarding.ts): un aviso o un premio cada minuto o dos hasta el almacén.
+  if (!adv?.done && !modalOpen()) {
+    checkFirsts(S, now).forEach((f, i) => {
+      analytics.track("first_moment", { id: f.id, minutes: minutesSinceInstall() });
+      const txt = firstText(f, S);
+      const grant = f.reward ? meta.grantReward(S, f.reward, now, Math.random) : null;
+      // Texto plano para la banda (rewardLabel lleva iconos en HTML).
+      const plain = !f.reward ? "" : "gems" in f.reward ? `+${f.reward.gems} 💎` : "chest" in f.reward ? `+💼 ${CHESTS[f.reward.chest].name}` : "";
+      setTimeout(() => {
+        if (f.big)
+          void ctx.celebrate({ icon: f.icon, title: txt.title, subtitle: txt.text, highlight: plain || undefined }).then(() => {
+            if (grant?.exec) showGrant(ctx, grant);
+          });
+        else {
+          fx(f.reward ? "gems" : "click", !!f.reward);
+          banner(root, f.icon, plain ? `${txt.title} ${plain}` : `${txt.title} ${txt.text}`);
+          if (grant?.exec) setTimeout(() => showGrant(ctx, grant), 1200);
+        }
+      }, i * 2500);
+    });
+  }
   const step = meta.tutorialStep(S);
   const tut = document.getElementById("tut")!;
   // El tutorial transcurre en el almacén; en la ciudad se oculta.
@@ -463,11 +503,14 @@ let eventReached = -1;
 
 function updateEvent(now: number): void {
   ensureEvent(S, now);
+  ensureFest(S, now);
+  // La feria cierra al acabar el evento: de vuelta a la ciudad.
+  if (S.view.scene === "fest" && !festOpen(S, now)) goTo({ scene: "city" });
   const w = eventWindow(now);
   const claim = eventToClaim(S);
   const started = meta.tutorialStep(S) === null;
   // Botón lateral solo mientras dura el evento (o si quedan premios por cobrar).
-  document.getElementById("eventBtn")!.hidden = !started || !isUnlocked(S, "event") || (!(w.active && S.meta.event.week === w.week) && claim === 0);
+  document.getElementById("eventBtn")!.hidden = !started || !isUnlocked(S, "event") || (!(w.active && S.meta.event.week === w.week) && claim === 0 && festToClaim(S) === 0);
   document.getElementById("eventMenuSub")!.textContent = w.active
     ? t("En marcha · termina en {time}", { time: fmtWait(w.end - now) })
     : t("Próximo en {time}", { time: fmtWait(w.next - now) });
@@ -486,7 +529,7 @@ let goalAction: ReturnType<typeof nextGoal> = null;
 
 function updateGoal(now: number, top: number, tutorialShown: boolean): void {
   const el = document.getElementById("goal")!;
-  const g = tutorialShown || activeSheet() ? null : nextGoal(S, now);
+  const g = tutorialShown || activeSheet() || S.view.scene === "fest" ? null : nextGoal(S, now);
   goalAction = g;
   el.hidden = !g;
   if (!g) return;
@@ -781,7 +824,7 @@ function hideViral(): void {
 }
 
 function viralTick(now: number): void {
-  if (!viralEl && now >= S.nextViral && !modalOpen() && !activeSheet() && S.totalEarned > 50) {
+  if (!viralEl && now >= S.nextViral && viralAllowed(S) && !modalOpen() && !activeSheet() && S.totalEarned > 50) {
     viralEl = document.createElement("button");
     viralEl.className = "viral";
     viralEl.innerHTML = icon("coin");
@@ -1033,6 +1076,9 @@ game.events.on("step", (time: number) => {
   // Tras volver de segundo plano no se simula el hueco: lo paga offerOffline().
   const dt = elapsed > 2 ? 0 : elapsed;
   frameSales = tick(S, dt, now);
+  // La feria del evento avanza aparte, con sus fichas (fest.ts).
+  const festSales = tickFest(S, dt, now);
+  if (festSales.length) frameSales = frameSales.concat(festSales);
   twistTick(ctx, frameSales, dt);
   if (playingNow(now)) trackPlay(S, now, dt);
   // Monedas al vender: más fuerte en el negocio que estás viendo, suave desde la ciudad.

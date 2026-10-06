@@ -13,6 +13,7 @@ import {
   eventWindow,
 } from "../game/event";
 import { fmt, fmtTime } from "../game/format";
+import { FEST_DEF, FEST_GOALS, TROPHY, claimFestGoal, festGoalsReached, festOpen, festToClaim } from "../game/fest";
 import { t } from "../i18n";
 import { analytics } from "../platform/analytics";
 import { rewardLabel, showGrant } from "./metaPanels";
@@ -46,6 +47,7 @@ const howRows = (): [StatKey, string][] => [
   ["floors", t("Abrir un puesto")],
   ["chests", t("Abrir un maletín")],
   ["abilities", t("Usar una habilidad")],
+  ["skills", t("Usar la habilidad de un gerente")],
 ];
 
 export function openEvent(ctx: PanelCtx): void {
@@ -53,6 +55,7 @@ export function openEvent(ctx: PanelCtx): void {
     ctx.root,
     `<div class="sheet-head"><span class="sicon" data-icon></span><div><h3 data-title></h3><p class="muted" data-sub></p></div></div>
      <div data-top></div>
+     <div class="list" data-fest style="display:grid;gap:8px;margin:10px 0"></div>
      <div class="list" data-list style="display:grid;gap:8px"></div>
      <details class="lg-how"><summary>${t("¿Cómo se consiguen puntos?")}</summary><div class="lg-table" data-how></div>
        <p class="small muted">${t("Los puntos solo cuentan mientras juegas, de viernes a domingo. Los premios conseguidos se pueden cobrar hasta que empiece el siguiente evento.")}</p></details>`,
@@ -101,6 +104,51 @@ export function openEvent(ctx: PanelCtx): void {
               analytics.track("event_boost", { week: ctx.state().meta.event.week });
               ctx.toast(t("¡Puntos x2 durante {min} min!", { min: EVENT_BOOST.minutes }));
             }
+          };
+      }
+
+      // La feria: ruta propia del evento, con fichas y premios exclusivos (fest.ts).
+      const fest = s.meta.fest;
+      const open = festOpen(s, now);
+      const festReached = festGoalsReached(s);
+      const festRows = FEST_GOALS.map((g, i) => {
+        const l = rewardLabel(g.reward);
+        const claimed = i < fest.claimed;
+        const ready = i === fest.claimed && i < festReached;
+        const btn = claimed
+          ? `<button class="claim" disabled>${t("Hecho")}</button>`
+          : ready
+            ? `<button class="claim" data-festclaim>${t("Cobrar")}</button>`
+            : `<button class="claim" disabled>🔒</button>`;
+        return `<div class="row ${claimed ? "done" : ""}"><span class="face">${l.icon}</span>
+          <div><b>${l.text}${g.trophy ? ` + 🏆` : ""}</b><span class="sub">${t("Abre {n} casetas en la feria", { n: g.stops })}</span></div>${btn}</div>`;
+      });
+      const festHtml =
+        open || festToClaim(s) > 0
+          ? `<div class="row"><span class="face">${FEST_DEF.icon}</span><div><b>${t("La feria del fin de semana")}</b><span class="sub">${t(
+              "Una ruta solo para el evento, con fichas 🎟️. Cada trofeo 🏆 da +{n} % de ingresos para siempre (tienes {have}).",
+              { n: Math.round(TROPHY.bonus * 100), have: fest.trophies },
+            )}</span></div>${open ? `<button class="claim" data-festgo>${t("Ir")}</button>` : ""}</div>${festRows.join("")}`
+          : "";
+      const festEl = $(el, "[data-fest]");
+      festEl.hidden = !festHtml;
+      if (paint(festEl, festHtml)) {
+        const go = festEl.querySelector<HTMLButtonElement>("[data-festgo]");
+        if (go)
+          go.onclick = () => {
+            analytics.track("fest_enter", { week: ctx.state().meta.fest.week, stops: ctx.state().meta.fest.biz.floors.length });
+            ctx.goTo({ scene: "fest" });
+          };
+        const c = festEl.querySelector<HTMLButtonElement>("[data-festclaim]");
+        if (c)
+          c.onclick = () => {
+            const st = ctx.state();
+            const r = claimFestGoal(st, clockNow());
+            if (!r) return;
+            analytics.track("fest_claim", { week: st.meta.fest.week, goal: st.meta.fest.claimed });
+            ctx.fx(r.grant.exec ? "chest" : "gems", true);
+            if (r.trophy) ctx.banner("🏆", t("¡Feria completa! Trofeo: +{n} % de ingresos para siempre", { n: Math.round(TROPHY.bonus * 100) }));
+            showGrant(ctx, r.grant);
           };
       }
 

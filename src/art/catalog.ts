@@ -88,6 +88,8 @@ export const BIZ_ART: Record<string, { worker: string; mover: string; seller: st
   tiktok: { worker: "creator", mover: "editor", seller: "brand", item: "item_clip", station: "st_tiktok" },
   ai: { worker: "engineer", mover: "tech", seller: "sales", item: "item_chip", station: "st_ai" },
   foodtruck: { worker: "taquero", mover: "skater", seller: "vendor", item: "item_taco", station: "st_foodtruck" },
+  // La feria del evento (arte provisional: el de los food trucks; arte propio en docs/VISUAL.md §14.3)
+  fest: { worker: "taquero", mover: "skater", seller: "vendor", item: "item_taco", station: "st_foodtruck" },
   beachclub: { worker: "bartender", mover: "waiter", seller: "promoter", item: "item_cocktail", station: "st_beachclub" },
   yachts: { worker: "captain", mover: "sailor", seller: "agent", item: "item_ticket", station: "st_yachts" },
   realestate: { worker: "broker", mover: "clerk", seller: "sales", item: "item_key", station: "st_realestate" },
@@ -577,7 +579,7 @@ for (const [name,w,h] of [["h",60,30],["v",30,60],["turn_ne",48,48],["turn_nw",4
 /** Visual growth only: 1–2, 3–5 and 6–8 open stations. */
 export const buildingTier = (floors: number): number => floors >= 6 ? 3 : floors >= 3 ? 2 : 1;
 /** Sedes que aún no tienen arte propio: usan otra parecida (docs/ART.md, «Reparto en bici»). */
-const PROVISIONAL_HUB: Record<string, string> = {};
+const PROVISIONAL_HUB: Record<string, string> = { fest: "beachclub" };
 export const buildingKey = (id: string, floors: number): string => `bld_${PROVISIONAL_HUB[id] ?? id}_${buildingTier(floors)}`;
 
 /** Small bespoke rooftop signs, independent of system emoji fonts. */
