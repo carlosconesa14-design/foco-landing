@@ -1,4 +1,5 @@
-import { CONFIG, LIFE, type BusinessDef } from "../game/data";
+import { CONFIG, FEST_DEF, FEST_ID, LIFE, type BusinessDef } from "../game/data";
+import { withFest } from "../game/fest";
 import { bizDef, businessRate, chainRates, floorNextCost, lifeIndex, logisticsNextCost, managerCost, passiveRate, saleMult, type Station } from "../game/economy";
 import { fmt, fmtTime } from "../game/format";
 import { boostHours, canExpand, upgradeDiscount } from "../game/world";
@@ -20,14 +21,21 @@ function setHtml(el: HTMLElement, html: string): void {
 
 /** Dinero mostrado: sube contando hacia el real en vez de saltar (micro-recompensa constante). */
 let shownCash = 0;
+let shownFest = false;
 
 export function updateHeader(s: GameState, now: number): void {
-  const target = s.cash;
+  // En la feria se ven las fichas 🎟️ en lugar del dinero (fest.ts).
+  const fest = s.view.scene === "fest";
+  const target = fest ? s.meta.fest.tickets : s.cash;
   const prev = shownCash;
   // Si baja (una compra) se muestra al instante; si sube, se acerca poco a poco.
   shownCash = target < shownCash || Math.abs(target - shownCash) < 1 ? target : shownCash + (target - shownCash) * 0.35;
   const cash = $("cash");
-  cash.innerHTML = `<small class="cash-symbol">${CUR}</small>${fmt(shownCash)}`;
+  if (fest !== shownFest) {
+    shownFest = fest;
+    shownCash = target;
+  }
+  cash.innerHTML = `<small class="cash-symbol">${fest ? "🎟️" : CUR}</small>${fmt(shownCash)}`;
   // Pequeño salto visual cuando entra un buen pellizco (más de un 5 %)
   if (target > prev * 1.05 && prev > 0 && !cash.classList.contains("bump")) {
     cash.classList.add("bump");
@@ -58,13 +66,17 @@ export function updateHeader(s: GameState, now: number): void {
 let barKey = "";
 
 export function renderBar(s: GameState): void {
-  const key = s.view.scene === "business" ? `b:${s.view.id}` : `city:${s.city}`;
+  const key = s.view.scene === "business" ? `b:${s.view.id}` : s.view.scene === "fest" ? "fest" : `city:${s.city}`;
   const city = cityDef(s.city);
   if (key === barKey) return;
   barKey = key;
   const bar = $("bar");
   bar.classList.toggle("has-chain", s.view.scene === "business");
-  if (s.view.scene === "business") {
+  if (s.view.scene === "fest") {
+    bar.innerHTML = `
+      <button class="navbtn" data-nav="city"><span class="ic">${icon("ic_city", "🏙️")}</span>${t("Ciudad")}</button>
+      <button class="barmid tap" data-nav="event" aria-label="${t("Premios del evento")}"><b>🎡 ${FEST_DEF.name} <span class="more">▸</span></b><span id="barRate"></span></button>`;
+  } else if (s.view.scene === "business") {
     const def = bizDef(s.view.id);
     bar.innerHTML = `
       <div class="chain" id="chain"></div>
@@ -83,6 +95,11 @@ export function renderBar(s: GameState): void {
 export function updateBar(s: GameState, now: number): void {
   const dot = document.getElementById("worldDot");
   if (dot) dot.hidden = !canExpand(s);
+  if (s.view.scene === "fest") {
+    const rate = document.getElementById("barRate");
+    if (rate) rate.textContent = `+🎟️ ${fmt(withFest(s, () => businessRate(s, FEST_ID, now)))}/s · ${t("premios del evento")}`;
+    return;
+  }
   if (s.view.scene !== "business") return;
   const id = s.view.id;
   const b = s.biz[id];

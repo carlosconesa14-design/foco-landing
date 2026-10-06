@@ -25,6 +25,10 @@ Analítica propia en Supabase, sin cuentas externas. Es **anónima**: cada insta
 | `auto_upgrade` | «Mejorar todo» | Mejoras hechas, si fue con anuncio, si es ilimitado |
 | `fusion` / `rival_win` / `season_buy` | Fusionar ejecutivos / ganar al rival / comprar en Halloween | Rareza / victorias / objeto |
 | `ref_used` / `cloud_recover` / `founder` | Usar un código de invitación / recuperar la partida / puesto de fundador | Días / — / puesto |
+| `skill_used` | Usar la habilidad de un gerente | Negocio y parte (`floor`, `transport` o `sale`) |
+| `school_study` | Investigar en la Escuela de negocios | Rama y nivel |
+| `fest_enter` / `fest_claim` | Entrar en la feria del evento / cobrar un premio de la feria | Semana y casetas / semana y premio |
+| `first_moment` | Aviso de los primeros minutos (`skill`, `auto`, `half`, `biz2`) | Id y minutos desde la instalación |
 
 **Opiniones** (Ajustes → «Danos tu opinión», y una pregunta al comprar el segundo negocio): tabla `feedback` (migración 0016), con puntuación de 1 a 5, texto (máx. 1000), idioma, ciudad y minutos. Como mucho 3 al día por dispositivo. La función `track` las recibe como `{ feedback: { rating, message, meta } }`.
 

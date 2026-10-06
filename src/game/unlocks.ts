@@ -10,7 +10,7 @@ import type { GameState } from "./state";
  * Los umbrales salen del bot de equilibrado (jugador muy activo); una persona tarda algo más.
  */
 
-export type FeatureId = "daily" | "missions" | "execs" | "auto" | "wheel" | "achievements" | "life" | "league" | "rival" | "event" | "invite";
+export type FeatureId = "daily" | "missions" | "execs" | "auto" | "wheel" | "achievements" | "life" | "school" | "league" | "rival" | "event" | "invite";
 
 export type Need =
   | { kind: "tutorial" }
@@ -33,6 +33,7 @@ export const FEATURES: FeatureDef[] = [
   { id: "wheel", icon: "🎡", need: { kind: "earned", n: 2e5 } }, // ~7 min (tras comprar el almacén)
   { id: "achievements", icon: "🏆", need: { kind: "stat", stat: "hires", n: 7 } }, // ~12 min
   { id: "life", icon: "🛍️", need: { kind: "earned", n: 1e7 } }, // ~12 min
+  { id: "school", icon: "🎓", need: { kind: "stat", stat: "milestones", n: 12 } }, // ~15 min: las primeras ideas
   { id: "league", icon: "🏅", need: { kind: "biz", n: 3 } }, // ~45 min: el restaurante (el reparto no cuenta)
   { id: "rival", icon: "🥊", need: { kind: "biz", n: 2 } },
   { id: "event", icon: "🎉", need: { kind: "earned", n: 1e12 } }, // ~1 h

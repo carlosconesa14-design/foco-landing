@@ -19,6 +19,7 @@ const LABELS = (): Record<FeatureId, { name: string; desc: string }> => ({
   wheel: { name: t("Ruleta diaria"), desc: t("Un giro gratis cada día: diamantes, dinero o un maletín.") },
   achievements: { name: t("Logros"), desc: t("Grandes retos para toda la partida, con diamantes.") },
   life: { name: t("Mi vida"), desc: t("Cómprate ropa, coches, casas y caprichos. Cada uno sube tus ingresos para siempre.") },
+  school: { name: t("Escuela de negocios"), desc: t("Investigación permanente: cada hito x2 te da una idea 💡 y las ideas compran mejoras que no se pierden nunca, ni al salir a bolsa.") },
   league: { name: t("Liga Millonario"), desc: t("Compite cada semana con otros jugadores por diamantes.") },
   rival: { name: t("Rival de la semana"), desc: t("Un competidor nuevo cada lunes. Si le ganas, maletín de oro.") },
   event: { name: t("Evento del finde"), desc: t("Cada fin de semana, 10 premios por jugar.") },
@@ -36,6 +37,7 @@ export function needText(need: Need): string {
       if (need.stat === "floors") return t("Abre {n} puestos nuevos", { n: need.n });
       if (need.stat === "upgrades") return t("Mejora {n} veces", { n: need.n });
       if (need.stat === "hires") return t("Contrata {n} gerentes", { n: need.n });
+      if (need.stat === "milestones") return t("Consigue {n} hitos x2", { n: need.n });
       return `${need.stat} ${need.n}`;
     case "earned":
       return t("Gana {m} en total", { m: money(need.n) });

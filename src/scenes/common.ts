@@ -77,6 +77,8 @@ export interface Bridge {
   /** Botón de nivel de una parte: abre el panel de mejora. */
   openStation(bizId: string, st: Station): void;
   openUnlockFloor(bizId: string): void;
+  /** Botón de habilidad del gerente de una parte (x2 de velocidad unos minutos). */
+  useSkill(bizId: string, st: Station): void;
   /** Toque sobre una parcela de la ciudad. */
   tapPlot(bizId: string): void;
   /** Ventas pendientes de mostrar, se vacía al leerla. */

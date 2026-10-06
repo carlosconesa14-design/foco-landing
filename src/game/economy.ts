@@ -1,10 +1,12 @@
 import { now } from "./clock";
-import { ALL_BUSINESSES, CHAIN, CONFIG, LIFE, MILESTONES, type BusinessDef } from "./data";
+import { ALL_BUSINESSES, CHAIN, CONFIG, FEST_DEF, FEST_ID, LIFE, MILESTONES, type BusinessDef } from "./data";
 import { NO_MULTS, execMults, type Mults } from "./execs";
 import { bump, cityDef, type BusinessState, type BuyMode, type GameState } from "./state";
 import { t } from "../i18n";
 import { luxuryMult } from "./luxury";
 import { twistSaleMult } from "./twists";
+import { skillSpeed } from "./skills";
+import { trophyMult } from "./fest";
 import { goldMult, luckyChance, offlineCapHours, tourismMult, upgradeDiscount, worldIncomeMult } from "./world";
 
 /* ---------- Utilidades ---------- */
@@ -29,7 +31,7 @@ export const nextMilestone = (level: number) => MILESTONES.find((m) => level < m
 const msMult = (level: number) => Math.pow(2, milestonesReached(level));
 
 export const bizDef = (id: string): BusinessDef => {
-  const d = ALL_BUSINESSES.find((b) => b.id === id);
+  const d = id === FEST_ID ? FEST_DEF : ALL_BUSINESSES.find((b) => b.id === id);
   if (!d) throw new Error(`Negocio desconocido: ${id}`);
   return d;
 };
@@ -47,6 +49,7 @@ export const bizList = (s: GameState): BusinessDef[] => cityDef(s.city).business
 export const bizTier = (b: BusinessState) => (b.floors.length >= 6 ? 3 : b.floors.length >= 3 ? 2 : 1);
 
 export function saleMult(s: GameState, id: string, now: number, live = true): number {
+  if (id === FEST_ID) return 1; // la feria va con fichas: nada del imperio la acelera
   const boost = live && boostActive(s, now) ? 2 : 1;
   const rush = live && rushActive(s.biz[id], now) ? CONFIG.rushMult : 1;
   return (
@@ -59,7 +62,8 @@ export function saleMult(s: GameState, id: string, now: number, live = true): nu
     goldMult(s, now, live) *
     luxuryMult(s, now) * // «Mi vida»: prestigio y colecciones (también offline)
     twistSaleMult(s, id, now, live) * // mecánicas del negocio: reputación, directo viral, investigación
-    (s.meta.shop.vip ? 2 : 1) // VIP: x2 permanente (también offline)
+    (s.meta.shop.vip ? 2 : 1) * // VIP: x2 permanente (también offline)
+    trophyMult(s) // trofeos de la feria (también offline)
   );
 }
 
@@ -145,15 +149,19 @@ export interface ChainRates {
   bottleneck: "production" | "transport" | "sale";
 }
 
-/** Ritmos de la cadena en €/s (antes de multiplicadores). Con `managedOnly` solo cuenta lo automatizado. */
-export function chainRates(def: BusinessDef, b: BusinessState, managedOnly: boolean, m: Mults = NO_MULTS): ChainRates {
+/**
+ * Ritmos de la cadena en €/s (antes de multiplicadores). Con `managedOnly` solo cuenta lo automatizado.
+ * Con `skillsAt` (una hora) cuentan las habilidades de gerente activas en ese momento.
+ */
+export function chainRates(def: BusinessDef, b: BusinessState, managedOnly: boolean, m: Mults = NO_MULTS, skillsAt?: number): ChainRates {
+  const sp = (key: string) => (skillsAt === undefined ? 1 : skillSpeed(b, key, skillsAt));
   const production =
-    m.prod * b.floors.reduce((a, f, i) => a + (!managedOnly || f.managed ? floorRate(def, i, f.level) : 0), 0);
+    m.prod * b.floors.reduce((a, f, i) => a + (!managedOnly || f.managed ? floorRate(def, i, f.level) * sp(`f${i}`) : 0), 0);
   const transport =
     !managedOnly || b.transport.managed
-      ? (m.log * transportCap(def, b.transport.level)) / transportRoundTrip(b.floors.length, b.transport.level)
+      ? (sp("t") * m.log * transportCap(def, b.transport.level)) / transportRoundTrip(b.floors.length, b.transport.level)
       : 0;
-  const sale = !managedOnly || b.sale.managed ? (m.log * saleCap(def, b.sale.level)) / (2 * saleWalk(b.sale.level)) : 0;
+  const sale = !managedOnly || b.sale.managed ? (sp("s") * m.log * saleCap(def, b.sale.level)) / (2 * saleWalk(b.sale.level)) : 0;
   const total = Math.min(production, transport, sale);
   const bottleneck = total === production ? "production" : total === transport ? "transport" : "sale";
   return { production, transport, sale, total, bottleneck };
@@ -162,7 +170,7 @@ export function chainRates(def: BusinessDef, b: BusinessState, managedOnly: bool
 export function businessRate(s: GameState, id: string, now: number, live = true): number {
   const b = s.biz[id];
   if (!b.owned) return 0;
-  return chainRates(bizDef(id), b, true, execMults(s, id, now, live)).total * saleMult(s, id, now, live);
+  return chainRates(bizDef(id), b, true, execMults(s, id, now, live), live ? now : undefined).total * saleMult(s, id, now, live);
 }
 
 export function passiveRate(s: GameState, now: number, live = true): number {
@@ -215,16 +223,18 @@ export function setLuck(fn: () => number): void {
   luck = fn;
 }
 
-function tickBusiness(s: GameState, id: string, dt: number, now: number, events: SaleEvent[]): void {
+/** Avanza un solo negocio (la feria lo usa con `withFest`). */
+export function tickOne(s: GameState, id: string, dt: number, now: number, events: SaleEvent[]): void {
   const def = bizDef(id);
   const b = s.biz[id];
   const m = execMults(s, id, now);
+  const fest = id === FEST_ID;
 
   // Plantas: cada trabajador completa ciclos y deja producto en su depósito.
   b.floors.forEach((f, i) => {
     if (f.managed) f.running = true;
     if (!f.running) return;
-    f.prog += dt;
+    f.prog += dt * skillSpeed(b, `f${i}`, now); // habilidad «Turno doble»
     if (f.prog < CHAIN.floorCycle) return;
     const n = f.managed ? Math.floor(f.prog / CHAIN.floorCycle) : 1;
     f.stock += floorLoad(def, i, f.level) * m.prod * n;
@@ -239,7 +249,7 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
   const t = b.transport;
   const cap = transportCap(def, t.level) * m.log;
   const speed = transportSpeed(t.level) * (pedaling === id && !t.managed ? PEDAL_SPEED : 1);
-  let left = dt;
+  let left = dt * skillSpeed(b, "t", now); // habilidad «Ruta exprés»: todo el viaje, cargas incluidas
   let guard = 0;
   while (left > 0 && guard++ < 64) {
     if (t.phase === "idle") {
@@ -291,7 +301,7 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
   // Venta: carga lo que hay arriba, lo lleva al cliente y vuelve.
   const sl = b.sale;
   const walk = saleWalk(sl.level);
-  left = dt;
+  left = dt * skillSpeed(b, "s", now); // habilidad «Hora punta»
   guard = 0;
   while (left > 0 && guard++ < 64) {
     if (sl.phase === "idle") {
@@ -307,10 +317,14 @@ function tickBusiness(s: GameState, id: string, dt: number, now: number, events:
         sl.prog = 0;
         if (sl.phase === "out") {
           // Recompensa variable: de vez en cuando una venta se hace viral y paga mucho más.
-          const lucky = sl.carry > 0 && luck() < luckyChance(s);
+          const lucky = !fest && sl.carry > 0 && luck() < luckyChance(s);
           const amount = sl.carry * saleMult(s, id, now) * (lucky ? CONFIG.luckyMult : 1);
           sl.carry = 0;
-          earn(s, amount, id);
+          if (fest) {
+            // Fichas de la feria (dentro de withFest, `s.cash` son las fichas): no cuentan como ganancias del imperio.
+            s.cash += amount;
+            b.earned += amount;
+          } else earn(s, amount, id);
           bump(s, "sales");
           events.push({ biz: id, amount, lucky });
           sl.phase = "back";
@@ -333,7 +347,7 @@ function startSale(def: BusinessDef, b: BusinessState, logMult = 1): void {
 /** Avanza el juego `dt` segundos. Devuelve las ventas para mostrarlas. */
 export function tick(s: GameState, dt: number, now: number): SaleEvent[] {
   const events: SaleEvent[] = [];
-  for (const d of bizList(s)) if (s.biz[d.id].owned) tickBusiness(s, d.id, dt, now, events);
+  for (const d of bizList(s)) if (s.biz[d.id].owned) tickOne(s, d.id, dt, now, events);
   return events;
 }
 

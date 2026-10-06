@@ -337,3 +337,73 @@ Todo vehículo que circula (transportes, ventas, tráfico de la ciudad y el coch
 (ChatGPT/Codex: apunta aquí lo que necesites de la lógica, con fecha, y Claude lo añadirá al modelo de vista.)
 
 - *(vacío)*
+
+## 14. Funciones nuevas que hay que dibujar (octubre de 2026)
+La lógica ya funciona con piezas provisionales dibujadas por código. Hay que sustituirlas por arte e interfaz definitivos con el mismo nivel que el resto de la biblia.
+
+### 14.1 Habilidad del gerente (`skills.ts`, `StationView.skill`)
+Cada parte con gerente (cada parada, el transporte y la venta) tiene un **botón de habilidad**: x2 de velocidad durante 5 minutos (más con la escuela) y luego se recarga en 20 minutos. Solo funciona jugando.
+
+| `skill.state` | Qué se ve |
+| --- | --- |
+| `locked` | Nada (no hay gerente). |
+| `ready` | Botón amarillo con ⚡ que late y brilla: se puede usar. |
+| `active` | Verde, con la cuenta atrás (`skill.left`, ms) y un aro que se vacía (`skill.progress`). La parte se ve acelerada: trabajador más rápido, rastro de velocidad, chispas. |
+| `cooldown` | Gris, con la recarga (`skill.left`) y un aro que se llena (`skill.progress`). |
+
+- **Dónde:** pegado al marco del gerente de cada parada; en transporte y venta, encima de su botón «Nivel». Hoy es la pieza `SkillChip` de `RouteScene.ts`.
+- **Al tocar:** `bridge.useSkill(bizId, station)`. Al activarse, destello grande y el gerente hace un gesto.
+- **Panel de mejora (§8.1):** ya tiene la fila «Habilidad del gerente» con el botón «Activar». Darle el estilo del kit.
+- **Arte pedido:** icono de habilidad (`ic_skill`) y el gesto del gerente (`mgr_cheer`, 2 poses). Además, un efecto de velocidad reutilizable.
+
+### 14.2 Escuela de negocios (`school.ts`, `schoolPanel.ts`)
+Investigación permanente. Cada hito x2 da una **idea 💡**, que se gasta en un árbol de 5 ramas que no se pierde nunca:
+- Procesos 🏭
+- Logística 🚚
+- Marketing 💰 (pide Procesos 2)
+- Liderazgo 👔 (pide Logística 2)
+- Capital semilla 🚀 (pide Marketing 3)
+
+Hoy es una lista. **Lo que queremos:**
+- Un **árbol visual** de verdad: pizarra o campus, con las ramas unidas por líneas que se encienden al desbloquearse.
+- Nodos con nivel `x/max`, coste en ideas y candado si falta el requisito.
+- Animación al investigar (la idea vuela al nodo).
+- **Icono de idea** (`ic_idea`) para sustituir el emoji 💡 en el panel, en el menú y en la cabecera del panel.
+- **Iconos de rama:** `ic_school_prod`, `ic_school_log`, `ic_school_sale`, `ic_school_mgr`, `ic_school_start`.
+- **Botón del menú «Escuela de negocios» 🎓** con su icono (`ic_school`). Se desbloquea con 12 hitos y lleva punto rojo si hay algo que investigar.
+
+### 14.3 La feria del evento (`fest.ts`, negocio `fest`)
+Durante el evento del fin de semana se abre **«La feria»**, una pantalla de negocio más, con la misma ruta y las mismas reglas que las otras 15. Se entra desde el panel del evento («Ir») y se paga con **fichas 🎟️**, no con dinero. Sus 8 paradas son, por orden:
+1. Churrería
+2. Algodón de azúcar
+3. Tómbola
+4. Tiro al blanco
+5. Coches de choque
+6. Noria
+7. Montaña rusa
+8. Fuegos artificiales
+
+- **Pantalla (`SCREENS.fest`, `BIZ_ART.fest`):**
+  - noche de feria, con guirnaldas de bombillas, globos, música, fuegos al abrir la última caseta y suelo de albero;
+  - ruta de feria (`route_fest_*`), con un **carrito** como transporte y la **taquilla** como venta;
+  - sede: la **entrada de la feria** con arco luminoso, en 3 tamaños (`bld_fest_1/2/3`). Hoy usa provisionalmente el club de playa.
+- **8 casetas propias** (`st_fest_0`…`st_fest_7`) y feriantes como trabajadores.
+- **Moneda:** icono de ficha (`ic_ticket`) para la cabecera, los precios y el «Abrir · 🎟️ 550». Cuando `view.scene === "fest"`, la cabecera ya muestra las fichas en vez del dinero.
+- **Barra inferior en la feria:** «Ciudad» y el botón central «La feria», que abre los premios del evento.
+- **Premios exclusivos:** se cobran en el panel del evento, al abrir 2, 4, 6 y 8 casetas. El último da un **trofeo 🏆** permanente (+5 % de ingresos). Hace falta:
+  - medalla o copa de feria (`ic_fest_trophy`);
+  - vitrina de trofeos en el panel del evento (`meta.fest.trophies`);
+  - celebración al completar la feria.
+- **Botón lateral «Evento»:** cuando la feria está abierta, que se note (una noria pequeña girando).
+
+### 14.4 Primeros minutos (`onboarding.ts`)
+Tras el tutorial salen cuatro avisos, uno cada minuto o dos, hasta el almacén. Hoy son bandas doradas:
+
+| Aviso | Cuándo sale | Qué hay que hacer |
+| --- | --- | --- |
+| «¡Habilidad lista!» | Con el primer gerente | Enfocar el botón ⚡ con una mano que lo señale. |
+| «¡El reparto ya va solo!» | Con el reparto automatizado | Premio de 10 💎. |
+| «¡Ya tienes la mitad!» | Con la mitad del dinero del almacén | Mostrar la barra de ahorro hacia el almacén. |
+| Tu primer negocio de verdad | Al comprar el almacén | Maletín de regalo después de la celebración de compra. |
+
+Además, **la primera «oportunidad» con anuncio** (la moneda que aparece) llega 20 segundos después del tutorial y nunca durante él. Es el **primer anuncio** del jugador: tiene que ser muy atractiva, con brillo y un globo que diga «¡Pedido grande!».

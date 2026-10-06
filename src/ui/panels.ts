@@ -2,7 +2,9 @@ import { now } from "../game/clock";
 import type { Placement } from "../ads";
 import type { Sfx } from "../audio/sound";
 import * as act from "../game/actions";
-import { CHAIN, CONFIG, LIFE, floorLabel } from "../game/data";
+import { CHAIN, CONFIG, FEST_ID, LIFE, floorLabel } from "../game/data";
+import { inWallet } from "../game/fest";
+import { SKILL, skillStatus, skillDurationMs, skillCooldownMs, useSkill } from "../game/skills";
 import {
   bizDef,
   bizTier,
@@ -59,6 +61,14 @@ export interface PanelCtx {
 
 const $ = <T extends HTMLElement>(el: HTMLElement, sel: string) => el.querySelector<T>(sel)!;
 
+/** Precio en la moneda del negocio: dinero, o fichas 🎟️ en la feria del evento. */
+const priceOf = (id: string) => (n: number) => (id === FEST_ID ? `🎟️ ${fmt(n)}` : money(n));
+
+const mmss = (ms: number) => {
+  const sec = Math.ceil(Math.max(0, ms) / 1000);
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+};
+
 const buyModes = (s: GameState) =>
   `<div class="seg" data-seg>${([1, 10, 50, "max"] as BuyMode[])
     .map((m) => `<button data-mode="${m}" aria-pressed="${s.buyMode === m}">${m === "max" ? t("Máx") : "x" + m}</button>`)
@@ -77,6 +87,7 @@ function wireBuyModes(el: HTMLElement, ctx: PanelCtx): void {
 /* ---------- Mejora de una parte de la cadena ---------- */
 
 function statRows(s: GameState, id: string, st: Station, qty: number): string {
+  const money = priceOf(id);
   const def = bizDef(id);
   const lvl = stationLevel(s.biz[id], st);
   const row = (name: string, now: string, next: string) =>
@@ -95,6 +106,7 @@ function statRows(s: GameState, id: string, st: Station, qty: number): string {
 }
 
 function chainSummary(s: GameState, id: string): string {
+  const money = priceOf(id);
   const r = chainRates(bizDef(id), s.biz[id], false);
   const cell = (key: typeof r.bottleneck, name: string, v: number) =>
     `<div class="link ${r.bottleneck === key ? "slow" : ""}"><span>${name}</span><b>${money(v)}/s</b></div>`;
@@ -103,6 +115,9 @@ function chainSummary(s: GameState, id: string): string {
 }
 
 export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
+  // En la feria todo se paga con fichas: las funciones de siempre, envueltas en `inWallet`.
+  const W = <T>(fn: () => T): T => inWallet(ctx.state(), id, fn);
+  const money = priceOf(id);
   const s0 = ctx.state();
   const def = bizDef(id);
   const icon = st.kind === "floor" ? def.worker : st.kind === "transport" ? def.transportIcon : def.saleWorker;
@@ -114,8 +129,9 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
      <p class="small muted" data-ms></p>
      <div class="buyrow">${buyModes(s0)}<button class="buy big" data-up><span data-uq></span><b data-uc></b></button></div>
      <div class="mgrbox" data-mgr></div>
+     <div class="mgrbox" data-skill hidden></div>
      <div data-chain></div>`,
-    (el) => {
+    (el) => W(() => {
       const s = ctx.state();
       const b = s.biz[id];
       const lvl = stationLevel(b, st);
@@ -151,15 +167,38 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
         const hire = mgr.querySelector<HTMLButtonElement>("[data-hire]");
         if (hire)
           hire.onclick = () => {
-            const msg = act.hireManager(ctx.state(), id, st);
+            const msg = W(() => act.hireManager(ctx.state(), id, st));
             ctx.fx(msg ? "hire" : "error", !!msg);
             ctx.toast(msg ?? t("No tienes suficiente dinero"));
           };
       }
       $(el, "[data-chain]").innerHTML = chainSummary(s, id);
-    },
+      // Habilidad del gerente: x2 de velocidad unos minutos, luego se recarga (skills.ts).
+      const sk = skillStatus(s, b, st, now());
+      const skBox = $(el, "[data-skill]");
+      skBox.hidden = sk.state === "locked";
+      const skHtml =
+        sk.state === "locked"
+          ? ""
+          : `<span class="mface">⚡</span><div><b>${t("Habilidad del gerente: x{n} de velocidad", { n: SKILL.mult })}</b><p class="small muted">${t("Dura {min} min y se recarga en {cd} min. Solo mientras juegas.", { min: Math.round(skillDurationMs(s) / 60e3), cd: Math.round(skillCooldownMs(s) / 60e3) })}</p></div>${
+              sk.state === "ready"
+                ? `<button class="buy" data-skillgo><span>${t("Activar")}</span><b>⚡</b></button>`
+                : `<button class="buy" disabled><span>${sk.state === "active" ? t("Activa") : t("Recarga")}</span><b>${mmss(sk.left)}</b></button>`
+            }`;
+      if (skBox.dataset.html !== skHtml) {
+        skBox.dataset.html = skHtml;
+        skBox.innerHTML = skHtml;
+        const go = skBox.querySelector<HTMLButtonElement>("[data-skillgo]");
+        if (go)
+          go.onclick = () => {
+            const ok = W(() => useSkill(ctx.state(), ctx.state().biz[id], st, now()));
+            ctx.fx(ok ? "milestone" : "error", ok);
+            if (ok) analytics.track("skill_used", { biz: id, part: st.kind });
+          };
+      }
+    }),
   );
-  $<HTMLButtonElement>(sheet.el, "[data-up]").onclick = () => {
+  $<HTMLButtonElement>(sheet.el, "[data-up]").onclick = () => W(() => {
     const s = ctx.state();
     const before = businessRate(s, id, now()) || chainRates(bizDef(id), s.biz[id], false).total;
     const msg = act.upgrade(s, id, st);
@@ -169,15 +208,17 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
     // Recompensa inmediata y visible: cuánto más ganas con esta mejora.
     if (after > before) ctx.floatAt($(sheet.el, "[data-up]"), `+${money(after - before)}/s`);
     if (msg) ctx.banner("⚡", msg);
-  };
+  });
   wireBuyModes(sheet.el, ctx);
 }
 
 /* ---------- Nueva planta ---------- */
 
 export function openUnlockSheet(ctx: PanelCtx, id: string): void {
+  const W = <T>(fn: () => T): T => inWallet(ctx.state(), id, fn);
+  const money = priceOf(id);
   const def = bizDef(id);
-  const i = ctx.state().biz[id].floors.length;
+  const i = W(() => ctx.state().biz[id].floors.length);
   if (i >= CHAIN.maxFloors) return;
   const cost = floorUnlockCost(def, i);
   const sheet = openSheet(
@@ -187,10 +228,10 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
      <p class="small muted">${t("Cada puesto nuevo produce {n} veces más que el anterior. Recuerda mejorar el transporte y la venta para que no se atasque.", { n: CHAIN.floorGrowth })}</p>
      <button class="buy big wide" data-unlock><span>${t("Abrir puesto")}</span><b>${money(cost)}</b></button>`,
     (el) => {
-      $<HTMLButtonElement>(el, "[data-unlock]").disabled = ctx.state().cash < cost;
+      $<HTMLButtonElement>(el, "[data-unlock]").disabled = W(() => ctx.state().cash) < cost;
     },
   );
-  $<HTMLButtonElement>(sheet.el, "[data-unlock]").onclick = () => {
+  $<HTMLButtonElement>(sheet.el, "[data-unlock]").onclick = () => W(() => {
     const before = bizTier(ctx.state().biz[id]);
     const msg = act.unlockFloor(ctx.state(), id);
     if (!msg) return ctx.fx("error");
@@ -209,7 +250,7 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
     }
     ctx.fx("unlock", true);
     ctx.banner("🔓", msg);
-  };
+  });
 }
 
 /* ---------- Comprar un negocio de la ciudad ---------- */

@@ -53,10 +53,29 @@ Cada negocio es un recinto isométrico vallado, con el edificio principal, camin
   - Bonus permanente según su especialidad: producción, logística (capacidad de transporte y venta) o ventas (dinero por venta).
   - Habilidad activa: ventas x2 a x5 durante 5–10 min, que se recarga en 2 h o al instante con un anuncio.
 - **Maletines:** uno gratis cada 4 h con anuncio, el normal por 50 💎 y el de oro por 150 💎.
+- **Habilidad de cada gerente ✅** (`skills.ts`): cada parte con gerente (puesto, transporte y venta) tiene un botón ⚡.
+  - Efecto: **x2 de velocidad durante 5 min**, que se recarga en 20 min.
+  - Nombres: «Turno doble» en el puesto, «Ruta exprés» en el transporte y «Hora punta» en la venta.
+  - Solo cuenta jugando (nunca offline) y no cuesta nada: premia mirar la pantalla y elegir bien dónde usarlo (en la parte que frena).
+  - Suma puntos del evento y el bot de equilibrado no la usa, así que el ritmo de referencia no cambia.
 
 ### Progresión permanente
 - **Estilo de vida:** de "vives con tus padres" a "isla privada", según lo ganado en total. Nunca se pierde.
 - **Salida a bolsa (prestigio):** acciones con +2 % permanente cada una.
+- **Escuela de negocios ✅** (`school.ts`): investigación que **no se pierde nunca**, ni al salir a bolsa ni al cambiar de ciudad.
+  - **Ideas 💡:** cada hito x2 (niveles 10, 25, 50…) da una. Como al salir a bolsa vuelves a pasar por los hitos, cada salida a bolsa trae ideas nuevas.
+  - **Ramas:**
+
+    | Rama | Efecto por nivel | Niveles | Requisito |
+    | --- | --- | --- | --- |
+    | Procesos | +10 % de producción | 10 | — |
+    | Logística | +10 % de transporte y venta | 10 | — |
+    | Marketing | +10 % de dinero por venta | 10 | Procesos 2 |
+    | Liderazgo | Habilidades de gerente un 20 % más largas y la recarga un 10 % más corta | 5 | Logística 2 |
+    | Capital semilla | Empiezas con un 20 % del precio del segundo negocio tras salir a bolsa o abrir ciudad | 5 | Marketing 3 |
+
+  - **Coste:** 3, 5, 7… ideas por nivel.
+  - Se desbloquea con 12 hitos (~15 min).
 - **💎 Diamantes (fase 2 ✅):** se ganan con las misiones, el premio diario, los logros, el tutorial y los maletines. Se gastan en maletines y en paquetes de dinero. Nunca se pierden, tampoco al salir a bolsa.
 
 ### Expansión mundial: varias ciudades (fase 3 ✅ Madrid, Miami y Dubái)
@@ -161,6 +180,39 @@ Cada parte de la cadena (cada puesto, el transporte y la venta) sube de **rango*
   - **Avisos:** uno al empezar (viernes 9:30) y otro el domingo a las 18:00 si quedan premios.
   - **Liga:** no da puntos de Liga.
 - **Más adelante:** eventos de temporada de 7 días con su propia ciudad (fase 3) y avatar u oficina personalizables.
+
+### La feria del evento ✅
+Durante el **evento del fin de semana** (de viernes a domingo) se abre **«La feria»** (`fest.ts`): un negocio con su propia ruta, igual que los demás, con 8 casetas que van de la churrería a los fuegos artificiales.
+- **Se paga con fichas 🎟️**, no con dinero. Nada del imperio la acelera: ni acciones, ni ejecutivos, ni VIP, ni la escuela. Así todos juegan en igualdad. Solo avanza con el juego abierto.
+- **Empieza de cero en cada evento.**
+- **Premios exclusivos** al abrir 2, 4, 6 y 8 casetas: 20 💎, maletín, 60 💎 y maletín de oro.
+- **Trofeo 🏆:** el último premio da además un trofeo, **+5 % de ingresos para siempre** (hasta 20 trofeos).
+- **Puntos del evento:** todo lo que haces en la feria suma (ventas, mejoras, gerentes, casetas y habilidades).
+- **Ritmo, con el bot (`simulateFest`):**
+
+  | Casetas abiertas | Tiempo de juego activo |
+  | --- | --- |
+  | 2 | ~2 min |
+  | 4 | ~10 min |
+  | 6 | ~40 min |
+  | 8 | ~2 h 50 min |
+
+  Un test lo protege: la feria completa tiene que pedir entre 2 y 4 h.
+
+### Los primeros 10 minutos ✅
+Empiezas repartiendo en bici. El tutorial (6 pasos) enseña a tocar, pedalear, entregar, mejorar, contratar y abrir.
+
+Después, `onboarding.ts` guía hasta el almacén con un aviso o premio cada minuto o dos:
+
+| Minuto (aprox.) | Qué pasa |
+| --- | --- |
+| ~1:30 | Fin del tutorial (25 💎). La **primera oportunidad con anuncio** llega 20 s después, nunca durante el tutorial. Aviso: «¡Habilidad lista!» |
+| ~1:50 | «¡El reparto ya va solo!»: 10 💎 |
+| ~4:00 | «¡Ya tienes la mitad!» del almacén |
+| ~5:20 | Compras el almacén: celebración y un maletín de regalo |
+| ~7:00 | Ruleta diaria; el camión de suministros llega a los 5 min |
+
+Cada aviso sale una sola vez en la vida y las partidas antiguas no los reciben.
 
 ### Liga Millonario (fase 0 en marcha)
 Torneo **semanal** gratuito con premios reales, pensado como gancho principal para atraer jugadores. El diseño completo está en [`LIGA.md`](LIGA.md):

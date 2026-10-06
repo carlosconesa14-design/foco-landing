@@ -14,6 +14,10 @@ import { migrateTwists, type TwistState } from "./twists";
 import { freshAuto, migrateAuto, type AutoState } from "./autoUpgrade";
 import { freshRival, migrateRival, type RivalState } from "./rival";
 import { migrateUnlocks, type FeatureId } from "./unlocks";
+import { migrateSkills, type SkillSlot } from "./skills";
+import { freshSchool, migrateSchool, type SchoolState } from "./school";
+import { freshFest, migrateFest, type FestState } from "./fest";
+import { FIRST_IDS } from "./onboarding";
 import { ALL_BUSINESSES, CHAIN, CITIES, CONFIG, TUTORIAL, type CityDef, type ExecKind, type MissionId, type OfficeId, type StatKey } from "./data";
 
 export type BuyMode = 1 | 10 | 50 | "max";
@@ -63,9 +67,12 @@ export interface BusinessState {
   rushEnd: number;
   /** Ganado por este negocio en la partida actual. */
   earned: number;
+  /** Habilidades de los gerentes por parte ("f0"…"f7", "t", "s"); ver skills.ts. */
+  skills: Record<string, SkillSlot>;
 }
 
-export type View = { scene: "city" } | { scene: "business"; id: string };
+/** Pantalla actual: la ciudad, un negocio o la feria del evento (fest.ts). */
+export type View = { scene: "city" } | { scene: "business"; id: string } | { scene: "fest" };
 
 export interface AdStats {
   total: number;
@@ -136,6 +143,12 @@ export interface MetaState {
   rival: RivalState;
   /** Funciones ya desbloqueadas (desbloqueo gradual). */
   unlocked: FeatureId[];
+  /** Escuela de negocios: investigación permanente con ideas (school.ts). */
+  school: SchoolState;
+  /** La feria del evento del fin de semana (fest.ts). */
+  fest: FestState;
+  /** Momentos de los primeros minutos ya celebrados (onboarding.ts). */
+  firsts: string[];
 }
 
 export interface Settings {
@@ -211,6 +224,7 @@ export function freshBusiness(owned: boolean): BusinessState {
     topStock: 0,
     rushEnd: 0,
     earned: 0,
+    skills: {},
   };
 }
 
@@ -239,6 +253,9 @@ export function freshMeta(now = clockNow()): MetaState {
     auto: freshAuto(),
     rival: freshRival(),
     unlocked: [],
+    school: freshSchool(),
+    fest: freshFest(),
+    firsts: [],
   };
 }
 
@@ -301,6 +318,7 @@ function migrateBusiness(raw: unknown, def: { price: number }): BusinessState {
   b.topStock = num(r.topStock, 0) + num(t.carry, 0) + num(s.carry, 0);
   b.rushEnd = num(r.rushEnd, 0);
   b.earned = num(r.earned, 0);
+  b.skills = migrateSkills(r.skills);
   return b;
 }
 
@@ -356,6 +374,14 @@ function migrateMeta(raw: unknown, now: number): MetaState {
   m.auto = migrateAuto(r.auto);
   m.rival = migrateRival(r.rival);
   m.unlocked = migrateUnlocks(r.unlocked, m.tutorial >= TUTORIAL.length);
+  m.school = migrateSchool(r.school);
+  m.fest = migrateFest(r.fest, (x) => migrateBusiness(x, { price: 0 }));
+  // Partidas de antes de los primeros minutos guiados (onboarding.ts) que ya acabaron el tutorial: todo visto.
+  m.firsts = Array.isArray(r.firsts)
+    ? r.firsts.filter((f): f is string => typeof f === "string").slice(0, 50)
+    : m.tutorial >= TUTORIAL.length
+      ? [...FIRST_IDS]
+      : [];
   m.flags = Array.isArray(r.flags) ? r.flags.filter((f): f is string => typeof f === "string").slice(0, 10) : [];
   return m;
 }

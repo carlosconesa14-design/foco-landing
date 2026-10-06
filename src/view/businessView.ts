@@ -1,8 +1,10 @@
-import { CHAIN, TUTORIAL, floorLabel } from "../game/data";
+import { CHAIN, FEST_ID, TUTORIAL, floorLabel } from "../game/data";
 import { bizDef, bizList, chainRates, floorUnlockCost, managerCost, upgradeQuote, type Station } from "../game/economy";
 import { execMults } from "../game/execs";
 import { rankOf } from "../game/ranks";
 import type { GameState } from "../game/state";
+import { skillStatus, type SkillStatus } from "../game/skills";
+import { inWallet } from "../game/fest";
 
 /**
  * Lo que una pantalla de negocio necesita saber para dibujarse, calculado a partir de la partida.
@@ -25,6 +27,8 @@ export interface StationView {
   button: LevelState;
   /** Coste de la siguiente mejora con el modo de compra actual (x1, x10…). */
   upgradeCost: number;
+  /** Habilidad del gerente (x2 de velocidad unos minutos): botón junto al gerente. Ver skills.ts. */
+  skill: SkillStatus;
 }
 
 export interface StopView extends StationView {
@@ -73,6 +77,8 @@ export interface BusinessView {
   topPile: number;
   /** €/s de cada parte y cuál frena la cadena (solo cuenta si hay algo automatizado). */
   rates: { production: number; transport: number; sale: number; total: number; bottleneck: "production" | "transport" | "sale" | null };
+  /** Con qué se paga en esta pantalla: dinero (€/$) o fichas 🎟️ de la feria. */
+  wallet: { currency: "cash" | "tickets"; amount: number };
   /** Paso del tutorial que toca ahora en esta pantalla, si hay. */
   tutorial: "tapFloor" | "tapTransport" | "sales" | "upgrades" | "hires" | "floors" | null;
 }
@@ -80,10 +86,14 @@ export interface BusinessView {
 const pileOf = (amount: number, unit: number) => (amount <= 0 ? 0 : Math.min(6, 1 + Math.floor(Math.log2(1 + amount / Math.max(unit, 1e-9)))));
 
 export function businessView(s: GameState, id: string, now: number): BusinessView {
+  return inWallet(s, id, () => build(s, id, now));
+}
+
+function build(s: GameState, id: string, now: number): BusinessView {
   const def = bizDef(id);
   const b = s.biz[id];
   const m = execMults(s, id, now);
-  const r = chainRates(def, b, false, m);
+  const r = chainRates(def, b, false, m, now);
   const automated = b.transport.managed || b.sale.managed || b.floors.some((f) => f.managed);
   const bottleneck = automated ? r.bottleneck : null;
   const unit = CHAIN.floorCycle * def.mult;
@@ -102,6 +112,7 @@ export function businessView(s: GameState, id: string, now: number): BusinessVie
       managed,
       button: bottleneck === part ? "bottleneck" : ready ? "ready" : "idle",
       upgradeCost: cost,
+      skill: skillStatus(s, b, st, now),
     };
   };
 
@@ -143,6 +154,7 @@ export function businessView(s: GameState, id: string, now: number): BusinessVie
     topStock: b.topStock,
     topPile: pileOf(b.topStock, unit),
     rates: { production: r.production, transport: r.transport, sale: r.sale, total: r.total, bottleneck },
+    wallet: { currency: id === FEST_ID ? "tickets" : "cash", amount: s.cash },
     tutorial,
   };
 }
