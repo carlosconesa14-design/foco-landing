@@ -44,7 +44,13 @@ export type AnalyticsName =
   | "season_buy"
   | "ref_used"
   | "cloud_recover"
-  | "founder";
+  | "founder"
+  // beta 3: habilidades de gerente, escuela de negocios, feria y primeros minutos
+  | "skill_used"
+  | "school_study"
+  | "fest_enter"
+  | "fest_claim"
+  | "first_moment";
 
 interface Ev {
   name: AnalyticsName;

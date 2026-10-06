@@ -224,6 +224,19 @@ export const CITIES: CityDef[] = [
 
 export const ALL_BUSINESSES: BusinessDef[] = CITIES.flatMap((c) => c.businesses);
 
+/**
+ * Negocio del evento del fin de semana («La feria»): una ruta aparte, con su propia moneda
+ * (fichas 🎟️) y que empieza de cero cada evento. No es de ninguna ciudad. Ver fest.ts.
+ */
+export const FEST_ID = "fest";
+export const FEST_DEF: BusinessDef = {
+  id: FEST_ID, name: "La feria", icon: "🎡", blurb: "Solo los fines de semana: monta tu feria, consigue fichas y llévate premios exclusivos.",
+  price: 0, mult: 1, pace: 2, wall: 0xff6fb5, roof: 0x8e2a6b,
+  floorName: "Caseta", worker: "🧑‍🎤", item: "🎟️", transportName: "Carrito", transportIcon: "🛒",
+  floorNames: ["Churrería", "Algodón de azúcar", "Tómbola", "Tiro al blanco", "Coches de choque", "Noria", "Montaña rusa", "Fuegos artificiales"],
+  saleName: "Taquilla", saleWorker: "🎟️", customer: "🎠",
+};
+
 /** Olas turísticas de Miami: cada 15 min llega una ola de 3 min que triplica las ventas. */
 export const TOURISM = { periodMin: 15, waveMin: 3, mult: 3, adWaveMin: 3 } as const;
 
@@ -365,7 +378,7 @@ export const DAILY_REWARDS: DailyReward[] = [
   { chest: "premium" },
 ];
 
-export type StatKey = "tapFloor" | "tapTransport" | "sales" | "upgrades" | "hires" | "floors" | "ads" | "abilities" | "chests" | "earned" | "missions" | "milestones";
+export type StatKey = "tapFloor" | "tapTransport" | "sales" | "upgrades" | "hires" | "floors" | "ads" | "abilities" | "chests" | "earned" | "missions" | "milestones" | "skills";
 
 export interface AchievementDef {
   id: string;

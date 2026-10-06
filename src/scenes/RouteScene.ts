@@ -4,7 +4,7 @@ import { ART, BIZ_ART, art, artScale, buildingKey, rankedKey } from "../art/cata
 import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
 import { mix, shade } from "../art/pen";
 import { BUSINESS_DISTRICTS } from "../art/businessWorld";
-import { CHAIN, floorLabel } from "../game/data";
+import { CHAIN, FEST_ID, floorLabel } from "../game/data";
 import { bizDef, floorUnlockCost, setPedal } from "../game/economy";
 import { now as clockNow } from "../game/clock";
 import { fmt } from "../game/format";
@@ -17,7 +17,8 @@ import { constructionPop, revealScene, transferProduct, upgradePop } from "./fee
 import { rankBadge, rankBurst } from "./rankFx";
 import { TwistWorld } from "./TwistWorld";
 import { WorldVisitor } from "./WorldVisitor";
-import { businessView } from "../view/businessView";
+import { businessView, type BusinessView } from "../view/businessView";
+import type { SkillStatus } from "../game/skills";
 import { screenOf } from "../view/screens";
 
 /**
@@ -80,6 +81,45 @@ class LevelButton extends Phaser.GameObjects.Container {
   }
 }
 
+/**
+ * Botón de la habilidad del gerente (x2 de velocidad unos minutos). Arte provisional: Codex lo
+ * sustituye (docs/VISUAL.md §14.1). Oculto sin gerente; amarillo y latiendo si se puede usar; verde con
+ * el tiempo que le queda mientras dura; gris con la recarga.
+ */
+class SkillChip extends Phaser.GameObjects.Container {
+  private bg: Phaser.GameObjects.Graphics;
+  private text: Phaser.GameObjects.Text;
+  private look = "";
+  constructor(scene: Phaser.Scene, x: number, y: number) {
+    super(scene, x, y);
+    this.bg = scene.add.graphics();
+    this.text = label(scene, 0, 0, "", 11, "#ffffff", { bold: true, stroke: "#0b2440" }).setOrigin(0.5);
+    this.add([this.bg, this.text]);
+    this.setSize(58, 26);
+    scene.add.existing(this);
+    this.setVisible(false);
+  }
+  set(sk: SkillStatus, clk: number): void {
+    this.setVisible(sk.state !== "locked");
+    if (sk.state === "locked") return;
+    const mmss = (ms: number) => {
+      const sec = Math.ceil(ms / 1000);
+      return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+    };
+    const txt = sk.state === "ready" ? "⚡ x2" : sk.state === "active" ? `⚡ ${mmss(sk.left)}` : `⏳ ${mmss(sk.left)}`;
+    if (this.text.text !== txt) this.text.setText(txt);
+    if (this.look !== sk.state) {
+      this.look = sk.state;
+      const fill = sk.state === "ready" ? 0xf5b81c : sk.state === "active" ? 0x2fbf71 : 0x6b7a8f;
+      this.bg.clear();
+      this.bg.fillStyle(0x0b2440, 0.5).fillRoundedRect(-29, -11, 58, 24, 11);
+      this.bg.fillStyle(fill, 1).fillRoundedRect(-29, -13, 58, 24, 11);
+      this.bg.lineStyle(2, 0x0b2440, 0.9).strokeRoundedRect(-29, -13, 58, 24, 11);
+    }
+    this.setScale(sk.state === "ready" && !reducedMotion() ? 1 + Math.abs(Math.sin(clk * 3)) * 0.08 : 1);
+  }
+}
+
 interface StopView {
   station: Phaser.GameObjects.Image;
   worker: Phaser.GameObjects.Image;
@@ -88,6 +128,7 @@ interface StopView {
   bar: Phaser.GameObjects.Rectangle;
   hint: Phaser.GameObjects.Image;
   manager: Phaser.GameObjects.Container;
+  skill: SkillChip;
   button: LevelButton;
   badge: Phaser.GameObjects.Container;
   level: number;
@@ -119,6 +160,10 @@ export class RouteScene extends Phaser.Scene {
   private pedalFx!: Phaser.GameObjects.Graphics;
   private pedaling = false;
   private transportButton!: LevelButton;
+  private transportSkill!: SkillChip;
+  private saleSkill!: SkillChip;
+  /** Dinero o fichas de la feria, para los precios. */
+  private currency: BusinessView["wallet"]["currency"] = "cash";
   private transportBadge!: Phaser.GameObjects.Container;
   private seller!: Phaser.GameObjects.Image;
   private sellerItem!: Phaser.GameObjects.Image;
@@ -147,6 +192,7 @@ export class RouteScene extends Phaser.Scene {
 
   init(data: { id: string; scrollY?: number; previousFloors?: number }): void {
     this.bizId = data.id;
+    this.currency = data.id === FEST_ID ? "tickets" : "cash";
     this.startY = data.scrollY ?? -1;
     this.previousFloors = data.previousFloors ?? 0;
     this.stops = [];
@@ -174,8 +220,14 @@ export class RouteScene extends Phaser.Scene {
     return { ...look, mover: pick(look.mover), seller: pick(look.seller) };
   }
 
+  /** Precio en la moneda de esta pantalla (las fichas de la feria no son dinero). */
+  private price(n: number): string {
+    return this.currency === "tickets" ? `🎟️ ${fmt(n)}` : money(n);
+  }
+
   private biz(): BusinessState {
-    return this.bridge.state().biz[this.bizId];
+    const s = this.bridge.state();
+    return this.bizId === FEST_ID ? s.meta.fest.biz : s.biz[this.bizId];
   }
 
   private theme() {
@@ -353,6 +405,16 @@ export class RouteScene extends Phaser.Scene {
     this.tap(this.transportButton, () => this.bridge.openStation(this.bizId, { kind: "transport" }));
     label(this, 46, g0 - 112, bizDef(this.bizId).transportName, 11, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5, 0).setDepth(70);
     this.transportBadge = rankBadge(this, 14, g0 - 176, this.ranks.transport).setDepth(71);
+    // Habilidades de los gerentes de transporte y venta, encima de su botón de nivel
+    this.transportSkill = new SkillChip(this, 46, g0 - 206).setDepth(72);
+    this.skillTap(this.transportSkill, { kind: "transport" });
+    this.saleSkill = new SkillChip(this, W - 46, g0 - 206).setDepth(72);
+    this.skillTap(this.saleSkill, { kind: "sale" });
+  }
+
+  private skillTap(chip: SkillChip, st: Parameters<Bridge["useSkill"]>[1]): void {
+    chip.setInteractive({ useHandCursor: true });
+    this.tap(chip, () => this.bridge.useSkill(this.bizId, st));
   }
 
   /* ---------- Suelo y ruta ---------- */
@@ -400,7 +462,7 @@ export class RouteScene extends Phaser.Scene {
       // Siguiente parada: en obras, con su precio
       art(this, mx, yc - 46, "ic_construction").setDepth(6).setScale(artScale(this, "ic_construction") * 1.6);
       const cost = floorUnlockCost(def, i);
-      this.unlock = new Pill(this, mx, yc - 90, `${t("Abrir")} · ${money(cost)}`).setDepth(70);
+      this.unlock = new Pill(this, mx, yc - 90, `${t("Abrir")} · ${this.price(cost)}`).setDepth(70);
       this.unlock.setInteractive({ useHandCursor: true });
       this.tap(this.unlock, () => this.bridge.openUnlockFloor(this.bizId));
       label(this, 72, y0 + 22, floorLabel(def, i), 12, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12).setAlpha(0.6);
@@ -430,6 +492,8 @@ export class RouteScene extends Phaser.Scene {
     mg.fillStyle(0xffd36b, 1).fillCircle(0, 0, 14);
     const mgIcon = art(this, 0, 0, "ic_manager").setScale(artScale(this, "ic_manager") * 1.3);
     const manager = this.add.container(72, y0 + 22, [mg, mgIcon]).setDepth(12);
+    const skill = new SkillChip(this, 72, y0 + 54).setDepth(72);
+    this.skillTap(skill, { kind: "floor", index: i });
     label(this, 94, y0 + 22, floorLabel(def, i), 13, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12);
     // Botón de nivel, siempre a la derecha
     const button = new LevelButton(this, W - 46, y0 + STOP_H / 2 - 14).setDepth(70).setInteractive({ useHandCursor: true });
@@ -438,7 +502,7 @@ export class RouteScene extends Phaser.Scene {
     const hint = art(this, mx + 30, yc - 70, "ic_hand").setDepth(90).setVisible(false);
     if (!reducedMotion()) this.tweens.add({ targets: hint, y: yc - 62, yoyo: true, repeat: -1, duration: 500 });
     this.zone(mx - 100, y0 + 20, 200, STOP_H - 20, () => this.bridge.tapStation(this.bizId, { kind: "floor", index: i }));
-    this.stops[i] = { station, worker, pile, stock, bar, hint, manager, button, badge, level: f.level, rank, lastStock: f.stock, stationKey, workerKey };
+    this.stops[i] = { station, worker, pile, stock, bar, hint, manager, skill, button, badge, level: f.level, rank, lastStock: f.stock, stationKey, workerKey };
   }
 
   /* ---------- Transporte ---------- */
@@ -494,6 +558,7 @@ export class RouteScene extends Phaser.Scene {
     const s = this.bridge.state();
     if (!this.biz()) return;
     const v = businessView(s, this.bizId, clockNow());
+    this.currency = v.wallet.currency;
     if (v.stops.length !== this.floorCount) {
       this.scene.restart({ id: this.bizId, scrollY: this.cameras.main.scrollY, previousFloors: this.floorCount });
       return;
@@ -526,6 +591,7 @@ export class RouteScene extends Phaser.Scene {
       o.bar.width = 80 * f.progress;
       o.hint.setVisible(f.hint);
       o.manager.setAlpha(f.managed ? 1 : 0.25);
+      o.skill.set(f.skill, clk);
       o.button.set(f.level, f.button === "ready", f.button === "bottleneck").bob(clk);
       if (f.level > o.level) {
         if (!reducedMotion()) this.sparks.explode(14, o.station.x, o.station.y - 50);
@@ -565,6 +631,7 @@ export class RouteScene extends Phaser.Scene {
       }
     }
     this.transportButton.set(tr.level, tr.button === "ready", tr.button === "bottleneck").bob(clk);
+    this.transportSkill.set(tr.skill, clk);
     if (tr.level > this.levels.transport) {
       this.levels.transport = tr.level;
       if (!reducedMotion()) this.sparks.explode(14, p.x, p.y);
@@ -594,6 +661,7 @@ export class RouteScene extends Phaser.Scene {
     this.sellerHint.setVisible(sl.hint);
     this.sellerHint.setPosition(sx, this.seller.y - this.seller.displayHeight - 20 + (reducedMotion() ? 0 : Math.sin(clk * 8) * 4));
     this.saleButton.set(sl.level, sl.button === "ready", sl.button === "bottleneck").bob(clk);
+    this.saleSkill.set(sl.skill, clk);
     if (sl.level > this.levels.sale) {
       this.levels.sale = sl.level;
       if (!reducedMotion()) this.sparks.explode(14, sx, this.seller.y - 20);
@@ -606,7 +674,7 @@ export class RouteScene extends Phaser.Scene {
       }
     }
 
-    if (this.unlock && v.next) this.unlock.setText(`${t("Abrir")} · ${money(v.next.cost)}`).setAlert(v.next.affordable).setAlpha(v.next.affordable ? 1 : 0.7);
+    if (this.unlock && v.next) this.unlock.setText(`${t("Abrir")} · ${this.price(v.next.cost)}`).setAlert(v.next.affordable).setAlpha(v.next.affordable ? 1 : 0.7);
 
     for (const sale of this.bridge.drainSales(this.bizId)) {
       const x = home, y = g0 - 10;

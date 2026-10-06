@@ -1,5 +1,6 @@
 import { CITIES, CONFIG, FRANCHISE, GOLD, OFFICE, TOURISM, type OfficeId } from "./data";
 import { cityDef, freshFloor, switchCity, type GameState } from "./state";
+import { seedShare } from "./school";
 
 /**
  * Capa de "Expansión mundial": ciudades, estrellas de franquicia y la Oficina central.
@@ -126,6 +127,12 @@ export function applyStartPerks(s: GameState): void {
   }
 }
 
+/** Escuela de negocios, «Capital semilla»: dinero con el que empiezas tras salir a bolsa o abrir ciudad. */
+export function seedCash(s: GameState): number {
+  const second = cityDef(s.city).businesses[1];
+  return second ? second.price * seedShare(s) : 0;
+}
+
 /**
  * Se expande a la siguiente ciudad: marca la actual como completada (bonus de franquicia),
  * suma las estrellas (x2 si vio el anuncio) y empieza la nueva desde cero con las ventajas.
@@ -138,6 +145,7 @@ export function expand(s: GameState, now: number, double = false): { state: Game
   s.world.completed.push(s.city);
   const n = switchCity(s, next.id, now);
   applyStartPerks(n);
+  n.cash += seedCash(n);
   return { state: n, stars, city: next.id };
 }
 
