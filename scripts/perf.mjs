@@ -86,10 +86,10 @@ async function fpsTest() {
     }, city);
     const show = (view) => page.evaluate(async view => {
       const g = __game.game;
-      g.scene.stop('business'); g.scene.stop('city');
+      g.scene.stop('route'); g.scene.stop('city');
       __game.state.view = view;
       const { renderBar } = await import('/src/ui/hud.ts'); renderBar(__game.state);
-      g.scene.start(view.scene, view.scene === 'business' ? { id: view.id } : undefined);
+      g.scene.start(view.scene === 'business' ? 'route' : 'city', view.scene === 'business' ? { id: view.id } : undefined); // los recintos son la escena «route»
     }, view);
     await cdp.send('Performance.enable');
     const metric = async n => (await cdp.send('Performance.getMetrics')).metrics.find(m => m.name === n)?.value ?? 0;
@@ -107,6 +107,7 @@ async function fpsTest() {
       return { label, fps: +(1000 * frames.length / sum).toFixed(1), p95ms: +sorted[Math.floor(sorted.length * 0.95)].toFixed(0), slow: frames.filter(x => x > 50).length, frames: frames.length, heapMB: performance.memory ? +(performance.memory.usedJSHeapSize / 1e6).toFixed(0) : null, gl: __game.game.renderer.type === 2 ? 'WebGL' : 'Canvas', draws: __game.game.renderer.drawCount ?? null, objects: Object.values(__game.game.scene.scenes).reduce((a, sc) => a + (sc.sys.isActive() ? sc.children.list.length : 0), 0) };
     }, { label, secs });
     const rows = [];
+    const sceneObjects = () => 0;
     const biz = { madrid: ['bike', 'restaurant', 'ai'], miami: ['beachclub', 'yachts'], dubai: ['safari', 'tower'] };
     for (const city of ['madrid', 'miami', 'dubai']) {
       await seed(city);
