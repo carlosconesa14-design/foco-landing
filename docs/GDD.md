@@ -106,7 +106,7 @@ Al terminar una ciudad empiezas casi de cero en la siguiente, pero más fuerte. 
 ### Más allá de Dubái
 **Tokio** aparece en el mapa del mundo como «Próximamente». Descartado un pueblo antes de Madrid: el principio decide si el jugador vuelve, y los idles alargan por el final (ciudades, prestigio, eventos). Si se hace, mejor como «tu pueblo natal», opcional y más adelante.
 
-### Mecánicas de cada negocio (fase 1: Madrid ✅)
+### Mecánicas de cada negocio (fase 1: Madrid ✅, fase 2: Miami y Dubái ✅)
 Cada negocio de Madrid tiene una regla propia, para que no se sientan todos iguales. Son módulos reutilizables (`src/game/twists.ts`) que luego se pueden poner en Miami y Dubái con su temática. Reglas: **nunca castigan** (si no haces nada, el negocio va igual), se entienden en 5 segundos y tienen un anuncio opcional natural. Se muestran en una tarjeta encima de la barra de la cadena y se explican la primera vez que entras.
 - **📦 Almacén: pedidos urgentes.** Cada 6–10 min llega un pedido: «gana X € en 3 min» (1,25 veces lo que el negocio gana en ese tiempo: hay que mejorar algo o usar la hora punta). Si lo cumples, 4 min de ingresos y 3 💎 (x2 con anuncio, `order_x2`). Si no, no pasa nada.
 - **🧐 Restaurante: críticos gastronómicos.** Cada 6–10 min viene un crítico que quiere ver la cocina en marcha: tocar las cocinas 12 veces en 45 s (o «Atender ya» con anuncio, `critic_now`). Da 2 min de ingresos de propina y una **estrella de reputación**: +5 % de ventas en el restaurante para siempre (hasta 10).
@@ -130,7 +130,7 @@ Cada negocio de Madrid tiene una regla propia, para que no se sientan todos igua
 | 🏙️ Rascacielos | Investigación | Ingeniería 📐 |
 
 - **La investigación va siempre en el último negocio de cada ciudad.** En uno intermedio (se probó en la inmobiliaria) aceleraba demasiado: quien lo usaba todo acababa Miami 2,2 veces antes. Con el reparto actual, el jugador implicado va ~1,5 veces más rápido en Miami y ~1,85 en Dubái, como cota alta (siempre mirando). Lo protegen los tests de ritmo.
-- Mientras no haya arte de Miami y Dubái para la pieza del mundo (`TwistWorld`), allí solo se ve la tarjeta (`TWIST_WORLD_ART`).
+- Los 14 negocios tienen su pieza en el mundo (`TwistWorld`, `TWIST_WORLD_ART`) además de la tarjeta.
 
 ### «Mi vida»: el personaje y su tienda de lujo ✅
 Un sitio en el que gastar el dinero aparte de las mejoras, para que apetezca ganar más. Botón «Mi vida» en el lateral (con punto rojo cuando hay algo que te puedes permitir) y en el menú.
@@ -345,6 +345,6 @@ Más adelante: compras dentro de la app (packs de diamantes y "sin anuncios + x2
 | Fase | Contenido |
 | --- | --- |
 | **1. Núcleo jugable** ✅ | Motor Phaser, ciudad isométrica con 4 negocios, recintos con puestos animados, gerentes básicos, mejoras, offline, anuncios, bolsa, guardado, arte sustituible |
-| **2. Retención** | ✅ 💎, ejecutivos con rareza y habilidades, maletines, misiones diarias, premio diario, logros, tutorial guiado · ✅ sonido, música, vibración y ajustes · Pendiente: Liga Millonario (servidor) |
-| **3. Contenido** | ✅ Expansión mundial: Miami, Dubái (precio del oro y carrera de fundadores), estrellas y Oficina central · Pendiente: más ciudades, eventos de temporada, avatar |
-| **4. Lanzamiento** | Arte profesional (sprites), analítica, tiendas, compras dentro de la app, SSV de AdMob |
+| **2. Retención** | ✅ 💎, ejecutivos con rareza y habilidades, maletines, misiones diarias, premio diario, logros, tutorial guiado · ✅ sonido, música, vibración y ajustes · ✅ Liga Millonario (servidor), nube y amigos |
+| **3. Contenido** | ✅ Expansión mundial: Miami, Dubái (precio del oro y carrera de fundadores), estrellas y Oficina central · ✅ «Mi vida» (avatar y tienda de lujo), evento del fin de semana y temporada de Halloween, habilidades de gerente, Escuela de negocios y feria · Pendiente: más ciudades (Tokio), más temporadas |
+| **4. Lanzamiento** | ✅ Arte profesional (sprites), analítica propia, compras en el código, beta web instalable · Pendiente: cuentas de las tiendas, verificación de compras (SSV de AdMob / Play Integrity), prueba cerrada, rendimiento en un Android real |

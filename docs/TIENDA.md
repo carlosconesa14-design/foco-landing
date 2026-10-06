@@ -5,35 +5,43 @@
 **Nombre de la app** (máx. 30): `Rider Millionaire: Idle Tycoon` (30 caracteres justos)
 
 **Descripción breve** (máx. 80):
-> Empieza de rider y construye un imperio de negocios. ¡Liga semanal con premios!
+> Idle tycoon: de rider a millonario. Negocios en 3 ciudades y Liga semanal.
 
 **Descripción completa** (máx. 4.000):
 
-> ¿Te imaginas pasar de repartir en bici a dueño de un imperio? En **Rider Millionaire** empiezas desde abajo y construyes, negocio a negocio, tu propia ciudad.
+> ¿Te imaginas pasar de repartir en bici a dueño de un imperio? En **Rider Millionaire** empiezas con una bici y una hamburguesería, y construyes negocio a negocio un imperio que cruza Madrid, Miami y Dubái. Es un **idle tycoon** (juego de magnate y negocios) para jugar un minuto o una hora: tus negocios siguen ganando dinero mientras no estás.
 >
-> 📦 **Monta tu primer negocio**: un almacén de dropshipping con sus estanterías, su carretilla y sus furgonetas. Mejora cada parte de la cadena: producción, transporte y venta. Si una se atasca, ¡todo se para!
+> 🚲 **Empieza desde abajo**: reparte pedidos en bici, contrata a tu primer gerente y ve cómo el reparto empieza a funcionar solo. En unos minutos abres tu primer negocio de verdad.
 >
-> 🍝 **Crece sin parar**: abre un restaurante, un estudio de TikTok y una agencia de inteligencia artificial. Cada negocio tiene su propio recinto animado con trabajadores que ves trabajar.
+> 📦 **Monta cadenas de negocio**: cada negocio es una ruta con puestos, transporte y venta. Mejora cada parte: si una se atasca, ¡todo se frena! Los puestos suben de rango (bronce, plata, oro, diamante y leyenda) y los edificios crecen a la vista.
 >
-> 👔 **Contrata gerentes** y tus negocios funcionarán solos, incluso con el móvil apagado. Al volver, cobra lo que has ganado.
+> 🌍 **Tres ciudades, 15 negocios**: del reparto en bici, el almacén, el restaurante, el estudio de TikTok y la agencia de IA de Madrid, a los food trucks, los yates y el exchange de cripto de Miami, y a los superdeportivos, el safari y el rascacielos de Dubái.
 >
-> 🌴 **Expándete a Miami**: cuando domines Madrid, abre tu franquicia en Miami, con nuevos negocios y olas de turistas que disparan las ventas.
+> 🎯 **Cada negocio, una regla propia**: atiende pedidos urgentes, sorprende a críticos gastronómicos, lanza directos virales o investiga mejoras. Nunca te castigan: si no juegas, el negocio sigue funcionando.
 >
-> 🏅 **Liga Millonario semanal**: cada lunes todos empiezan de cero y gana quien más juega esa semana, lleve el tiempo que lleve en el juego. Premios para los 10 primeros y Muro de la fama. Ver anuncios o comprar no da puntos.
+> 👔 **Gerentes con habilidades**: contrátalos para automatizarlo todo y activa su habilidad para acelerar tu negocio.
 >
-> 💼 **Ejecutivos y maletines**: colecciona ejecutivos de distintas rarezas con habilidades que multiplican tus ventas.
+> 🎓 **Escuela de negocios**: gasta ideas en un árbol de mejoras permanentes que no pierdes nunca.
+>
+> 🏅 **Liga Millonario semanal**: cada lunes todos empiezan de cero y gana quien más juega esa semana, lleve el tiempo que lleve en el juego. Premios en diamantes para los 10 primeros y Muro de la fama. Ver anuncios o comprar no da puntos.
+>
+> 🛍️ **Mi vida**: viste a tu personaje, compra coches y objetos de lujo en 6 colecciones y míralos circular por tu ciudad.
+>
+> 🎉 **Eventos cada semana y temporadas** como Halloween, con una feria propia, premios exclusivos y retos del día y de la semana.
+>
+> 💼 **Ejecutivos y maletines**: colecciona ejecutivos de distintas rarezas, fusiónalos y multiplica tus ventas.
 >
 > 📈 **Sal a bolsa**: vende tu imperio a cambio de acciones que te harán ganar más para siempre, y vuelve a empezar más fuerte.
 >
-> 🎁 **Misiones diarias, premio diario y logros** para que siempre tengas algo que conseguir.
->
-> Gratis para siempre. Los anuncios son siempre opcionales: tú decides si ves uno para duplicar ganancias.
+> Descarga gratis. Los anuncios son siempre opcionales: tú decides si ves uno para conseguir un premio. Hay compras opcionales dentro de la app. Español e inglés.
 >
 > El dinero del juego es ficticio: no tiene valor real y no se puede canjear.
 >
 > Las bases de la Liga están disponibles en la app y en nuestra web. Apple y Google no patrocinan ni participan en la Liga.
 
 **Categoría**: Juegos → Simulación. **Etiquetas**: idle, tycoon, magnate, simulación de negocios.
+
+**Palabras clave (ASO).** Google Play posiciona por el título, la descripción breve y la completa (no hay campo de palabras clave). Están repartidas a propósito: «idle tycoon» y «Idle Tycoon» en el título y en la breve; «magnate», «negocios», «imperio» y «ganar dinero» en la completa; «Madrid, Miami y Dubái» como diferencial. No repetir ninguna más de 3–4 veces: Google lo penaliza. Texto revisado el 6 de octubre de 2026: habla de bici, 3 ciudades, mecánicas, gerentes con habilidad, Escuela, «Mi vida» y eventos. Dice «premios en diamantes» (no en dinero) mientras la Liga no pague (decisión 4 de `ESTADO.md`), «gratis» en vez de «gratis para siempre» (hay compras) y no promete ganar con el móvil apagado: lo offline tiene tope. **Cambiar estas frases si cambian esas decisiones.** Sin datos de búsqueda reales todavía: cuando haya ficha, mirar en Play Console → Estadísticas → Adquisición qué términos traen instalaciones y ajustar.
 
 **Datos de contacto**: email público obligatorio. Web: la de GitHub Pages (ver el punto 4).
 
@@ -43,7 +51,7 @@
 | --- | --- | --- |
 | Icono | 512×512 PNG | Sin transparencia en las esquinas. Se lee bien en pequeño |
 | Gráfico destacado | 1024×500 | Ciudad isométrica + logotipo + "Rider Millionaire" |
-| Capturas de pantalla | De 4 a 8, verticales (mín. 1080×1920) | Con un texto grande arriba: «Monta tu imperio», «Tus negocios trabajan solos», «Expándete a Miami», «Liga semanal con premios» |
+| Capturas de pantalla | De 4 a 8, verticales (mín. 1080×1920) | Con un texto grande arriba. **Orden** (las dos primeras decidirán la mayoría de instalaciones): 1) «De rider a millonario» (la bici y la ruta), 2) «Tus negocios trabajan solos», 3) «Tres ciudades: Madrid, Miami y Dubái», 4) «Cada negocio, su propia regla», 5) «Liga semanal con premios en diamantes», 6) «Mi vida: coches y lujo» |
 
 ## 3. Clave de firma y secretos de GitHub
 
@@ -99,29 +107,35 @@ El juego se muestra en inglés en los móviles que no están en español (ver `d
 **App name** (máx. 30): `Rider Millionaire: Idle Tycoon`
 
 **Short description** (máx. 80):
-> Start as a delivery rider and build a business empire. Weekly League with prizes!
+> Idle tycoon: from delivery rider to millionaire. 3 cities and a weekly League.
 
 **Full description:**
 
-> Ever dreamed of going from delivery rider to owner of a business empire? In **Rider Millionaire** you start at the bottom and build your own city, one business at a time.
+> Ever dreamed of going from delivery rider to owner of a business empire? In **Rider Millionaire** you start with a bike and a burger joint, and build an empire across Madrid, Miami and Dubai, one business at a time. It's an **idle tycoon** game you can play for a minute or an hour: your businesses keep earning money while you're away.
 >
-> 📦 **Start your first business**: a dropshipping warehouse with shelves, a forklift and delivery vans. Upgrade every part of the chain: production, transport and sales. If one jams, everything stops!
+> 🚲 **Start at the bottom**: deliver orders by bike, hire your first manager and watch the deliveries start running by themselves. Within minutes you open your first real business.
 >
-> 🍝 **Keep growing**: open a restaurant, a TikTok studio and an AI agency. Each business has its own animated site with workers you can watch in action.
+> 📦 **Build business chains**: every business is a route with stalls, transport and sales. Upgrade each part: if one jams, everything slows down! Stalls rank up (bronze, silver, gold, diamond and legend) and buildings visibly grow.
 >
-> 👔 **Hire managers** and your businesses run themselves, even with your phone off. Come back and collect what you've earned.
+> 🌍 **Three cities, 15 businesses**: from bike delivery, the warehouse, restaurant, TikTok studio and AI agency in Madrid, to the food trucks, yachts and crypto exchange in Miami, to the supercars, safari and skyscraper in Dubai.
 >
-> 🌴 **Expand to Miami**: once you've conquered Madrid, open your franchise in Miami, with new businesses and tourist waves that send sales through the roof.
+> 🎯 **Every business has its own rule**: fill urgent orders, impress food critics, go viral live or research upgrades. They never punish you: if you don't play, the business keeps running.
 >
-> 🏅 **Weekly Millionaire League**: every Monday everyone starts from zero and whoever plays the most that week wins, no matter how long they've been playing. Prizes for the top 10 and a Hall of Fame. Watching ads or buying doesn't give points.
+> 👔 **Managers with abilities**: hire them to automate everything and trigger their ability to speed up your business.
 >
-> 💼 **Executives and briefcases**: collect executives of different rarities with abilities that multiply your sales.
+> 🎓 **Business school**: spend ideas on a tree of permanent upgrades you never lose.
+>
+> 🏅 **Weekly Millionaire League**: every Monday everyone starts from zero and whoever plays the most that week wins, no matter how long they've been playing. Diamond prizes for the top 10 and a Hall of Fame. Watching ads or buying doesn't give points.
+>
+> 🛍️ **My life**: dress your character, buy cars and luxury items across 6 collections and watch them drive around your city.
+>
+> 🎉 **Weekly events and seasons** like Halloween, with their own fair, exclusive prizes and daily and weekly challenges.
+>
+> 💼 **Executives and briefcases**: collect executives of different rarities, merge them and multiply your sales.
 >
 > 📈 **Go public**: sell your empire for shares that boost your earnings forever, and start again stronger.
 >
-> 🎁 **Daily missions, daily rewards and achievements** so there's always something to go for.
->
-> Free forever. Ads are always optional: you decide whether to watch one to double your earnings.
+> Free to download. Ads are always optional: you decide whether to watch one for a reward. Optional in-app purchases are available. English and Spanish.
 >
 > In-game money is fictional: it has no real value and cannot be redeemed.
 >

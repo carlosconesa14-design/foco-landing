@@ -67,7 +67,12 @@ export class Sound {
     }
     const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AC) return;
-    const ctx = new AC();
+    let ctx: AudioContext;
+    try {
+      ctx = new AC();
+    } catch {
+      return; // sin dispositivo de audio ("Failed to start the audio device"): el juego sigue mudo y se reintenta en el siguiente toque
+    }
     this.ctx = ctx;
     this.master = ctx.createGain();
     this.master.gain.value = 0.9;

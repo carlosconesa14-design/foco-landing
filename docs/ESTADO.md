@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-**Rider Millionaire: Idle Tycoon.** Para retomar el trabajo sin tener que leer conversaciones antiguas. Última actualización: 6 de octubre de 2026.
+**Rider Millionaire: Idle Tycoon.** Para retomar el trabajo sin tener que leer conversaciones antiguas. Última actualización: 6 de octubre de 2026 (revisión de los primeros 10 minutos, PWA y ficha de la tienda).
 
 ## En una frase
 Es un idle tycoon para móvil, publicado como **beta web** en https://carlosconesa14-design.github.io/foco-landing/ (el juego, en `/jugar/`). Tiene el material gráfico preparado para Google Play; faltan las cuentas, los datos legales y la validación nativa antes de publicar. Gana dinero con **anuncios bonificados** (AdMob) y compras dentro de la app.
@@ -76,10 +76,18 @@ Validación local: 225 tests correctos, build de producción correcto y 122 comp
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
 2. ~~Panel de números de la beta~~ ✅ ([`ANALITICA.md`](ANALITICA.md), «Informes»).
 3. ~~Dubái, con la carrera de fundadores~~ ✅ (`founders.ts`, migración 0013). Arte completado en la rama visual (Codex).
-3c. Mecánicas de cada negocio: ~~fase 1 (Madrid)~~ ✅. Fase 2: Miami y Dubái con los mismos módulos.
+3c. ~~Mecánicas de cada negocio: fase 1 (Madrid) y fase 2 (Miami y Dubái, mismos módulos)~~ ✅ (`twists.ts`, `twistUi.ts`).
 3b. ~~Rangos de los puestos, «Mi vida», Halloween, invitar a amigos, nube y ajustes remotos~~ ✅. Arte completado (Codex, ver `ART.md`).
-4. Rendimiento en móviles de gama media (antes de salir en Google Play: ahora hay más efectos).
-5. Revisar la primera partida con datos reales.
+4. Rendimiento en móviles de gama media (antes de salir en Google Play: ahora hay más efectos). **Primera medición (6 oct, `node scripts/perf.mjs`, ver «Rendimiento» abajo):** sin un móvil real solo hay pistas. Lo que sí se sabe: la carga de la beta web son 14,7 MB (154 imágenes WebP) y hasta que no están todas no se puede jugar; en «4G lento» (1,6 Mbps) son ~76 s, con una conexión normal ~15 s, y desde la segunda visita sale de la copia local (PWA). Se añadió una barra de progreso real. Un perfil de JavaScript (Profiler de Chrome, CPU x1) de un recinto y de la ciudad muestra que más de la mitad del tiempo de JavaScript por fotograma es Phaser triangulando y repitiendo los `Graphics` dibujados por código (`GraphicsWebGLRenderer`, `earcut`, `batchFillPath`): la ciudad repite ~17.000 órdenes en cada fotograma y la ruta del recinto ~2.200. Ocultarlos en la prueba bajó el tiempo por fotograma un 30 % (ciudad) y un 20 % (recinto de la bici). **Pendiente de decidir con un Android físico:** convertir esos `Graphics` estáticos en imagen (ahorra CPU pero gasta memoria de vídeo: ~7 MB por capa de la ciudad a 1x) o trocearlos y ocultar los que no se ven.
+5. Revisar la primera partida con datos reales. **Primera pasada (6 oct):** solo hay 4 jugadores, todos de pruebas anteriores a los «primeros 10 minutos» (tutorial: 4 → 4 → 3 → 1 → 1 por paso; mediana de sesión 24 s; D1 = 0 %; un solo error, `Failed to start the audio device`, inofensivo). No se puede concluir nada del juego, pero el embudo apuntaba al paso 3 y se confirmó jugando: tocar la bici antes de que hubiera pedidos contaba como paso 2 con un viaje en vacío y dejaba atascado al jugador. **Arreglado** (`tapStation`, test en `businessView.test.ts`). Repetir con los primeros 20–30 jugadores reales: `analytics_tutorial_funnel`, `first_moment` y `analytics_retention` (`ANALITICA.md`).
+5b. ~~Primeros 10 minutos medidos con el bot~~ ✅ `npx vite-node scripts/first10.ts` (tutorial hasta ~2:20, almacén a los 5:20, huecos de más de 45 s anotados en la salida; `onboarding.ts` documenta los tiempos).
+5c. ~~PWA y vista previa del enlace de la beta~~ ✅ `public/manifest.webmanifest`, `public/sw.js` (copia local: arranca sin conexión desde la segunda visita), `src/platform/pwa.ts` y «Instalar en el móvil» en Ajustes (solo beta web). Etiquetas Open Graph y Twitter en `index.html`.
+5d. ~~Ficha de la tienda (ASO)~~ ✅ textos nuevos en español e inglés y orden de capturas en [`TIENDA.md`](TIENDA.md). Falta que Carlos los pegue en Play Console cuando exista la cuenta, y rehacer las capturas en ese orden.
+
+## Rendimiento
+- `node scripts/perf.mjs` mide fotogramas, fotogramas lentos y tiempo de JavaScript por fotograma en las escenas más pesadas (Madrid, Miami y Dubái: ciudad y dos recintos) con la CPU ralentizada x4 (`--cpu=N`). `node scripts/perf.mjs --load` mide la carga de la compilación de producción (`npm run build` antes) con red 4G lenta.
+- **Aviso:** el Chromium del contenedor dibuja por software (SwiftShader) y da 3–7 fps en cualquier escena, y un 90 % del tiempo es «(program)» (llamadas a la GPU simulada). Sirve para comparar antes y después y para ver el coste de JavaScript, no para saber cuántos fps hará un móvil. Para eso hace falta un Android físico de gama media.
+- El APK incluye los PNG originales además de los WebP (72 MB de más en `dist/sprites`). Las WebView de Android leen WebP: se pueden dejar fuera del paquete nativo (no se ha hecho).
 
 ## Cómo se trabaja
 - **Rama:** `claude/festive-allen-vb7bc1`. Después de cada PR unida, se rehace desde `main`.

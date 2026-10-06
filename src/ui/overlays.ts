@@ -4,6 +4,8 @@ import { fmt } from "../game/format";
 /** Toasts, textos flotantes y ventanas modales. */
 
 export function toast(root: HTMLElement, msg: string): void {
+  // El mismo aviso no se apila (un toque en la bici dispara dos veces la misma acción).
+  if ([...root.querySelectorAll(".toast")].some((el) => el.textContent === msg)) return;
   const t = document.createElement("div");
   t.className = "toast";
   t.textContent = msg;

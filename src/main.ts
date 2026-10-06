@@ -69,6 +69,7 @@ import { schoolReady } from "./game/school";
 import { festToClaim } from "./game/fest";
 import { icon, loadIcons } from "./ui/icons";
 import { WEB_BETA } from "./platform/web";
+import { initPwa } from "./platform/pwa";
 import { OFFERS, claimVip, dueOffer, rescheduleOffer, truckReward, wheelStatus, type OfferKind } from "./game/offers";
 import { openWheel } from "./ui/wheelPanel";
 import "./styles.css";
@@ -1213,6 +1214,7 @@ function welcomeBeta(): void {
   });
 }
 
+initPwa();
 void boot().then(() => {
   if (WEB_BETA) welcomeBeta();
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as act from "../src/game/actions";
-import { tapStation } from "../src/game/economy";
+import { tapStation, tick } from "../src/game/economy";
+import { advanceTutorial } from "../src/game/meta";
 import { freshState } from "../src/game/state";
 import { businessView } from "../src/view/businessView";
 
@@ -18,6 +19,23 @@ describe("vista de un negocio (frontera lógica / visual)", () => {
     expect(v.tier).toBe(1);
     expect(v.rates.bottleneck).toBeNull();
     expect(v.transport.button).toBe("idle");
+  });
+
+  it("tocar la bici sin pedidos no cuenta ni arranca un viaje en vacío (atasco del tutorial)", () => {
+    const s = freshState(NOW);
+    expect(tapStation(s, "bike", { kind: "transport" })).toBeTruthy();
+    expect(s.biz.bike.transport.phase).toBe("idle");
+    expect(s.meta.stats.life.tapTransport ?? 0).toBe(0);
+    tapStation(s, "bike", { kind: "floor", index: 0 });
+    advanceTutorial(s);
+    expect(businessView(s, "bike", NOW).tutorial).toBe("tapTransport");
+    expect(businessView(s, "bike", NOW).transport.hint).toBe(false);
+    tick(s, 6, NOW + 6000);
+    expect(s.biz.bike.floors[0].stock).toBeGreaterThan(0);
+    expect(businessView(s, "bike", NOW).transport.hint).toBe(true);
+    expect(tapStation(s, "bike", { kind: "transport" })).toBeNull();
+    expect(s.biz.bike.transport.phase).toBe("down");
+    expect(s.meta.stats.life.tapTransport).toBe(1);
   });
 
   it("refleja lo que pasa: producir, recoger y botones listos para mejorar", () => {
