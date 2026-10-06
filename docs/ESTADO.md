@@ -76,7 +76,7 @@ Validación local: 225 tests correctos, build de producción correcto y 122 comp
 1. ~~Más ocasiones de ver anuncios: camión de suministros, cliente VIP y ruleta diaria.~~ ✅ (`offers.ts`)
 2. ~~Panel de números de la beta~~ ✅ ([`ANALITICA.md`](ANALITICA.md), «Informes»).
 3. ~~Dubái, con la carrera de fundadores~~ ✅ (`founders.ts`, migración 0013). Arte completado en la rama visual (Codex).
-3c. Mecánicas de cada negocio: ~~fase 1 (Madrid)~~ ✅. Fase 2: Miami y Dubái con los mismos módulos.
+3c. ~~Mecánicas de cada negocio: fase 1 (Madrid) y fase 2 (Miami y Dubái, mismos módulos)~~ ✅ (`twists.ts`, `twistUi.ts`).
 3b. ~~Rangos de los puestos, «Mi vida», Halloween, invitar a amigos, nube y ajustes remotos~~ ✅. Arte completado (Codex, ver `ART.md`).
 4. Rendimiento en móviles de gama media (antes de salir en Google Play: ahora hay más efectos).
 5. Revisar la primera partida con datos reales.
