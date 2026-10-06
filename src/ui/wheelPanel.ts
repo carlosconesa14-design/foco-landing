@@ -48,7 +48,7 @@ export function openWheel(ctx: PanelCtx): void {
       actions.innerHTML = html;
       const b = actions.querySelector<HTMLButtonElement>("[data-spin]");
       if (b) b.onclick = () => void spin(el, b.dataset.spin === "ad");
-    },
+    }, { screen: "wheel" },
   );
 
   async function spin(el: HTMLElement, viaAd: boolean): Promise<void> {

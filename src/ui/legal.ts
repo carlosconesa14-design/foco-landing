@@ -11,6 +11,6 @@ export function openLegal(ctx: PanelCtx, page: LegalPage): void {
   openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">📄</span><div><h3>${title}</h3>${lang === "es" ? "" : `<p class="muted">${t("Documento oficial en español.")}</p>`}</div></div>
-     <iframe class="legal-frame" src="legal/${page}.html" title="${title}"></iframe>`,
+     <iframe class="legal-frame" src="legal/${page}.html" title="${title}"></iframe>`, undefined, { screen: "legal" },
   );
 }

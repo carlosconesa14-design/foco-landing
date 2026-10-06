@@ -99,7 +99,7 @@ export function openMissions(ctx: PanelCtx): void {
             }
           };
       }
-    },
+    }, { screen: "missions" },
   );
 }
 
@@ -220,7 +220,7 @@ export function openDaily(ctx: PanelCtx): void {
         if (x2) x2.onclick = () => claim(true);
         if (one) one.onclick = () => claim(false);
       }
-    },
+    }, { screen: "daily" },
   );
 }
 
@@ -359,7 +359,7 @@ export function openExecs(ctx: PanelCtx, tab: "chests" | "execs" = "chests"): vo
           });
         }
       }
-    },
+    }, { screen: "execs" },
   );
   sheet.el.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach((b) => {
     b.onclick = () => {
@@ -412,7 +412,7 @@ export function openSettings(ctx: PanelCtx): void {
           };
         });
       }
-    },
+    }, { screen: "settings" },
   );
   const motion = sheet.el.querySelector<HTMLButtonElement>("[data-motion]")!;
   motion.onclick = () => {
@@ -485,6 +485,6 @@ export function openAchievements(ctx: PanelCtx): void {
           };
         });
       }
-    },
+    }, { screen: "achievements" },
   );
 }

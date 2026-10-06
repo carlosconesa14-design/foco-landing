@@ -84,6 +84,6 @@ export function openSeason(ctx: PanelCtx): void {
             sheet.update?.();
           };
         });
-    },
+    }, { screen: "season" },
   );
 }

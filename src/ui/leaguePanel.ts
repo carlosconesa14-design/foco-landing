@@ -90,7 +90,7 @@ export function openLeague(ctx: PanelCtx): void {
   const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">🏅</span><div><h3>${t("Liga Millonario")}</h3><p class="muted" data-sub>${t("Cada semana gana quien más juega. Todos empiezan de cero el lunes.")}</p></div></div>
-     <div data-body><p class="muted">${t("Cargando…")}</p></div>`,
+     <div data-body><p class="muted">${t("Cargando…")}</p></div>`, undefined, { screen: "league" },
   );
   const body = $(sheet.el, "[data-body]");
   body.addEventListener("click", (e) => {

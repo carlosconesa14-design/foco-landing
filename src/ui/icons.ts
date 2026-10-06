@@ -8,6 +8,15 @@ import { IMG_EXT } from "../art/imgExt";
 /** Original vector UI kit. All paths use a 48px logical canvas, no remote assets. */
 const shapes: Record<string, string> = {
   ...VISUAL_ICON_SHAPES,
+  feedback: '<path d="M8 10h32v24H22l-9 8v-8H8Z" fill="#7fd3ff"/><path d="M14 20h20m-20 6h13"/>',
+  production: '<path fill="#ffd36b" d="M6 21 20 12v9l14-9v9h8v21H6Z"/><path d="M13 29h5m7 0h5m-17 7h5m7 0h5M35 7h6v14"/>',
+  transport: '<rect x="5" y="12" width="24" height="24" rx="4" fill="#91d7fb"/><path fill="#ffd36b" d="M29 19h8l6 9v8H29Z"/><circle cx="13" cy="37" r="5" fill="#263e55"/><circle cx="35" cy="37" r="5" fill="#263e55"/>',
+  sale: '<path fill="#3ddc97" d="M8 18h32l-3 24H11Z"/><path d="M17 18v-6a7 7 0 0 1 14 0v6"/><path fill="#ffd36b" d="m24 24 3 5 6 1-4 4 1 6-6-3-6 3 1-6-4-4 6-1Z"/>',
+  bike: '<circle cx="11" cy="33" r="8" fill="#aad5eb"/><circle cx="37" cy="33" r="8" fill="#aad5eb"/><path stroke="#3ddc97" stroke-width="4" d="m11 33 9-15 10 15H11m9-15h12l5 15M31 12h6M17 16h8"/><circle cx="25" cy="9" r="5" fill="#ffd3a2"/>',
+  menu: '<rect x="5" y="6" width="38" height="36" rx="8" fill="#ffd36b"/><path d="M14 16h20M14 24h20M14 32h20"/>',
+  calendar: '<rect x="7" y="10" width="34" height="32" rx="5" fill="#eff6ff"/><path d="M7 20h34M16 5v11M32 5v11M16 28h5M28 28h5M16 35h5"/>',
+  clock: '<circle cx="24" cy="24" r="19" fill="#bce7ff"/><path d="M24 12v13l9 5"/>',
+  close: '<rect x="5" y="5" width="38" height="38" rx="9" fill="#e0533d"/><path stroke="#fff" stroke-width="5" d="m15 15 18 18m0-18L15 33"/>',
   cash: '<circle cx="24" cy="24" r="18" fill="#ffc94f"/><circle cx="24" cy="24" r="13" fill="#ffe99a"/><path d="M29 15h-7l-5 9 5 9h7M14 22h14M14 26h12"/>',
   gem: '<path fill="#83e5ff" d="m6 18 9-10h18l9 10-18 23Z"/><path fill="#d4f8ff" d="m15 8 9 10 9-10M6 18h36L24 41 16 18"/><path d="M6 18h36M15 8l9 10 9-10M16 18l8 23 8-23"/>',
   missions: '<rect x="11" y="9" width="27" height="33" rx="5" fill="#edf5ff"/><rect x="18" y="5" width="13" height="9" rx="3" fill="#ffc94f"/><path d="m15 23 3 3 5-6M27 23h6m-18 10 3 3 5-6M27 33h6"/>',
@@ -34,6 +43,7 @@ export function icon(name: string, fallback?: string): string {
   if (available.has(name)) return `<img class="ico" src="sprites/${name}.${IMG_EXT}" alt="" draggable="false">`;
   const generated = generatedIcon(name);
   if (generated) return generated;
+  if (name === "ic_biz_bike") return icon("bike");
   if (name.startsWith("ic_biz_")) return icon(`bld_${name.slice(7)}_1`);
   if (name.startsWith("ic_life_")) return icon(["lux_parents", "lux_flat", "home", "lux_flat", "lux_penthouse", "lux_villa", "lux_mansion", "lux_yacht", "lux_island", "lux_rocket"][Number(name.slice(8))] ?? "home");
   if (name.startsWith("ic_office_")) return icon(({ brand: "world", team: "manager", floors: "order", suppliers: "invite", offline: "moon", hustle: "bolt", luck: "hype" } as Record<string, string>)[name.slice(10)] ?? "city");

@@ -1,3 +1,6 @@
+import { BIZ_ART } from "../art/catalog";
+import { IMG_EXT } from "../art/imgExt";
+import { ipoBell } from "./visualEffects";
 import { now } from "../game/clock";
 import type { Placement } from "../ads";
 import type { Sfx } from "../audio/sound";
@@ -62,7 +65,7 @@ export interface PanelCtx {
 const $ = <T extends HTMLElement>(el: HTMLElement, sel: string) => el.querySelector<T>(sel)!;
 
 /** Precio en la moneda del negocio: dinero, o fichas 🎟️ en la feria del evento. */
-const priceOf = (id: string) => (n: number) => (id === FEST_ID ? `🎟️ ${fmt(n)}` : money(n));
+const priceOf = (id: string) => (n: number) => (id === FEST_ID ? `${t("Fichas")} ${fmt(n)}` : money(n));
 
 const mmss = (ms: number) => {
   const sec = Math.ceil(Math.max(0, ms) / 1000);
@@ -120,12 +123,13 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
   const money = priceOf(id);
   const s0 = ctx.state();
   const def = bizDef(id);
-  const icon = st.kind === "floor" ? def.worker : st.kind === "transport" ? def.transportIcon : def.saleWorker;
+  const stationIcon = st.kind === "floor" ? def.worker : st.kind === "transport" ? def.transportIcon : def.saleWorker;
   const sheet = openSheet(
     ctx.root,
-    `<div class="sheet-head"><span class="sicon">${icon}</span><div><h3>${act.stationName(id, st)}</h3><p class="muted" data-lvl></p></div></div>
+    `<div class="sheet-head"><span class="sicon">${stationIcon}</span><div><h3>${act.stationName(id, st)}</h3><p class="muted" data-lvl></p></div></div>
+     <div class="part-nav"><button class="btn" data-prev aria-label="${t("Anterior")}">‹</button><img data-portrait alt=""><button class="btn" data-next aria-label="${t("Siguiente")}">›</button></div>
      <div data-stats></div>
-     <div class="ranktrack" data-ranks></div>
+     <div class="ranktrack" data-ranks></div><div class="rank-progress" aria-hidden="true"><i data-rank-progress></i></div>
      <p class="small muted" data-ms></p>
      <div class="buyrow">${buyModes(s0)}<button class="buy big" data-up><span data-uq></span><b data-uc></b></button></div>
      <div class="mgrbox" data-mgr></div>
@@ -146,6 +150,8 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
           ? t("Nivel {n}: rango {rank} y rendimiento x2 (te faltan {left})", { n: nm, rank: nr.name, left: nm - lvl })
           : t("Nivel {n}: rendimiento x2 (te faltan {left})", { n: nm, left: nm - lvl });
       const cur = rankOf(lvl);
+      const baseRank=RANKS.find(r=>r.n===cur)?.min??1;
+      $(el,"[data-rank-progress]").style.width=`${nr?Math.max(0,Math.min(100,(lvl-baseRank)/(nr.min-baseRank)*100)):100}%`;
       const track = RANKS.map((r) => `<span class="rk ${r.n <= cur ? "on" : ""} ${r.n === cur ? "now" : ""}" title="${r.name} · ${t("Nv")} ${r.min}">${rankIcon(r.n)}<small>${r.min}</small></span>`).join("");
       const tr = $(el, "[data-ranks]");
       if (tr.dataset.html !== track) {
@@ -196,7 +202,7 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
             if (ok) analytics.track("skill_used", { biz: id, part: st.kind });
           };
       }
-    }),
+    }), { screen: "upgrade" },
   );
   $<HTMLButtonElement>(sheet.el, "[data-up]").onclick = () => W(() => {
     const s = ctx.state();
@@ -210,6 +216,14 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
     if (msg) ctx.banner("⚡", msg);
   });
   wireBuyModes(sheet.el, ctx);
+  const count=W(()=>ctx.state().biz[id].floors.length);
+  const parts:Station[]=[{kind:"transport"},...Array.from({length:count},(_,index)=>({kind:"floor" as const,index})),{kind:"sale"}];
+  const index=parts.findIndex(p=>p.kind===st.kind&&(p.kind!=="floor"||st.kind==="floor"&&p.index===st.index));
+  for(const [sel,offset] of [["[data-prev]",-1],["[data-next]",1]] as const){const b=$<HTMLButtonElement>(sheet.el,sel);b.disabled=!parts[index+offset];b.onclick=()=>openStationSheet(ctx,id,parts[index+offset]);}
+  const look=BIZ_ART[id]??BIZ_ART.dropship;
+  const portrait=id==="bike"?(st.kind==="floor"?`ch_bike_${st.index}_0`:st.kind==="transport"?"veh_bike_0":"ch_bike_customer_0"):st.kind==="floor"?`ch_${look.worker}_0`:st.kind==="transport"?look.mover:look.seller;
+  if(portrait.startsWith("luxcar_")){$(sheet.el,"[data-portrait]").outerHTML=`<span class="part-portrait">${icon(portrait)}</span>`;}
+  else $<HTMLImageElement>(sheet.el,"[data-portrait]").src=`sprites/${portrait.startsWith("veh_")||portrait.startsWith("ch_")?portrait:`ch_${portrait}_0`}.${IMG_EXT}`;
 }
 
 /* ---------- Nueva planta ---------- */
@@ -224,12 +238,13 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
   const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">🔓</span><div><h3>${floorLabel(def, i)}</h3><p class="muted">${t("Nuevo puesto de producción")}</p></div></div>
+     <img class="unlock-illustration" src="sprites/st_${id}_${i}.${IMG_EXT}" alt="">
      <div class="stat"><span>${t("Producción inicial")}</span><b class="good">+${money(floorRate(def, i, 1))}/s</b></div>
      <p class="small muted">${t("Cada puesto nuevo produce {n} veces más que el anterior. Recuerda mejorar el transporte y la venta para que no se atasque.", { n: CHAIN.floorGrowth })}</p>
      <button class="buy big wide" data-unlock><span>${t("Abrir puesto")}</span><b>${money(cost)}</b></button>`,
     (el) => {
       $<HTMLButtonElement>(el, "[data-unlock]").disabled = W(() => ctx.state().cash) < cost;
-    },
+    }, { screen: "unlock", hero: `st_${id}_${i}` },
   );
   $<HTMLButtonElement>(sheet.el, "[data-unlock]").onclick = () => W(() => {
     const before = bizTier(ctx.state().biz[id]);
@@ -260,6 +275,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
   const sheet = openSheet(
     ctx.root,
     `<div class="sheet-head"><span class="sicon">${bizIcon(def)}</span><div><h3>${def.name}</h3><p class="muted">${def.blurb}</p></div></div>
+     <img class="plot-illustration" src="sprites/bld_${id}_1.${IMG_EXT}" alt="">
      <div class="stat"><span>${t("Puestos")}</span><b>${def.floorName} ${def.worker}</b></div>
      <div class="stat"><span>${t("Transporte")}</span><b>${def.transportName} ${def.transportIcon}</b></div>
      <div class="stat"><span>${t("Venta")}</span><b>${def.saleName} ${def.saleWorker}</b></div>
@@ -267,7 +283,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
      <button class="buy big wide" data-buyplot><span>${t("Comprar")}</span><b>${money(def.price)}</b></button>`,
     (el) => {
       $<HTMLButtonElement>(el, "[data-buyplot]").disabled = ctx.state().cash < def.price;
-    },
+    }, { screen: "plot", hero: `bld_${id}_1` },
   );
   $<HTMLButtonElement>(sheet.el, "[data-buyplot]").onclick = () => {
     const msg = act.buyBusiness(ctx.state(), id);
@@ -299,6 +315,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
     ctx.root,
     `<div class="sheet-head"><span class="sicon">${icon("ic_ipo", "📈")}</span><div><h3>${t("Salir a bolsa")}</h3><p class="muted">${t("Tienes {shares} acciones: +{pct}% a todo lo que ganas.", { shares: `<b class="gold">${fmt(s0.shares)}</b>`, pct: fmt(s0.shares * CONFIG.shareBonus * 100) })}</p></div></div>
      <p class="muted">${t("Vendes todos los negocios de esta ciudad y vuelves a empezar con el primero, pero cada acción suma un +{pct}% para siempre. Tu estilo de vida ({life}) se mantiene.", { pct: CONFIG.shareBonus * 100, life: `${LIFE[li].icon} ${LIFE[li].name}` })}</p>
+     <svg class="market-chart" viewBox="0 0 300 92" aria-hidden="true"><path d="M20 8v68h260M20 24h260M20 48h260" stroke="#bdd4ce" fill="none"/><rect x="60" y="35" width="62" height="41" rx="5" fill="#77afd0"/><rect x="178" data-market-bar y="15" width="62" height="61" rx="5" fill="#43ba86"/></svg>
      <div class="stat"><span>${t("Recibirías ahora")}</span><b class="gold" data-gain></b></div>
      <p class="small muted" data-need></p>
      <div class="actions col">
@@ -314,10 +331,12 @@ export function openIpoSheet(ctx: PanelCtx): void {
      </details>`,
     (el) => {
       const g = sharesToGain(ctx.state());
+      const bars=el.querySelectorAll(".market-chart rect");
+      [ctx.state().shares,ctx.state().shares+g].forEach((n,i)=>{const h=64*n/Math.max(1,ctx.state().shares+g);bars[i].setAttribute("height",String(h));bars[i].setAttribute("y",String(76-h));});
       $(el, "[data-gain]").textContent = t("{n} acciones", { n: fmt(g) });
       $(el, "[data-need]").textContent = g < 1 ? t("Necesitas ganar {m} en esta partida para tu primera acción.", { m: money(cityDef(ctx.state().city).shareDivisor) }) : "";
       el.querySelectorAll<HTMLButtonElement>("[data-ipo]").forEach((b) => (b.disabled = g < 1));
-    },
+    }, { screen: "ipo" },
   );
   sheet.el.querySelectorAll<HTMLButtonElement>("[data-ipo]").forEach((b) => {
     b.onclick = async () => {
@@ -332,6 +351,7 @@ export function openIpoSheet(ctx: PanelCtx): void {
       if (!res) return;
       analytics.track("ipo", { shares: Math.round(res.gained), withAd: mult === 2, minutes: minutesSinceInstall() });
       ctx.replaceState(res.state);
+      ipoBell();
       closeSheet();
       void ctx.celebrate({
         icon: "🔔",

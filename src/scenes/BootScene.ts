@@ -1,3 +1,6 @@
+import { alphaBounds } from "../art/alphaBounds";
+export { alphaBounds } from "../art/alphaBounds";
+import { isSceneWorldAsset } from "../art/worldLoading";
 import { GENERATED_SHEETS, configureGeneratedArt, hasGeneratedArt } from "../art/generated";
 import Phaser from "phaser";
 import { ART, BLD_W, buildArt } from "../art/catalog";
@@ -34,7 +37,7 @@ export class BootScene extends Phaser.Scene {
     this.load.json("sprite-manifest", "sprites/manifest.json");
     this.load.once("filecomplete-json-sprite-manifest", (_key: string, _type: string, data: unknown) => {
       if (!Array.isArray(data)) return;
-      for (const key of data) if (typeof key === "string" && ART[key]) this.load.image(key, `sprites/${key}.${IMG_EXT}`);
+      for (const key of data) if (typeof key === "string" && ART[key] && !isSceneWorldAsset(key)) this.load.image(key, `sprites/${key}.${IMG_EXT}`);
     });
   }
 
@@ -60,18 +63,6 @@ export class BootScene extends Phaser.Scene {
 }
 
 /** Caja del contenido visible (píxeles con algo de opacidad) de una imagen. */
-export function alphaBounds(data: Uint8ClampedArray, w: number, h: number, threshold = 8): { x: number; y: number; w: number; h: number } | null {
-  let x0 = w, y0 = h, x1 = -1, y1 = -1;
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++)
-      if (data[(y * w + x) * 4 + 3] > threshold) {
-        if (x < x0) x0 = x;
-        if (x > x1) x1 = x;
-        if (y < y0) y0 = y;
-        if (y > y1) y1 = y;
-      }
-  return x1 < 0 ? null : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
-}
 
 /**
  * Recorta el margen transparente de un edificio en PNG y fija su tamaño lógico para que

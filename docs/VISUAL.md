@@ -407,3 +407,15 @@ Tras el tutorial salen cuatro avisos, uno cada minuto o dos, hasta el almacén. 
 | Tu primer negocio de verdad | Al comprar el almacén | Maletín de regalo después de la celebración de compra. |
 
 Además, **la primera «oportunidad» con anuncio** (la moneda que aparece) llega 20 segundos después del tutorial y nunca durante él. Es el **primer anuncio** del jugador: tiene que ser muy atractiva, con brillo y un globo que diga «¡Pedido grande!».
+
+### Entrega fase 1 — 6 de octubre de 2026
+
+Kit reutilizable CSS/Phaser, estados de botones, paneles con cabecera/cierre rojo, marcos y contadores. `LevelButton` común 70×56 y estados del modelo. HUD y barra inferior renovados; navegación Mundo en negocio y columna derecha reservada. Catálogo/receta en ART y galería `visual-review/phase-1`. 229 tests, build y 60 comprobaciones móviles en ES/EN con/sin movimiento. La pantalla de referencia de bici se entrega por separado en la fase 2.
+
+### Entrega fase 2 — 6 de octubre de 2026
+
+Pantalla de referencia de bici: calle madrileña, tres sedes propias, ocho locales/cocineros con tres poses, rider sobre bicicleta con frente/espalda y pedaleo rápido, bolsas, clientes en portales y ambiente. Sede/calle 280 px, franjas 172 px y zigzag de 30 px. Datos de construcción, nombres, rangos y precios vienen de `businessView`; pedaleo por Bridge mediante la acción existente. Se mantienen tutorial, recompensas, rangos, visitantes, mecánica física y desplazamiento recordado. Las piezas y los prompts están en ART; capturas ES/EN, movimiento completo/reducido y controles móviles en `visual-review/phase-2`. La medición de 60 fps en un móvil físico queda pendiente; Chromium en este entorno usa renderizado por software y no permite certificarla.
+
+### Entrega agrupada de las fases 3–9 — 6 de octubre de 2026
+
+Por petición expresa del usuario, las fases restantes se agrupan en la PR #17 existente. Incluye Madrid, Miami, Dubái, feria, paneles, Escuela, ciudad, mundo, oficina, viajes, traseros, ambiente, iluminación y recompensas. La PR conserva el kit y la referencia de bici de las fases 1/2. Catálogo y recetas en ART; galería en `visual-review/phases-3-9/`. 243 tests y build correctos; 556 comprobaciones y 328 capturas móviles ES/EN con movimiento completo/reducido, sin errores de consola. Queda pendiente certificar 60 fps en un móvil físico; el entorno usa Chromium por software.

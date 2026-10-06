@@ -1,8 +1,9 @@
+import { reducedMotion } from "../scenes/common";
 import { icon } from "./icons";
 
 let active = 0;
 let lastFlight = -Infinity;
-const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = () => reducedMotion();
 
 /** A bounded cosmetic effect: never touches balances or waits before paying the player. */
 export function flyCoins(x: number, y: number, lucky = false): void {
