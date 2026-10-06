@@ -11,11 +11,11 @@ import { t } from "../i18n";
  *
  * | Momento | Bot (aprox.) | Qué pasa |
  * | --- | --- | --- |
- * | Fin del tutorial | ~2:20 | 25 💎 (ya existía) y la primera «oportunidad» con anuncio llega a los 20 s |
- * | `skill` | ~2:20 | Aviso: tu gerente tiene una habilidad ⚡ (x2 unos minutos) |
- * | `auto` | ~2:20 (justo al acabar el tutorial) | El reparto va solo: 10 💎 |
- * | `half` | ~5:10 | Ya tienes la mitad para el almacén |
- * | `biz2` | ~5:20 | Tras la celebración de compra, un maletín de regalo: tu primer negocio de verdad |
+ * | Fin del tutorial | ~2:30 | 25 💎 (ya existía) y la primera «oportunidad» con anuncio llega a los 20 s |
+ * | `skill` | ~2:30 | Aviso: tu gerente tiene una habilidad ⚡ (x2 unos minutos) |
+ * | `auto` | ~2:30 (justo al acabar el tutorial) | El reparto va solo: 10 💎 |
+ * | `half` | ~5:20 | Ya tienes la mitad para el almacén |
+ * | `biz2` | ~5:40 | Tras la celebración de compra, un maletín de regalo: tu primer negocio de verdad |
  *
  * Tiempos medidos con `npx vite-node scripts/first10.ts`. Cada momento salta una sola vez en toda la vida (se guardan en `meta.firsts`) y nunca durante
  * el tutorial. Las partidas de antes de esto los tienen todos ya vistos.

@@ -441,7 +441,7 @@ export class CityScene extends Phaser.Scene {
       const v=loopPosition(route,0), facing=vehicleFacing(vehicleKey,v.dc,v.dr);
       const obj = art(this,0,0,facing.key).setOrigin(0.5,0.76).setFlipX(facing.flipX);
       const tag = i===0 ? label(this,0,0,t("Tú"),10,"#2e2200",{bold:true}).setBackgroundColor("#f5c542").setPadding(4,1,4,1).setOrigin(0.5) : undefined;
-      this.movers.push({obj,vehicleKey,shadow:actorShadow(this,obj.displayWidth),route,distance:route.total*(Math.floor(i/4)*0.5+rand()*0.2),speed:0.8+rand()*0.35,phase:rand()*6,wait:0,crossing:"",tag});
+      this.movers.push({obj,vehicleKey,shadow:actorShadow(this,obj.displayWidth),route,distance:route.total*(Math.floor(i/4)*0.5+rand()*0.2),speed:0.55+rand()*0.25,phase:rand()*6,wait:0,crossing:"",tag});
     }
     // Walking loops follow the inner pavements, not the carriageway or the buildings.
     for (let i=0;i<8;i++) {
@@ -452,7 +452,7 @@ export class CityScene extends Phaser.Scene {
       const top = i%4 < 2 ? 3.93 : 7.93, bottom = i%4 < 2 ? 7.07 : 11.07;
       const corners = [{c:left,r:top},{c:right,r:top},{c:right,r:bottom},{c:left,r:bottom}];
       const route = streetLoop(i%3===0 ? corners.reverse() : corners,0.1);
-      this.movers.push({obj,role,shadow:actorShadow(this,obj.displayWidth),route,distance:rand()*route.total,speed:0.27+rand()*0.08,phase:rand()*6,wait:0,crossing:""});
+      this.movers.push({obj,role,shadow:actorShadow(this,obj.displayWidth),route,distance:rand()*route.total,speed:0.17+rand()*0.06,phase:rand()*6,wait:0,crossing:""});
     }
   }
 
@@ -504,7 +504,7 @@ export class CityScene extends Phaser.Scene {
     this.waterLines.x = calmWorld() ? 0 : Math.sin(this.walkClock * 0.6) * 6;
     this.waterLines.alpha = calmWorld() ? 1 : 0.75 + Math.sin(this.walkClock * 0.8) * 0.2;
     const calm = calmWorld();
-    const frame = calm ? 0 : Math.floor(this.walkClock * 6) % 2 ? 1 : 2;
+    const frame = calm ? 0 : Math.floor(this.walkClock * 3) % 2 ? 1 : 2;
     for (const m of this.movers) {
       // Ambient traffic respects reduced motion; production actors remain informative.
       if (!calm) {

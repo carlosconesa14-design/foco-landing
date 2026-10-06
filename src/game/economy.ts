@@ -95,19 +95,34 @@ const logisticsGrowth = (level: number) => level * Math.pow(CHAIN.logisticsCapGr
 
 export const transportCap = (def: BusinessDef, level: number) => def.mult * CHAIN.transportBaseCap * logisticsGrowth(level);
 
-/** Plantas por segundo. */
-export const transportSpeed = (level: number) =>
-  Math.min(CHAIN.transportMaxSpeed, CHAIN.transportBaseSpeed * (1 + 0.04 * (level - 1)));
+/** Velocidad «de economía» de antes del ritmo visual (solo sirve para compensar la carga). */
+const transportSpeedBase = (level: number) => Math.min(CHAIN.transportMaxSpeed, CHAIN.transportBaseSpeed * (1 + 0.04 * (level - 1)));
+
+/** Plantas por segundo (lo que se ve: nunca más rápido que al empezar, ver `CHAIN.visualMaxSpeed`). */
+export const transportSpeed = (level: number) => Math.min(CHAIN.visualMaxSpeed, transportSpeedBase(level));
+
+const roundTripAt = (floors: number, speed: number) => (2 * floors) / speed + floors * CHAIN.transportLoadTime + CHAIN.transportUnloadTime;
 
 /** Tiempo de un viaje completo visitando todas las plantas. */
 export function transportRoundTrip(floors: number, level: number): number {
-  return (2 * floors) / transportSpeed(level) + floors * CHAIN.transportLoadTime + CHAIN.transportUnloadTime;
+  return roundTripAt(floors, transportSpeed(level));
 }
+
+/**
+ * Carga real de un viaje: la capacidad de siempre multiplicada por lo que se alarga el viaje al moverse
+ * más despacio. Así el transporte mueve exactamente lo mismo por segundo que antes del ritmo visual.
+ */
+export const transportPayload = (def: BusinessDef, level: number, floors: number) =>
+  (transportCap(def, level) * transportRoundTrip(floors, level)) / roundTripAt(floors, transportSpeedBase(level));
 
 /* ---------- Venta ---------- */
 
-export const saleCap = (def: BusinessDef, level: number) => def.mult * CHAIN.saleBaseCap * logisticsGrowth(level);
-export const saleWalk = (level: number) => Math.max(CHAIN.saleMinWalk, CHAIN.saleBaseWalk / (1 + 0.03 * (level - 1)));
+const saleWalkBase = (level: number) => Math.max(CHAIN.saleMinWalk, CHAIN.saleBaseWalk / (1 + 0.03 * (level - 1)));
+/** Tiempo de ida del cliente (lo que se ve: nunca menos que al empezar, ver `CHAIN.visualMinWalk`). */
+export const saleWalk = (level: number) => Math.max(CHAIN.visualMinWalk, saleWalkBase(level));
+/** Con el cliente más lento lleva más a cada viaje: lo vendido por segundo es el de siempre. */
+export const saleCap = (def: BusinessDef, level: number) =>
+  (def.mult * CHAIN.saleBaseCap * logisticsGrowth(level) * saleWalk(level)) / saleWalkBase(level);
 
 export const logisticsNextCost = (def: BusinessDef, level: number) =>
   costScale(def) * CHAIN.logisticsCostBase * Math.pow(CHAIN.logisticsCostK, level - 1);
@@ -159,7 +174,7 @@ export function chainRates(def: BusinessDef, b: BusinessState, managedOnly: bool
     m.prod * b.floors.reduce((a, f, i) => a + (!managedOnly || f.managed ? floorRate(def, i, f.level) * sp(`f${i}`) : 0), 0);
   const transport =
     !managedOnly || b.transport.managed
-      ? (sp("t") * m.log * transportCap(def, b.transport.level)) / transportRoundTrip(b.floors.length, b.transport.level)
+      ? (sp("t") * m.log * transportPayload(def, b.transport.level, b.floors.length)) / transportRoundTrip(b.floors.length, b.transport.level)
       : 0;
   const sale = !managedOnly || b.sale.managed ? (sp("s") * m.log * saleCap(def, b.sale.level)) / (2 * saleWalk(b.sale.level)) : 0;
   const total = Math.min(production, transport, sale);
@@ -247,7 +262,7 @@ export function tickOne(s: GameState, id: string, dt: number, now: number, event
 
   // Transporte: baja planta a planta, carga hasta llenarse y sube.
   const t = b.transport;
-  const cap = transportCap(def, t.level) * m.log;
+  const cap = transportPayload(def, t.level, b.floors.length) * m.log;
   const speed = transportSpeed(t.level) * (pedaling === id && !t.managed ? PEDAL_SPEED : 1);
   let left = dt * skillSpeed(b, "t", now); // habilidad «Ruta exprés»: todo el viaje, cargas incluidas
   let guard = 0;

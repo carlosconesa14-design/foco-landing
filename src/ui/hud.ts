@@ -22,25 +22,36 @@ function setHtml(el: HTMLElement, html: string): void {
 /** Dinero mostrado: sube contando hacia el real en vez de saltar (micro-recompensa constante). */
 let shownCash = 0;
 let shownFest = false;
+/** Último valor real y última vez que hubo «salto»: el salto solo se anima con un ingreso grande y puntual, no con el goteo constante. */
+let lastTarget = 0;
+let lastBump = 0;
 
 export function updateHeader(s: GameState, now: number): void {
   // En la feria se ven las fichas 🎟️ en lugar del dinero (fest.ts).
   const fest = s.view.scene === "fest";
   const target = fest ? s.meta.fest.tickets : s.cash;
-  const prev = shownCash;
   // Si baja (una compra) se muestra al instante; si sube, se acerca poco a poco.
   shownCash = target < shownCash || Math.abs(target - shownCash) < 1 ? target : shownCash + (target - shownCash) * 0.35;
   const cash = $("cash");
   if (fest !== shownFest) {
     shownFest = fest;
     shownCash = target;
+    lastTarget = target;
   }
-  cash.innerHTML = `<span class="wallet-coin">${icon(fest ? "ic_ticket" : "cash")}</span><small class="cash-symbol">${CUR}</small>${fmt(shownCash)}`;
-  // Pequeño salto visual cuando entra un buen pellizco (más de un 5 %)
-  if (target > prev * 1.05 && prev > 0 && !cash.classList.contains("bump")) {
+  // El HTML de la cabecera se monta una sola vez y después solo cambia el número: recrear la moneda
+  // en cada fotograma la hacía parpadear y «vibrar».
+  if (!cash.firstElementChild) cash.innerHTML = `<span class="wallet-coin"></span><small class="cash-symbol">${CUR}</small><span class="cash-n"></span>`;
+  setHtml(cash.querySelector<HTMLElement>(".wallet-coin")!, icon(fest ? "ic_ticket" : "cash"));
+  const num = cash.querySelector<HTMLElement>(".cash-n")!;
+  const text = fmt(shownCash);
+  if (num.textContent !== text) num.textContent = text;
+  // Pequeño salto visual cuando entra un buen pellizco de golpe (más de un 5 % en un fotograma), como mucho cada 1,5 s
+  if (target > lastTarget * 1.05 && lastTarget > 0 && now - lastBump > 1500 && !cash.classList.contains("bump")) {
+    lastBump = now;
     cash.classList.add("bump");
     setTimeout(() => cash.classList.remove("bump"), 350);
   }
+  lastTarget = target;
   $("rate").innerHTML = `+${fmt(passiveRate(s, now))} /s<span>${t("ingresos pasivos")}</span>`;
   setHtml($("gems"), `${gem()} ${fmt(s.meta.gems)}`);
 

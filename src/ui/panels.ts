@@ -22,7 +22,7 @@ import {
   saleWalk,
   sharesToGain,
   stationLevel,
-  transportCap,
+  transportPayload,
   transportSpeed,
   upgradeQuote,
   type Station,
@@ -93,13 +93,14 @@ function statRows(s: GameState, id: string, st: Station, qty: number): string {
   const money = priceOf(id);
   const def = bizDef(id);
   const lvl = stationLevel(s.biz[id], st);
+  const floors = s.biz[id].floors.length;
   const row = (name: string, now: string, next: string) =>
     `<div class="stat"><span>${name}</span><b>${now} <i class="up">→ ${next}</i></b></div>`;
   if (st.kind === "floor")
     return row(t("Producción"), `${money(floorRate(def, st.index, lvl))}/s`, `${money(floorRate(def, st.index, lvl + qty))}/s`);
   if (st.kind === "transport")
     return (
-      row(t("Capacidad por viaje"), money(transportCap(def, lvl)), money(transportCap(def, lvl + qty))) +
+      row(t("Capacidad por viaje"), money(transportPayload(def, lvl, floors)), money(transportPayload(def, lvl + qty, floors))) +
       row(t("Velocidad"), `${transportSpeed(lvl).toFixed(2)} ${t("plantas/s")}`, `${transportSpeed(lvl + qty).toFixed(2)}`)
     );
   return (

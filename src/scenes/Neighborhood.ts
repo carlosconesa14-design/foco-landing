@@ -226,7 +226,7 @@ export class Neighborhood {
       const facing=vehicleFacing(cars[i%cars.length],c1-c0,r1-r0);
       const image=art(scene,a.x,a.y,facing.key).setOrigin(.5,.72);
       image.setFlipX(facing.flipX);
-      this.cars.push({image,a:iso(c0,r0),b:iso(c1,r1),g:[c0,r0,c1,r1],t:(i*.37)%1,speed:.035+(i%3)*.01});
+      this.cars.push({image,a:iso(c0,r0),b:iso(c1,r1),g:[c0,r0,c1,r1],t:(i*.37)%1,speed:.024+(i%3)*.007});
     });
     // The business plot stands out: a gold kerb with a soft glow and a name sign at the entrance corner.
     const plot=[iso(0,0),iso(cols,0),iso(cols,rows),iso(0,rows)];
@@ -275,13 +275,13 @@ export class Neighborhood {
   update(dt:number){
     if(!calmWorld())this.elapsed+=Math.min(dt,.1);
     for(const car of this.traffic){
-      const p=(this.elapsed/18+car.phase)%1;
+      const p=(this.elapsed/26+car.phase)%1;
       car.image.setPosition(car.a.x+(car.b.x-car.a.x)*p,car.a.y+(car.b.y-car.a.y)*p).setDepth(car.image.y).setAlpha(Math.min(1,p*12,(1-p)*12));
     }
     for(const w of this.walkers){
-      const t=(this.elapsed/28+w.phase)%2,p=t<1?t:2-t;
+      const t=(this.elapsed/45+w.phase)%2,p=t<1?t:2-t;
       w.image.setPosition(w.a.x+(w.b.x-w.a.x)*p,w.a.y+(w.b.y-w.a.y)*p).setDepth(w.image.y).setFlipX(t>=1);
-      swapArt(w.image,`ch_${w.role}_${calmWorld()?0:1+Math.floor(this.elapsed*5)%2}`);
+      swapArt(w.image,`ch_${w.role}_${calmWorld()?0:1+Math.floor(this.elapsed*2.5)%2}`);
     }
     for(const car of this.cars){
       if(!calmWorld())car.t=(car.t+car.speed*Math.min(dt,.1))%1;

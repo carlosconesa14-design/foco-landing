@@ -53,7 +53,8 @@ describe("desbloqueo gradual", () => {
       checkUnlocks(s);
       return s.meta.unlocked;
     };
-    expect(at(8 / 60)).toEqual(expect.arrayContaining(["daily", "missions", "execs", "auto", "wheel"]));
+    expect(at(8 / 60)).toEqual(expect.arrayContaining(["daily", "missions", "execs", "auto"]));
+    expect(at(10 / 60)).toContain("wheel");
     expect(at(8 / 60)).not.toContain("life");
     expect(at(30 / 60)).toContain("life");
     expect(at(30 / 60)).not.toContain("league");
