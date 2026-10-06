@@ -146,6 +146,8 @@ export function simulate(opts: {
    * investigación, siempre atento) y compra en «Mi vida» lo que cueste menos de `luxShare` de su dinero.
    */
   engaged?: { luxShare: number; mechanics?: tw.TwistKind[] };
+  /** Se llama en cada paso (t en segundos): sirve para medir el tutorial y los primeros momentos. */
+  onStep?: (s: GameState, now: number, t: number) => void;
 }): SimResult {
   const dt = opts.dt ?? 1;
   // Suerte con semilla fija para que la simulación sea reproducible.
@@ -171,6 +173,7 @@ export function simulate(opts: {
     if (opts.ads) s.boostEnd = now + 3600e3;
     const sales = tick(s, dt, now);
     if (opts.engaged) engagedStep(s, now, dt, sales, opts.ads ?? false, opts.engaged);
+    opts.onStep?.(s, now, t);
 
     // Toca todo lo que no tiene gerente (jugador activo)
     for (const d of bizList(s)) {

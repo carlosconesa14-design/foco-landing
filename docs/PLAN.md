@@ -82,7 +82,7 @@ Los 20 guiones están en `TIKTOK.md`. Claude los produce y los deja listos para 
 - **Primera tanda:** 7 vídeos (una semana de publicación), luego el resto.
 - **Reglas:** las de `TIKTOK.md`; nunca «gana dinero jugando».
 
-### 3. Primeros 10 minutos
+### 3. Primeros 10 minutos ✅ (6 de octubre; falta repetirlo con datos de jugadores reales)
 Es lo que más decide si alguien vuelve.
 
 - **Revisar con el bot y en el navegador:**
@@ -91,10 +91,10 @@ Es lo que más decide si alguien vuelve.
   - el primer anuncio bonificado y la primera notificación.
 - **Ajustar** tutorial, metas y celebraciones sin romper los tests de ritmo.
 
-### 4. Instalable desde el navegador (PWA) y vista previa del enlace de la beta
+### 4. Instalable desde el navegador (PWA) y vista previa del enlace de la beta ✅
 Que los testers puedan «añadir a la pantalla de inicio» y que el enlace de `/jugar/` se vea bien en WhatsApp e Instagram.
 
-### 5. Ficha de la tienda (ASO)
+### 5. Ficha de la tienda (ASO) ✅ (textos en `TIENDA.md`)
 - Repasar título, descripción corta y larga en español e inglés con las palabras que se buscan, como «idle tycoon», «magnate» o «negocios».
 - Elegir el orden de las capturas y el gráfico destacado.
 

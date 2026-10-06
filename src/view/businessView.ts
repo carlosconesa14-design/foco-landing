@@ -142,7 +142,7 @@ function build(s: GameState, id: string, now: number): BusinessView {
       pos: tr.pos,
       phase: tr.phase,
       carry: tr.carry,
-      hint: (step ? step === "tapTransport" : early && b.floors.some((f) => f.stock > 0)) && tr.phase === "idle" && !tr.managed,
+      hint: (step ? step === "tapTransport" : early) && b.floors.some((f) => f.stock > 0) && tr.phase === "idle" && !tr.managed,
     },
     sale: {
       ...station({ kind: "sale" }, sl.level, sl.managed, "sale"),

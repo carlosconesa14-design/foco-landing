@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-**Rider Millionaire: Idle Tycoon.** Para retomar el trabajo sin tener que leer conversaciones antiguas. Última actualización: 6 de octubre de 2026.
+**Rider Millionaire: Idle Tycoon.** Para retomar el trabajo sin tener que leer conversaciones antiguas. Última actualización: 6 de octubre de 2026 (revisión de los primeros 10 minutos, PWA y ficha de la tienda).
 
 ## En una frase
 Es un idle tycoon para móvil, publicado como **beta web** en https://carlosconesa14-design.github.io/foco-landing/ (el juego, en `/jugar/`). Tiene el material gráfico preparado para Google Play; faltan las cuentas, los datos legales y la validación nativa antes de publicar. Gana dinero con **anuncios bonificados** (AdMob) y compras dentro de la app.
@@ -79,7 +79,10 @@ Validación local: 225 tests correctos, build de producción correcto y 122 comp
 3c. ~~Mecánicas de cada negocio: fase 1 (Madrid) y fase 2 (Miami y Dubái, mismos módulos)~~ ✅ (`twists.ts`, `twistUi.ts`).
 3b. ~~Rangos de los puestos, «Mi vida», Halloween, invitar a amigos, nube y ajustes remotos~~ ✅. Arte completado (Codex, ver `ART.md`).
 4. Rendimiento en móviles de gama media (antes de salir en Google Play: ahora hay más efectos).
-5. Revisar la primera partida con datos reales.
+5. Revisar la primera partida con datos reales. **Primera pasada (6 oct):** solo hay 4 jugadores, todos de pruebas anteriores a los «primeros 10 minutos» (tutorial: 4 → 4 → 3 → 1 → 1 por paso; mediana de sesión 24 s; D1 = 0 %; un solo error, `Failed to start the audio device`, inofensivo). No se puede concluir nada del juego, pero el embudo apuntaba al paso 3 y se confirmó jugando: tocar la bici antes de que hubiera pedidos contaba como paso 2 con un viaje en vacío y dejaba atascado al jugador. **Arreglado** (`tapStation`, test en `businessView.test.ts`). Repetir con los primeros 20–30 jugadores reales: `analytics_tutorial_funnel`, `first_moment` y `analytics_retention` (`ANALITICA.md`).
+5b. ~~Primeros 10 minutos medidos con el bot~~ ✅ `npx vite-node scripts/first10.ts` (tutorial hasta ~2:20, almacén a los 5:20, huecos de más de 45 s anotados en la salida; `onboarding.ts` documenta los tiempos).
+5c. ~~PWA y vista previa del enlace de la beta~~ ✅ `public/manifest.webmanifest`, `public/sw.js` (copia local: arranca sin conexión desde la segunda visita), `src/platform/pwa.ts` y «Instalar en el móvil» en Ajustes (solo beta web). Etiquetas Open Graph y Twitter en `index.html`.
+5d. ~~Ficha de la tienda (ASO)~~ ✅ textos nuevos en español e inglés y orden de capturas en [`TIENDA.md`](TIENDA.md). Falta que Carlos los pegue en Play Console cuando exista la cuenta, y rehacer las capturas en ese orden.
 
 ## Cómo se trabaja
 - **Rama:** `claude/festive-allen-vb7bc1`. Después de cada PR unida, se rehace desde `main`.

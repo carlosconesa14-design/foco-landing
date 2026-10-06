@@ -99,6 +99,7 @@ export const EN: Record<string, string> = {
   "¡Nuevo puesto: {name}!": "New station: {name}!",
   "¡Has comprado: {name}!": "You bought: {name}!",
   "Aún no hay nada que vender arriba": "Nothing to sell yet",
+  "Aún no hay pedidos que recoger": "No orders to pick up yet",
 
   /* ---------- Bolsa ---------- */
   "Salir a bolsa": "Go public",
@@ -178,6 +179,10 @@ export const EN: Record<string, string> = {
   "Caja llena, maletín gratis y premio diario (en el móvil)": "Full cash box, free briefcase and daily reward (on mobile)",
   "Se guardan con tu partida.": "Saved with your game.",
   Idioma: "Language",
+  "Instalar en el móvil": "Install on your phone",
+  "¡Instalado! Búscalo en tu pantalla de inicio.": "Installed! Find it on your home screen.",
+  "Toca el botón Compartir del navegador y elige «Añadir a pantalla de inicio».": "Tap the browser's Share button and choose “Add to Home Screen”.",
+  "Abre el menú del navegador (⋮) y elige «Instalar aplicación» o «Añadir a pantalla de inicio».": "Open the browser menu (⋮) and choose “Install app” or “Add to Home screen”.",
   "Se aplica al momento": "Applies right away",
   "Diagnóstico del móvil": "Phone diagnostics",
   "Política de privacidad": "Privacy policy",

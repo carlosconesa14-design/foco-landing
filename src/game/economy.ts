@@ -366,6 +366,8 @@ export function tapStation(s: GameState, id: string, st: Station): string | null
   }
   if (st.kind === "transport") {
     if (b.transport.phase === "idle") {
+      // Un viaje en vacío no cuenta (ni en el tutorial): quien toca la bici antes de que haya pedidos se quedaría atascado.
+      if (!b.floors.some((f) => f.stock > 0)) return t("Aún no hay pedidos que recoger");
       b.transport.phase = "down";
       b.transport.target = 0;
       bump(s, "tapTransport");

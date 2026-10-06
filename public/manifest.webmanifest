@@ -1,0 +1,16 @@
+{
+  "name": "Rider Millionaire: Idle Tycoon",
+  "short_name": "Rider Millionaire",
+  "description": "De rider a millonario: monta negocios en Madrid, Miami y Dubái.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e1a2b",
+  "theme_color": "#0e1a2b",
+  "icons": [
+    { "src": "brand/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "brand/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

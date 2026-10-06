@@ -13,6 +13,7 @@ import { openSheet } from "./sheet";
 import { openDiagnostics } from "./diagnostics";
 import { openLegal, type LegalPage } from "./legal";
 import { notifications } from "../platform/notifications";
+import { canOfferInstall, install, isIOS } from "../platform/pwa";
 import {
   DAILY_RETOS,
   RETO_GEMS,
@@ -385,7 +386,8 @@ export function openSettings(ctx: PanelCtx): void {
        <div class="seg" data-langs>${LANGS.map((l) => `<button data-lang="${l.id}" aria-pressed="${l.id === lang}">${l.name}</button>`).join("")}</div></div>
      <div class="row"><span class="face">🎞️</span><div><b>${t("Reducir movimiento")}</b><span class="sub">${t("Para la gente, los coches y los efectos")}</span></div>
        <button class="switch" role="switch" aria-checked="${calmWorld()}" data-motion aria-label="${t("Reducir movimiento")}"><i></i></button></div>
-     <button class="btn ghost wide" data-open="feedback" style="margin-top:12px">💬 ${t("Danos tu opinión")}</button>
+     ${canOfferInstall() ? `<button class="btn ghost wide" data-install style="margin-top:12px">📲 ${t("Instalar en el móvil")}</button>` : ""}
+     <button class="btn ghost wide" data-open="feedback" style="margin-top:${canOfferInstall() ? 8 : 12}px">💬 ${t("Danos tu opinión")}</button>
      <button class="btn ghost wide" data-open="cloud" style="margin-top:8px">☁️ ${t("Partida en la nube")}</button>
      <button class="btn ghost wide" data-diag style="margin-top:8px">🩺 ${t("Diagnóstico del móvil")}</button>
      <p class="small muted legal-links"><a href="#" data-legal="privacidad">${t("Política de privacidad")}</a> · <a href="#" data-legal="bases-liga">${t("Bases de la Liga")}</a></p>`,
@@ -427,6 +429,20 @@ export function openSettings(ctx: PanelCtx): void {
       ctx.reload();
     };
   });
+  const inst = sheet.el.querySelector<HTMLButtonElement>("[data-install]");
+  if (inst)
+    inst.onclick = () =>
+      void install().then((r) => {
+        if (r === "accepted") return ctx.toast(t("¡Instalado! Búscalo en tu pantalla de inicio."));
+        if (r === "manual")
+          modal(ctx.root, {
+            title: t("Instalar en el móvil"),
+            text: isIOS()
+              ? t("Toca el botón Compartir del navegador y elige «Añadir a pantalla de inicio».")
+              : t("Abre el menú del navegador (⋮) y elige «Instalar aplicación» o «Añadir a pantalla de inicio»."),
+            actions: [{ label: t("Entendido"), run: () => {} }],
+          });
+      });
   sheet.el.querySelector<HTMLButtonElement>("[data-diag]")!.onclick = () => openDiagnostics(ctx);
   sheet.el.querySelectorAll<HTMLAnchorElement>("[data-legal]").forEach((a) => {
     a.onclick = (e) => {
