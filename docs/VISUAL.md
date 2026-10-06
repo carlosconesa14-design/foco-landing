@@ -341,3 +341,7 @@ Todo vehículo que circula (transportes, ventas, tráfico de la ciudad y el coch
 ### Entrega fase 1 — 6 de octubre de 2026
 
 Kit reutilizable CSS/Phaser, estados de botones, paneles con cabecera/cierre rojo, marcos y contadores. `LevelButton` común 70×56 y estados del modelo. HUD y barra inferior renovados; navegación Mundo en negocio y columna derecha reservada. Catálogo/receta en ART y galería `visual-review/phase-1`. 229 tests, build y 60 comprobaciones móviles en ES/EN con/sin movimiento. La pantalla de referencia de bici se entrega por separado en la fase 2.
+
+### Entrega fase 2 — 6 de octubre de 2026
+
+Pantalla de referencia de bici: calle madrileña, tres sedes propias, ocho locales/cocineros con tres poses, rider sobre bicicleta con frente/espalda y pedaleo rápido, bolsas, clientes en portales y ambiente. Sede/calle 280 px, franjas 172 px y zigzag de 30 px. Datos de construcción, nombres, rangos y precios vienen de `businessView`; pedaleo por Bridge mediante la acción existente. Se mantienen tutorial, recompensas, rangos, visitantes, mecánica física y desplazamiento recordado. Las piezas y los prompts están en ART; capturas ES/EN, movimiento completo/reducido y controles móviles en `visual-review/phase-2`. La medición de 60 fps en un móvil físico queda pendiente; Chromium en este entorno usa renderizado por software y no permite certificarla.

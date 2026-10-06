@@ -1,3 +1,4 @@
+import { BIKE_SIZES } from "./bikeSizes";
 import { ensureRankArt } from "./rankArt";
 import { artRef, hasGeneratedArt } from "./generated";
 import Phaser from "phaser";
@@ -80,7 +81,7 @@ export const LOOKS: Record<string, Look> = {
  * y `seller` sale a vender; si empiezan por "car_" son vehículos, si no, personajes.
  */
 export const BIZ_ART: Record<string, { worker: string; mover: string; seller: string; item: string; station: string }> = {
-  // Provisional hasta que llegue el arte propio (docs/ART.md, «Reparto en bici»).
+  // Bike originals are selected per stop/pose by RouteScene; these remain explicit missing-file fallbacks.
   bike: { worker: "cook", mover: "rider", seller: "ped1", item: "item_dish", station: "st_restaurant" },
   dropship: { worker: "packer", mover: "veh_forklift", seller: "veh_van", item: "item_box", station: "st_dropship" },
   restaurant: { worker: "cook", mover: "waiter", seller: "rider", item: "item_dish", station: "st_restaurant" },
@@ -569,10 +570,14 @@ for (const [id, h] of Object.entries(BLD)) {
   if (id !== "soon") for (const tier of [1, 2, 3]) def(`bld_${id}_${tier}`, BLD_W, h + (tier - 1) * 24);
 }
 
+Object.assign(ART, BIKE_SIZES);
+def("band_bike",390,172);
+for (const [name,w,h] of [["h",60,30],["v",30,60],["turn_ne",48,48],["turn_nw",48,48],["turn_se",48,48],["turn_sw",48,48],["stop",60,40],["ghost",60,30],["works",60,44]] as const) def(`route_bike_${name}`,w,h);
+
 /** Visual growth only: 1–2, 3–5 and 6–8 open stations. */
 export const buildingTier = (floors: number): number => floors >= 6 ? 3 : floors >= 3 ? 2 : 1;
 /** Sedes que aún no tienen arte propio: usan otra parecida (docs/ART.md, «Reparto en bici»). */
-const PROVISIONAL_HUB: Record<string, string> = { bike: "foodtruck" };
+const PROVISIONAL_HUB: Record<string, string> = {};
 export const buildingKey = (id: string, floors: number): string => `bld_${PROVISIONAL_HUB[id] ?? id}_${buildingTier(floors)}`;
 
 /** Small bespoke rooftop signs, independent of system emoji fonts. */

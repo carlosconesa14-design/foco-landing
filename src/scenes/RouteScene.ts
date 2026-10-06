@@ -5,12 +5,9 @@ import { ART, BIZ_ART, art, artScale, buildingKey, rankedKey } from "../art/cata
 import { artRef, hasGeneratedArt, swapArt } from "../art/generated";
 import { mix, shade } from "../art/pen";
 import { BUSINESS_DISTRICTS } from "../art/businessWorld";
-import { CHAIN, floorLabel } from "../game/data";
-import { bizDef, floorUnlockCost, setPedal } from "../game/economy";
 import { now as clockNow } from "../game/clock";
 import { fmt } from "../game/format";
-import { rankInfo, rankOf } from "../game/ranks";
-import type { BusinessState } from "../game/state";
+import { rankInfo } from "../game/ranks";
 import { TWIST_WORLD_ART } from "../game/twists";
 import type { OfferKind } from "../game/offers";
 import { COLORS, DPR, Pill, bridgeOf, calmWorld, floatText, label, reducedMotion, rewardCoins, setupCamera, type Bridge } from "./common";
@@ -29,7 +26,7 @@ import { screenOf } from "../view/screens";
  */
 
 const STOP_H = 172;
-const SURFACE_H = 250;
+const SURFACE_H = 280;
 const ROAD_W = 30;
 
 const isVehicle = (key: string) => key.startsWith("car_") || key.startsWith("veh_");
@@ -107,6 +104,7 @@ export class RouteScene extends Phaser.Scene {
     this.startY = data.scrollY ?? -1;
     this.previousFloors = data.previousFloors ?? 0;
     this.stops = [];
+    this.ambient = [];
     this.topPile = [];
     this.unlock = null;
     this.visitor = null;
@@ -128,12 +126,15 @@ export class RouteScene extends Phaser.Scene {
   private get look() {
     const look = BIZ_ART[this.bizId] ?? BIZ_ART.dropship;
     const pick = (k: string) => (VEHICLE_FALLBACK[k] && !this.textures.exists(k) && !hasGeneratedArt(this, k) ? VEHICLE_FALLBACK[k] : k);
-    return { ...look, mover: pick(look.mover), seller: pick(look.seller) };
+    return { ...look, item: this.bike && this.textures.exists("item_bike_bag") ? "item_bike_bag" : look.item, mover: pick(look.mover), seller: this.bike && this.textures.exists("ch_bike_customer_0") ? "bike_customer" : pick(look.seller) };
   }
 
-  private biz(): BusinessState {
-    return this.bridge.state().biz[this.bizId];
+  private view() {
+    return businessView(this.bridge.state(), this.bizId, clockNow());
   }
+
+  private get bike() { return this.bizId === "bike"; }
+  private ambient: Phaser.GameObjects.Image[] = [];
 
   private theme() {
     return screenOf(this.bizId).palette;
@@ -189,16 +190,16 @@ export class RouteScene extends Phaser.Scene {
     this.bridge = bridgeOf(this);
     setupCamera(this);
     const insets = this.bridge.insets();
-    const b = this.biz();
+    const b = this.view();
     this.W = this.scale.width / DPR;
-    this.floorCount = b.floors.length;
+    this.floorCount = b.stops.length;
     this.lastTopStock = b.topStock;
     this.levels = { transport: b.transport.level, sale: b.sale.level };
-    this.ranks = { transport: rankOf(b.transport.level), sale: rankOf(b.sale.level) };
+    this.ranks = { transport: b.transport.rank, sale: b.sale.rank };
     this.ground = insets.top + 70 + SURFACE_H;
     this.stopsTop = this.ground + 30;
 
-    const shown = Math.min(CHAIN.maxFloors, this.floorCount + 1);
+    const shown = Math.min(b.maxStops, this.floorCount + 1);
     this.buildPath(shown);
     this.drawSurface();
     this.drawGround(shown);
@@ -214,9 +215,11 @@ export class RouteScene extends Phaser.Scene {
     const remembered = RouteScene.remembered.get(this.bizId);
     cam.scrollY = Phaser.Math.Clamp(this.startY >= 0 ? this.startY : remembered ?? 0, 0, this.scroll.max);
     this.setupScroll();
+    this.game.events.on("blur", this.stopPedal, this);
     this.events.once("shutdown", () => {
+      this.game.events.off("blur", this.stopPedal, this);
       RouteScene.remembered.set(this.bizId, cam.scrollY);
-      setPedal(null);
+      this.bridge.pedal(null);
     });
 
     if (TWIST_WORLD_ART.includes(this.bizId)) this.twistWorld = new TwistWorld(this, this.bizId, { x: this.W * 0.56, y: this.ground + 16 });
@@ -243,6 +246,7 @@ export class RouteScene extends Phaser.Scene {
       sc.down = false; sc.onMap = false;
       this.stopPedal();
     });
+    input.on("pointerupoutside", () => { sc.down = false; sc.onMap = false; this.stopPedal(); });
     input.on("wheel", (_p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
       cam.scrollY = Phaser.Math.Clamp(cam.scrollY + dy * 0.6, 0, sc.max);
     });
@@ -274,15 +278,27 @@ export class RouteScene extends Phaser.Scene {
       const d = art(this, W * fx, g0 + 6, district).setOrigin(0.5, 1).setDepth(1).setFlipX(flip).setAlpha(0.55);
       d.setTint(mix(0xffffff, 0x9fc4dc, 0.45));
     }
+    if (this.bike && this.textures.exists("street_bike")) {
+      art(this, W / 2, g0, "street_bike").setOrigin(0.5, 1).setDisplaySize(W, SURFACE_H).setDepth(2);
+      for (let i = 0; i < 2; i++) {
+        const portal = art(this, W - 49, g0 + 12, `bike_portal_${i}`).setOrigin(0.5, 1).setDepth(6).setVisible(i === 0);
+        this.ambient.push(portal);
+      }
+      const pigeons = art(this, 112, g0 + 25, "bike_pigeons").setDepth(32);
+      this.ambient.push(pigeons);
+      const traffic = art(this, -60, g0 + 19, "car_0").setDepth(28).setDisplaySize(42, 24);
+      this.ambient.push(traffic);
+    }
     const street = this.add.graphics().setDepth(2);
     street.fillStyle(0xc9cdd6, 1).fillRect(0, g0 - 6, W, 10);
     street.fillStyle(0x4a5160, 1).fillRect(0, g0 + 4, W, 26);
     for (let x = 10; x < W; x += 34) street.fillStyle(0xf5f5f5, 0.8).fillRect(x, g0 + 16, 16, 3);
     // Sede: lo más grande de la pantalla
-    const key = buildingKey(this.bizId, this.biz().floors.length);
+    const v = this.view();
+    const key = this.bike ? `bld_bike_${v.tier}` : buildingKey(this.bizId, v.stops.length);
     const spec = ART[key];
-    const maxW = W - 220, maxH = SURFACE_H - 30;
-    const s = Math.min(maxW / spec.w, maxH / spec.h, 1.6);
+    const maxW = this.bike ? W - 90 : W - 220, maxH = this.bike ? 210 : SURFACE_H - 30;
+    const s = Math.min(maxW / spec.w, maxH / spec.h, this.bike ? 4 : 1.6);
     const hub = art(this, W / 2 - 6, g0 + 2, key).setOrigin(0.5, hasGeneratedArt(this, key) ? 1 : (spec.h - 6) / spec.h).setDepth(5);
     hub.setDisplaySize(spec.w * s, spec.h * s);
     if (this.previousFloors && buildingKey(this.bizId, this.previousFloors) !== key) constructionPop(this, hub, t("¡Nueva sede!"));
@@ -302,13 +318,13 @@ export class RouteScene extends Phaser.Scene {
     this.sellerHint = art(this, 0, 0, "ic_hand").setDepth(90).setVisible(false);
     this.saleButton = new LevelButton(this, W - 46, g0 - 150).setDepth(70).setInteractive({ useHandCursor: true });
     this.tap(this.saleButton, () => this.bridge.openStation(this.bizId, { kind: "sale" }));
-    label(this, W - 46, g0 - 112, bizDef(this.bizId).saleName, 11, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5, 0).setDepth(70);
+    label(this, W - 46, g0 - 112, v.sale.name, 11, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5, 0).setDepth(70);
     this.saleBadge = rankBadge(this, W - 78, g0 - 176, this.ranks.sale).setDepth(71);
     this.zone(W * 0.6, g0 - 20, W * 0.4, 52, () => this.bridge.tapStation(this.bizId, { kind: "sale" }));
     // Transporte: su nivel arriba a la izquierda, sobre la entrada de la ruta
     this.transportButton = new LevelButton(this, 46, g0 - 150).setDepth(70).setInteractive({ useHandCursor: true });
     this.tap(this.transportButton, () => this.bridge.openStation(this.bizId, { kind: "transport" }));
-    label(this, 46, g0 - 112, bizDef(this.bizId).transportName, 11, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5, 0).setDepth(70);
+    label(this, 46, g0 - 112, v.transport.name, 11, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5, 0).setDepth(70);
     this.transportBadge = rankBadge(this, 14, g0 - 176, this.ranks.transport).setDepth(71);
   }
 
@@ -316,12 +332,20 @@ export class RouteScene extends Phaser.Scene {
 
   private drawGround(shown: number): void {
     const W = this.W, theme = this.theme();
-    const g = this.add.graphics().setDepth(3);
-    g.fillStyle(theme.ground, 1).fillRect(0, this.ground + 30, W, this.bandTop(shown) - this.ground);
+    const g = this.add.graphics().setDepth(3.1);
+    if (!this.bike || !this.textures.exists("band_bike")) g.fillStyle(theme.ground, 1).fillRect(0, this.ground + 30, W, this.bandTop(shown) - this.ground);
     for (let i = 0; i < shown; i++) {
       const y = this.bandTop(i);
-      g.fillStyle(i % 2 ? shade(theme.ground, -0.03) : theme.ground, 1).fillRect(0, y, W, STOP_H);
+      if (!this.bike || !this.textures.exists("band_bike")) g.fillStyle(i % 2 ? shade(theme.ground, -0.03) : theme.ground, 1).fillRect(0, y, W, STOP_H);
       g.fillStyle(shade(theme.ground, -0.12), 1).fillRect(0, y + STOP_H - 3, W, 3);
+      if (this.bike) {
+        if (this.textures.exists("band_bike")) art(this, W / 2, y, "band_bike").setOrigin(0.5, 0).setDisplaySize(W, STOP_H).setDepth(3);
+        for (let xx = 0; xx < W; xx += 26) { g.lineStyle(1, 0xaebcaa, 0.35).lineBetween(xx, y, xx, y + STOP_H); }
+        for (let yy = y + 32; yy < y + STOP_H; yy += 32) g.lineStyle(1, 0xaebcaa, 0.35).lineBetween(0, yy, W, yy);
+        art(this, 16, y + 78, "tree_0").setDepth(7).setDisplaySize(30, 49);
+        g.fillStyle(0x866547).fillRoundedRect(W - 77, y + 120, 47, 8, 3);
+        g.fillStyle(0x0b2440).fillRect(W - 70, y + 128, 3, 10).fillRect(W - 40, y + 128, 3, 10);
+      }
     }
     // La ruta: banda ancha con esquinas redondeadas y línea discontinua en el centro
     const r = this.add.graphics().setDepth(4);
@@ -339,6 +363,14 @@ export class RouteScene extends Phaser.Scene {
       r.fillStyle(shade(theme.road, -0.3), done ? 1 : 0.35).fillCircle(p.x, p.y, (ROAD_W + 6) / 2);
       r.fillStyle(theme.road, done ? 1 : 0.35).fillCircle(p.x, p.y, ROAD_W / 2);
     }
+    if (this.bike) for (let i = 0; i < this.floorCount; i++) {
+      const y = this.crossY(i);
+      if (this.textures.exists("route_bike_stop")) art(this, this.mid, y, "route_bike_stop").setDepth(4.1);
+      for (let k = 0; k < 4; k++) r.fillStyle(0xfff9e8, 0.9).fillRect(this.left + 25 + k * 7, y - 11, 4, 22);
+      r.fillStyle(0x374352).fillCircle(this.right - 25, y, 9);
+      r.lineStyle(1, 0xa4acb3).strokeCircle(this.right - 25, y, 7);
+      for (let k = -1; k <= 1; k++) r.lineBetween(this.right - 30, y + k * 3, this.right - 20, y + k * 3);
+    }
     for (let i = 1; i < this.path.length; i++) {
       if (this.lens[i] > built + 1) continue;
       const a = this.path[i - 1], b = this.path[i], len = Math.hypot(b.x - a.x, b.y - a.y);
@@ -352,29 +384,30 @@ export class RouteScene extends Phaser.Scene {
   /* ---------- Paradas (puestos) ---------- */
 
   private drawStop(i: number): void {
-    const W = this.W, def = bizDef(this.bizId), y0 = this.bandTop(i), yc = this.crossY(i), mx = this.mid;
+    const W = this.W, v = this.view(), y0 = this.bandTop(i), yc = this.crossY(i), mx = this.mid;
     if (i === this.floorCount) {
       // Siguiente parada: en obras, con su precio
       art(this, mx, yc - 46, "ic_construction").setDepth(6).setScale(artScale(this, "ic_construction") * 1.6);
-      const cost = floorUnlockCost(def, i);
+      if (this.bike && this.textures.exists("route_bike_works")) art(this, mx, yc, "route_bike_works").setDepth(6);
+      const cost = v.next!.cost;
       this.unlock = new Pill(this, mx, yc - 90, `${t("Abrir")} · ${money(cost)}`).setDepth(70);
       this.unlock.setInteractive({ useHandCursor: true });
       this.tap(this.unlock, () => this.bridge.openUnlockFloor(this.bizId));
-      label(this, 72, y0 + 22, floorLabel(def, i), 12, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12).setAlpha(0.6);
+      label(this, 72, y0 + 22, i === this.floorCount ? v.next!.name : v.stops[i].name, 12, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12).setAlpha(0.6);
       this.zone(0, y0, W - 90, STOP_H, () => this.bridge.openUnlockFloor(this.bizId));
       return;
     }
-    const f = this.biz().floors[i];
-    const rank = rankOf(f.level);
-    const stationKey = this.look.station;
+    const f = v.stops[i];
+    const rank = f.rank;
+    const stationKey = screenOf(this.bizId).stationPerStop && this.textures.exists(`st_${this.bizId}_${i}`) ? `st_${this.bizId}_${i}` : this.look.station;
     const station = art(this, mx, yc - ROAD_W / 2 - 2, stationKey).setOrigin(0.5, 1).setDepth(8);
     const ss = Math.min(80 / ART[stationKey].h, 104 / ART[stationKey].w);
     station.setDisplaySize(ART[stationKey].w * ss, ART[stationKey].h * ss);
     if (rank) swapArt(station, rankedKey(this, stationKey, rank));
     if (this.previousFloors && i >= this.previousFloors) constructionPop(this, station, t("¡Puesto nuevo!"));
-    const workerKey = `ch_${this.look.worker}_0`;
+    const workerKey = this.bike && this.textures.exists(`ch_bike_${i}_0`) ? `ch_bike_${i}_0` : `ch_${this.look.worker}_0`;
     const worker = art(this, mx - 58, yc - ROAD_W / 2 - 2, workerKey).setOrigin(0.5, 1).setDepth(9);
-    worker.setDisplaySize(ART[workerKey].w * 1.15, ART[workerKey].h * 1.15);
+    worker.setDisplaySize(ART[workerKey].w * (this.bike ? 1.04 : 1.15), ART[workerKey].h * (this.bike ? 1.04 : 1.15));
     if (rank) swapArt(worker, rankedKey(this, workerKey, rank));
     // Producto hecho, en el borde de la ruta junto a la parada
     const pile = this.pile(mx + 62, yc - ROAD_W / 2 - 2, 9, 0.85);
@@ -387,7 +420,7 @@ export class RouteScene extends Phaser.Scene {
     mg.fillStyle(0xffd36b, 1).fillCircle(0, 0, 14);
     const mgIcon = art(this, 0, 0, "ic_manager").setScale(artScale(this, "ic_manager") * 1.3);
     const manager = this.add.container(72, y0 + 22, [mg, mgIcon]).setDepth(12);
-    label(this, 94, y0 + 22, floorLabel(def, i), 13, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12);
+    label(this, 94, y0 + 22, i === this.floorCount ? v.next!.name : v.stops[i].name, 13, "#2a3442", { bold: true }).setOrigin(0, 0.5).setDepth(12);
     // Botón de nivel, siempre a la derecha
     const button = new LevelButton(this, W - 46, y0 + STOP_H / 2 - 14).setDepth(70).setInteractive({ useHandCursor: true });
     this.tap(button, () => this.bridge.openStation(this.bizId, { kind: "floor", index: i }));
@@ -401,7 +434,7 @@ export class RouteScene extends Phaser.Scene {
   /* ---------- Transporte ---------- */
 
   private makeMover(): void {
-    const mk = isVehicle(this.look.mover) ? this.look.mover : `ch_${this.look.mover}_0`;
+    const mk = this.bike && this.textures.exists("veh_bike_0") ? "veh_bike_0" : isVehicle(this.look.mover) ? this.look.mover : `ch_${this.look.mover}_0`;
     this.mover = art(this, 0, 0, mk).setOrigin(0.5, 0.88).setDepth(40).setInteractive({ useHandCursor: true });
     if (!isVehicle(mk)) this.mover.setDisplaySize(ART[mk].w * 1.1, ART[mk].h * 1.1);
     if (this.ranks.transport && isVehicle(mk)) swapArt(this.mover, rankedKey(this, mk, this.ranks.transport));
@@ -409,24 +442,24 @@ export class RouteScene extends Phaser.Scene {
     this.moverCarry = label(this, 0, 0, "", 12, "#ffffff", { bold: true, stroke: "#14202f" }).setOrigin(0.5).setDepth(61);
     this.moverHint = art(this, 0, 0, "ic_hand").setDepth(90).setVisible(false);
     this.pedalFx = this.add.graphics().setDepth(39);
-    this.pedalTip = label(this, 0, 0, t("¡Mantén pulsado para pedalear!"), 12, "#2e2200", { bold: true }).setOrigin(0.5).setBackgroundColor("#ffd36b").setPadding(6, 3, 6, 3).setDepth(91).setVisible(false);
+    this.pedalTip = label(this, 0, 0, t("¡Mantén pulsado para pedalear!"), 12, "#2e2200", { bold: true }).setOrigin(0.5).setBackgroundColor("#ffd36b").setPadding(6, 3, 6, 3).setWordWrapWidth(170).setDepth(91).setVisible(false);
     this.mover.on("pointerdown", () => {
-      if (screenOf(this.bizId).mover === "bike" && !this.biz().transport.managed) {
+      if (screenOf(this.bizId).mover === "bike" && !this.view().transport.managed) {
         this.pedaling = true;
-        setPedal(this.bizId);
+        this.bridge.pedal(this.bizId);
       }
     });
     this.tap(this.mover, () => this.bridge.tapStation(this.bizId, { kind: "transport" }));
     this.mover.on("pointerdown", () => {
       // Al pedalear, el toque también pone en marcha el reparto (sin esperar a soltar).
-      if (this.pedaling && this.biz().transport.phase === "idle") this.bridge.tapStation(this.bizId, { kind: "transport" });
+      if (this.pedaling && this.view().transport.phase === "idle") this.bridge.tapStation(this.bizId, { kind: "transport" });
     });
   }
 
   private stopPedal(): void {
     if (!this.pedaling) return;
     this.pedaling = false;
-    setPedal(null);
+    this.bridge.pedal(null);
   }
 
   /* ---------- Utilidades ---------- */
@@ -449,7 +482,7 @@ export class RouteScene extends Phaser.Scene {
 
   update(_t: number, dtMs: number): void {
     const s = this.bridge.state();
-    if (!this.biz()) return;
+    if (!s.biz[this.bizId]) return;
     const v = businessView(s, this.bizId, clockNow());
     if (v.stops.length !== this.floorCount) {
       this.scene.restart({ id: this.bizId, scrollY: this.cameras.main.scrollY, previousFloors: this.floorCount });
@@ -460,6 +493,12 @@ export class RouteScene extends Phaser.Scene {
     if (!sc.down && Math.abs(sc.vel) > 0.2) {
       cam.scrollY = Phaser.Math.Clamp(cam.scrollY + sc.vel * dt * 60, 0, sc.max);
       sc.vel *= Math.pow(reducedMotion() ? 0.65 : 0.92, dt * 60);
+    }
+    if (this.bike && this.ambient.length) {
+      this.ambient[0].setVisible(v.sale.phase !== "back");
+      this.ambient[1].setVisible(v.sale.phase === "back");
+      this.ambient[2].setAngle(calmWorld() ? 0 : Math.sin(this.time.now / 700) * 3);
+      this.ambient[3].setX(calmWorld() ? -60 : (this.time.now / 36) % (this.W + 120) - 60);
     }
     this.visitor?.update();
     this.twistWorld?.update(s);
@@ -474,7 +513,7 @@ export class RouteScene extends Phaser.Scene {
       if (!o) return;
       const active = f.working && !calmWorld();
       o.worker.setAngle(active ? Math.sin(clk * 7 + i) * 4 : 0);
-      if (!calmWorld()) swapArt(o.worker, rankedKey(this, `ch_${this.look.worker}_${active ? (Math.floor(clk * 6 + i) % 2 ? 1 : 2) : 0}`, o.rank));
+      if (!calmWorld()) swapArt(o.worker, rankedKey(this, `${o.workerKey.slice(0, -1)}${active ? (Math.floor(clk * 6 + i) % 2 ? 1 : 2) : 0}`, o.rank));
       if (f.working && sparkNow && !reducedMotion()) this.sparks.emitParticleAt(o.station.x + (Math.random() - 0.5) * 40, o.station.y - 60, 1);
       if (f.stock > o.lastStock) transferProduct(this, this.look.item, { x: o.station.x, y: o.station.y - 50 }, { x: o.pile[0].x, y: o.pile[0].y });
       o.lastStock = f.stock;
@@ -506,16 +545,23 @@ export class RouteScene extends Phaser.Scene {
     const dx = back ? -p.dx : p.dx;
     this.mover.setPosition(p.x, p.y + 4);
     if (dx) this.mover.setFlipX(dx < 0);
-    if (!isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, `ch_${this.look.mover}_${moving && !calmWorld() ? (Math.floor(clk * (this.pedaling ? 16 : 8)) % 2 ? 1 : 2) : 0}`, this.ranks.transport));
+    if (this.bike && this.textures.exists("veh_bike_0")) {
+      const rear = (back ? -p.dy : p.dy) < 0;
+      const pose = moving && !calmWorld() ? this.pedaling ? "fast" : Math.floor(clk * 7) % 2 ? "1" : "2" : "0";
+      swapArt(this.mover, `veh_bike_${rear ? "rear_" : ""}${pose}`);
+      this.mover.setDisplaySize(74, 82);
+      if (!dx) this.mover.setFlipX(rear);
+    } else if (!isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, `ch_${this.look.mover}_${moving && !calmWorld() ? (Math.floor(clk * (this.pedaling ? 16 : 8)) % 2 ? 1 : 2) : 0}`, this.ranks.transport));
     this.moverItem.setVisible(tr.carry > 0).setPosition(p.x + (dx < 0 ? 14 : -14), this.mover.y - this.mover.displayHeight * 0.7);
     this.moverCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "").setPosition(p.x, this.mover.y - this.mover.displayHeight - 10);
     this.moverHint.setVisible(tr.hint);
     this.moverHint.setPosition(p.x + 24, this.mover.y - this.mover.displayHeight - 4 + (reducedMotion() ? 0 : Math.sin(clk * 8) * 4));
     // Pedalear: rastro de velocidad y aviso mientras se aprende
-    this.pedalTip.setVisible(screenOf(this.bizId).mover === "bike" && !tr.managed && v.tutorial === "tapTransport").setPosition(p.x + 70, this.mover.y - this.mover.displayHeight - 30);
+    this.pedalTip.setVisible(screenOf(this.bizId).mover === "bike" && !tr.managed && v.tutorial === "tapTransport").setPosition(Phaser.Math.Clamp(p.x + 40, 95, this.W - 105), this.mover.y - this.mover.displayHeight - 30);
     this.pedalFx.clear();
     if (this.pedaling && moving && !reducedMotion()) {
       const back2 = dx < 0 ? 1 : -1;
+      for (let k = 0; k < 2; k++) this.pedalFx.fillStyle(0x6fe3ff, 0.8).fillEllipse(p.x + 24 + k * 5, this.mover.y - 65 - ((clk * 18 + k * 5) % 12), 3, 5);
       for (let k = 0; k < 3; k++) {
         const ly = this.mover.y - 14 - k * 9, lx = p.x + back2 * (18 + ((clk * 120 + k * 13) % 18));
         this.pedalFx.lineStyle(2.5, 0xffffff, 0.8).lineBetween(lx, ly, lx + back2 * 14, ly);
@@ -570,7 +616,7 @@ export class RouteScene extends Phaser.Scene {
       rewardCoins(this, x, y, sale.lucky);
       if (sale.lucky) {
         if (!reducedMotion()) { this.coins.explode(12, x, y); this.cameras.main.shake(180, 0.004); }
-        floatText(this, x, y - 70, `🔥 ${t("¡VIRAL!")} +${fmt(sale.amount)}`, "#f5c542");
+        floatText(this, x, y - 70, `${t("¡VIRAL!")} +${fmt(sale.amount)}`, "#f5c542");
       } else {
         if (!reducedMotion()) this.coins.explode(4, x, y);
         floatText(this, x, y - 50, `+${fmt(sale.amount)}`);

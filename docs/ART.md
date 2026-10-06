@@ -1078,3 +1078,29 @@ Piezas reutilizables en `src/ui/interface-kit.css`: `.ui-button` verde, `.blue`,
 Iconos vectoriales propios añadidos: menú, calendario, reloj, cierre, producción, transporte, venta y bici. HUD en una fila, impulso con temporizador, objetivo y accesos compactos; navegación incluye Mundo dentro del negocio. Flotantes de mejora/viral a la izquierda para reservar los 80px derechos de Nivel. Sin cambios de economía.
 
 Galería y validación: `docs/visual-review/phase-1/`, 229 tests y build correctos; 60 comprobaciones a 390×844 en ES/EN, movimiento completo/reducido, una y ocho paradas, mejora, menú y siete paneles. Partidas de demostración locales; Supabase simulado sin escrituras. Rendimiento físico Android pendiente de validación, sin afirmar 60fps medidos.
+
+### Fase 2 — mundo del reparto en bici (6 de octubre de 2026)
+
+Arte original generado para este juego, sin marcas. Los originales y las cajas de extracción están en `public/sprites/source/bike/`; el juego carga únicamente las piezas PNG/WebP del manifiesto. Exportación reproducible: `node scripts/export-bike-art.mjs`, `node scripts/export-bike-road.mjs`, `npm run art:webp`. Los scripts utilizan los originales versionados cuando no existe el directorio temporal de generación.
+
+| Claves | Tamaño lógico | Contenido |
+| --- | --- | --- |
+| `street_bike` | 390×280 | Barrio madrileño de mañana, balcones, árboles, bancos y calle |
+| `bld_bike_1..3` | Hasta 340×300, ajustado por Boot | Portal con bicis, local de riders, central con terraza solar y motos |
+| `band_bike` | 390×172 | Acera original de losetas, con alcorques/árboles y bancos en la escena |
+| `route_bike_h`, `_v` | 60×30 / 30×60 | Asfalto y marcas de carril |
+| `route_bike_turn_ne/nw/se/sw` | 48×48 | Cuatro esquinas de ruta |
+| `route_bike_stop`, `_ghost`, `_works` | 60×40 / 60×30 / 60×44 | Ensanche, tramo fantasma y barrera de obra |
+| `st_bike_0..7` | 104×80 | Hamburguesas, pizza, sushi, kebab, tacos, poke, panadería y heladería |
+| `ch_bike_<0..7>_<0..2>` | 64×84 | Ocho cocineros, cada uno con reposo y dos poses de trabajo, pies completos |
+| `veh_bike_0/1/2/fast`, `veh_bike_rear_0/1/2/fast` | 74×82 | Rider de gorra verde en bicicleta, pedaleo normal/rápido, frente y espalda |
+| `ch_bike_customer_0/1/2` | 64×84 | Clienta propia con bolsa, reposo y dos poses de paseo |
+| `bike_portal_0/1` | 86×104 | Entrega de bolsas a clientes en sus portales |
+| `bike_pigeons` | 45×32 | Pareja de palomas |
+| `item_bike_bag` | 22×29 | Bolsa propia con emblema verde |
+
+61 piezas, todas exportadas a 2×. Las sedes conservan el ajuste de parcela para la ciudad y se amplían en la escena de negocio. Los rangos de puestos/cocineros usan las adiciones estructurales acumulativas de `rankArt` (marcos, mostrador, terminal, equipamiento), conservando cada fachada y pose. Las texturas se crean solo para las variantes mostradas. La geometría continua de la ruta sigue dibujándose por código para mantener el ancho de 30 px, el zigzag exacto y las marcas sin deformarlas; incorpora las piezas de ensanche y obras. El kit de tramos queda disponible para reutilizarlo.
+
+Prompts de dirección: «Original polished toy 3D mobile tycoon, navy outlines, warm upper-left light, Madrid morning, no text or real logos, transparent background for sprites». Fachadas: «eight distinct complete shop vignettes, burger/pizza/sushi/kebab/tacos/poke/bakery/ice cream, food emblems, awnings and plants». Cocineros: «eight distinct cooks, matching uniforms and food tools, complete legs and shoes, idle and two active cooking poses, transparent gutters». Rider: «same green cap/backpack protagonist on a pedal bicycle, front and rear idle/alternating pedals/fast lean, complete wheels». Sedes: «three architectural evolutions: small rider portal, rider warehouse, large delivery headquarters». Clientes: «same friendly female Madrid customer, cream top, blue trousers, green-star takeaway bag, full-body idle and walking poses». Calle: «Madrid balconies, roof tiles, trees, benches, open foreground street». Ruta y acera: vectores propios definidos en `scripts/export-bike-road.mjs`.
+
+La escena lee `businessView()` también durante la construcción. El gesto de mantener pulsado llama al Bridge `pedal`, conectado a la acción existente `setPedal`; soltar fuera, perder foco o salir de la escena lo detiene. No se cambian fórmulas, guardado ni modelos de lógica. Ambiente limitado a dos palomas y un coche; efectos intensos desactivados al reducir movimiento. Galería: `docs/visual-review/phase-2/`.

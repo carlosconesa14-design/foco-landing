@@ -106,3 +106,7 @@ Codex entrega las 28 piezas del último encargo de ART en `site/img/` y `marketi
 ### 6 de octubre de 2026 — fase visual 1
 
 Kit de interfaz y botón Nivel implementados en una rama propia, con HUD, barra inferior, navegación Mundo y flotantes fuera de la columna de Nivel. 229 tests, build y 60 comprobaciones móviles ES/EN y movimiento completo/reducido. Ver `docs/visual-review/phase-1/`.
+
+## Visual — fases 1 y 2 (6 de octubre de 2026)
+
+Fase 1 en `codex/visual-phase-1-interface`: kit de interfaz, HUD/barra y botón Nivel compartido. Fase 2 en `codex/visual-phase-2-bike`, basada en la fase 1: pantalla completa de reparto, 61 piezas propias PNG/WebP y lectura del modelo de vista para la construcción. Pedaleo conectado por Bridge, sin cambios en `src/game`, `businessView`, plataforma o servidor. Catálogo en ART y galerías en `docs/visual-review/`. Las PR se preparan por separado; su creación mediante la API de GitHub está devolviendo Forbidden. No se ha fusionado ni desplegado ninguna de estas ramas.

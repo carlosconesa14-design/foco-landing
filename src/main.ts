@@ -12,7 +12,7 @@ import { CITIES, CONFIG, FOUNDERS, GOLD, LIFE, TOURISM, VIRAL_TITLES, floorLabel
 import { boostHours, callWave, gold, lockGold, tourism } from "./game/world";
 import { BIG_RANK, rankInfo, rankSnapshot, rankUps } from "./game/ranks";
 import { applyFounderError, applyFounderRank, founderPending, reachedFounderCity } from "./game/founders";
-import { bizList, earn, lifeIndex, offlineEarnings, passiveRate, setLuck, tapStation, tick, type SaleEvent } from "./game/economy";
+import { bizList, earn, lifeIndex, offlineEarnings, passiveRate, setLuck, setPedal, tapStation, tick, type SaleEvent } from "./game/economy";
 import { fmtTime } from "./game/format";
 import { nextGoal } from "./game/goal";
 import * as meta from "./game/meta";
@@ -191,6 +191,7 @@ async function watchAd(placement: Placement): Promise<boolean> {
 
 const bridge: Bridge = {
   state: () => S,
+  pedal: setPedal,
   tapStation: (id, st) => {
     const err = tapStation(S, id, st);
     twistTap(id); // cuenta aunque esa parte ya trabaje sola (hype, crítico)

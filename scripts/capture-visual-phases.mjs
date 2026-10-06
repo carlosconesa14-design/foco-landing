@@ -5,7 +5,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import assert from 'node:assert/strict';
 const root=resolve(import.meta.dirname,'..'),port=5201,url=`http://127.0.0.1:${port}`;
-const out=resolve(root,process.env.VISUAL_OUTPUT||'artifacts/visual-phase-1');await mkdir(out,{recursive:true});
+const out=resolve(root,process.env.VISUAL_OUTPUT||'artifacts/visual-phase-2');await mkdir(out,{recursive:true});
 const service=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port',String(port),'--strictPort'],{cwd:root,stdio:'pipe'});
 let log='',browser;service.stdout.on('data',d=>log+=d);service.stderr.on('data',d=>log+=d);
 const findings=[],errors=[];
@@ -27,7 +27,7 @@ try{
  },{count,level});await page.waitForTimeout(450);for(let i=0;i<10;i++){const b=page.locator('.celebrate .cbtn');if(!await b.count())break;await b.first().click({timeout:1500}).catch(()=>{});await page.waitForTimeout(200);}}
  async function check(label){const bad=await page.evaluate(()=>[...document.querySelectorAll('button,#hud,#bar,.sheet,.more-menu')].filter(e=>{let r=e.getBoundingClientRect();return r.width&&r.height&&getComputedStyle(e).visibility!=='hidden'&&(r.left<-.5||r.right>innerWidth+.5)}).map(e=>e.id||e.className));assert.deepEqual(bad,[],label+' overflow');findings.push(label);}
  for(const count of [1,8]){
- await seed(count,count===8?50:1);await check(`${locale}/${motion}/${count}/layout`);
+ await seed(count,count===8?50:1);if(count===1)await page.waitForTimeout(2400);await check(`${locale}/${motion}/${count}/layout`);
  await page.screenshot({path:resolve(out,`${locale}-${motion}-${count}-top.png`)});
  const geometry=await page.evaluate(()=>{const sc=__game.game.scene.getScene('route');return{count:sc.stops.length,max:sc.scroll.max,buttons:sc.stops.map(s=>({w:s.button.width,h:s.button.height,x:s.button.x,y:s.button.y}))};});assert.equal(geometry.count,count);assert(geometry.buttons.every(b=>b.w>=70&&b.h>=56));findings.push(`${locale}/${motion}/${count}/level targets`);
  if(count===8){await page.evaluate(()=>{const s=__game.game.scene.getScene('route');s.cameras.main.scrollY=s.scroll.max;});await page.screenshot({path:resolve(out,`${locale}-${motion}-${count}-bottom.png`)});findings.push(`${locale}/${motion}/last stop visible`);}
@@ -35,6 +35,22 @@ try{
  const button=await page.evaluate(()=>{const s=__game.game.scene.getScene('route'),b=s.transportButton;return{x:b.x,y:b.y-s.cameras.main.scrollY};});
  const before=await page.evaluate(()=>__game.state.biz.bike.transport.level);await page.mouse.click(button.x,button.y);await page.waitForTimeout(200);assert(await page.locator('.sheet').count(),'Level should open upgrade panel');assert.equal(await page.evaluate(()=>__game.state.biz.bike.transport.level),before);await check(`${locale}/${motion}/${count}/upgrade`);await page.screenshot({path:resolve(out,`${locale}-${motion}-${count}-upgrade.png`)});await page.locator('.sheet-close').click();
  }
+ await seed(1);
+ const assets=await page.evaluate(()=>{const sc=__game.game.scene.getScene('route');return {shops:Array.from({length:8},(_,i)=>sc.textures.exists(`st_bike_${i}`)),cooks:Array.from({length:24},(_,i)=>sc.textures.exists(`ch_bike_${Math.floor(i/3)}_${i%3}`)),mover:sc.mover.texture.key};});
+ assert(assets.shops.every(Boolean)&&assets.cooks.every(Boolean));assert(assets.mover.startsWith('veh_bike_'));findings.push(`${locale}/${motion}/original bike art loaded`);
+ // A real pointer hold invokes the existing pedal action; release outside stops it.
+ await page.evaluate(()=>{const b=__game.state.biz.bike;b.transport.managed=false;b.transport.phase='idle';b.transport.pos=0;});
+ await page.waitForTimeout(80);
+ const rider=await page.evaluate(()=>{const sc=__game.game.scene.getScene('route');return {x:sc.mover.x,y:sc.mover.y-sc.mover.displayHeight/2-sc.cameras.main.scrollY};});
+ await page.mouse.move(rider.x,rider.y);await page.mouse.down();await page.waitForTimeout(120);
+ assert(await page.evaluate(()=>__game.game.scene.getScene('route').pedaling));findings.push(`${locale}/${motion}/hold pedals`);
+ await page.screenshot({path:resolve(out,`${locale}-${motion}-pedaling.png`)});
+ await page.mouse.move(-10,-10);await page.mouse.up();await page.waitForTimeout(80);
+ assert.equal(await page.evaluate(()=>__game.game.scene.getScene('route').pedaling),false);findings.push(`${locale}/${motion}/release outside stops holding`);
+ await seed(8,50);
+ for(const k of [2,4,6]){await page.evaluate(i=>{const sc=__game.game.scene.getScene('route');sc.cameras.main.scrollY=sc.bandTop(i)-145;},k);await page.screenshot({path:resolve(out,`${locale}-${motion}-stops-${k+1}-${k+2}.png`)});}
+ await seed(3,50);await page.screenshot({path:resolve(out,`${locale}-${motion}-hq-2.png`)});findings.push(`${locale}/${motion}/middle headquarters`);
+ await page.evaluate(()=>{const sc=__game.game.scene.getScene('route');sc.cameras.main.scrollY=0;});
  await page.locator('#menuToggle').click();await check(`${locale}/${motion}/menu`);await page.screenshot({path:resolve(out,`${locale}-${motion}-menu.png`)});await page.locator('#menuClose').click();
  for(const name of ['daily','wheel','life','execs','achievements','league','settings']){
  await page.locator('#menuToggle').click();await page.locator(`#moreMenu [data-open="${name}"]`).click();await page.waitForTimeout(200);await check(`${locale}/${motion}/${name}`);await page.screenshot({path:resolve(out,`${locale}-${motion}-${name}.png`)});if(await page.locator('.sheet-close').count())await page.locator('.sheet-close').click();else if(await page.locator('.modal .btn').count())await page.locator('.modal .btn').last().click();

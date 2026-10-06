@@ -77,6 +77,8 @@ export interface Bridge {
   tapStation(bizId: string, st: Station): void;
   /** Botón de nivel de una parte: abre el panel de mejora. */
   openStation(bizId: string, st: Station): void;
+  /** Existing holding action, without economy decisions in the scene. */
+  pedal(bizId: string | null): void;
   openUnlockFloor(bizId: string): void;
   /** Toque sobre una parcela de la ciudad. */
   tapPlot(bizId: string): void;
