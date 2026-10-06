@@ -13,7 +13,7 @@ import { CHESTS, CITIES, CONFIG, FOUNDERS, GOLD, LIFE, TOURISM, VIRAL_TITLES, fl
 import { boostHours, callWave, gold, lockGold, tourism } from "./game/world";
 import { BIG_RANK, rankInfo, rankSnapshot, rankUps } from "./game/ranks";
 import { applyFounderError, applyFounderRank, founderPending, reachedFounderCity } from "./game/founders";
-import { bizList, earn, lifeIndex, offlineEarnings, passiveRate, setLuck, setPedal, tapStation, tick, type SaleEvent } from "./game/economy";
+import { bizDef, bizList, earn, floorUnlockCost, lifeIndex, managerCost, offlineEarnings, passiveRate, setLuck, setPedal, tapStation, tick, upgradeQuote, type SaleEvent } from "./game/economy";
 import { fmtTime } from "./game/format";
 import { nextGoal } from "./game/goal";
 import * as meta from "./game/meta";
@@ -381,6 +381,20 @@ root.addEventListener("click", (e) => {
 });
 document.getElementById("gems")!.addEventListener("click", () => openShop(ctx));
 
+/** Lo que cuesta el paso del tutorial (si cuesta algo) y cuánto falta: así se sabe qué hay que ganar antes de poder hacerlo. */
+function tutorialPrice(stat: string): string {
+  const id = bizList(S)[0].id, def = bizDef(id);
+  const cost =
+    stat === "upgrades" ? upgradeQuote({ ...S, buyMode: 1 }, id, { kind: "floor", index: 0 }).cost
+    : stat === "hires" ? Math.min(...([{ kind: "floor", index: 0 }, { kind: "transport" }, { kind: "sale" }] as const).map((st) => managerCost(def, st)))
+    : stat === "floors" ? floorUnlockCost(def, S.biz[id].floors.length)
+    : 0;
+  if (cost <= 0) return "";
+  return S.cash >= cost
+    ? ` ${t("(cuesta {price})", { price: money(cost) })}`
+    : ` ${t("(cuesta {price}, te faltan {missing})", { price: money(cost), missing: money(cost - S.cash) })}`;
+}
+
 function updateMeta(now: number): void {
   meta.ensureDay(S, now);
   ensureRetos(S, now);
@@ -479,7 +493,7 @@ function updateMeta(now: number): void {
   if (show && step) {
     tut.style.top = `${top}px`;
     document.getElementById("tutStep")!.textContent = `${S.meta.tutorial + 1}/${meta.TUTORIAL_LENGTH}`;
-    document.getElementById("tutText")!.textContent = step.text;
+    document.getElementById("tutText")!.textContent = step.text + tutorialPrice(step.stat);
   }
   updateGoal(now, top, show);
 }

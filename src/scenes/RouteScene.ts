@@ -93,6 +93,8 @@ export class RouteScene extends Phaser.Scene {
   private topPile: Phaser.GameObjects.Image[] = [];
   private topStock!: Phaser.GameObjects.Text;
   private unlock: Pill | null = null;
+  /** Ya se ha acercado la cámara al botón «Abrir» del tutorial (una sola vez). */
+  private nudged = false;
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
   private coins!: Phaser.GameObjects.Particles.ParticleEmitter;
   private visitor: WorldVisitor | null = null;
@@ -119,6 +121,7 @@ export class RouteScene extends Phaser.Scene {
     this.routeWorld = null;
     this.topPile = [];
     this.unlock = null;
+    this.nudged = false;
     this.visitor = null;
     this.twistWorld = null;
     this.pedaling = false;
@@ -542,6 +545,7 @@ export class RouteScene extends Phaser.Scene {
   /* ---------- Actualización ---------- */
 
   update(_t: number, dtMs: number): void {
+    if (!this.sys.isActive()) return; // detenida en este mismo fotograma (cambio de pantalla)
     const s = this.bridge.state();
     if (this.bizId !== FEST_ID && !s.biz[this.bizId]) return;
     const v = businessView(s, this.bizId, clockNow());
@@ -552,6 +556,12 @@ export class RouteScene extends Phaser.Scene {
     }
     const cam = this.cameras.main, sc = this.scroll;
     const dt = Math.min(dtMs, 100) / 1000;
+    // Tutorial «Abre la siguiente parada»: si el botón queda tapado por la barra de abajo, la cámara baja sola hasta él.
+    if (v.tutorial === "floors" && !this.nudged && this.unlock) {
+      this.nudged = true;
+      const viewH = cam.height / cam.zoom, hidden = this.unlock.y + 40 > cam.scrollY + viewH - this.bridge.insets().bottom;
+      if (hidden) this.tweens.addCounter({ from: cam.scrollY, to: Phaser.Math.Clamp(this.unlock.y - viewH * 0.45, 0, sc.max), duration: 700, ease: "Cubic.easeInOut", onUpdate: (tw) => (cam.scrollY = tw.getValue() ?? cam.scrollY) });
+    }
     this.routeWorld?.update(dt);
     if (!sc.down && Math.abs(sc.vel) > 0.2) {
       cam.scrollY = Phaser.Math.Clamp(cam.scrollY + sc.vel * dt * 60, 0, sc.max);

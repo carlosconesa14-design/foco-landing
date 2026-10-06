@@ -87,3 +87,14 @@ html[data-motion="reduced"] .loading-route path,html[data-motion="reduced"] .loa
 .sheet[data-ui-screen] .school-node.locked { opacity:1; }
 .sheet[data-ui-screen] .ranktrack .rk { opacity:1;color:#24445c;background:#d3dde0; }
 .sheet[data-ui-screen] .ranktrack .rk:not(.on) { filter:grayscale(1); }
+
+/* Revisión de legibilidad (6 oct): textos claros sobre fondos oscuros dentro de los paneles claros y viceversa. */
+.sheet[data-ui-screen] .sheet-head::after { background:linear-gradient(90deg,#fdf5e9f5 0%,#fdf5e9e0 58%,#fdf5e999 100%),linear-gradient(0deg,#fdf5e9 8%,#fdf5e9e6 32%,#fdf5e914 85%); }
+.sheet[data-ui-screen] .sheet-head h3 { text-shadow:0 1px #fff,0 0 8px #fdf5e9; }
+.btn.ghost { background:linear-gradient(#ffffff44,#ffffff00 48%),var(--face); border:2px solid var(--ui-navy); box-shadow:0 4px 0 var(--rim),inset 0 2px 0 #ffffff66; color:#fff; }
+.tabbtn[aria-selected="true"] { --face:#ffd36b; --rim:#9e6523; color:#352100; background:linear-gradient(#ffffff44,#ffffff00 48%),var(--face); }
+.seg button { color:#24445c; }
+.seg button[aria-pressed="true"] { color:#352100; }
+.daycard { color:#eef8ff; }
+.daycard .muted, .daycard .small { color:#c3deed; }
+.toast { background:#12304a; color:#fff; border:2px solid #ffd36b; box-shadow:0 4px 0 #0b2440,0 8px 18px #0008; text-shadow:0 1px 0 #0b2440; }

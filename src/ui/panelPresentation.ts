@@ -3,12 +3,12 @@ import { IMG_EXT } from '../art/imgExt';
 import { icon } from './icons';
 import { reducedMotion } from '../scenes/common';
 
-export interface SheetPresentation { screen?: string; hero?: string }
+export interface SheetPresentation { screen?: string; hero?: string; /** Negocio cuyo ambiente sale de fondo (si no, el de la pantalla). */ world?: string }
 export function presentSheet(el:HTMLElement,options:SheetPresentation):void {
  const screen=options.screen;if(!screen)return;
  el.dataset.uiScreen=screen;
  const head=el.querySelector<HTMLElement>('.sheet-head');if(!head)return;
- const world=PANEL_WORLDS[screen]??'office';
+ const world=options.world??PANEL_WORLDS[screen]??'office';
  head.style.setProperty('--panel-art',`url("sprites/${world==='office'?'ui_office_room':`street_${world}`}.${IMG_EXT}")`);
  const slot=head.querySelector('.sicon');if(slot)slot.innerHTML=icon(PANEL_ICONS[screen]??'missions');
  if(options.hero){const image=document.createElement('img');image.className='panel-object';image.alt='';image.src=`sprites/${options.hero}.${IMG_EXT}`;head.append(image);}

@@ -487,6 +487,8 @@ export class CityScene extends Phaser.Scene {
   }
 
   update(_t: number, dtMs: number): void {
+    // Al tocar un negocio, la escena se detiene dentro de su propio fotograma (en un temporizador): sus imágenes ya están destruidas.
+    if (!this.sys.isActive()) return;
     const s = this.bridge.state();
     const key = this.stateKey();
     if (key !== this.ownedKey) {

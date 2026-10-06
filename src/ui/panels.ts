@@ -203,7 +203,7 @@ export function openStationSheet(ctx: PanelCtx, id: string, st: Station): void {
             if (ok) analytics.track("skill_used", { biz: id, part: st.kind });
           };
       }
-    }), { screen: "upgrade" },
+    }), { screen: "upgrade", world: id },
   );
   $<HTMLButtonElement>(sheet.el, "[data-up]").onclick = () => W(() => {
     const s = ctx.state();
@@ -245,7 +245,7 @@ export function openUnlockSheet(ctx: PanelCtx, id: string): void {
      <button class="buy big wide" data-unlock><span>${t("Abrir puesto")}</span><b>${money(cost)}</b></button>`,
     (el) => {
       $<HTMLButtonElement>(el, "[data-unlock]").disabled = W(() => ctx.state().cash) < cost;
-    }, { screen: "unlock", hero: `st_${id}_${i}` },
+    }, { screen: "unlock", world: id, hero: `st_${id}_${i}` },
   );
   $<HTMLButtonElement>(sheet.el, "[data-unlock]").onclick = () => W(() => {
     const before = bizTier(ctx.state().biz[id]);
@@ -284,7 +284,7 @@ export function openPlotSheet(ctx: PanelCtx, id: string): void {
      <button class="buy big wide" data-buyplot><span>${t("Comprar")}</span><b>${money(def.price)}</b></button>`,
     (el) => {
       $<HTMLButtonElement>(el, "[data-buyplot]").disabled = ctx.state().cash < def.price;
-    }, { screen: "plot", hero: `bld_${id}_1` },
+    }, { screen: "plot", world: id, hero: `bld_${id}_1` },
   );
   $<HTMLButtonElement>(sheet.el, "[data-buyplot]").onclick = () => {
     const msg = act.buyBusiness(ctx.state(), id);

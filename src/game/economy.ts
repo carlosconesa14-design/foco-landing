@@ -390,7 +390,7 @@ export function tapStation(s: GameState, id: string, st: Station): string | null
     return null;
   }
   if (b.sale.phase !== "idle") return null;
-  if (b.topStock <= 0) return t("Aún no hay nada que vender arriba");
+  if (b.topStock <= 0) return t("Aún no hay nada que vender: espera a que la bici traiga pedidos");
   startSale(bizDef(id), b, execMults(s, id, now()).log);
   return null;
 }
