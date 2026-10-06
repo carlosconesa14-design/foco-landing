@@ -35,7 +35,7 @@ export function updateHeader(s: GameState, now: number): void {
     shownFest = fest;
     shownCash = target;
   }
-  cash.innerHTML = `<small class="cash-symbol">${fest ? "🎟️" : CUR}</small>${fmt(shownCash)}`;
+  cash.innerHTML = `<span class="wallet-coin">${icon(fest ? "ic_ticket" : "cash")}</span><small class="cash-symbol">${CUR}</small>${fmt(shownCash)}`;
   // Pequeño salto visual cuando entra un buen pellizco (más de un 5 %)
   if (target > prev * 1.05 && prev > 0 && !cash.classList.contains("bump")) {
     cash.classList.add("bump");
@@ -53,6 +53,7 @@ export function updateHeader(s: GameState, now: number): void {
   $("lifeDetail").textContent = `${L.name} · ${N ? t("Siguiente: {name} ({m})", { name: N.name, m: money(N.min) }) : t("Has llegado a la cima")}`;
   const rem = (s.boostEnd - now) / 1000;
   $("hustleShortcut").classList.toggle("on", rem > 0);
+  $("hustleShortcut").innerHTML = `<b>×2</b>${rem>0?`<small>${fmtTime(rem)}</small>`:""}`;
   $("hustleShortcut").setAttribute("aria-label", rem > 0 ? t("Hustle x2 activo: {time}. Abrir menú", { time: fmtTime(rem) }) : t("Activar modo hustle x2. Abrir menú"));
   $("boost").classList.toggle("on", rem > 0);
   $("boostTxt").innerHTML =
@@ -81,8 +82,9 @@ export function renderBar(s: GameState): void {
     bar.innerHTML = `
       <div class="chain" id="chain"></div>
       <button class="navbtn" data-nav="city"><span class="ic">${icon("ic_city", "🏙️")}</span>${t("Ciudad")}</button>
-      <button class="barmid tap" data-nav="empire" aria-label="${t("Ver tu imperio")}"><b>${bizIcon(def)} ${def.id === "dropship" ? t("Almacén") : def.name} <span class="more">▸</span></b><span id="barRate"></span></button>
-      <button class="ad-btn rushbtn" data-rush="${def.id}" id="rushBtn"><span class="play"></span><span id="rushTxt">x${CONFIG.rushMult}</span></button>`;
+      <div class="bar-center"><button class="barmid tap" data-nav="empire" aria-label="${t("Ver tu imperio")}"><b>${bizIcon(def)} ${def.id === "dropship" ? t("Almacén") : def.name} <span class="more">▸</span></b><span id="barRate"></span></button>
+      <button class="ad-btn rushbtn" data-rush="${def.id}" id="rushBtn"><span class="play"></span><span id="rushTxt">x${CONFIG.rushMult}</span></button></div>
+      <button class="navbtn" data-nav="world"><span class="ic">${icon("ic_world")}</span>${t("Mundo")}</button>`;
   } else {
     bar.innerHTML = `
       <button class="navbtn" data-nav="ipo"><span class="ic">${icon("ic_ipo", "📈")}</span>${t("Bolsa")}</button>
@@ -178,8 +180,8 @@ function chainCards(s: GameState, id: string, now: number): string {
   };
   const allManaged = b.floors.every((f) => f.managed);
   return (
-    card("production", `floor:${floorIdx}`, id === "dropship" ? icon("wh_shelf") : def.worker, t("Producción"), `${rankIcon(Math.min(...b.floors.map((f) => rankOf(f.level))))}${b.floors.length} ${b.floors.length === 1 ? t("puesto") : t("puest.")}`, r.production, allManaged, canFloor, managerCost(def, floorSt)) +
-    card("transport", "transport", id === "dropship" ? icon("veh_forklift") : def.transportIcon, def.transportName, `${rankIcon(rankOf(b.transport.level))}${t("Nv")} ${b.transport.level}`, r.transport, b.transport.managed, s.cash >= nextLevelCost(s, def, { kind: "transport" }, b.transport.level), managerCost(def, { kind: "transport" })) +
-    card("sale", "sale", id === "dropship" ? icon("veh_van") : def.saleWorker, def.saleName, `${rankIcon(rankOf(b.sale.level))}${t("Nv")} ${b.sale.level}`, r.sale, b.sale.managed, s.cash >= nextLevelCost(s, def, { kind: "sale" }, b.sale.level), managerCost(def, { kind: "sale" }))
+    card("production", `floor:${floorIdx}`, icon("production"), t("Producción"), `${rankIcon(Math.min(...b.floors.map((f) => rankOf(f.level))))}${b.floors.length} ${b.floors.length === 1 ? t("puesto") : t("puest.")}`, r.production, allManaged, canFloor, managerCost(def, floorSt)) +
+    card("transport", "transport", icon(id==="bike"?"bike":"transport"), def.transportName, `${rankIcon(rankOf(b.transport.level))}${t("Nv")} ${b.transport.level}`, r.transport, b.transport.managed, s.cash >= nextLevelCost(s, def, { kind: "transport" }, b.transport.level), managerCost(def, { kind: "transport" })) +
+    card("sale", "sale", icon("sale"), def.saleName, `${rankIcon(rankOf(b.sale.level))}${t("Nv")} ${b.sale.level}`, r.sale, b.sale.managed, s.cash >= nextLevelCost(s, def, { kind: "sale" }, b.sale.level), managerCost(def, { kind: "sale" }))
   );
 }

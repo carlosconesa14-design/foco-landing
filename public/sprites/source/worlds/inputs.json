@@ -1,0 +1,131 @@
+{
+  "shops": {
+    "dropship": {
+      "original": "exec-dc6b2b63-1a86-4abc-84d7-c99b6922f439.png"
+    },
+    "restaurant": {
+      "original": "exec-d52a206b-88a6-4149-91f2-69b08c0a2f1d.png"
+    },
+    "tiktok": {
+      "original": "exec-37ecbe5b-ebc7-4bcd-8abd-dbb063caa24d.png"
+    },
+    "ai": {
+      "original": "exec-54f2a9f2-3cf8-4997-a654-50ce69cef92f.png"
+    },
+    "foodtruck": {
+      "original": "exec-6ede527f-809e-4072-984a-6d20b0d0842c.png"
+    },
+    "beachclub": {
+      "original": "exec-6994ecc3-3976-4c76-a464-3fd50d88fbf1.png"
+    },
+    "yachts": {
+      "original": "exec-fc4538ce-afeb-4f78-bf78-06295573c590.png"
+    },
+    "realestate": {
+      "original": "exec-c676298f-4c73-4868-84e1-48e12a48cf26.png"
+    },
+    "crypto": {
+      "original": "exec-941b1859-2b1d-435c-a217-279509e1a22a.png"
+    },
+    "supercars": {
+      "original": "exec-430c06bc-d6d3-4d0b-a1fc-a0e341a9465f.png"
+    },
+    "hotel": {
+      "original": "exec-cd922790-a9e5-42bd-87e6-43f9139f80fb.png"
+    },
+    "safari": {
+      "original": "exec-194eaa11-36a7-4922-a121-5222c997caae.png"
+    },
+    "souk": {
+      "original": "exec-d168ee8c-02c6-4af0-83c7-42fbffc2ce31.png"
+    },
+    "tower": {
+      "original": "exec-68c6f18d-2f77-43d2-9da9-3b054a0e8d70.png"
+    },
+    "fest": {
+      "original": "exec-ea6fec13-c467-4a51-8235-1b47bd65aa3d.png"
+    }
+  },
+  "streets": {
+    "madrid": {
+      "ids": [
+        "dropship",
+        "restaurant",
+        "tiktok",
+        "ai"
+      ],
+      "original": "exec-7b4efc35-86eb-41a5-82b5-d61a9b9bb1cc.png"
+    },
+    "miami": {
+      "ids": [
+        "foodtruck",
+        "beachclub",
+        "yachts",
+        "realestate"
+      ],
+      "original": "exec-73d26e01-34ef-4b76-9d61-3aca48e0f7b2.png"
+    },
+    "dubai": {
+      "ids": [
+        "crypto",
+        "supercars",
+        "hotel",
+        "safari"
+      ],
+      "original": "exec-d4a5d0db-3250-497c-89a9-6e73f79721e3.png"
+    },
+    "extra": {
+      "ids": [
+        "souk",
+        "tower",
+        "fest",
+        "office"
+      ],
+      "original": "exec-016ff6cb-6a15-405e-9b5e-61cb19d9e2f3.png"
+    }
+  },
+  "workers": {
+    "madrid": {
+      "roles": [
+        "packer",
+        "cook",
+        "creator"
+      ],
+      "original": "exec-095c47ed-5cfc-4bce-9d35-03aa3d3a14ec.png"
+    },
+    "sun": {
+      "roles": [
+        "engineer",
+        "taquero",
+        "bartender"
+      ],
+      "original": "exec-34bc58a1-5bc0-493b-b4cd-c6f31ba465d4.png"
+    },
+    "business": {
+      "roles": [
+        "sailor",
+        "broker",
+        "tech"
+      ],
+      "original": "exec-faf9c8a1-7279-4998-b991-19c724196169.png"
+    },
+    "dubai": {
+      "roles": [
+        "mechanic",
+        "butler",
+        "guide"
+      ],
+      "original": "exec-a2212ec0-97bc-4191-ab92-45c66b061c77.png"
+    },
+    "gold": {
+      "roles": [
+        "goldsmith",
+        "builder",
+        "vendor"
+      ],
+      "original": "exec-2143d88f-b9d8-40d0-9b15-683150710d41.png"
+    }
+  },
+  "fest": "exec-b8b44c13-e147-46ba-9f30-b4a7a9a9de8c.png",
+  "rears": "exec-f8972254-80ad-46cf-a489-c31113eb8da7.png"
+}

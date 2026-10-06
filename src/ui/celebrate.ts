@@ -1,3 +1,4 @@
+import { reducedMotion } from "../scenes/common";
 import { decorateIcons } from "./icons";
 import { t } from "../i18n";
 /**
@@ -9,7 +10,7 @@ import { t } from "../i18n";
  */
 
 const CONFETTI = ["#f5c542", "#3ddc97", "#ff6b5b", "#4aa8ff", "#b57bff", "#ffffff"];
-const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+const reduced = () => reducedMotion();
 
 let bannerQueue: { icon: string; text: string }[] = [];
 let bannerBusy = false;

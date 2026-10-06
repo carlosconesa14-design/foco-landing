@@ -33,7 +33,7 @@ export function openFeedback(ctx: PanelCtx, preset: number | null = null): void 
      <div class="fb-stars" role="radiogroup" aria-label="${t("Puntuación")}">${[1, 2, 3, 4, 5].map((n) => `<button role="radio" data-star="${n}" aria-label="${n}">${STAR}</button>`).join("")}</div>
      <textarea class="fb-text" data-text maxlength="1000" rows="5" placeholder="${t("¿Qué te gusta? ¿Qué cambiarías? ¿Algo no funciona?")}"></textarea>
      <p class="small muted">${t("Es anónima: no escribas tu nombre, email ni otros datos personales.")}</p>
-     <button class="buy big wide" data-send><span>${t("Enviar")}</span></button>`,
+     <button class="buy big wide" data-send><span>${t("Enviar")}</span></button>`, undefined, { screen: "feedback" },
   );
   const el = sheet.el;
   const stars = [...el.querySelectorAll<HTMLButtonElement>("[data-star]")];

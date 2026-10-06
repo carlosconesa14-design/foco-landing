@@ -31,6 +31,7 @@ export const reducedMotion = () => {
 export const calmWorld = () => motionPref() === "reduced";
 /** Ajustes → «Reducir movimiento». */
 export function setReducedMotion(on: boolean): void {
+  document.documentElement.dataset.motion=on?"reduce":"full";
   try {
     localStorage.setItem("motion", on ? "reduced" : "full");
   } catch {
@@ -76,6 +77,8 @@ export interface Bridge {
   tapStation(bizId: string, st: Station): void;
   /** Botón de nivel de una parte: abre el panel de mejora. */
   openStation(bizId: string, st: Station): void;
+  /** Existing holding action, without economy decisions in the scene. */
+  pedal(bizId: string | null): void;
   openUnlockFloor(bizId: string): void;
   /** Botón de habilidad del gerente de una parte (x2 de velocidad unos minutos). */
   useSkill(bizId: string, st: Station): void;
@@ -101,6 +104,7 @@ export function overlayHeight(): number {
 
 export function setupCamera(scene: Phaser.Scene): { w: number; h: number } {
   const cam = scene.cameras.main;
+  document.documentElement.dataset.motion=motionPref()==="reduced"?"reduce":"full";
   cam.setZoom(DPR);
   cam.setOrigin(0, 0);
   const motion = window.matchMedia("(prefers-reduced-motion: reduce)");

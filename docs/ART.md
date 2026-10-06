@@ -1068,3 +1068,65 @@ Sigue pendiente; ver «Encargo: coches vistos de espaldas».
 5. Tramos y fondos del resto de negocios, primero los de Madrid.
 
 Cuando se entregue cada bloque, avisar a Claude para engancharlo y extender la vista en ruta a más negocios.
+
+## Catálogo: fase 1 del kit de interfaz — 6 de octubre de 2026
+
+Piezas reutilizables en `src/ui/interface-kit.css`: `.ui-button` verde, `.blue`, `.gold`, `.danger` (normal/pulsado/desactivado), `.ui-panel` con cabecera, `.ui-progress`, `.ui-chip`, `.ui-portrait` con marcos por rareza. Los selectores de los paneles existentes consumen el mismo kit. CSS original: esmalte con contorno marino grueso, brillo superior, sombra inferior y tipografía Lilita One/Rubik. No requiere atlas ni red.
+
+`btn_level`: componente `src/scenes/LevelButton.ts`, caja lógica 70×56, reposo azul gris, listo azul vivo con flecha verde, atasco naranja. Pulsación con relieve y animación del número solo al aumentar; respeta reducir movimiento. El valor y el estado proceden del modelo `businessView`; el toque abre el panel mediante Bridge.
+
+Iconos vectoriales propios añadidos: menú, calendario, reloj, cierre, producción, transporte, venta y bici. HUD en una fila, impulso con temporizador, objetivo y accesos compactos; navegación incluye Mundo dentro del negocio. Flotantes de mejora/viral a la izquierda para reservar los 80px derechos de Nivel. Sin cambios de economía.
+
+Galería y validación: `docs/visual-review/phase-1/`, 229 tests y build correctos; 60 comprobaciones a 390×844 en ES/EN, movimiento completo/reducido, una y ocho paradas, mejora, menú y siete paneles. Partidas de demostración locales; Supabase simulado sin escrituras. Rendimiento físico Android pendiente de validación, sin afirmar 60fps medidos.
+
+### Fase 2 — mundo del reparto en bici (6 de octubre de 2026)
+
+Arte original generado para este juego, sin marcas. Los originales y las cajas de extracción están en `public/sprites/source/bike/`; el juego carga únicamente las piezas PNG/WebP del manifiesto. Exportación reproducible: `node scripts/export-bike-art.mjs`, `node scripts/export-bike-road.mjs`, `npm run art:webp`. Los scripts utilizan los originales versionados cuando no existe el directorio temporal de generación.
+
+| Claves | Tamaño lógico | Contenido |
+| --- | --- | --- |
+| `street_bike` | 390×280 | Barrio madrileño de mañana, balcones, árboles, bancos y calle |
+| `bld_bike_1..3` | Hasta 340×300, ajustado por Boot | Portal con bicis, local de riders, central con terraza solar y motos |
+| `band_bike` | 390×172 | Acera original de losetas, con alcorques/árboles y bancos en la escena |
+| `route_bike_h`, `_v` | 60×30 / 30×60 | Asfalto y marcas de carril |
+| `route_bike_turn_ne/nw/se/sw` | 48×48 | Cuatro esquinas de ruta |
+| `route_bike_stop`, `_ghost`, `_works` | 60×40 / 60×30 / 60×44 | Ensanche, tramo fantasma y barrera de obra |
+| `st_bike_0..7` | 104×80 | Hamburguesas, pizza, sushi, kebab, tacos, poke, panadería y heladería |
+| `ch_bike_<0..7>_<0..2>` | 64×84 | Ocho cocineros, cada uno con reposo y dos poses de trabajo, pies completos |
+| `veh_bike_0/1/2/fast`, `veh_bike_rear_0/1/2/fast` | 74×82 | Rider de gorra verde en bicicleta, pedaleo normal/rápido, frente y espalda |
+| `ch_bike_customer_0/1/2` | 64×84 | Clienta propia con bolsa, reposo y dos poses de paseo |
+| `bike_portal_0/1` | 86×104 | Entrega de bolsas a clientes en sus portales |
+| `bike_pigeons` | 45×32 | Pareja de palomas |
+| `item_bike_bag` | 22×29 | Bolsa propia con emblema verde |
+
+61 piezas, todas exportadas a 2×. Las sedes conservan el ajuste de parcela para la ciudad y se amplían en la escena de negocio. Los rangos de puestos/cocineros usan las adiciones estructurales acumulativas de `rankArt` (marcos, mostrador, terminal, equipamiento), conservando cada fachada y pose. Las texturas se crean solo para las variantes mostradas. La geometría continua de la ruta sigue dibujándose por código para mantener el ancho de 30 px, el zigzag exacto y las marcas sin deformarlas; incorpora las piezas de ensanche y obras. El kit de tramos queda disponible para reutilizarlo.
+
+Prompts de dirección: «Original polished toy 3D mobile tycoon, navy outlines, warm upper-left light, Madrid morning, no text or real logos, transparent background for sprites». Fachadas: «eight distinct complete shop vignettes, burger/pizza/sushi/kebab/tacos/poke/bakery/ice cream, food emblems, awnings and plants». Cocineros: «eight distinct cooks, matching uniforms and food tools, complete legs and shoes, idle and two active cooking poses, transparent gutters». Rider: «same green cap/backpack protagonist on a pedal bicycle, front and rear idle/alternating pedals/fast lean, complete wheels». Sedes: «three architectural evolutions: small rider portal, rider warehouse, large delivery headquarters». Clientes: «same friendly female Madrid customer, cream top, blue trousers, green-star takeaway bag, full-body idle and walking poses». Calle: «Madrid balconies, roof tiles, trees, benches, open foreground street». Ruta y acera: vectores propios definidos en `scripts/export-bike-road.mjs`.
+
+La escena lee `businessView()` también durante la construcción. El gesto de mantener pulsado llama al Bridge `pedal`, conectado a la acción existente `setPedal`; soltar fuera, perder foco o salir de la escena lo detiene. No se cambian fórmulas, guardado ni modelos de lógica. Ambiente limitado a dos palomas y un coche; efectos intensos desactivados al reducir movimiento. Galería: `docs/visual-review/phase-2/`.
+
+### Fases 3–9 agrupadas — mundos, paneles y vehículos (6 de octubre de 2026)
+
+Encargo agrupado por petición del usuario: rama de trabajo `codex/visual-phases-3-9`, incorporada a la PR #17 existente para entregar el conjunto sin crear otra PR. Se conserva la referencia de bici y el kit previos. La rama integra también el `main` que aporta habilidades, Escuela y feria; sus reglas pertenecen a la implementación de lógica existente.
+
+**Catálogo reproducible:** `src/art/worldSizes.ts`, `routeSizes.ts` y `public/sprites/source/worlds/metadata.json` contienen dimensiones lógicas y recortes de cada pieza. Los originales completos están en `source/worlds`, junto con `inputs.json`. Exportar con `node scripts/export-world-art.mjs`, `node scripts/export-world-routes.mjs`, `node scripts/export-world-icons.mjs` y `npm run art:webp`.
+
+| Claves | Tamaño lógico | Contenido y receta |
+| --- | --- | --- |
+| `street_<id>` | 390×280 | Calle propia por negocio; cuatro hojas de entornos en cuadrícula 2×2. Oficina: `ui_office_room`. |
+| `bld_<id>_1..3` | hasta 340×300 | Tres evoluciones originales existentes, exportadas al tamaño de sede. La feria tiene tres arcos nuevos. En la escena se cargan como `hub_<id>_<tier>` y se ajustan al contorno transparente. |
+| `st_<id>_0..7` | 104×80 | Ocho puestos propios para cada uno de los 14 negocios restantes y la feria. Hoja por negocio en cuadrícula 4×2, orden por fila. |
+| `ch_<rol>_0..2` | 66×90 | Quince trabajadores originales con reposo y dos poses de trabajo: cinco hojas 3×3, una persona por fila. |
+| `band_<id>` | 390×172 | Suelo original vectorial: nave, baldosa, plató, suelo técnico, paseo, muelle, calle residencial, circuito, moqueta, arena, zoco, andamio y feria. |
+| `route_<id>_{h,v,turn_ne,turn_nw,turn_se,turn_sw,stop,ghost,works}` | 30–60 px | Piezas vectoriales al doble: materiales propios, esquinas, parada, fantasma y obras. Rodillos, pulsos, huellas y luces se animan en `RouteWorld`, con movimiento reducido. |
+| `veh_{flatbed,luggage,safari,goldvan,crane,order,supply,excursion}_rear` | caja del frente | Ocho vistas traseras originales en una hoja 4×2. |
+| `veh_fest_cart`, `_rear`, `prop_fest_ticketbooth` | 74×64 / 86×90 | Carrito delantero/trasero y taquilla. |
+| `mgr_cheer_0..1`, `item_fest_ticket` | 64×84 / 24×22 | Gerente en dos poses y tickets de feria. |
+| `ic_{skill,idea,school,ticket,fest_trophy}`, `ic_school_{prod,log,sale,mgr,start}` | 48×48 | Diez pictogramas de esmalte vectoriales propios; fuente en `visualIcons.ts` y exportador de iconos. |
+| `car_*_rear`, `van_rear`, `luxcar_*_rear` | igual al frente | Quince vehículos traseros originales recuperados del catálogo anterior. Fuente/recortes en `source/traffic-rear.*`; exportador `export-traffic-rear.mjs`. |
+
+**Prompts de las imágenes originales:** estilo común «original polished toy 3D game assets, thick navy outlines, warm upper-left light, readable at phone scale, no real brands, no text, no logos». Puestos: «transparent strict 4×2 grid, eight separate storefront/product stations, each cell complete and distinct», seguido de las ocho paradas de cada negocio de VISUAL §4 y de la feria §14.3. Trabajadores: «transparent strict 3×3 grid; each row same worker, full body, idle / working tool to left / working tool to right», con packer/cook/creator, engineer/taquero/bartender, sailor/broker/tech, mechanic/butler/guide y goldsmith/builder/vendor. Entornos: «strict 2×2 grid, orthographic front street panorama, empty foreground, buildings framing the sides, no UI», con las cuatro ciudades/temas indicados en `inputs.json`. Feria: «transparent strict 3×3 grid; three increasingly elaborate carnival entrance arches; cart front, cart rear, ticket booth; cheering manager two poses and ticket». Traseros: «transparent strict 4×2 grid, same original vehicle design, three-quarter rear view, complete vehicle with consistent wheels and scale».
+
+**Rangos:** `rankedKey` crea las versiones de cada puesto específico y pose a partir del PNG original. Añade pilares, marquesinas, terminales y remates; los trabajadores reciben insignia, puños, hombreras y capa de leyenda. No se limita a cambiar el tinte. Las texturas por negocio y sus rangos se liberan al superar dos mundos en caché.
+
+**Presentación:** cabeceras ilustradas diferenciadas, panel de mejora con navegación anterior/siguiente y progreso de rango, árbol de Escuela con requisitos y animación de idea, mapa ilustrado, despacho con placas de mejoras reales, avión al viajar y campana al salir a bolsa. Tráfico en ambos sentidos, transporte/venta con traseros, luces nocturnas según la ciudad, decoración de temporada y feria. Los efectos leen datos y llaman a las acciones existentes; no cambian fórmulas económicas.

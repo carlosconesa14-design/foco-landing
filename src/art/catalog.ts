@@ -1,3 +1,6 @@
+import { WORLD_SIZES } from "./worldSizes";
+import { ROUTE_SIZES } from "./routeSizes";
+import { BIKE_SIZES } from "./bikeSizes";
 import { ensureRankArt } from "./rankArt";
 import { artRef, hasGeneratedArt } from "./generated";
 import Phaser from "phaser";
@@ -14,6 +17,8 @@ import { Pen, faceQuad, isoBox, leftFace, rightFace, shade } from "./pen";
 export const ART: Record<string, { w: number; h: number }> = {};
 
 const def = (key: string, w: number, h: number) => (ART[key] = { w, h });
+
+for (const name of ["idea","school","skill","ticket","fest_trophy","school_prod","school_log","school_sale","school_mgr","school_start"]) def(`ic_${name}`,48,48);
 
 for (const district of ["madrid","miami","dubai","industrial","terrace","neon"]) def(`district_${district}`, 270, 190);
 
@@ -80,19 +85,19 @@ export const LOOKS: Record<string, Look> = {
  * y `seller` sale a vender; si empiezan por "car_" son vehículos, si no, personajes.
  */
 export const BIZ_ART: Record<string, { worker: string; mover: string; seller: string; item: string; station: string }> = {
-  // Provisional hasta que llegue el arte propio (docs/ART.md, «Reparto en bici»).
+  // Bike originals are selected per stop/pose by RouteScene; these remain explicit missing-file fallbacks.
   bike: { worker: "cook", mover: "rider", seller: "ped1", item: "item_dish", station: "st_restaurant" },
   dropship: { worker: "packer", mover: "veh_forklift", seller: "veh_van", item: "item_box", station: "st_dropship" },
-  restaurant: { worker: "cook", mover: "waiter", seller: "rider", item: "item_dish", station: "st_restaurant" },
+  restaurant: { worker: "cook", mover: "waiter", seller: "luxcar_motorbike", item: "item_dish", station: "st_restaurant" },
   tiktok: { worker: "creator", mover: "editor", seller: "brand", item: "item_clip", station: "st_tiktok" },
   ai: { worker: "engineer", mover: "tech", seller: "sales", item: "item_chip", station: "st_ai" },
   foodtruck: { worker: "taquero", mover: "skater", seller: "vendor", item: "item_taco", station: "st_foodtruck" },
   // La feria del evento (arte provisional: el de los food trucks; arte propio en docs/VISUAL.md §14.3)
-  fest: { worker: "taquero", mover: "skater", seller: "vendor", item: "item_taco", station: "st_foodtruck" },
+  fest: { worker: "vendor", mover: "veh_fest_cart", seller: "vendor", item: "item_fest_ticket", station: "st_fest" },
   beachclub: { worker: "bartender", mover: "waiter", seller: "promoter", item: "item_cocktail", station: "st_beachclub" },
-  yachts: { worker: "captain", mover: "sailor", seller: "agent", item: "item_ticket", station: "st_yachts" },
+  yachts: { worker: "sailor", mover: "sailor", seller: "agent", item: "item_ticket", station: "st_yachts" },
   realestate: { worker: "broker", mover: "clerk", seller: "sales", item: "item_key", station: "st_realestate" },
-  crypto: { worker: "coder", mover: "tech", seller: "trader", item: "item_token", station: "st_crypto" },
+  crypto: { worker: "tech", mover: "tech", seller: "trader", item: "item_token", station: "st_crypto" },
   supercars: { worker: "mechanic", mover: "veh_flatbed", seller: "valet", item: "item_carkey", station: "st_supercars" },
   hotel: { worker: "butler", mover: "veh_luggage", seller: "valet", item: "item_bell", station: "st_hotel" },
   safari: { worker: "guide", mover: "veh_safari", seller: "guide", item: "item_camel", station: "st_safari" },
@@ -533,6 +538,11 @@ export const RANK_LEVELS = [1, 2, 3, 4, 5];
 
 /** El coche del personaje («Mi vida») circulando por la ciudad: `luxcar_<id>` (atlas o PNG). */
 for (const i of LUXURY) if (i.cat === "car") def(`luxcar_${i.id}`, 50, 42);
+// Rear traffic variants share exactly the front sprite's logical box.
+for (const key of ['car_0','car_1','car_2','car_3','van','car_miami_0','car_miami_1',...LUXURY.filter(i=>i.cat==='car').map(i=>`luxcar_${i.id}`)]) {
+  def(`${key}_rear`, ART[key].w, ART[key].h);
+}
+
 for (const n of RANK_LEVELS) {
   def(`rank_${n}`, 24, 24);
   for (const k of [...STATIONS, "wh_shelf", "veh_forklift", "veh_van", "wh_forklift_loaded", "wh_forklift_rear", "wh_van_open", "wh_van_rear", "veh_safari", "veh_crane", "veh_luggage", "veh_flatbed", "veh_goldvan", "rest_chef_a", "rest_chef_b", "rest_waiter_a", "rest_waiter_b"]) {
@@ -546,6 +556,7 @@ export function rankedKey(scene: Phaser.Scene, key: string, rank: number): strin
   const ch = /^(ch_\w+?)_([012])$/.exec(key);
   for (let n = rank; n >= 1; n--) {
     const k = ch ? `${ch[1]}_r${n}_${ch[2]}` : `${key}_r${n}`;
+    if (!ART[k] && ART[key]) ART[k] = { ...ART[key] };
     if (!ART[k]) continue;
     if (scene.textures.exists(k) || hasGeneratedArt(scene, k)) return k;
     if (ART[key] && ensureRankArt(scene, key, k, n, ART[key])) {
@@ -571,10 +582,14 @@ for (const [id, h] of Object.entries(BLD)) {
   if (id !== "soon") for (const tier of [1, 2, 3]) def(`bld_${id}_${tier}`, BLD_W, h + (tier - 1) * 24);
 }
 
+Object.assign(ART, BIKE_SIZES, WORLD_SIZES, ROUTE_SIZES);
+def("band_bike",390,172);
+for (const [name,w,h] of [["h",60,30],["v",30,60],["turn_ne",48,48],["turn_nw",48,48],["turn_se",48,48],["turn_sw",48,48],["stop",60,40],["ghost",60,30],["works",60,44]] as const) def(`route_bike_${name}`,w,h);
+
 /** Visual growth only: 1–2, 3–5 and 6–8 open stations. */
 export const buildingTier = (floors: number): number => floors >= 6 ? 3 : floors >= 3 ? 2 : 1;
 /** Sedes que aún no tienen arte propio: usan otra parecida (docs/ART.md, «Reparto en bici»). */
-const PROVISIONAL_HUB: Record<string, string> = { bike: "foodtruck", fest: "beachclub" };
+const PROVISIONAL_HUB: Record<string, string> = { fest: "beachclub" };
 export const buildingKey = (id: string, floors: number): string => `bld_${PROVISIONAL_HUB[id] ?? id}_${buildingTier(floors)}`;
 
 /** Small bespoke rooftop signs, independent of system emoji fonts. */

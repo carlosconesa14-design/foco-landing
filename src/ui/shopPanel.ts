@@ -59,7 +59,7 @@ export function openShop(ctx: PanelCtx): void {
           });
         };
       });
-    },
+    }, { screen: "shop" },
   );
   sheet.el.querySelector<HTMLButtonElement>("[data-chests]")!.onclick = () => openExecs(ctx, "chests");
   const restore = sheet.el.querySelector<HTMLButtonElement>("[data-restore]");

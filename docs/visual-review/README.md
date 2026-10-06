@@ -85,3 +85,5 @@ acepta tanto el frame base de PNG individuales como recortes de atlas.
 `sold-sign-report.json`: cuatro comprobaciones adicionales en español e inglés.
 El cartel está oculto durante la oferta y muestra «Vendido»/«Sold» al completarla.
 Pasan los 227 tests y la compilación de producción.
+
+La entrega agrupada de las fases 3–9, con todos los mundos y pantallas, está en [su galería](phases-3-9/README.md): 556 comprobaciones móviles y 328 capturas, sin errores de consola. Se incorpora a la PR #17 existente junto con la referencia de bici y el kit.

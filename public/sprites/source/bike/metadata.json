@@ -1,0 +1,758 @@
+[
+  {
+    "key": "st_bike_0",
+    "w": 104,
+    "h": 80,
+    "image": "public/sprites/source/bike/shops.png",
+    "box": {
+      "left": 14,
+      "top": 69,
+      "width": 370,
+      "height": 410
+    },
+    "group": "st_bike_0",
+    "source": "source/bike/shops.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "st_bike_1",
+    "w": 104,
+    "h": 80,
+    "image": "public/sprites/source/bike/shops.png",
+    "box": {
+      "left": 384,
+      "top": 68,
+      "width": 384,
+      "height": 410
+    },
+    "group": "st_bike_1",
+    "source": "source/bike/shops.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "st_bike_2",
+    "w": 104,
+    "h": 80,
+    "image": "public/sprites/source/bike/shops.png",
+    "box": {
+      "left": 768,
+      "top": 60,
+      "width": 382,
+      "height": 421
+    },
+    "group": "st_bike_2",
+    "source": "source/bike/shops.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "st_bike_3",
+    "w": 104,
+    "h": 80,
+    "image": "public/sprites/source/bike/shops.png",
+    "box": {
+      "left": 1154,
+      "top": 37,
+      "width": 369,
+      "height": 450
+    },
+    "group": "st_bike_3",
+    "source": "source/bike/shops.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "st_bike_4",
+    "w": 104,
+    "h": 80,
+    "image": "public/sprites/source/bike/shops.png",
+    "box": {
+      "left": 9,
+      "top": 536,
+      "width": 375,
+      "height": 427
+    },
+    "group": "st_bike_4",
+    "source": "source/bike/shops.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "st_bike_5",
+    "w": 104,
+    "h": 80,
+    "image": "public/sprites/source/bike/shops.png",
+    "box": {
+      "left": 384,
+      "top": 542,
+      "width": 384,
+      "height": 422
+    },
+    "group": "st_bike_5",
+    "source": "source/bike/shops.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "st_bike_6",
+    "w": 104,
+    "h": 80,
+    "image": "public/sprites/source/bike/shops.png",
+    "box": {
+      "left": 768,
+      "top": 546,
+      "width": 384,
+      "height": 433
+    },
+    "group": "st_bike_6",
+    "source": "source/bike/shops.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "st_bike_7",
+    "w": 104,
+    "h": 80,
+    "image": "public/sprites/source/bike/shops.png",
+    "box": {
+      "left": 1152,
+      "top": 523,
+      "width": 375,
+      "height": 465
+    },
+    "group": "st_bike_7",
+    "source": "source/bike/shops.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_0_0",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 126,
+      "top": 13,
+      "width": 136,
+      "height": 300
+    },
+    "group": "ch_bike_0_0",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_1_0",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 344,
+      "top": 12,
+      "width": 129,
+      "height": 301
+    },
+    "group": "ch_bike_1_0",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_2_0",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 550,
+      "top": 54,
+      "width": 122,
+      "height": 259
+    },
+    "group": "ch_bike_2_0",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_3_0",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 794,
+      "top": 14,
+      "width": 119,
+      "height": 299
+    },
+    "group": "ch_bike_3_0",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_4_0",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 118,
+      "top": 323,
+      "width": 145,
+      "height": 288
+    },
+    "group": "ch_bike_4_0",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_5_0",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 329,
+      "top": 324,
+      "width": 154,
+      "height": 286
+    },
+    "group": "ch_bike_5_0",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_6_0",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 556,
+      "top": 325,
+      "width": 165,
+      "height": 286
+    },
+    "group": "ch_bike_6_0",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_7_0",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 798,
+      "top": 327,
+      "width": 131,
+      "height": 284
+    },
+    "group": "ch_bike_7_0",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_0_1",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 118,
+      "top": 617,
+      "width": 150,
+      "height": 270
+    },
+    "group": "ch_bike_0_1",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_1_1",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 337,
+      "top": 615,
+      "width": 169,
+      "height": 271
+    },
+    "group": "ch_bike_1_1",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_2_1",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 554,
+      "top": 647,
+      "width": 164,
+      "height": 237
+    },
+    "group": "ch_bike_2_1",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_3_1",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 794,
+      "top": 615,
+      "width": 141,
+      "height": 272
+    },
+    "group": "ch_bike_3_1",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_4_1",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 110,
+      "top": 888,
+      "width": 166,
+      "height": 258
+    },
+    "group": "ch_bike_4_1",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_5_1",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 330,
+      "top": 887,
+      "width": 170,
+      "height": 259
+    },
+    "group": "ch_bike_5_1",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_6_1",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 556,
+      "top": 890,
+      "width": 181,
+      "height": 255
+    },
+    "group": "ch_bike_6_1",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_7_1",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/workers.png",
+    "box": {
+      "left": 797,
+      "top": 888,
+      "width": 147,
+      "height": 258
+    },
+    "group": "ch_bike_7_1",
+    "source": "source/bike/workers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_0_2",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/alternate.png",
+    "box": {
+      "left": 151,
+      "top": 7,
+      "width": 264,
+      "height": 439
+    },
+    "group": "ch_bike_0_2",
+    "source": "source/bike/alternate.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_1_2",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/alternate.png",
+    "box": {
+      "left": 528,
+      "top": 7,
+      "width": 354,
+      "height": 436
+    },
+    "group": "ch_bike_1_2",
+    "source": "source/bike/alternate.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_2_2",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/alternate.png",
+    "box": {
+      "left": 971,
+      "top": 55,
+      "width": 325,
+      "height": 388
+    },
+    "group": "ch_bike_2_2",
+    "source": "source/bike/alternate.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_3_2",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/alternate.png",
+    "box": {
+      "left": 1370,
+      "top": 8,
+      "width": 307,
+      "height": 436
+    },
+    "group": "ch_bike_3_2",
+    "source": "source/bike/alternate.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_4_2",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/alternate.png",
+    "box": {
+      "left": 116,
+      "top": 446,
+      "width": 352,
+      "height": 434
+    },
+    "group": "ch_bike_4_2",
+    "source": "source/bike/alternate.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_5_2",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/alternate.png",
+    "box": {
+      "left": 533,
+      "top": 446,
+      "width": 311,
+      "height": 434
+    },
+    "group": "ch_bike_5_2",
+    "source": "source/bike/alternate.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_6_2",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/alternate.png",
+    "box": {
+      "left": 958,
+      "top": 447,
+      "width": 351,
+      "height": 433
+    },
+    "group": "ch_bike_6_2",
+    "source": "source/bike/alternate.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_7_2",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/alternate.png",
+    "box": {
+      "left": 1393,
+      "top": 458,
+      "width": 267,
+      "height": 423
+    },
+    "group": "ch_bike_7_2",
+    "source": "source/bike/alternate.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "veh_bike_0",
+    "w": 74,
+    "h": 82,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 77,
+      "top": 6,
+      "width": 245,
+      "height": 335
+    },
+    "group": "rider",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "veh_bike_1",
+    "w": 74,
+    "h": 82,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 460,
+      "top": 7,
+      "width": 245,
+      "height": 334
+    },
+    "group": "rider",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "veh_bike_2",
+    "w": 74,
+    "h": 82,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 839,
+      "top": 10,
+      "width": 245,
+      "height": 331
+    },
+    "group": "rider",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "veh_bike_fast",
+    "w": 74,
+    "h": 82,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 1218,
+      "top": 20,
+      "width": 271,
+      "height": 321
+    },
+    "group": "rider",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "veh_bike_rear_0",
+    "w": 74,
+    "h": 82,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 39,
+      "top": 341,
+      "width": 311,
+      "height": 342
+    },
+    "group": "rider",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "veh_bike_rear_1",
+    "w": 74,
+    "h": 82,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 424,
+      "top": 341,
+      "width": 324,
+      "height": 342
+    },
+    "group": "rider",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "veh_bike_rear_2",
+    "w": 74,
+    "h": 82,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 846,
+      "top": 341,
+      "width": 234,
+      "height": 333
+    },
+    "group": "rider",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "veh_bike_rear_fast",
+    "w": 74,
+    "h": 82,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 1243,
+      "top": 341,
+      "width": 231,
+      "height": 332
+    },
+    "group": "rider",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "bike_portal_0",
+    "w": 86,
+    "h": 104,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 29,
+      "top": 683,
+      "width": 355,
+      "height": 320
+    },
+    "group": "bike_portal_0",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "bike_portal_1",
+    "w": 86,
+    "h": 104,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 384,
+      "top": 683,
+      "width": 384,
+      "height": 321
+    },
+    "group": "bike_portal_1",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "bike_pigeons",
+    "w": 45,
+    "h": 32,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 768,
+      "top": 782,
+      "width": 384,
+      "height": 193
+    },
+    "group": "bike_pigeons",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "item_bike_bag",
+    "w": 22,
+    "h": 29,
+    "image": "public/sprites/source/bike/actors.png",
+    "box": {
+      "left": 1152,
+      "top": 725,
+      "width": 349,
+      "height": 255
+    },
+    "group": "item_bike_bag",
+    "source": "source/bike/actors.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_customer_0",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/customers.png",
+    "box": {
+      "left": 88,
+      "top": 53,
+      "width": 403,
+      "height": 794
+    },
+    "group": "ch_bike_customer_0",
+    "source": "source/bike/customers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_customer_1",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/customers.png",
+    "box": {
+      "left": 643,
+      "top": 64,
+      "width": 454,
+      "height": 780
+    },
+    "group": "ch_bike_customer_1",
+    "source": "source/bike/customers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "ch_bike_customer_2",
+    "w": 64,
+    "h": 84,
+    "image": "public/sprites/source/bike/customers.png",
+    "box": {
+      "left": 1213,
+      "top": 64,
+      "width": 477,
+      "height": 780
+    },
+    "group": "ch_bike_customer_2",
+    "source": "source/bike/customers.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "bld_bike_1",
+    "w": 340,
+    "h": 300,
+    "image": "public/sprites/source/bike/hubs.png",
+    "box": {
+      "left": 6,
+      "top": 189,
+      "width": 641,
+      "height": 567
+    },
+    "group": "bld_bike_1",
+    "source": "source/bike/hubs.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "bld_bike_2",
+    "w": 340,
+    "h": 300,
+    "image": "public/sprites/source/bike/hubs.png",
+    "box": {
+      "left": 647,
+      "top": 145,
+      "width": 648,
+      "height": 604
+    },
+    "group": "bld_bike_2",
+    "source": "source/bike/hubs.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "bld_bike_3",
+    "w": 340,
+    "h": 300,
+    "image": "public/sprites/source/bike/hubs.png",
+    "box": {
+      "left": 1295,
+      "top": 3,
+      "width": 639,
+      "height": 763
+    },
+    "group": "bld_bike_3",
+    "source": "source/bike/hubs.png",
+    "anchor": "bottom-center"
+  },
+  {
+    "key": "street_bike",
+    "w": 390,
+    "h": 280,
+    "source": "source/bike/street.png"
+  }
+]
