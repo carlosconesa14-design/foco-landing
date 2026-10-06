@@ -129,7 +129,7 @@ export const EN: Record<string, string> = {
   "Contrata gerente: {name}": "Hire manager: {name}",
   "Compra {name}": "Buy {name}",
   "{name} a Nv {lv} (x2)": "{name} to Lv {lv} (x2)",
-  "Abre {name}": "Open {name}",
+  "Abre un puesto nuevo: {name}": "Open a new stall: {name}",
 
   /* ---------- Misiones, premio diario, ejecutivos, logros ---------- */
   "Misiones del día": "Daily missions",

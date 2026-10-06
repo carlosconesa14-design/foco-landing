@@ -98,3 +98,11 @@ html[data-motion="reduced"] .loading-route path,html[data-motion="reduced"] .loa
 .daycard { color:#eef8ff; }
 .daycard .muted, .daycard .small { color:#c3deed; }
 .toast { background:#12304a; color:#fff; border:2px solid #ffd36b; box-shadow:0 4px 0 #0b2440,0 8px 18px #0008; text-shadow:0 1px 0 #0b2440; }
+
+/* Tarjeta de mecánica (pedido, crítico, hype…): fondo sólido y texto claro; antes el degradado era casi transparente y se leía mal sobre la ruta. */
+.tw-card { background:#14263b; color:#fff; border:2px solid #0b2440; box-shadow:0 4px 0 #0b2440,0 8px 16px #0006; }
+.tw-card .tw-txt b { color:#fff; }
+.tw-card .tw-txt small { color:#c3deed; }
+.tw-card.tw-offer { background:linear-gradient(90deg,#6d5417,#14263b 75%); border-color:#ffd36b; }
+.tw-card.tw-viral { background:linear-gradient(90deg,#8d2740,#14263b 75%); border-color:#ff7d95; }
+.tw-card.tw-on { background:linear-gradient(90deg,#1d6a52,#14263b 75%); border-color:#3ddc97; }
