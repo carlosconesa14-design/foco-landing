@@ -27,6 +27,11 @@ export const VISUAL_ICON_SHAPES: Record<string, string> = {
   invite: '<circle cx="16" cy="14" r="8" fill="#ffd39b"/><circle cx="34" cy="18" r="7" fill="#ce925c"/><path d="M3 39v-7q13-17 26 0v7" fill="#79d9be"/><path d="M27 31q14-12 18 3v5H29" fill="#77bce0"/><path d="M13 33h12m-6-6v12" stroke="#fff3bb" stroke-width="3"/>',
   rival: '<path d="M7 16q2-10 12-6l7 7-1 14-9 5-13-8Z" fill="#f58a86"/><path d="M31 16q3-7 10-1l5 11-7 11-13-2-3-10Z" fill="#76bfe6"/><path d="m16 3 3 4m13-2-3 4"/>',
   bolt: '<path d="M28 4 10 27h12l-3 17 19-26H26Z" fill="#ffe182"/>',
+  music: '<path d="M18 36V10l22-4v26"/><circle cx="12" cy="37" r="6" fill="#74d4b5"/><circle cx="34" cy="33" r="6" fill="#74d4b5"/>',
+  sound: '<path d="M6 19h9l11-9v28l-11-9H6Z" fill="#79b8e8"/><path d="M33 17q6 7 0 14M38 11q11 13 0 26"/>',
+  haptics: '<rect x="15" y="6" width="18" height="36" rx="4" fill="#9bd1ec"/><path d="M5 17v14M10 14v20M38 14v20M43 17v14"/>',
+  language: '<circle cx="24" cy="24" r="19" fill="#8fd0ea"/><path d="M5 24h38M24 5q-12 19 0 38M24 5q12 19 0 38"/>',
+  motion: '<path d="M6 32q6-12 12 0t12 0 12 0" fill="none"/><path d="M6 20q6-12 12 0t12 0 12 0" fill="none"/>',
   video: '<rect x="5" y="8" width="38" height="30" rx="6" fill="#789fd1"/><path d="m19 15 13 8-13 8Z" fill="#fff3c8"/><path d="M15 43h18"/>',
   cloud: '<path d="M11 35a9 9 0 0 1-2-17q3-12 15-10t12 12q11-1 8 10t-12 5Z" fill="#b7eaff"/><path d="m17 27 7-8 7 8m-7-8v20" stroke="#397ca2"/>',
   moon: '<path d="M33 6a18 18 0 1 0 10 29A22 22 0 0 1 33 6Z" fill="#b8c7fc"/>'+star,
@@ -40,9 +45,9 @@ export const VISUAL_ICON_SHAPES: Record<string, string> = {
   rank_1: medal('#cb8f65'), rank_2: medal('#bcd0e1'), rank_3: medal('#ffd46e'), rank_4: medal('#72ddec', true), rank_5: medal('#ac82df', false, true),
 };
 export const SYMBOL_ICONS: Record<string, string> = {
- '🔴':'live','😴':'moon','🎡':'wheel','🛍️':'life','👕':'outfit','🧥':'outfit','⌚':'jewel','⏱️':'jewel','📿':'lux_goldchain','💍':'lux_diamondring','👑':'crown',
+ '🔴':'live','🎵':'music','🔊':'sound','📳':'haptics','🌐':'language','🎞️':'motion','😴':'moon','🎡':'wheel','🛍️':'life','👕':'outfit','🧥':'outfit','⌚':'jewel','⏱️':'jewel','📿':'lux_goldchain','💍':'lux_diamondring','👑':'crown',
  '🚗':'car','🏎️':'lux_supercar','🚘':'lux_limo','🛵':'lux_deliverybike','🛴':'lux_scooter','🏍️':'lux_motorbike','🏠':'home','🛏️':'lux_parents','🏚️':'lux_haunted','🏢':'city','🌆':'lux_penthouse','🏡':'lux_villa','🏰':'lux_mansion','🏝️':'lux_island',
  '🐶':'lux_dog','🐱':'lux_cat','🦜':'lux_parrot','🐯':'lux_tiger','🐧':'lux_penguin','🛥️':'lux_yacht','🛩️':'lux_jet','🚀':'lux_rocket','🎃':'lux_pumpkin','👻':'ghost','🍬':'candy','🧛':'lux_vampire','💀':'lux_skullring','⚰️':'lux_hearse',
  '📦':'order','🧐':'critic','🔥':'hype','🧠':'research','🤖':'research','💻':'research','🎉':'event','🎊':'event','🤝':'invite','🥊':'rival','⚡':'bolt','📺':'video','🎬':'video','📱':'video','☁️':'cloud','🌙':'moon','🏁':'finish','🔓':'check','✨':'star','🥉':'rank_1','🥈':'rank_2','🥇':'rank_3','🤴':'exec_founder','🤵':'ch_vip_0','🚚':'veh_supply','💸':'cash',
- '🇪🇸':'flag_madrid','🇺🇸':'flag_miami','🇦🇪':'flag_dubai','🇯🇵':'flag_tokyo','🌊':'extreme','👔':'outfit','👷':'manager','📈':'ipo','📉':'ipo','🍝':'item_dish','🌮':'item_taco','🏖️':'miami_plaza','🪙':'coin','🏘️':'home','🏨':'bld_hotel_1','🛒':'life','🧳':'execs','🕴️':'lux_designer','🎓':'school','💡':'idea','🔧':'settings','⏳':'jewel','⏰':'jewel','🕒':'jewel','📊':'ipo','🎲':'wheel','🎟️':'item_ticket','💫':'star','💪':'bolt','📣':'hype','🎵':'video','🔊':'video','🔇':'video','🔔':'item_bell','📜':'missions','❤️':'pet','🐷':'coin',
+ '🇪🇸':'flag_madrid','🇺🇸':'flag_miami','🇦🇪':'flag_dubai','🇯🇵':'flag_tokyo','🌊':'extreme','👔':'outfit','👷':'manager','📈':'ipo','📉':'ipo','🍝':'item_dish','🌮':'item_taco','🏖️':'miami_plaza','🪙':'coin','🏘️':'home','🏨':'bld_hotel_1','🛒':'life','🧳':'execs','🕴️':'lux_designer','🎓':'school','💡':'idea','🔧':'settings','⏳':'jewel','⏰':'jewel','🕒':'jewel','📊':'ipo','🎲':'wheel','🎟️':'item_ticket','💫':'star','💪':'bolt','📣':'hype','🔇':'video','🔔':'item_bell','📜':'missions','❤️':'pet','🐷':'coin',
 };

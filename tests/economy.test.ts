@@ -13,6 +13,10 @@ import {
   tapStation,
   tick,
   transportCap,
+  transportPayload,
+  transportRoundTrip,
+  transportSpeed,
+  saleWalk,
   upgradeQuote,
 } from "../src/game/economy";
 import { fmt, fmtTime } from "../src/game/format";
@@ -64,13 +68,13 @@ describe("cadena de producción", () => {
     expect(b.floors[0].running).toBe(false);
 
     tapStation(s, DROP.id, TRANSPORT);
-    run(s, 3);
+    run(s, transportRoundTrip(1, 1) + 0.2); // el viaje dura lo que dura con el ritmo visual
     expect(b.transport.phase).toBe("idle");
     expect(b.floors[0].stock).toBe(0);
     expect(b.topStock).toBeCloseTo(floorLoad(DROP, 0, 1));
 
     expect(tapStation(s, DROP.id, SALE)).toBeNull();
-    const sales = run(s, 5);
+    const sales = run(s, 2 * saleWalk(1) + 0.2);
     expect(sales).toHaveLength(1);
     expect(s.cash).toBeCloseTo(floorLoad(DROP, 0, 1));
     expect(b.sale.phase).toBe("idle");
@@ -87,8 +91,8 @@ describe("cadena de producción", () => {
     b.floors[0].stock = 1e6;
     tapStation(s, DROP.id, TRANSPORT);
     run(s, 5);
-    expect(b.topStock).toBeCloseTo(transportCap(DROP, 1));
-    expect(b.floors[0].stock).toBeCloseTo(1e6 - transportCap(DROP, 1));
+    expect(b.topStock).toBeCloseTo(transportPayload(DROP, 1, 1));
+    expect(b.floors[0].stock).toBeCloseTo(1e6 - transportPayload(DROP, 1, 1));
   });
 
   it("el transporte recorre todas las plantas en orden", () => {
@@ -289,5 +293,36 @@ describe("categoría del negocio", () => {
     }
     tiers.push(bizTier(b));
     expect(tiers).toEqual([1, 1, 2, 2, 2, 3, 3, 3]);
+  });
+});
+
+describe("ritmo visual: más lento pero igual de productivo", () => {
+  const oldSpeed = (l: number) => Math.min(CHAIN.transportMaxSpeed, CHAIN.transportBaseSpeed * (1 + 0.04 * (l - 1)));
+  const oldTrip = (f: number, l: number) => (2 * f) / oldSpeed(l) + f * CHAIN.transportLoadTime + CHAIN.transportUnloadTime;
+  const oldWalk = (l: number) => Math.max(CHAIN.saleMinWalk, CHAIN.saleBaseWalk / (1 + 0.03 * (l - 1)));
+
+  it("el transporte mueve por segundo lo mismo que antes, a cualquier nivel y con cualquier número de puestos", () => {
+    for (const level of [1, 5, 20, 60, 120, 400])
+      for (const floors of [1, 3, 6, 8]) {
+        const before = transportCap(DROP, level) / oldTrip(floors, level);
+        const now = transportPayload(DROP, level, floors) / transportRoundTrip(floors, level);
+        expect(now / before).toBeCloseTo(1, 9);
+      }
+  });
+
+  it("nunca va más rápido que el máximo visible, pero rinde igual", () => {
+    for (const level of [1, 20, 120, 400]) expect(transportSpeed(level)).toBeLessThanOrEqual(CHAIN.visualMaxSpeed);
+    expect(transportSpeed(1)).toBeLessThan(oldSpeed(1));
+    expect(transportSpeed(120)).toBeLessThan(oldSpeed(120) / 4);
+  });
+
+  it("la venta vende por segundo lo mismo que antes y el cliente no va más rápido que el mínimo visible", () => {
+    // Niveles sin hito (antes del 10) para poder escribir la capacidad de antes a mano
+    for (const level of [1, 3, 6, 9]) {
+      const oldCap = DROP.mult * CHAIN.saleBaseCap * level * CHAIN.logisticsCapGrowth ** (level - 1);
+      expect(saleWalk(level)).toBeGreaterThanOrEqual(CHAIN.visualMinWalk);
+      expect(saleCap(DROP, level) / (2 * saleWalk(level))).toBeCloseTo(oldCap / (2 * oldWalk(level)), 9);
+    }
+    expect(saleCap(DROP, 1)).toBeCloseTo(DROP.mult * CHAIN.saleBaseCap); // al empezar el cliente ya iba a 2 s: igual que antes
   });
 });

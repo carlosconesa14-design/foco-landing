@@ -30,7 +30,7 @@ export const FEATURES: FeatureDef[] = [
   { id: "missions", icon: "📋", need: { kind: "tutorial" } },
   { id: "execs", icon: "💼", need: { kind: "stat", stat: "floors", n: 2 } }, // ~3 min
   { id: "auto", icon: "⚡", need: { kind: "stat", stat: "upgrades", n: 120 } }, // ~4 min
-  { id: "wheel", icon: "🎡", need: { kind: "earned", n: 2e5 } }, // ~7 min (tras comprar el almacén)
+  { id: "wheel", icon: "🎡", need: { kind: "earned", n: 2e5 } }, // ~8–9 min (tras comprar el almacén)
   { id: "achievements", icon: "🏆", need: { kind: "stat", stat: "hires", n: 7 } }, // ~12 min
   { id: "life", icon: "🛍️", need: { kind: "earned", n: 1e7 } }, // ~12 min
   { id: "school", icon: "🎓", need: { kind: "stat", stat: "milestones", n: 12 } }, // ~15 min: las primeras ideas

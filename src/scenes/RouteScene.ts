@@ -93,6 +93,8 @@ export class RouteScene extends Phaser.Scene {
   private topPile: Phaser.GameObjects.Image[] = [];
   private topStock!: Phaser.GameObjects.Text;
   private unlock: Pill | null = null;
+  /** Ya se ha acercado la cámara al botón «Abrir» del tutorial (una sola vez). */
+  private nudged = false;
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
   private coins!: Phaser.GameObjects.Particles.ParticleEmitter;
   private visitor: WorldVisitor | null = null;
@@ -119,6 +121,7 @@ export class RouteScene extends Phaser.Scene {
     this.routeWorld = null;
     this.topPile = [];
     this.unlock = null;
+    this.nudged = false;
     this.visitor = null;
     this.twistWorld = null;
     this.pedaling = false;
@@ -542,6 +545,7 @@ export class RouteScene extends Phaser.Scene {
   /* ---------- Actualización ---------- */
 
   update(_t: number, dtMs: number): void {
+    if (!this.sys.isActive()) return; // detenida en este mismo fotograma (cambio de pantalla)
     const s = this.bridge.state();
     if (this.bizId !== FEST_ID && !s.biz[this.bizId]) return;
     const v = businessView(s, this.bizId, clockNow());
@@ -552,6 +556,12 @@ export class RouteScene extends Phaser.Scene {
     }
     const cam = this.cameras.main, sc = this.scroll;
     const dt = Math.min(dtMs, 100) / 1000;
+    // Tutorial «Abre la siguiente parada»: si el botón queda tapado por la barra de abajo, la cámara baja sola hasta él.
+    if (v.tutorial === "floors" && !this.nudged && this.unlock) {
+      this.nudged = true;
+      const viewH = cam.height / cam.zoom, hidden = this.unlock.y + 40 > cam.scrollY + viewH - this.bridge.insets().bottom;
+      if (hidden) this.tweens.addCounter({ from: cam.scrollY, to: Phaser.Math.Clamp(this.unlock.y - viewH * 0.45, 0, sc.max), duration: 700, ease: "Cubic.easeInOut", onUpdate: (tw) => (cam.scrollY = tw.getValue() ?? cam.scrollY) });
+    }
     this.routeWorld?.update(dt);
     if (!sc.down && Math.abs(sc.vel) > 0.2) {
       cam.scrollY = Phaser.Math.Clamp(cam.scrollY + sc.vel * dt * 60, 0, sc.max);
@@ -561,7 +571,7 @@ export class RouteScene extends Phaser.Scene {
       this.ambient[0].setVisible(v.sale.phase !== "back");
       this.ambient[1].setVisible(v.sale.phase === "back");
       this.ambient[2].setAngle(calmWorld() ? 0 : Math.sin(this.time.now / 700) * 3);
-      this.ambient[3].setX(calmWorld() ? -60 : (this.time.now / 36) % (this.W + 120) - 60);
+      this.ambient[3].setX(calmWorld() ? -60 : (this.time.now / 55) % (this.W + 120) - 60);
     }
     this.visitor?.update();
     this.twistWorld?.update(s);
@@ -575,8 +585,8 @@ export class RouteScene extends Phaser.Scene {
       const o = this.stops[i];
       if (!o) return;
       const active = f.working && !calmWorld();
-      o.worker.setAngle(active ? Math.sin(clk * (f.skill.state === "active" ? 14 : 7) + i) * 4 : 0);
-      if (!calmWorld()) swapArt(o.worker, rankedKey(this, `${o.workerKey.slice(0, -1)}${active ? (Math.floor(clk * (f.skill.state === "active" ? 12 : 6) + i) % 2 ? 1 : 2) : 0}`, o.rank));
+      o.worker.setAngle(active ? Math.sin(clk * (f.skill.state === "active" ? 8 : 4) + i) * 4 : 0);
+      if (!calmWorld()) swapArt(o.worker, rankedKey(this, `${o.workerKey.slice(0, -1)}${active ? (Math.floor(clk * (f.skill.state === "active" ? 6 : 3) + i) % 2 ? 1 : 2) : 0}`, o.rank));
       if (f.working && sparkNow && !reducedMotion()) this.sparks.emitParticleAt(o.station.x + (Math.random() - 0.5) * 40, o.station.y - 60, 1);
       if (f.stock > o.lastStock) transferProduct(this, this.look.item, { x: o.station.x, y: o.station.y - 50 }, { x: o.pile[0].x, y: o.pile[0].y });
       o.lastStock = f.stock;
@@ -611,7 +621,7 @@ export class RouteScene extends Phaser.Scene {
     if (dx) this.mover.setFlipX(dx < 0);
     if (this.bike && this.textures.exists("veh_bike_0")) {
       const rear = (back ? -p.dy : p.dy) < 0;
-      const pose = moving && !calmWorld() ? this.pedaling ? "fast" : Math.floor(clk * 7) % 2 ? "1" : "2" : "0";
+      const pose = moving && !calmWorld() ? this.pedaling ? "fast" : Math.floor(clk * 4) % 2 ? "1" : "2" : "0";
       swapArt(this.mover, `veh_bike_${rear ? "rear_" : ""}${pose}`);
       this.mover.setDisplaySize(74, 82);
       if (!dx) this.mover.setFlipX(rear);
@@ -622,7 +632,7 @@ export class RouteScene extends Phaser.Scene {
       const key = rear && (this.textures.exists(rearKey) || hasGeneratedArt(this,rearKey)) ? rearKey : frontKey;
       swapArt(this.mover,rankedKey(this,key,this.ranks.transport));
       this.mover.setFlipX(rear ? dx > 0 : dx < 0);
-    } else if (!isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, `ch_${this.look.mover}_${moving && !calmWorld() ? (Math.floor(clk * (this.pedaling ? 16 : 8)) % 2 ? 1 : 2) : 0}`, this.ranks.transport));
+    } else if (!isVehicle(this.look.mover)) swapArt(this.mover, rankedKey(this, `ch_${this.look.mover}_${moving && !calmWorld() ? (Math.floor(clk * (this.pedaling ? 10 : 4.5)) % 2 ? 1 : 2) : 0}`, this.ranks.transport));
     this.moverItem.setVisible(tr.carry > 0).setPosition(p.x + (dx < 0 ? 14 : -14), this.mover.y - this.mover.displayHeight * 0.7);
     this.moverCarry.setText(tr.carry > 0 ? fmt(tr.carry) : "").setPosition(p.x, this.mover.y - this.mover.displayHeight - 10);
     this.moverHint.setVisible(tr.hint);
@@ -669,7 +679,7 @@ export class RouteScene extends Phaser.Scene {
       swapArt(this.seller,rankedKey(this,rear ? rearKey : this.look.seller,this.ranks.sale));
       this.seller.setFlipX(false);
     }
-    if (!vehicle) swapArt(this.seller, `ch_${this.look.seller}_${sl.phase !== "idle" && !calmWorld() ? (Math.floor(clk * 8) % 2 ? 1 : 2) : 0}`);
+    if (!vehicle) swapArt(this.seller, `ch_${this.look.seller}_${sl.phase !== "idle" && !calmWorld() ? (Math.floor(clk * 4.5) % 2 ? 1 : 2) : 0}`);
     this.sellerItem.setVisible(sl.carry > 0).setPosition(sx, this.seller.y - this.seller.displayHeight * 0.9);
     this.sellerCarry.setText(sl.carry > 0 ? fmt(sl.carry) : "").setPosition(sx, this.seller.y - this.seller.displayHeight - 16).setOrigin(0.5);
     this.sellerHint.setVisible(sl.hint);

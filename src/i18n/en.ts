@@ -100,10 +100,12 @@ export const EN: Record<string, string> = {
   "¡Nuevo negocio!": "New business!",
   "Ya eres dueño de: {name}. Contrata gerentes para que funcione solo.": "You now own: {name}. Hire managers so it runs on its own.",
   "{name}: ¡rendimiento x2!": "{name}: output x2!",
-  "{name} ya funciona solo": "{name} now runs on its own",
+  "{name}: ¡gerente contratado! Ya trabaja sin ti": "{name}: manager hired! It now works without you",
   "¡Nuevo puesto: {name}!": "New station: {name}!",
   "¡Has comprado: {name}!": "You bought: {name}!",
-  "Aún no hay nada que vender arriba": "Nothing to sell yet",
+  "Aún no hay nada que vender: espera a que la bici traiga pedidos": "Nothing to sell yet: wait for the bike to bring orders",
+  "(cuesta {price})": "(costs {price})",
+  "(cuesta {price}, te faltan {missing})": "(costs {price}, you need {missing} more)",
   "Aún no hay pedidos que recoger": "No orders to pick up yet",
 
   /* ---------- Bolsa ---------- */
@@ -127,7 +129,7 @@ export const EN: Record<string, string> = {
   "Contrata gerente: {name}": "Hire manager: {name}",
   "Compra {name}": "Buy {name}",
   "{name} a Nv {lv} (x2)": "{name} to Lv {lv} (x2)",
-  "Abre {name}": "Open {name}",
+  "Abre un puesto nuevo: {name}": "Open a new stall: {name}",
 
   /* ---------- Misiones, premio diario, ejecutivos, logros ---------- */
   "Misiones del día": "Daily missions",

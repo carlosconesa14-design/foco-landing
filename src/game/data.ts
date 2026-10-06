@@ -33,6 +33,14 @@ export const CHAIN = {
   transportBaseCap: 15,
   transportBaseSpeed: 1.5,
   transportMaxSpeed: 8,
+  /**
+   * Ritmo visual: la bici, la furgoneta y el cliente nunca van más rápido que esto (casi como al empezar)
+   * (`visualMaxSpeed` plantas/s y `visualMinWalk` s de ida del cliente). Al subir de nivel el viaje no se
+   * acorta: cada viaje lleva más carga para compensar, así que la economía no cambia
+   * (`transportPayload` y `saleCap` en economy.ts).
+   */
+  visualMaxSpeed: 1.2,
+  visualMinWalk: 2,
   transportLoadTime: 0.4,
   transportUnloadTime: 0.4,
   saleBaseCap: 20,

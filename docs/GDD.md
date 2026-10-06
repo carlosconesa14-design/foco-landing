@@ -41,6 +41,7 @@ Cada negocio es un recinto isométrico vallado, con el edificio principal, camin
 
 - **Puestos:** el trabajador produce y deja el producto junto al puesto. Cada puesto nuevo se construye en una parcela del recinto y produce 6 veces más que el anterior.
 - **Transporte:** recorre los caminos parando en cada puesto hasta llenar su capacidad y lo lleva al edificio principal.
+  - **Ritmo visual (6 oct):** la bici, la furgoneta y el cliente nunca van más rápido que 1,2 plantas/s ni tardan menos de 2 s de ida el cliente (antes llegaban a 8 plantas/s y 0,6 s; `CHAIN.visualMaxSpeed` y `visualMinWalk`). Al subir de nivel el viaje no se acorta: carga más (`transportPayload` y `saleCap`), así que producen exactamente lo mismo por segundo que antes (lo comprueban `tests/economy.test.ts` y los de ritmo). Los pasos de los personajes y los peatones también van más lentos (solo animación).
 - **Venta:** sale por el portón hacia la calle y vuelve con el dinero.
 - Sin gerente, cada parte hace un solo ciclo por toque. Con gerente, repite sola.
 - Cada 10/25/50/100… niveles, esa parte rinde el doble.

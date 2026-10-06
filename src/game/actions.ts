@@ -47,7 +47,7 @@ export function hireManager(s: GameState, id: string, st: Station): string | nul
   s.cash -= cost;
   target.managed = true;
   bump(s, "hires");
-  return t("{name} ya funciona solo", { name: stationName(id, st) });
+  return t("{name}: ¡gerente contratado! Ya trabaja sin ti", { name: stationName(id, st) });
 }
 
 export function unlockFloor(s: GameState, id: string): string | null {
